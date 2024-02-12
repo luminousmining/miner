@@ -1,0 +1,11 @@
+set(STATISTICAL_HEADERS
+statistical.hpp
+)
+
+set(STATISTICAL_SOURCES
+statistical.cpp)
+
+target_sources(${MINER_EXE} PUBLIC
+${STATISTICAL_HEADERS}
+${STATISTICAL_SOURCES}
+)

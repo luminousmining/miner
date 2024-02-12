@@ -1,0 +1,7 @@
+add_subdirectory(algo)
+add_subdirectory(common)
+add_subdirectory(device)
+add_subdirectory(network)
+add_subdirectory(resolver)
+add_subdirectory(statistical)
+add_subdirectory(stratum)
