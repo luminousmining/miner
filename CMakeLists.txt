@@ -151,16 +151,6 @@ list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
 
 
 ################################################################################
-### GNU                                                                     ####
-################################################################################
-if (UNIX)
-    set(GNUTLS_LIBRARIES "stdc++fs")
-else()
-    set(GNUTLS_LIBRARIES "")
-endif()
-
-
-################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
 find_package(Boost 1.83.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
@@ -221,8 +211,8 @@ message("-- Library Output   : ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 message("*********************************************************************")
 message("-- C COMPILER       : [${CMAKE_C_COMPILER_ID}] ${CMAKE_C_COMPILER}")
 message("-- CXX COMPILER     : [${CMAKE_CXX_COMPILER_ID}] ${CMAKE_CXX_COMPILER}")
-message("-- CXX Version      : ${CMAKE_CXX_COMPILE_FEATURES}")
-message("-- CXX VERSION      : ${CMAKE_CXX_STANDARD}")
+message("-- CXX Features     : ${CMAKE_CXX_COMPILE_FEATURES}")
+message("-- CXX Version      : ${CMAKE_CXX_STANDARD}")
 message("-- CXX LINKER FLAGS : ${CMAKE_EXE_LINKER_FLAGS}")
 message("-- CXX FLAGS        : ${CMAKE_CXX_FLAGS}")
 message("-- CXX FLAGS D      : ${CMAKE_CXX_FLAGS_DEBUG} ")
@@ -251,4 +241,9 @@ message("-- CUDA NVRTC       : ${CUDA_NVRTC_LIBRARY}")
 message("-- CUDA BUILTINS    : ${CUDA_NVRTC_BUILTINS_LIBRARY}")
 message("-- NVRTC LIBRARY    : ${CUDA_NVRTC_LIBRARY}")
 message("*********************************************************************")
+message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LIBRAIRES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+get_target_property(LIST_LIBS ${MINER_EXE} LINK_LIBRARIES)
+string(REPLACE ";" "\n-- " LIST_LIBS "${LIST_LIBS}")
+message("-- ${LIST_LIBS}")
+message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 message("=====================================================================")

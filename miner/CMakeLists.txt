@@ -47,7 +47,6 @@ include_directories(${MINER_EXE} PUBLIC
 )
 
 target_link_libraries(${MINER_EXE}
-    ${GNUTLS_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OPEN_SSL_LIBRARIES}
     ${OpenCL_LIBRARIES}
@@ -58,4 +57,11 @@ target_link_libraries(${MINER_EXE}
     ${CUDA_NVRTC_BUILTINS_LIBRARY}
     ${LIB_CRYPTO_NVIDIA}
 )
+
+if (UNIX)
+target_link_libraries(${MINER_EXE}
+    ${GNUTLS_LIBRARIES}
+    "stdc++fs"
+)
+endif()
 
