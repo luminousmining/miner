@@ -1,5 +1,14 @@
 # LuminousMiner
 
+Free mining software with 0% fees! Enjoy your mining time.  
+Project aims for learning and sharing.  
+All algorithms used are referenced.  
+
+Algorithms:
+- AUTOLYKOS V2
+- ETHASH
+- KAWPOW
+
 ## Requis
 - cuda 12.3 => Windows
 - cuda 12.0 => Ubuntu
