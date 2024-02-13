@@ -143,7 +143,7 @@ void stratum::StratumEthash::miningSubmit(
     boost::json::object root;
     root["id"] = shareId + (1000u * deviceId);
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array{ wallet + workerName};
+    root["params"] = boost::json::array{ wallet + workerName };
     root["params"].as_array().push_back(params.at(0));
     root["params"].as_array().push_back(params.at(1));
 

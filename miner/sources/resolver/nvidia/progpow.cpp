@@ -54,10 +54,6 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
                                              countMath);
 
     ////////////////////////////////////////////////////////////////////////////
-    kernelGenerator.declareDefine("__KERNEL_COMPILED");
-    kernelGenerator.declareDefine("__LIB_CUDA");
-
-    ////////////////////////////////////////////////////////////////////////////
     uint32_t const dagSize { castU32(context.dagCache.numberItem / 2ull) };
     kernelGenerator.addDefine("DAG_SIZE", dagSize);
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);

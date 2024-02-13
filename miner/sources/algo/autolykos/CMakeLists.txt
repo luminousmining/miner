@@ -11,3 +11,5 @@ target_sources(${MINER_EXE} PUBLIC
 ${AUTOLYKOS_HEADERS}
 ${AUTOLYKOS_SOURCES}
 )
+
+add_subdirectory(opencl)

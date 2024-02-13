@@ -1,4 +1,5 @@
 #include <common/app.hpp>
+#include <common/boost_utils.hpp>
 #include <common/cast.hpp>
 #include <common/config.hpp>
 #include <algo/hash_utils.hpp>
@@ -240,8 +241,8 @@ void stratum::Stratum::onShare(
     if (stratum::Stratum::ID_MINING_SUBMIT <= miningRequestID)
     {
         ++shareTotal;
-        if (   false == root.at("error").is_null()
-            || false == root.at("result").as_bool())
+        if (   (false == common::boostJsonContains(root, "result") || false == root.at("result").as_bool())
+            || (true == common::boostJsonContains(root, "error") && false == root.at("error").is_null()))
         {
             logErr() << root;
             ++shareInvalid;

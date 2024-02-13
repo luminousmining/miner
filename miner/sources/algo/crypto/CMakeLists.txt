@@ -12,3 +12,6 @@ target_sources(${MINER_EXE} PUBLIC
 ${CRYPTO_HEADERS}
 ${CRYPTO_SOURCES}
 )
+
+add_subdirectory(cuda)
+add_subdirectory(opencl)
