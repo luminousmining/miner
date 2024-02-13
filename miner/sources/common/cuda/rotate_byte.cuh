@@ -1,6 +1,10 @@
 #pragma once
 
+#if !defined(__KERNEL_COMPILED)
 #include <common/cuda/vectorize.cuh>
+#else
+#include "kernel/common/vectorize.cuh"
+#endif
 
 
 __device__ __forceinline__
@@ -30,9 +34,9 @@ uint32_t ror_u32(
 }
 
 __device__ __forceinline__
-std::uint64_t ror_64(
+uint64_t ror_64(
     uint64_t const b,
-    int32_t const offset)
+    uint32_t const offset)
 {
     uint2 a;
     uint2 result;

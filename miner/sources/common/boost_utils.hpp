@@ -31,4 +31,7 @@ namespace common
             return T{0};
         }
     }
+
+    bool boostJsonContains(boost::json::object const& obj,
+                           std::string const& keyName);
 }

@@ -12,3 +12,5 @@ target_sources(${MINER_EXE} PUBLIC
 ${ETHASH_HEADERS}
 ${ETHASH_SOURCES}
 )
+
+add_subdirectory(opencl)

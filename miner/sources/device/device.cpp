@@ -1,11 +1,13 @@
 #include <common/chrono.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
+#include <common/cast.hpp>
 #include <common/log/log.hpp>
 #include <device/device.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
 #include <resolver/amd/etchash.hpp>
 #include <resolver/amd/ethash.hpp>
+#include <resolver/amd/firopow.hpp>
 #include <resolver/amd/kawpow.hpp>
 #include <resolver/amd/progpow.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
@@ -109,7 +111,7 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    // TODO : resolver amd firopow
+                    resolver = new (std::nothrow) resolver::ResolverAmdFiroPOW;
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -133,6 +135,10 @@ void device::Device::setAlgorithm(
                 {
                     SAFE_DELETE(resolver);
                     resolver = new (std::nothrow) resolver::ResolverAmdAutolykosV2;
+                    break;
+                }
+                case device::DEVICE_TYPE::UNKNOW:
+                {
                     break;
                 }
             }
@@ -175,42 +181,42 @@ void device::Device::kill(
         case device::KILL_STATE::ALGORITH_UNDEFINED:
         {
             logWarn()
-                << "device[" << id << "] " << "Killed by code " << static_cast<uint32_t const>(state)
+                << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " ALGORITH_UNDEFINED";
             break;
         }
         case device::KILL_STATE::RESOLVER_NULLPTR:
         {
             logWarn()
-                << "device[" << id << "] " << "Killed by code " << static_cast<uint32_t const>(state)
+                << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " RESOLVER_NULLPTR";
             break;
         }
         case device::KILL_STATE::UPDATE_MEMORY_FAIL:
         {
             logWarn()
-                << "device[" << id << "] " << "Killed by code " << static_cast<uint32_t const>(state)
+                << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " UPDATE_MEMORY_FAIL";
             break;
         }
         case device::KILL_STATE::UPDATE_CONSTANT_FAIL:
         {
             logWarn()
-                << "device[" << id << "] " << "Killed by code " << static_cast<uint32_t const>(state)
+                << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " UPDATE_CONSTANT_FAIL";
             break;
         }
         case device::KILL_STATE::KERNEL_EXECUTE_FAIL:
         {
             logWarn()
-                << "device[" << id << "] " << "Killed by code " << static_cast<uint32_t const>(state)
+                << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " KERNEL_EXECUTE_FAIL";
             break;
         }
         case device::KILL_STATE::DISABLE:
         {
             logWarn()
-                << "device[" << id << "] " << "Killed by code " << static_cast<uint32_t const>(state)
+                << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " DISABLE";
             break;
         }

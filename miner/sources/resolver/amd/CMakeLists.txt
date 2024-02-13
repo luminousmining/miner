@@ -5,6 +5,7 @@ autolykos_v2_kernel_parameter.hpp
 etchash.hpp
 ethash.hpp
 ethash_kernel_parameter.hpp
+firopow.hpp
 kawpow.hpp
 progpow.hpp
 progpow_kernel_parameter.hpp
@@ -15,6 +16,7 @@ amd.cpp
 autolykos_v2.cpp
 etchash.cpp
 ethash.cpp
+firopow.cpp
 kawpow.cpp
 progpow.cpp
 )
