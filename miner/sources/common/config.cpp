@@ -67,7 +67,7 @@ bool common::Config::loadCli(int argc, char** argv)
         }
 
         auto const port{ cli.getPort() };
-        if (true == algo::inRange(1u, 9999u, port))
+        if (true == algo::inRange(1u, 65535u, port))
         {
             mining.port = port;
         }

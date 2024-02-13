@@ -11,6 +11,18 @@ miner.exe^
  --ssl=false
 ```
 
+# FIROPOW
+```bat
+miner.exe^
+ --host="firo.2miners.com"^
+ --port=8181^
+ --wallet="YOUR_WALLET"^
+ --algo="firopow"^
+ --workername="luminousminer"^
+ --password="x"^
+ --ssl=false
+```
+
 # ETHASH
 ```bat
 miner.exe^
@@ -42,18 +54,6 @@ miner.exe^
  --port=6060^
  --wallet="YOUR_WALLET"^
  --algo="kawpow"^
- --workername="luminousminer"^
- --password="x"^
- --ssl=false
-```
-
-# FIROPOW
-```bat
-miner.exe^
- --host="firo.2miners.com"^
- --port=18181^
- --wallet="YOUR_WALLET"^
- --algo="firopow"^
  --workername="luminousminer"^
  --password="x"^
  --ssl=false
