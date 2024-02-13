@@ -61,7 +61,7 @@ ___Specific device options:___
                     --device_workername=0:MyWorkerName
 ```
 
-## Requis
+## Require
 - cuda 12.3 => Windows
 - cuda 12.0 => Ubuntu
 - OpenSSL 1.1.1
@@ -69,7 +69,7 @@ ___Specific device options:___
 - OpenCL 3.0.15
 - Visual Studio 2022
 
-## BUILD
+## Build
 ```sh
 mkdir build
 cd build
