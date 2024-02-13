@@ -135,7 +135,7 @@ common::Cli::Cli()
             "device_algo",
             value<std::vector<std::string>>(&optionDeviceAlgorithm)->multitoken(),
             "[OPTIONAL] Define algorithm for custom device.\n"
-            "--device_pool=0:2020"
+            "--device_pool=0:kawpow"
         )
         (
             "device_wallet",

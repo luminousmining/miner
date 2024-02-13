@@ -37,6 +37,11 @@ int main(
             logErr() << "Fail load";
             return 1;
         }
+        if (true == config.cli.contains("help"))
+        {
+            config.cli.help();
+            return 0;
+        }
 
         ////////////////////////////////////////////////////////////////////////
         if (false == deviceManager.initialize())

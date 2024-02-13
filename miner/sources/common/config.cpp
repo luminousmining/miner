@@ -17,9 +17,16 @@ bool common::Config::load(int argc, char** argv)
 {
     if (false == loadCli(argc, argv))
     {
+        logErr() << "Fail load";
         return false;
     }
 
+    return isValidConfig();
+}
+
+
+bool common::Config::isValidConfig() const
+{
     bool error{ false };
     CLI_CHECK(mining.host.empty() == true, "missing --host");
     CLI_CHECK(mining.port == 0, "missing --port");
@@ -27,7 +34,7 @@ bool common::Config::load(int argc, char** argv)
     CLI_CHECK(mining.workerName.empty() == true, "missing --wokername");
     CLI_CHECK(mining.wallet.empty() == true, "missing --wallet");
 
-    return !error;
+    return true;
 }
 
 
