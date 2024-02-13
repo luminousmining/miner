@@ -47,7 +47,6 @@ namespace common
 
         static Config& instance();
         bool load(int argc, char** argv);
-        bool loadCli(int argc, char** argv);
         bool isEnable(uint32_t const deviceId) const;
         std::optional<PoolConfig> getConfigDevice(uint32_t const deviceId) const;
 
@@ -55,6 +54,8 @@ namespace common
         algo::ALGORITHM getAlgorithm(std::string const& algo) const;
 
     private:
+        bool loadCli(int argc, char** argv);
+        bool isValidConfig() const;
         PoolConfig* getOrAddDeviceSettings(uint32_t const deviceId);
     };
 }
