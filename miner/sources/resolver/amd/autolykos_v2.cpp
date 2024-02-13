@@ -6,6 +6,7 @@
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
 #include <common/custom.hpp>
+#include <common/error/opencl_error.hpp>
 #include <common/log/log.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
 
@@ -30,14 +31,16 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     SAFE_DELETE(parameters.BHashes);
 
     ////////////////////////////////////////////////////////////////////////////
-    parameters.BHashes = new (std::nothrow) cl::Buffer(
-        *clContext,
-        CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
-        algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256);
-    parameters.dagCache = new (std::nothrow) cl::Buffer(
-        *clContext,
-        CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
-        parameters.hostDagItemCount * algo::LEN_HASH_256);
+    OPENCL_CATCH(
+        parameters.BHashes = new (std::nothrow) cl::Buffer(
+            *clContext,
+            CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
+            algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256));
+    OPENCL_CATCH(
+        parameters.dagCache = new (std::nothrow) cl::Buffer(
+            *clContext,
+            CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
+            parameters.hostDagItemCount * algo::LEN_HASH_256));
 
     ////////////////////////////////////////////////////////////////////////////
     if (   false == parameters.boundaryCache.alloc(clQueue, *clContext)
