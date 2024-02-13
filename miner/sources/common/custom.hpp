@@ -14,7 +14,6 @@
 
 
 #define SAFE_DELETE(ptr)\
-    if (nullptr != ptr)\
     {\
         delete ptr;\
         ptr = nullptr;\
@@ -22,7 +21,6 @@
 
 
 #define SAFE_DELETE_ARRAY(ptr)\
-    if (nullptr != ptr)\
     {\
         delete[] ptr;\
         ptr = nullptr;\

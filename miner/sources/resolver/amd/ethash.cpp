@@ -41,14 +41,16 @@ bool resolver::ResolverAmdEthash::updateMemory(
     SAFE_DELETE(parameters.dagCache);
 
     ////////////////////////////////////////////////////////////////////////////
-    parameters.lightCache = new (std::nothrow) cl::Buffer(
-        *clContext,
-        CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        context.lightCache.size);
-    parameters.dagCache = new (std::nothrow) cl::Buffer(
-        *clContext,
-        CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
-        context.dagCache.size);
+    OPENCL_CATCH(
+        parameters.lightCache = new (std::nothrow) cl::Buffer(
+                *clContext,
+                CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+                context.lightCache.size));
+    OPENCL_CATCH(
+        parameters.dagCache = new (std::nothrow) cl::Buffer(
+                *clContext,
+                CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
+                context.dagCache.size));
 
     ////////////////////////////////////////////////////////////////////////////
     if (   false == parameters.headerCache.alloc(clQueue, *clContext)

@@ -47,15 +47,16 @@ namespace common
                 }
 
                 SAFE_DELETE(buffer);
-                buffer = new(std::nothrow) cl::Buffer(clContext, flags, size);
+                OPENCL_CATCH(buffer = new(std::nothrow) cl::Buffer(clContext, flags, size));
                 IS_NULL(buffer);
 
-                mapped = clQueue->enqueueMapBuffer(
-                    *buffer,
-                    CL_TRUE,
-                    flags,
-                    0,
-                    size);
+                OPENCL_CATCH(
+                    mapped = clQueue->enqueueMapBuffer(
+                        *buffer,
+                        CL_TRUE,
+                        flags,
+                        0,
+                        size));
                 IS_NULL(mapped);
 
                 if (false == resetBufferHost(clQueue))
