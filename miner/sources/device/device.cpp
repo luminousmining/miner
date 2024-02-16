@@ -75,7 +75,29 @@ void device::Device::setAlgorithm(
             }
             break;
         }
-        case algo::ALGORITHM::KAWPOW:
+        case algo::ALGORITHM::PROGPOW:
+        {
+            switch (deviceType)
+            {
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = new (std::nothrow) resolver::ResolverNvidiaProgPOW;
+                    break;
+                }
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = new (std::nothrow) resolver::ResolverAmdProgPOW;
+                    break;
+                }
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }        case algo::ALGORITHM::KAWPOW:
         {
             switch (deviceType)
             {

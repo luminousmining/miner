@@ -54,6 +54,31 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
                                              countMath);
 
     ////////////////////////////////////////////////////////////////////////////
+    switch (progpowVersion)
+    {
+        case algo::progpow::VERSION::V_0_9_2:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
+        case algo::progpow::VERSION::V_0_9_3:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
+        case algo::progpow::VERSION::KAWPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_KAWPOW");
+            break;
+        }
+        case algo::progpow::VERSION::FIROPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_FIROPOW");
+            break;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t const dagSize { castU32(context.dagCache.numberItem / 2ull) };
     kernelGenerator.addDefine("DAG_SIZE", dagSize);
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);

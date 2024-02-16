@@ -11,6 +11,7 @@ namespace algo
         SHA256,
         ETHASH,
         ETCHASH,
+        PROGPOW,
         KAWPOW,
         FIROPOW,
         AUTOLYKOS_V2,

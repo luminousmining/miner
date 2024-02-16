@@ -12,6 +12,7 @@ resolver::ResolverAmdFiroPOW::ResolverAmdFiroPOW():
     dagCountItemsInit = algo::firopow::DAG_COUNT_ITEMS_INIT;
 
     // KawPow
+    progpowVersion = algo::progpow::VERSION::FIROPOW;
     dagItemParents = algo::firopow::DAG_ITEM_PARENTS;
     countCache = algo::firopow::COUNT_CACHE;
     countMath = algo::firopow::COUNT_MATH;

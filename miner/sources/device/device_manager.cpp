@@ -434,6 +434,11 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
             stratum = new (std::nothrow) stratum::StratumEtchash;
             break;
         }
+        case algo::ALGORITHM::PROGPOW:
+        {
+            stratum = new (std::nothrow) stratum::StratumProgPOW;
+            break;
+        }
         case algo::ALGORITHM::KAWPOW:
         {
             stratum = new (std::nothrow) stratum::StratumKawPOW;

@@ -73,7 +73,7 @@ __device__ __forceinline__
 void reduce_hash(
     bool const is_same_lane,
     uint32_t* __restrict__ const hash,
-    uint32_t* __restrict__ const hash_final)
+    uint32_t* __restrict__ const digest)
 {
     uint32_t value = FNV1_OFFSET;
     #pragma unroll
@@ -94,19 +94,49 @@ void reduce_hash(
         #pragma unroll
         for (uint32_t i = 0u; i < LANES; ++i)
         {
-            hash_final[i] = tmp[i];
+            digest[i] = tmp[i];
         }
     }
 }
 
-
+#if defined(__KERNEL_PROGPOW)
 __device__ __forceinline__
 void check_result(
-    uint64_t const nonce,
-    uint64_t const boundary,
     uint32_t const* __restrict__ const state_init,
     uint32_t const* __restrict__ const hash,
-    volatile algo::progpow::Result* __restrict__ const result)
+    volatile algo::progpow::Result* __restrict__ const result,
+    uint64_t const nonce,
+    uint64_t const boundary,
+    uint64_t const seed)
+{
+    uint64_t const bytes_result = sha3(state_init, digest, seed);
+    if (bytes_result < boundary)
+    {
+        uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
+        if (index < 4u)
+        {
+            result->found = true;
+            result->nonces[index] = nonce;
+
+            result->hash[index][0] = digest[0].x;
+            result->hash[index][1] = digest[0].y;
+            result->hash[index][2] = digest[0].z;
+            result->hash[index][3] = digest[0].w;
+            result->hash[index][4] = digest[1].x;
+            result->hash[index][5] = digest[1].y;
+            result->hash[index][6] = digest[1].z;
+            result->hash[index][7] = digest[1].w;
+        }
+    }
+}
+#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+__device__ __forceinline__
+void check_result(
+    uint32_t const* __restrict__ const state_init,
+    uint32_t const* __restrict__ const hash,
+    volatile algo::progpow::Result* __restrict__ const result,
+    uint64_t const nonce,
+    uint64_t const boundary)
 {
     uint4 digest[2];
 
@@ -121,8 +151,7 @@ void check_result(
     digest[1].w = fnv1a(fnv1a(FNV1_OFFSET, hash[7]), hash[15]);
 
     uint32_t state_result[STATE_LEN];
-    sha3(state_init, digest, state_result);
-
+    sha3(state_init, digest, seed);
     uint64_t const bytes_result = ((uint64_t)(be_u32(state_result[0]))) << 32 | be_u32(state_result[1]);
 
     if (bytes_result < boundary)
@@ -144,6 +173,7 @@ void check_result(
         }
     }
 }
+#endif
 
 
 __global__
@@ -158,11 +188,13 @@ void progpowSearch(
     __shared__ uint32_t header_dag[MODULE_CACHE];
 
     ////////////////////////////////////////////////////////////////////////
+#if defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+    uint32_t state_init[STATE_LEN];
+#endif
     uint32_t lsb;
     uint32_t msb;
-    uint32_t state_init[STATE_LEN];
     uint32_t hash[REGS];
-    uint32_t hash_final[LANES];
+    uint32_t digest[LANES];
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t const thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -172,7 +204,11 @@ void progpowSearch(
 
     ////////////////////////////////////////////////////////////////////////
     initialize_header_dag(threadIdx.x, header_dag, (uint32_t const* const)dag);
+#if defined(__KERNEL_PROGPOW)
+    create_seed(header, nonce, &lsb, &msb);
+#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
     create_seed(nonce, state_init, header, &lsb, &msb);
+#endif
 
     ////////////////////////////////////////////////////////////////////////
     #pragma unroll 1
@@ -182,9 +218,14 @@ void progpowSearch(
         uint32_t const lane_msb = __shfl_sync(0xffffffff, msb, l_id, LANES);
         fill_hash(lane_id, lane_lsb, lane_msb, hash);
         loop_math(lane_id, dag, hash, header_dag);
-        reduce_hash(l_id == lane_id, hash, hash_final);
+        reduce_hash(l_id == lane_id, hash, digest);
     }
 
     ////////////////////////////////////////////////////////////////////////
-    check_result(nonce, boundary, state_init, hash_final, result);
+#if defined(__KERNEL_PROGPOW)
+    uint64_t const seed { ((uint64_t)(be_u32(st[0])))<< 32 | be_u32(st[1]) };
+    check_result(header, digest, result, seed, nonce, boundary);
+#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+    check_result(state_init, digest, result, nonce, boundary);
+#endif
 }

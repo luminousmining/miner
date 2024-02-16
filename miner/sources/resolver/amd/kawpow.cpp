@@ -12,6 +12,7 @@ resolver::ResolverAmdKawPOW::ResolverAmdKawPOW():
     dagCountItemsInit = algo::ethash::DAG_COUNT_ITEMS_INIT;
 
     // KawPow
+    progpowVersion = algo::progpow::VERSION::KAWPOW;
     dagItemParents = algo::kawpow::DAG_ITEM_PARENTS;
     countCache = algo::kawpow::COUNT_CACHE;
     countMath = algo::kawpow::COUNT_MATH;

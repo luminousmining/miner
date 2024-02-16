@@ -1,10 +1,42 @@
+
+#if defined(__KERNEL_PROGPOW)
 inline
 void check_result(
+    uint const* const restrict seed,
+    uint const* const header,
+    uint const* const digest,
+    __global t_result* const restrict result,
     ulong const nonce,
-    ulong const boundary,
+    ulong const boundary)
+{
+    ulong const bytes_result = sha3(seed, header, digest);
+    if (bytes_result <= boundary)
+    {
+        uint const index = atomic_inc(&result->count);
+        if (index < MAX_RESULT)
+        {
+            result->found = true;
+            result->nonces[index] = nonce;
+
+            result->hash[index][0] = digest[0].x;
+            result->hash[index][1] = digest[0].y;
+            result->hash[index][2] = digest[0].z;
+            result->hash[index][3] = digest[0].w;
+            result->hash[index][4] = digest[1].x;
+            result->hash[index][5] = digest[1].y;
+            result->hash[index][6] = digest[1].z;
+            result->hash[index][7] = digest[1].w;
+        }
+    }
+}
+#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+inline
+void check_result(
     uint const* const restrict seed,
     uint const* const hash,
-    __global t_result* const restrict result)
+    __global t_result* const restrict result,
+    ulong const nonce,
+    ulong const boundary)
 {
     uint4 digest[2];
 
@@ -21,7 +53,7 @@ void check_result(
     uint state_result[25];
     sha3(seed, digest, state_result);
 
-    ulong res = ((ulong)state_result[1]) << 32 | state_result[0];
+    ulong const res = ((ulong)state_result[1]) << 32 | state_result[0];
     ulong const bytes_result = as_ulong(as_uchar8(res).s76543210);
 
     if (bytes_result <= boundary)
@@ -43,13 +75,14 @@ void check_result(
         }
     }
 }
+#endif
 
 
 inline
 void reduce_hash(
     __local uint* const restrict share_fnv1a,
     uint* const restrict hash,
-    uint* const restrict hash_final,
+    uint* const restrict digest,
     uint const worker_group,
     bool const is_same_lane)
 {
@@ -68,7 +101,7 @@ void reduce_hash(
         __attribute__((opencl_unroll_hint))
         for (uint i = 0; i < LANES; ++i)
         {
-            hash_final[i] = share_fnv1a[worker_group * LANES + i];
+            digest[i] = share_fnv1a[worker_group * LANES + i];
         }
     }
 }
@@ -165,7 +198,7 @@ void progpow_search(
 
     uint seed[25];
     uint hash[REGS];
-    uint hash_final[LANES];
+    uint digest[LANES];
 
     uint const thread_id = get_global_id(0) + (get_global_id(1) * GROUP_SIZE);
     uint const lane_id = thread_id % LANES;
@@ -196,11 +229,15 @@ void progpow_search(
         reduce_hash(
             share_fnv1a,
             hash,
-            hash_final,
+            digest,
             worker_group,
             l_id == lane_id);
     }
 
     ////////////////////////////////////////////////////////////////////////
-    check_result(nonce, boundary, seed, hash_final, result);
+#if defined(__KERNEL_PROGPOW)
+    check_result(seed, digest, result, nonce, boundary);
+#else
+    check_result(seed, digest, result, nonce, boundary);
+#endif
 }

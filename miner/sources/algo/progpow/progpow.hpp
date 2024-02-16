@@ -12,6 +12,14 @@ namespace algo
 {
     namespace progpow
     {
+        enum class VERSION : uint8_t
+        {
+            V_0_9_2,
+            V_0_9_3,
+            KAWPOW,
+            FIROPOW
+        };
+
         constexpr uint32_t LANES{ 16u };
         constexpr uint32_t REGS{ 32u };
         constexpr uint32_t DAG_LOADS{ 4u };

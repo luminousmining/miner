@@ -176,6 +176,31 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     kernelGenerator.setKernelName("progpow_search");
 
     ////////////////////////////////////////////////////////////////////////////
+    switch (progpowVersion)
+    {
+        case algo::progpow::VERSION::V_0_9_2:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
+        case algo::progpow::VERSION::V_0_9_3:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
+        case algo::progpow::VERSION::KAWPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_KAWPOW");
+            break;
+        }
+        case algo::progpow::VERSION::FIROPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_FIROPOW");
+            break;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t const maxThreadByGroup { getMaxGroupSize() };
     uint32_t const batchGroupLane { getMaxGroupSize() / algo::progpow::LANES };
     kernelGenerator.addDefine("GROUP_SIZE", maxThreadByGroup);
