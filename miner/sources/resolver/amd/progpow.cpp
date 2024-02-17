@@ -232,8 +232,16 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
         + "_"s + std::to_string(currentPeriod)
         + ".cl"s
     };
+    std::string kernelDerived{};
+    switch (progpowVersion)
+    {
+        case algo::progpow::VERSION::V_0_9_2: kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_3: kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cl"); break;
+        case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cl"); break;
+    }
     if (   false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
-        || false == kernelGenerator.appendFile("kernel/progpow/" + kernelSHA256)
+        || false == kernelGenerator.appendFile("kernel/progpow/" + kernelDerived)
         || false == kernelGenerator.appendFile(fileSequenceMathPeriod)
         || false == kernelGenerator.appendFile("kernel/progpow/progpow.cl"))
     {

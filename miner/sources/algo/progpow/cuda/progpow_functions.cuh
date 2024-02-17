@@ -85,3 +85,13 @@ uint64_t sha3(
 
     return ((uint64_t)(be_u32(state[0]))) << 32 | be_u32(state[1]);
 }
+
+
+__device__ __forceinline__
+uint64_t is_valid(
+    uint32_t const* __restrict__ const header,
+    uint32_t const* __restrict__ const digest,
+    uint64_t const seed)
+{
+    return sha3(header, digest, seed);
+}

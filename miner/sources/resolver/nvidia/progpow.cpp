@@ -97,6 +97,14 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
         + "_"s + std::to_string(currentPeriod)
         + ".cuh"s
     };
+    std::string kernelDerived{};
+    switch (progpowVersion)
+    {
+        case algo::progpow::VERSION::V_0_9_2: kernelDerived.assign("progpow_functions.cuh"); break;
+        case algo::progpow::VERSION::V_0_9_3: kernelDerived.assign("progpow_functions.cuh"); break;
+        case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cuh"); break;
+        case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cuh"); break;
+    }
     if (   false == kernelGenerator.appendFile("kernel/common/be_u32.cuh")
         || false == kernelGenerator.appendFile("kernel/common/be_u64.cuh")
         || false == kernelGenerator.appendFile("kernel/common/copy_u4.cuh")
@@ -108,7 +116,7 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
         || false == kernelGenerator.appendFile("kernel/crypto/fnv1.cuh")
         || false == kernelGenerator.appendFile("kernel/crypto/keccak_f800.cuh")
         || false == kernelGenerator.appendFile("kernel/crypto/kiss99.cuh")
-        || false == kernelGenerator.appendFile("kernel/progpow/" + kernelSHA256)
+        || false == kernelGenerator.appendFile("kernel/progpow/" + kernelDerived)
         || false == kernelGenerator.appendFile(fileSequenceMathPeriod)
         || false == kernelGenerator.appendFile("kernel/progpow/result.hpp")
         || false == kernelGenerator.appendFile("kernel/progpow/search.cu"))

@@ -41,7 +41,8 @@ inline
 ulong sha3(
     uint4 const* const restrict header,
     uint4 const* const restrict digest,
-    uint* const restrict state_result)
+    uint const lsb,
+    uint const msb)
 {
     uint32_t state[25];
 
@@ -55,17 +56,17 @@ ulong sha3(
     state[6] = header[1].z;
     state[7] = header[1].w;
 
-    state[8] = nonce;
-    state[9] = (nonce >> 32);
+    state[8] = lsb;
+    state[9] = msb;
 
-    state[10] = header[0].x;
-    state[11] = header[0].y;
-    state[12] = header[0].z;
-    state[13] = header[0].w;
-    state[14] = header[1].x;
-    state[15] = header[1].y;
-    state[16] = header[1].z;
-    state[17] = header[1].w;
+    state[10] = digest[0].x;
+    state[11] = digest[0].y;
+    state[12] = digest[0].z;
+    state[13] = digest[0].w;
+    state[14] = digest[1].x;
+    state[15] = digest[1].y;
+    state[16] = digest[1].z;
+    state[17] = digest[1].w;
 
     state[18] = 0u;
     state[19] = 0u;
@@ -77,6 +78,15 @@ ulong sha3(
 
     keccak_f800(state);
 
-    ulong bytes = ((ulong)state_result[1]) << 32 | state_result[0];
+    ulong bytes = ((ulong)state[1]) << 32 | state[0];
     return as_ulong(as_uchar8(bytes).s76543210);
+}
+
+inline
+ulong is_valid(
+    __constant uint4 const* const restrict header,
+    uint const* const restrict seed,
+    uint const* const restrict digest)
+{
+    ulong const bytes_result = sha3(header, digest, seed[0], seed[1]);
 }

@@ -1,83 +1,3 @@
-
-#if defined(__KERNEL_PROGPOW)
-inline
-void check_result(
-    uint const* const restrict seed,
-    uint const* const header,
-    uint const* const digest,
-    __global t_result* const restrict result,
-    ulong const nonce,
-    ulong const boundary)
-{
-    ulong const bytes_result = sha3(seed, header, digest);
-    if (bytes_result <= boundary)
-    {
-        uint const index = atomic_inc(&result->count);
-        if (index < MAX_RESULT)
-        {
-            result->found = true;
-            result->nonces[index] = nonce;
-
-            result->hash[index][0] = digest[0].x;
-            result->hash[index][1] = digest[0].y;
-            result->hash[index][2] = digest[0].z;
-            result->hash[index][3] = digest[0].w;
-            result->hash[index][4] = digest[1].x;
-            result->hash[index][5] = digest[1].y;
-            result->hash[index][6] = digest[1].z;
-            result->hash[index][7] = digest[1].w;
-        }
-    }
-}
-#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
-inline
-void check_result(
-    uint const* const restrict seed,
-    uint const* const hash,
-    __global t_result* const restrict result,
-    ulong const nonce,
-    ulong const boundary)
-{
-    uint4 digest[2];
-
-    digest[0].x = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[0]), hash[8]);
-    digest[0].y = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[1]), hash[9]);
-    digest[0].z = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[2]), hash[10]);
-    digest[0].w = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[3]), hash[11]);
-
-    digest[1].x = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[4]), hash[12]);
-    digest[1].y = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[5]), hash[13]);
-    digest[1].z = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[6]), hash[14]);
-    digest[1].w = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, hash[7]), hash[15]);
-
-    uint state_result[25];
-    sha3(seed, digest, state_result);
-
-    ulong const res = ((ulong)state_result[1]) << 32 | state_result[0];
-    ulong const bytes_result = as_ulong(as_uchar8(res).s76543210);
-
-    if (bytes_result <= boundary)
-    {
-        uint const index = atomic_inc(&result->count);
-        if (index < MAX_RESULT)
-        {
-            result->found = true;
-            result->nonces[index] = nonce;
-
-            result->hash[index][0] = digest[0].x;
-            result->hash[index][1] = digest[0].y;
-            result->hash[index][2] = digest[0].z;
-            result->hash[index][3] = digest[0].w;
-            result->hash[index][4] = digest[1].x;
-            result->hash[index][5] = digest[1].y;
-            result->hash[index][6] = digest[1].z;
-            result->hash[index][7] = digest[1].w;
-        }
-    }
-}
-#endif
-
-
 inline
 void reduce_hash(
     __local uint* const restrict share_fnv1a,
@@ -236,8 +156,27 @@ void progpow_search(
 
     ////////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)
-    check_result(seed, digest, result, nonce, boundary);
+    ulong const bytes_result = is_valid(header, seed, digest);
 #else
-    check_result(seed, digest, result, nonce, boundary);
+    ulong const bytes_result = is_valid(seed, digest);
 #endif
+
+    if (bytes_result <= boundary)
+    {
+        uint const index = atomic_inc(&result->count);
+        if (index < MAX_RESULT)
+        {
+            result->found = true;
+            result->nonces[index] = nonce;
+
+            result->hash[index][0] = digest[0];
+            result->hash[index][1] = digest[1];
+            result->hash[index][2] = digest[2];
+            result->hash[index][3] = digest[3];
+            result->hash[index][4] = digest[4];
+            result->hash[index][5] = digest[5];
+            result->hash[index][6] = digest[6];
+            result->hash[index][7] = digest[7];
+        }
+    }
 }

@@ -99,83 +99,6 @@ void reduce_hash(
     }
 }
 
-#if defined(__KERNEL_PROGPOW)
-__device__ __forceinline__
-void check_result(
-    uint32_t const* __restrict__ const state_init,
-    uint32_t const* __restrict__ const hash,
-    volatile algo::progpow::Result* __restrict__ const result,
-    uint64_t const nonce,
-    uint64_t const boundary,
-    uint64_t const seed)
-{
-    uint64_t const bytes_result = sha3(state_init, digest, seed);
-    if (bytes_result < boundary)
-    {
-        uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
-        if (index < 4u)
-        {
-            result->found = true;
-            result->nonces[index] = nonce;
-
-            result->hash[index][0] = digest[0].x;
-            result->hash[index][1] = digest[0].y;
-            result->hash[index][2] = digest[0].z;
-            result->hash[index][3] = digest[0].w;
-            result->hash[index][4] = digest[1].x;
-            result->hash[index][5] = digest[1].y;
-            result->hash[index][6] = digest[1].z;
-            result->hash[index][7] = digest[1].w;
-        }
-    }
-}
-#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
-__device__ __forceinline__
-void check_result(
-    uint32_t const* __restrict__ const state_init,
-    uint32_t const* __restrict__ const hash,
-    volatile algo::progpow::Result* __restrict__ const result,
-    uint64_t const nonce,
-    uint64_t const boundary)
-{
-    uint4 digest[2];
-
-    digest[0].x = fnv1a(fnv1a(FNV1_OFFSET, hash[0]), hash[8]);
-    digest[0].y = fnv1a(fnv1a(FNV1_OFFSET, hash[1]), hash[9]);
-    digest[0].z = fnv1a(fnv1a(FNV1_OFFSET, hash[2]), hash[10]);
-    digest[0].w = fnv1a(fnv1a(FNV1_OFFSET, hash[3]), hash[11]);
-
-    digest[1].x = fnv1a(fnv1a(FNV1_OFFSET, hash[4]), hash[12]);
-    digest[1].y = fnv1a(fnv1a(FNV1_OFFSET, hash[5]), hash[13]);
-    digest[1].z = fnv1a(fnv1a(FNV1_OFFSET, hash[6]), hash[14]);
-    digest[1].w = fnv1a(fnv1a(FNV1_OFFSET, hash[7]), hash[15]);
-
-    uint32_t state_result[STATE_LEN];
-    sha3(state_init, digest, seed);
-    uint64_t const bytes_result = ((uint64_t)(be_u32(state_result[0]))) << 32 | be_u32(state_result[1]);
-
-    if (bytes_result < boundary)
-    {
-        uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
-        if (index < 4u)
-        {
-            result->found = true;
-            result->nonces[index] = nonce;
-
-            result->hash[index][0] = digest[0].x;
-            result->hash[index][1] = digest[0].y;
-            result->hash[index][2] = digest[0].z;
-            result->hash[index][3] = digest[0].w;
-            result->hash[index][4] = digest[1].x;
-            result->hash[index][5] = digest[1].y;
-            result->hash[index][6] = digest[1].z;
-            result->hash[index][7] = digest[1].w;
-        }
-    }
-}
-#endif
-
-
 __global__
 void progpowSearch(
     uint64_t const startNonce,
@@ -223,9 +146,28 @@ void progpowSearch(
 
     ////////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)
-    uint64_t const seed { ((uint64_t)(be_u32(st[0])))<< 32 | be_u32(st[1]) };
-    check_result(header, digest, result, seed, nonce, boundary);
+    uint64_t const seed = ((uint64_t)(be_u32(lsb)))<< 32 | be_u32(msb);
+    uint64_t const bytes_result = is_valid(header, digest, seed);
 #elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
-    check_result(state_init, digest, result, nonce, boundary);
+    uint64_t const bytes_result = is_valid(state_init, digest);
 #endif
+
+    if (bytes_result < boundary)
+    {
+        uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
+        if (index < 4u)
+        {
+            result->found = true;
+            result->nonces[index] = nonce;
+
+            result->hash[index][0] = digest[0];
+            result->hash[index][1] = digest[1];
+            result->hash[index][2] = digest[2];
+            result->hash[index][3] = digest[3];
+            result->hash[index][4] = digest[4];
+            result->hash[index][5] = digest[5];
+            result->hash[index][6] = digest[6];
+            result->hash[index][7] = digest[7];
+        }
+    }
 }

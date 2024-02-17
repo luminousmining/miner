@@ -16,7 +16,4 @@ resolver::ResolverAmdFiroPOW::ResolverAmdFiroPOW():
     dagItemParents = algo::firopow::DAG_ITEM_PARENTS;
     countCache = algo::firopow::COUNT_CACHE;
     countMath = algo::firopow::COUNT_MATH;
-
-    // Seed
-    kernelSHA256.assign("firopow_seed.cl");
 }

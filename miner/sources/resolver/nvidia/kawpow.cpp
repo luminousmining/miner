@@ -16,7 +16,4 @@ resolver::ResolverNvidiaKawPOW::ResolverNvidiaKawPOW():
     dagItemParents = algo::kawpow::DAG_ITEM_PARENTS;
     countCache = algo::kawpow::COUNT_CACHE;
     countMath = algo::kawpow::COUNT_MATH;
-
-    // Seed
-    kernelSHA256.assign("kawpow_seed.cuh");
 }

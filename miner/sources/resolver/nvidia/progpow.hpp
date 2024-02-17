@@ -33,7 +33,6 @@ namespace resolver
         uint32_t    dagCountItemsInit { algo::ethash::DAG_COUNT_ITEMS_INIT };
         uint32_t    countCache { algo::progpow::v_0_9_2::COUNT_CACHE };
         uint32_t    countMath { algo::progpow::v_0_9_2::COUNT_MATH };
-        std::string kernelSHA256 { "progpow_seed.cuh" };
 
         algo::DagContext context{};
         algo::progpow::ResultShare resultShare{};
