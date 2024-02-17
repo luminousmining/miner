@@ -4,6 +4,7 @@ stratum.hpp
 autolykos_v2.hpp
 etchash.hpp
 ethash.hpp
+evrprogpow.hpp
 job_info.hpp
 firopow.hpp
 kawpow.hpp
@@ -16,6 +17,7 @@ stratum.cpp
 autolykos_v2.cpp
 etchash.cpp
 ethash.cpp
+evrprogpow.cpp
 job_info.cpp
 firopow.cpp
 kawpow.cpp

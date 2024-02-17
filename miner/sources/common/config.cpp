@@ -198,6 +198,7 @@ algo::ALGORITHM common::Config::getAlgorithm(
     else if (algo == "progpow")     { return algo::ALGORITHM::PROGPOW;      }
     else if (algo == "kawpow")      { return algo::ALGORITHM::KAWPOW;       }
     else if (algo == "firopow")     { return algo::ALGORITHM::FIROPOW;      }
+    else if (algo == "evrprogpow")  { return algo::ALGORITHM::EVRPROGPOW;   }
     else if (algo == "autolykosv2") { return algo::ALGORITHM::AUTOLYKOS_V2; }
 
     return algo::ALGORITHM::UNKNOW;

@@ -198,6 +198,11 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
             kernelGenerator.declareDefine("__KERNEL_FIROPOW");
             break;
         }
+        case algo::progpow::VERSION::EVRPROGPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_EVRPROGPOW");
+            break;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -239,6 +244,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
         case algo::progpow::VERSION::V_0_9_3: kernelDerived.assign("progpow_functions.cl"); break;
         case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cl"); break;
         case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cl"); break;
+        case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
     }
     if (   false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
         || false == kernelGenerator.appendFile("kernel/progpow/" + kernelDerived)

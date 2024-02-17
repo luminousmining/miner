@@ -76,6 +76,11 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
             kernelGenerator.declareDefine("__KERNEL_FIROPOW");
             break;
         }
+        case algo::progpow::VERSION::EVRPROGPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_EVRPROGPOW");
+            break;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -104,6 +109,7 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
         case algo::progpow::VERSION::V_0_9_3: kernelDerived.assign("progpow_functions.cuh"); break;
         case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cuh"); break;
         case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cuh"); break;
+        case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cuh"); break;
     }
     if (   false == kernelGenerator.appendFile("kernel/common/be_u32.cuh")
         || false == kernelGenerator.appendFile("kernel/common/be_u64.cuh")

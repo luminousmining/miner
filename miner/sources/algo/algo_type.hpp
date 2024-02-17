@@ -14,6 +14,7 @@ namespace algo
         PROGPOW,
         KAWPOW,
         FIROPOW,
+        EVRPROGPOW,
         AUTOLYKOS_V2,
         UNKNOW,
         MAX_SIZE = algo::ALGORITHM::UNKNOW

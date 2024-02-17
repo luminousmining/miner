@@ -111,7 +111,7 @@ void progpowSearch(
     __shared__ uint32_t header_dag[MODULE_CACHE];
 
     ////////////////////////////////////////////////////////////////////////
-#if defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+#if !defined(__KERNEL_PROGPOW)
     uint32_t state_init[STATE_LEN];
 #endif
     uint32_t lsb;
@@ -129,7 +129,7 @@ void progpowSearch(
     initialize_header_dag(threadIdx.x, header_dag, (uint32_t const* const)dag);
 #if defined(__KERNEL_PROGPOW)
     create_seed(header, nonce, &lsb, &msb);
-#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+#else
     create_seed(nonce, state_init, header, &lsb, &msb);
 #endif
 
@@ -148,7 +148,7 @@ void progpowSearch(
 #if defined(__KERNEL_PROGPOW)
     uint64_t const seed = ((uint64_t)(be_u32(lsb)))<< 32 | be_u32(msb);
     uint64_t const bytes_result = is_valid(header, digest, seed);
-#elif defined(__KERNEL_KAWPOW) || defined(__KERNEL_FIROPOW)
+#else
     uint64_t const bytes_result = is_valid(state_init, digest);
 #endif
 

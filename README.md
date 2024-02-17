@@ -85,6 +85,7 @@ cmake --build . --config Release
 [bitcoin](https://github.com/pakheili/sha-256-hash-algorithm-bitcoin-miner)  
 [powkit](https://github.com/sencha-dev/powkit)  
 [progminer](https://github.com/2miners/progminer)
+[evrprogpowminer](https://github.com/EvrmoreOrg/evrprogpowminer)
 
 ## References - Algos
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)  
