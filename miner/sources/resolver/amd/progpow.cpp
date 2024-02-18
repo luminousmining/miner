@@ -164,7 +164,8 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
 bool resolver::ResolverAmdProgPOW::buildSearch()
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::writeMathRandomKernelOpenCL(deviceId,
+    algo::progpow::writeMathRandomKernelOpenCL(progpowVersion,
+                                               deviceId,
                                                currentPeriod,
                                                countCache,
                                                countMath);

@@ -196,6 +196,7 @@ algo::ALGORITHM common::Config::getAlgorithm(
     else if (algo == "ethash")      { return algo::ALGORITHM::ETHASH;       }
     else if (algo == "etchash")     { return algo::ALGORITHM::ETCHASH;      }
     else if (algo == "progpow")     { return algo::ALGORITHM::PROGPOW;      }
+    else if (algo == "progpowz")    { return algo::ALGORITHM::PROGPOW;      }
     else if (algo == "kawpow")      { return algo::ALGORITHM::KAWPOW;       }
     else if (algo == "firopow")     { return algo::ALGORITHM::FIROPOW;      }
     else if (algo == "evrprogpow")  { return algo::ALGORITHM::EVRPROGPOW;   }

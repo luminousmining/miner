@@ -8,8 +8,8 @@ cuda/progpow.cuh
 
 set(PROGPOW_SOURCES
 progpow.cpp
-progpow_write_kernel_cuda.cpp
-progpow_write_kernel_opencl.cpp
+kernel_cuda.cpp
+kernel_opencl.cpp
 )
 
 target_sources(${MINER_EXE} PUBLIC

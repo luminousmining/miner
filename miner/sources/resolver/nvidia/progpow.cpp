@@ -48,7 +48,8 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
 bool resolver::ResolverNvidiaProgPOW::buildSearch()
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::writeMathRandomKernelCuda(deviceId,
+    algo::progpow::writeMathRandomKernelCuda(progpowVersion,
+                                             deviceId,
                                              currentPeriod,
                                              countCache,
                                              countMath);

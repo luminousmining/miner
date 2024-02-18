@@ -48,11 +48,13 @@ namespace algo
         algo::Kiss99Properties initializeRound(uint64_t const period,
                                                int32_t* const dst,
                                                int32_t* const src);
-        void writeMathRandomKernelCuda(uint32_t const deviceId,
+        void writeMathRandomKernelCuda(VERSION const progpowVersion,
+                                       uint32_t const deviceId,
                                        uint64_t const period,
                                        uint32_t const countCache,
                                        uint32_t const countMath);
-        void writeMathRandomKernelOpenCL(uint32_t const deviceId,
+        void writeMathRandomKernelOpenCL(VERSION const progpowVersion,
+                                         uint32_t const deviceId,
                                          uint64_t const period,
                                          uint32_t const countCache,
                                          uint32_t const countMath);
