@@ -8,13 +8,15 @@
 #include <fstream>
 
 #include <algo/crypto/kiss99.hpp>
+#include <algo/progpow/evrprogpow.hpp>
+#include <algo/progpow/firopow.hpp>
+#include <algo/progpow/kawpow.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 
 
-static
-void writeSequenceMergeEntries(
+void algo::progpow::nvidia::writeSequenceMergeEntries(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const x,
@@ -48,8 +50,7 @@ void writeSequenceMergeEntries(
 }
 
 
-static
-void writeSequenceMathMerge(
+void algo::progpow::nvidia::writeSequenceMathMerge(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const dst,
@@ -69,17 +70,17 @@ void writeSequenceMathMerge(
     ////////////////////////////////////////////////////////////////////////////
     switch (sel_math % 11)
     {
-        case 0u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
-        case 1u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
-        case 2u:  ss << "\t" << ret << "__umulhi(" << l << ", " << r << ")" << ";\n"; break;
-        case 3u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
-        case 4u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
-        case 5u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
-        case 6u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
-        case 7u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
-        case 8u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
-        case 9u:  ss << "\t" << ret << "__clz(" << l << ") + __clz(" << r << ")" << ";\n"; break;
-        case 10u: ss << "\t" << ret << "__popc(" << l << ") + __popc(" << r << ")" << ";\n"; break;
+        case 0u:  ss << "\t" << ret << "__clz(" << l << ") + __clz(" << r << ")" << ";\n"; break;
+        case 1u: ss << "\t" << ret << "__popc(" << l << ") + __popc(" << r << ")" << ";\n"; break;
+        case 2u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
+        case 3u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
+        case 4u:  ss << "\t" << ret << "__umulhi(" << l << ", " << r << ")" << ";\n"; break;
+        case 5u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
+        case 6u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
+        case 7u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
+        case 8u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
+        case 9u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
+        case 10u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
     }
     l = "mix[" + std::to_string(dst) + "]";
     r = "data";
@@ -97,8 +98,7 @@ void writeSequenceMathMerge(
 }
 
 
-static
-void writeSequenceMergeCache(
+void algo::progpow::nvidia::writeSequenceMergeCache(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const src,
@@ -120,12 +120,13 @@ void writeSequenceMergeCache(
         case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
         case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
         case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-        case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n";  break;
+        case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
     }
 }
 
 
 void algo::progpow::writeMathRandomKernelCuda(
+    algo::progpow::VERSION const progpowVersion,
     uint32_t const deviceId,
     uint64_t const period,
     uint32_t const countCache,
@@ -179,7 +180,14 @@ void algo::progpow::writeMathRandomKernelCuda(
             ++srcCnt;
             ++dstCnt;
 
-            writeSequenceMergeCache(ss, i, srcValue, dstValue, sel);
+            switch (progpowVersion)
+            {
+                case algo::progpow::VERSION::V_0_9_2: nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::V_0_9_3: nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::KAWPOW: kawpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::FIROPOW: firopow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////////
@@ -197,8 +205,14 @@ void algo::progpow::writeMathRandomKernelCuda(
                 ++src2;
             }
             ++dstCnt;
-
-            writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2);
+            switch (progpowVersion)
+            {
+                case algo::progpow::VERSION::V_0_9_2: nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::V_0_9_3: nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::KAWPOW: kawpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::FIROPOW: firopow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+            }
         }
     }
 
@@ -212,7 +226,7 @@ void algo::progpow::writeMathRandomKernelCuda(
             ++dstCnt;
         }
         uint32_t const sel{ algo::kiss99(round) };
-        writeSequenceMergeEntries(ss, i, x, sel);
+        nvidia::writeSequenceMergeEntries(ss, i, x, sel);
     }
 
     ss << "}" << "\n";

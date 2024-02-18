@@ -24,6 +24,7 @@ namespace resolver
         void submit(stratum::Stratum* const stratum) final;
 
     protected:
+        algo::progpow::VERSION progpowVersion { algo::progpow::VERSION::V_0_9_2 };
         uint64_t    currentPeriod { 0ull };
         uint32_t    maxEpoch { algo::ethash::MAX_EPOCH_NUMBER };
         uint32_t    dagItemParents { algo::ethash::DAG_ITEM_PARENTS };
@@ -31,7 +32,6 @@ namespace resolver
         uint32_t    dagCountItemsInit { algo::ethash::DAG_COUNT_ITEMS_INIT };
         uint32_t    countCache { algo::progpow::v_0_9_3::COUNT_CACHE };
         uint32_t    countMath { algo::progpow::v_0_9_3::COUNT_MATH };
-        std::string kernelSHA256 { "progpow_seed.cl" };
 
         algo::progpow::ResultShare resultShare{};
         resolver::amd::progpow::KernelParameters parameters{};

@@ -5,6 +5,7 @@ autolykos_v2_kernel_parameter.hpp
 ethash.hpp
 etchash.hpp
 ethash_kernel_parameter.hpp
+evrprogpow.hpp
 firopow.hpp
 kawpow.hpp
 progpow.hpp
@@ -16,6 +17,7 @@ nvidia.cpp
 autolykos_v2.cpp
 etchash.cpp
 ethash.cpp
+evrprogpow.cpp
 firopow.cpp
 kawpow.cpp
 progpow.cpp

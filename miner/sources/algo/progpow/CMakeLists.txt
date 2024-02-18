@@ -1,4 +1,5 @@
 set(PROGPOW_HEADERS
+evrprogpow.hpp
 firopow.hpp
 kawpow.hpp
 progpow.hpp
@@ -7,9 +8,12 @@ cuda/progpow.cuh
 )
 
 set(PROGPOW_SOURCES
+evrprogpow.cpp
+firopow.cpp
+kawpow.cpp
+kernel_cuda.cpp
+kernel_opencl.cpp
 progpow.cpp
-progpow_write_kernel_cuda.cpp
-progpow_write_kernel_opencl.cpp
 )
 
 target_sources(${MINER_EXE} PUBLIC

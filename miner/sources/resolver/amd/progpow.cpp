@@ -164,7 +164,8 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
 bool resolver::ResolverAmdProgPOW::buildSearch()
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::writeMathRandomKernelOpenCL(deviceId,
+    algo::progpow::writeMathRandomKernelOpenCL(progpowVersion,
+                                               deviceId,
                                                currentPeriod,
                                                countCache,
                                                countMath);
@@ -174,6 +175,36 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.setKernelName("progpow_search");
+
+    ////////////////////////////////////////////////////////////////////////////
+    switch (progpowVersion)
+    {
+        case algo::progpow::VERSION::V_0_9_2:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
+        case algo::progpow::VERSION::V_0_9_3:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
+        case algo::progpow::VERSION::KAWPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_KAWPOW");
+            break;
+        }
+        case algo::progpow::VERSION::FIROPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_FIROPOW");
+            break;
+        }
+        case algo::progpow::VERSION::EVRPROGPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_EVRPROGPOW");
+            break;
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const maxThreadByGroup { getMaxGroupSize() };
@@ -207,8 +238,17 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
         + "_"s + std::to_string(currentPeriod)
         + ".cl"s
     };
+    std::string kernelDerived{};
+    switch (progpowVersion)
+    {
+        case algo::progpow::VERSION::V_0_9_2: kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_3: kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cl"); break;
+        case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cl"); break;
+        case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
+    }
     if (   false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
-        || false == kernelGenerator.appendFile("kernel/progpow/" + kernelSHA256)
+        || false == kernelGenerator.appendFile("kernel/progpow/" + kernelDerived)
         || false == kernelGenerator.appendFile(fileSequenceMathPeriod)
         || false == kernelGenerator.appendFile("kernel/progpow/progpow.cl"))
     {

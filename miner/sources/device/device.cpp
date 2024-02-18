@@ -7,12 +7,14 @@
 #include <resolver/amd/autolykos_v2.hpp>
 #include <resolver/amd/etchash.hpp>
 #include <resolver/amd/ethash.hpp>
+#include <resolver/amd/evrprogpow.hpp>
 #include <resolver/amd/firopow.hpp>
 #include <resolver/amd/kawpow.hpp>
 #include <resolver/amd/progpow.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/etchash.hpp>
 #include <resolver/nvidia/ethash.hpp>
+#include <resolver/nvidia/evrprogpow.hpp>
 #include <resolver/nvidia/firopow.hpp>
 #include <resolver/nvidia/kawpow.hpp>
 #include <resolver/nvidia/progpow.hpp>
@@ -75,6 +77,29 @@ void device::Device::setAlgorithm(
             }
             break;
         }
+        case algo::ALGORITHM::PROGPOW:
+        {
+            switch (deviceType)
+            {
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = new (std::nothrow) resolver::ResolverNvidiaProgPOW;
+                    break;
+                }
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = new (std::nothrow) resolver::ResolverAmdProgPOW;
+                    break;
+                }
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
         case algo::ALGORITHM::KAWPOW:
         {
             switch (deviceType)
@@ -112,6 +137,29 @@ void device::Device::setAlgorithm(
                 {
                     SAFE_DELETE(resolver);
                     resolver = new (std::nothrow) resolver::ResolverAmdFiroPOW;
+                    break;
+                }
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+        case algo::ALGORITHM::EVRPROGPOW:
+        {
+            switch (deviceType)
+            {
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = new (std::nothrow) resolver::ResolverNvidiaEvrprogPOW;
+                    break;
+                }
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = new (std::nothrow) resolver::ResolverAmdEvrprogPOW;
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:

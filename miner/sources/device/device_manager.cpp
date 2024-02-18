@@ -14,6 +14,7 @@
 #include <stratum/autolykos_v2.hpp>
 #include <stratum/etchash.hpp>
 #include <stratum/ethash.hpp>
+#include <stratum/evrprogpow.hpp>
 #include <stratum/firopow.hpp>
 #include <stratum/kawpow.hpp>
 #include <stratum/sha256.hpp>
@@ -434,6 +435,11 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
             stratum = new (std::nothrow) stratum::StratumEtchash;
             break;
         }
+        case algo::ALGORITHM::PROGPOW:
+        {
+            stratum = new (std::nothrow) stratum::StratumProgPOW;
+            break;
+        }
         case algo::ALGORITHM::KAWPOW:
         {
             stratum = new (std::nothrow) stratum::StratumKawPOW;
@@ -442,6 +448,11 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
         case algo::ALGORITHM::FIROPOW:
         {
             stratum = new (std::nothrow) stratum::StratumFiroPOW;
+            break;
+        }
+        case algo::ALGORITHM::EVRPROGPOW:
+        {
+            stratum = new (std::nothrow) stratum::StratumEvrprogPOW;
             break;
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
