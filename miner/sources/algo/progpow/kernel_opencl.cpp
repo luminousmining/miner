@@ -8,364 +8,119 @@ namespace __fs = std::filesystem;
 #include <fstream>
 
 #include <algo/crypto/kiss99.hpp>
+#include <algo/progpow/evrprogpow.hpp>
+#include <algo/progpow/firopow.hpp>
+#include <algo/progpow/kawpow.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 
 
-namespace algo
+void algo::progpow::amd::writeSequenceMergeEntries(
+    std::stringstream& ss,
+    uint32_t const i,
+    uint32_t const x,
+    uint32_t const sel)
 {
-    namespace progpow
+    ////////////////////////////////////////////////////////////////////////////
+    ss << "\t" << "// iter[" << i << "] merge_entries " << sel % 4 << "\n";
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::string l { "hash[" + std::to_string(x) + "]" };
+    std::string ret { "hash[" + std::to_string(x) + "] = " };
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::string r;
+    switch (i)
     {
-        static
-        void writeSequenceMergeEntries(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const x,
-            uint32_t const sel)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] merge_entries " << sel % 4 << "\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string l { "hash[" + std::to_string(x) + "]" };
-            std::string ret { "hash[" + std::to_string(x) + "] = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string r;
-            switch (i)
-            {
-                case 0: r = "entries.x"; break;
-                case 1: r = "entries.y"; break;
-                case 2: r = "entries.z"; break;
-                case 3: r = "entries.w"; break;
-            }
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-            }
-        }
-
-        static
-        void writeSequenceMathMerge(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const dst,
-            uint32_t const src1,
-            uint32_t const src2,
-            uint32_t const sel_math,
-            uint32_t const sel_merge)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_math " << sel_math % 11 << "\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string l { "hash[" + std::to_string(src1) + "]" };
-            std::string r { "hash[" + std::to_string(src2) + "]" };
-            std::string ret { "data = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel_math % 11)
-            {
-                case 0u:  ss << "\t" << ret << "clz(" << l << ") + clz(" << r << ")" << ";\n"; break;
-                case 1u: ss << "\t" << ret << "popcount(" << l << ") + popcount(" << r << ")" << ";\n"; break;
-                case 2u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
-                case 3u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
-                case 4u:  ss << "\t" << ret << "mul_hi(" << l << ", " << r << ")" << ";\n"; break;
-                case 5u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
-                case 6u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 7u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 8u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
-                case 9u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
-                case 10u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
-            }
-            l = "hash[" + std::to_string(dst) + "]";
-            r = "data";
-            ret = "hash[" + std::to_string(dst) + "] = ";
-
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_merge " << sel_merge % 4 << "\n";
-            switch (sel_merge % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-            }
-        }
-
-
-        static
-        void writeSequenceMergeCache(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const src,
-            uint32_t const dst,
-            uint32_t const sel)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] merge " << sel % 4 << "\n";
-            ss << "\t" << "dag_offset = hash[" << src << "] & " << (algo::progpow::MODULE_CACHE - 1) << "u" << ";\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string const l { "hash[" + std::to_string(dst) + "]" };
-            std::string const r { "header_dag[dag_offset]" };
-            std::string const ret { "hash[" + std::to_string(dst) + "] = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-            }
-        }
+        case 0: r = "entries.x"; break;
+        case 1: r = "entries.y"; break;
+        case 2: r = "entries.z"; break;
+        case 3: r = "entries.w"; break;
     }
 
-
-    namespace kawpow
+    ////////////////////////////////////////////////////////////////////////////
+    switch (sel % 4u)
     {
-        static
-        void writeSequenceMathMerge(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const dst,
-            uint32_t const src1,
-            uint32_t const src2,
-            uint32_t const sel_math,
-            uint32_t const sel_merge)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_math " << sel_math % 11 << "\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string l { "hash[" + std::to_string(src1) + "]" };
-            std::string r { "hash[" + std::to_string(src2) + "]" };
-            std::string ret { "data = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel_math % 11)
-            {
-                case 0u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
-                case 1u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
-                case 2u:  ss << "\t" << ret << "mul_hi(" << l << ", " << r << ")" << ";\n"; break;
-                case 3u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
-                case 4u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 5u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 6u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
-                case 7u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
-                case 8u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
-                case 9u:  ss << "\t" << ret << "clz(" << l << ") + clz(" << r << ")" << ";\n"; break;
-                case 10u: ss << "\t" << ret << "popcount(" << l << ") + popcount(" << r << ")" << ";\n"; break;
-            }
-            l = "hash[" + std::to_string(dst) + "]";
-            r = "data";
-            ret = "hash[" + std::to_string(dst) + "] = ";
-
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_merge " << sel_merge % 4 << "\n";
-            switch (sel_merge % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-            }
-        }
-
-
-        static
-        void writeSequenceMergeCache(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const src,
-            uint32_t const dst,
-            uint32_t const sel)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] merge " << sel % 4 << "\n";
-            ss << "\t" << "dag_offset = hash[" << src << "] & " << (algo::progpow::MODULE_CACHE - 1) << "u" << ";\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string const l { "hash[" + std::to_string(dst) + "]" };
-            std::string const r { "header_dag[dag_offset]" };
-            std::string const ret { "hash[" + std::to_string(dst) + "] = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-            }
-        }
+        case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
+        case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
+        case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
+        case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
     }
+}
 
 
-    namespace firopow
+void algo::progpow::amd::writeSequenceMathMerge(
+    std::stringstream& ss,
+    uint32_t const i,
+    uint32_t const dst,
+    uint32_t const src1,
+    uint32_t const src2,
+    uint32_t const sel_math,
+    uint32_t const sel_merge)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    ss << "\t" << "// iter[" << i << "] sel_math " << sel_math % 11 << "\n";
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::string l { "hash[" + std::to_string(src1) + "]" };
+    std::string r { "hash[" + std::to_string(src2) + "]" };
+    std::string ret { "data = " };
+
+    ////////////////////////////////////////////////////////////////////////////
+    switch (sel_math % 11)
     {
-        static
-        void writeSequenceMathMerge(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const dst,
-            uint32_t const src1,
-            uint32_t const src2,
-            uint32_t const sel_math,
-            uint32_t const sel_merge)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_math " << sel_math % 11 << "\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string l { "hash[" + std::to_string(src1) + "]" };
-            std::string r { "hash[" + std::to_string(src2) + "]" };
-            std::string ret { "data = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel_math % 11)
-            {
-                case 0u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
-                case 1u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
-                case 2u:  ss << "\t" << ret << "mul_hi(" << l << ", " << r << ")" << ";\n"; break;
-                case 3u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
-                case 4u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 5u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 6u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
-                case 7u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
-                case 8u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
-                case 9u:  ss << "\t" << ret << "clz(" << l << ") + clz(" << r << ")" << ";\n"; break;
-                case 10u: ss << "\t" << ret << "popcount(" << l << ") + popcount(" << r << ")" << ";\n"; break;
-            }
-            l = "hash[" + std::to_string(dst) + "]";
-            r = "data";
-            ret = "hash[" + std::to_string(dst) + "] = ";
-
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_merge " << sel_merge % 4 << "\n";
-            switch (sel_merge % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-            }
-        }
-
-
-        static
-        void writeSequenceMergeCache(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const src,
-            uint32_t const dst,
-            uint32_t const sel)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] merge " << sel % 4 << "\n";
-            ss << "\t" << "dag_offset = hash[" << src << "] & " << (algo::progpow::MODULE_CACHE - 1) << "u" << ";\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string const l { "hash[" + std::to_string(dst) + "]" };
-            std::string const r { "header_dag[dag_offset]" };
-            std::string const ret { "hash[" + std::to_string(dst) + "] = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-            }
-        }
+        case 0u:  ss << "\t" << ret << "clz(" << l << ") + clz(" << r << ")" << ";\n"; break;
+        case 1u: ss << "\t" << ret << "popcount(" << l << ") + popcount(" << r << ")" << ";\n"; break;
+        case 2u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
+        case 3u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
+        case 4u:  ss << "\t" << ret << "mul_hi(" << l << ", " << r << ")" << ";\n"; break;
+        case 5u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
+        case 6u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
+        case 7u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
+        case 8u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
+        case 9u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
+        case 10u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
     }
+    l = "hash[" + std::to_string(dst) + "]";
+    r = "data";
+    ret = "hash[" + std::to_string(dst) + "] = ";
 
-
-    namespace evrprogpow
+    ////////////////////////////////////////////////////////////////////////////
+    ss << "\t" << "// iter[" << i << "] sel_merge " << sel_merge % 4 << "\n";
+    switch (sel_merge % 4u)
     {
-        static
-        void writeSequenceMathMerge(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const dst,
-            uint32_t const src1,
-            uint32_t const src2,
-            uint32_t const sel_math,
-            uint32_t const sel_merge)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_math " << sel_math % 11 << "\n";
-
-            ////////////////////////////////////////////////////////////////////////////
-            std::string l { "hash[" + std::to_string(src1) + "]" };
-            std::string r { "hash[" + std::to_string(src2) + "]" };
-            std::string ret { "data = " };
-
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel_math % 11)
-            {
-                case 0u:  ss << "\t" << ret << l << " + " << r << ";\n"; break;
-                case 1u:  ss << "\t" << ret << l << " * " << r << ";\n"; break;
-                case 2u:  ss << "\t" << ret << "mul_hi(" << l << ", " << r << ")" << ";\n"; break;
-                case 3u:  ss << "\t" << ret << "min(" << l << ", " << r << ")" << ";\n"; break;
-                case 4u:  ss << "\t" << ret << "rol_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 5u:  ss << "\t" << ret << "ror_u32(" << l << ", " << r << ")" << ";\n"; break;
-                case 6u:  ss << "\t" << ret << l << " & " << r << ";\n"; break;
-                case 7u:  ss << "\t" << ret << l << " | " << r << ";\n"; break;
-                case 8u:  ss << "\t" << ret << l << " ^ " << r << ";\n"; break;
-                case 9u:  ss << "\t" << ret << "clz(" << l << ") + clz(" << r << ")" << ";\n"; break;
-                case 10u: ss << "\t" << ret << "popcount(" << l << ") + popcount(" << r << ")" << ";\n"; break;
-            }
-            l = "hash[" + std::to_string(dst) + "]";
-            r = "data";
-            ret = "hash[" + std::to_string(dst) + "] = ";
-
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] sel_merge " << sel_merge % 4 << "\n";
-            switch (sel_merge % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
-            }
-        }
+        case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
+        case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
+        case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
+        case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << (((sel_merge >> 16) % 31) + 1) << ") ^ " << r << ";\n"; break;
+    }
+}
 
 
-        static
-        void writeSequenceMergeCache(
-            std::stringstream& ss,
-            uint32_t const i,
-            uint32_t const src,
-            uint32_t const dst,
-            uint32_t const sel)
-        {
-            ////////////////////////////////////////////////////////////////////////////
-            ss << "\t" << "// iter[" << i << "] merge " << sel % 4 << "\n";
-            ss << "\t" << "dag_offset = hash[" << src << "] & " << (algo::progpow::MODULE_CACHE - 1) << "u" << ";\n";
+void algo::progpow::amd::writeSequenceMergeCache(
+    std::stringstream& ss,
+    uint32_t const i,
+    uint32_t const src,
+    uint32_t const dst,
+    uint32_t const sel)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    ss << "\t" << "// iter[" << i << "] merge " << sel % 4 << "\n";
+    ss << "\t" << "dag_offset = hash[" << src << "] & " << (algo::progpow::MODULE_CACHE - 1) << "u" << ";\n";
 
-            ////////////////////////////////////////////////////////////////////////////
-            std::string const l { "hash[" + std::to_string(dst) + "]" };
-            std::string const r { "header_dag[dag_offset]" };
-            std::string const ret { "hash[" + std::to_string(dst) + "] = " };
+    ////////////////////////////////////////////////////////////////////////////
+    std::string const l { "hash[" + std::to_string(dst) + "]" };
+    std::string const r { "header_dag[dag_offset]" };
+    std::string const ret { "hash[" + std::to_string(dst) + "] = " };
 
-            ////////////////////////////////////////////////////////////////////////////
-            switch (sel % 4u)
-            {
-                case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
-                case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
-                case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-                case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
-            }
-        }
+    ////////////////////////////////////////////////////////////////////////////
+    switch (sel % 4u)
+    {
+        case 0u: ss << "\t" << ret << "(" << l << " * 33) + " << r << ";\n"; break;
+        case 1u: ss << "\t" << ret << "(" << l << " ^ " << r << ") * 33" << ";\n"; break;
+        case 2u: ss << "\t" << ret << "rol_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
+        case 3u: ss << "\t" << ret << "ror_u32(" << l << ", " << ((sel >> 16) % 31) + 1 << ") ^ " << r << ";\n"; break;
     }
 }
 
@@ -426,11 +181,11 @@ void algo::progpow::writeMathRandomKernelOpenCL(
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2: algo::progpow::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::V_0_9_3: algo::progpow::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::KAWPOW: algo::kawpow::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::FIROPOW: algo::firopow::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::EVRPROGPOW: algo::evrprogpow::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::V_0_9_2: amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::V_0_9_3: amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::KAWPOW: kawpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::FIROPOW: firopow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
             }
         }
 
@@ -452,11 +207,11 @@ void algo::progpow::writeMathRandomKernelOpenCL(
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2: algo::progpow::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::V_0_9_3: algo::progpow::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::KAWPOW: algo::kawpow::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::FIROPOW: algo::firopow::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::EVRPROGPOW: algo::evrprogpow::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::V_0_9_2: amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::V_0_9_3: amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::KAWPOW: kawpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::FIROPOW: firopow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
             }
         }
     }
@@ -471,7 +226,7 @@ void algo::progpow::writeMathRandomKernelOpenCL(
             ++dstCnt;
         }
         uint32_t const sel{ algo::kiss99(round) };
-        writeSequenceMergeEntries(ss, i, x, sel);
+        amd::writeSequenceMergeEntries(ss, i, x, sel);
     }
 
     ss << "}" << "\n";

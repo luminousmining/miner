@@ -14,7 +14,7 @@ algo::Kiss99Properties algo::progpow::initializeRound(
     algo::Kiss99Properties data{};
     data.z = algo::fnv1a(algo::FNV1_OFFSET, period & 0xffffffff);
     data.w = algo::fnv1a(data.z, period >> 32);
-    data.jsr = algo::fnv1a(data.w, period);
+    data.jsr = algo::fnv1a(data.w, static_cast<uint32_t>(period));
     data.jcong = algo::fnv1a(data.jsr, period >> 32);
 
     ////////////////////////////////////////////////////////////////////////////
