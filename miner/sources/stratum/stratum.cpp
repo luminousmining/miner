@@ -267,7 +267,6 @@ void stratum::Stratum::onShare(
 
     if (nullptr != shareStatus)
     {
-        logInfo() << "share is " << isValid;
         shareStatus(isValid, miningRequestID, uuid);
     }
 }

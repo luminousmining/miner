@@ -415,10 +415,10 @@ void device::DeviceManager::onShareStatus(
         }
 
         uint32_t const shareID { (device->id + 1u) * stratum::Stratum::OVERCOM_NONCE };
-        if (shareID == shareID)
+        if (shareID == requestID)
         {
             device->increaseShare(isValid);
-            continue;
+            return;
         }
     }
 }
