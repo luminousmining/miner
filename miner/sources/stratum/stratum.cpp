@@ -27,6 +27,16 @@ void stratum::Stratum::setCallbackUpdateJob(
 }
 
 
+void stratum::Stratum::setCallbackShareStatus(
+    stratum::Stratum::callbackShareStatus cbShareStatus)
+{
+    if (nullptr != cbShareStatus)
+    {
+        shareStatus = cbShareStatus;
+    }
+}
+
+
 void stratum::Stratum::onReceive(
     std::string const& message)
 {
@@ -238,23 +248,26 @@ void stratum::Stratum::onShare(
     boost::json::object const& root,
     uint32_t const miningRequestID)
 {
-    if (stratum::Stratum::ID_MINING_SUBMIT <= miningRequestID)
+    bool isValid { true };
+    bool const isErrResult
     {
-        ++shareTotal;
-        if (   (false == common::boostJsonContains(root, "result") || false == root.at("result").as_bool())
-            || (true == common::boostJsonContains(root, "error") && false == root.at("error").is_null()))
-        {
-            logErr() << root;
-            ++shareInvalid;
-        }
-        else
-        {
-            ++shareValid;
-        }
+           false == common::boostJsonContains(root, "result")
+        || false == root.at("result").as_bool()
+    };
+    bool const isErrError
+    {
+           true == common::boostJsonContains(root, "error")
+        && false == root.at("error").is_null()
+    };
+    if (true == isErrResult || true == isErrError)
+    {
+        logErr() << root;
+        isValid = false;
     }
 
-    logInfo() << "Info SHARE:"
-        << " valid[" << shareValid << "]"
-        << " invalid[" << shareInvalid << "]"
-        << " total[" << shareTotal << "]";
+    if (nullptr != shareStatus)
+    {
+        logInfo() << "share is " << isValid;
+        shareStatus(isValid, miningRequestID, uuid);
+    }
 }

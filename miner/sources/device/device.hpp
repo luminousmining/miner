@@ -56,8 +56,10 @@ namespace device
         void update(bool const memory,
                     bool const constants,
                     stratum::StratumJobInfo const& newJobInfo);
+        void increaseShare(bool const isValid);
         double getHashrate();
         stratum::Stratum* getStratum();
+        statistical::Statistical::ShareInfo getShare();
 
     protected:
         statistical::Statistical miningStats{};

@@ -52,12 +52,26 @@ uint64_t statistical::Statistical::getBatchNonce() const
 }
 
 
-double statistical::Statistical::getHashrate()
+void statistical::Statistical::updateHashrate()
 {
     uint64_t elapsed { chrono.elapsed(chronoUnit) };
     double const diffInSecond { 1e6 / elapsed };
     uint64_t const totalNonce { batchNonce * kernelExecuted };
-    double hashrate { totalNonce * diffInSecond };
+    double values { totalNonce * diffInSecond };
 
-    return hashrate;
+    if (values > 0.0)
+    {
+        hashrates = values;
+    }
+}
+
+
+double statistical::Statistical::getHahrate() const
+{
+    return hashrates;
+}
+
+statistical::Statistical::ShareInfo& statistical::Statistical::getShares()
+{
+    return shares;
 }

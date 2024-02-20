@@ -70,9 +70,8 @@ void stratum::StratumProgPOW::miningSubmit(
 {
     UNIQUE_LOCK(mtxSubmit);
 
-    static thread_local uint32_t shareId { 1000u };
     boost::json::object root;
-    root["id"] = shareId + (1000u * deviceId);
+    root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
     root["params"] = boost::json::array
     {
@@ -84,7 +83,6 @@ void stratum::StratumProgPOW::miningSubmit(
     };
 
     send(root);
-    ++shareId;
 }
 
 

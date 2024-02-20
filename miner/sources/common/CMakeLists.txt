@@ -8,6 +8,7 @@ config.hpp
 custom.hpp
 dashboard.hpp
 date.hpp
+formater_hashrate.hpp
 kernel_generator.hpp
 system.hpp
 )

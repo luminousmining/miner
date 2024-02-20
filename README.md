@@ -1,13 +1,19 @@
 # LuminousMiner
 
 Free mining software with 0% fees! Enjoy your mining time.  
-Project aims for learning and sharing.  
+  
+Project aims for learning and sharing about mining software.  
 All algorithms used are referenced.  
 
 Algorithms:
-- AUTOLYKOS V2
-- ETHASH
-- KAWPOW
+- autolykosv2
+- ethash
+- etchash
+- progpow
+- progpowz
+- kawpow
+- firopow
+- evrprogpow
 
 ___Common options:___
 ```
@@ -86,7 +92,7 @@ cmake --build . --config Release
 [powkit](https://github.com/sencha-dev/powkit)  
 [progminer](https://github.com/2miners/progminer)
 [evrprogpowminer](https://github.com/EvrmoreOrg/evrprogpowminer)
-[progpowz](https://github.com/hyle-team/progminer)
+[progpowz](https://github.com/hyle-team/progminer)  
 
 ## References - Algos
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)  
