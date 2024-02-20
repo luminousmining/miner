@@ -138,9 +138,8 @@ void stratum::StratumAutolykosV2::miningSubmit(
 {
     UNIQUE_LOCK(mtxSubmit);
 
-    static thread_local uint32_t shareId { 1000u };
     boost::json::object root;
-    root["id"] = shareId + (1000u * deviceId);
+    root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
     root["params"] = boost::json::array{ wallet + workerName};
     root["params"].as_array().push_back(params.at(0));
@@ -148,7 +147,5 @@ void stratum::StratumAutolykosV2::miningSubmit(
     root["params"].as_array().push_back("");
     root["params"].as_array().push_back(params.at(2));
 
-
     send(root);
-    ++shareId;
 }

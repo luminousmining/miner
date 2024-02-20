@@ -1,63 +1,69 @@
 # LuminousMiner
 
 Free mining software with 0% fees! Enjoy your mining time.  
-Project aims for learning and sharing.  
+  
+Project aims for learning and sharing about mining software.  
 All algorithms used are referenced.  
 
 Algorithms:
-- AUTOLYKOS V2
-- ETHASH
-- KAWPOW
+- autolykosv2
+- ethash
+- etchash
+- progpow
+- progpowz
+- kawpow
+- firopow
+- evrprogpow
 
 ___Common options:___
 ```
---help                  Help screen.
---level_log arg         [OPTIONAL] Set level of log.
-                    --level_log=<debug|info|error|warning>
---host arg              [MANDATORY] Hostname of the pool.
-                    --host="ethw.2miners.com"
---port arg              [MANDATORY] Port of the pool.
-                    --port=2020
---wallet arg            [MANDATORY] Wallet address.
-                    -wallet="WALLET"
---algo arg              [MANDATORY] <ethash>
-                    --algo="ethash"
---workername arg        [MANDATORY] Name of the rig.
-                    --workername="MyWorkerName"
---password arg          [OPTIONAL] Account password.
-                    --password="MyPassword"
---ssl arg               [OPTIONAL] Enable or not the SSL.
-                    Default value is false.
-                    --ssl=<true|false>.
---stale arg             [OPTIONAL] Enable stale share.
-                    Default value is false.
-                    --stale=<true|false>
---nvidia arg            [OPTIONAL] Enable or disable device nvidia.
-                    Default value is true.
-                    --nvidia=<true|false>
---amd arg               [OPTIONAL] Enable or disable device amd.
-                    Default value is true.
-                    --amd=<true|false>
---cpu arg               [OPTIONAL] Enable or disable device cpu.
-                    Default value is false.
-                    --cpu=<true|false>
+--help            Help screen.
+--level_log       [OPTIONAL] Set level of log.
+               --level_log=<debug|info|error|warning>
+--host             [MANDATORY] Hostname of the pool.
+               --host="ethw.2miners.com"
+--port             [MANDATORY] Port of the pool.
+               --port=2020
+--wallet           [MANDATORY] Wallet address.
+               -wallet="WALLET"
+--algo             [MANDATORY] <ethash>
+               --algo="ethash"
+--workername       [MANDATORY] Name of the rig.
+               --workername="MyWorkerName"
+--password         [OPTIONAL] Account password.
+               --password="MyPassword"
+--ssl              [OPTIONAL] Enable or not the SSL.
+               Default value is false.
+               --ssl=<true|false>.
+--stale            [OPTIONAL] Enable stale share.
+               Default value is false.
+               --stale=<true|false>
+--nvidia           [OPTIONAL] Enable or disable device nvidia.
+               Default value is true.
+               --nvidia=<true|false>
+--amd              [OPTIONAL] Enable or disable device amd.
+               Default value is true.
+               --amd=<true|false>
+--cpu              [OPTIONAL] Enable or disable device cpu.
+               Default value is false.
+               --cpu=<true|false>
 ```
 
 ___Specific device options:___
 ```
---devices_disable arg   [OPTIONAL] List device disable.
+--devices_disable       [OPTIONAL] List device disable.
                     --device_disable=0,1
---device_pool arg       [OPTIONAL] Define hostname pool for custom device.
+--device_pool           [OPTIONAL] Define hostname pool for custom device.
                     --device_pool=0:ethw.2miners.com
---device_port arg       [OPTIONAL] Define port for custom device.
+--device_port           [OPTIONAL] Define port for custom device.
                     --device_pool=0:2020
---device_password arg   [OPTIONAL] Define password for custom device.
+--device_password       [OPTIONAL] Define password for custom device.
                     --device_password=0:MyPassword
---device_algo arg       [OPTIONAL] Define algorithm for custom device.
+--device_algo           [OPTIONAL] Define algorithm for custom device.
                     --device_pool=0:ethash
---device_wallet arg     [OPTIONAL] Define wallet for custom device.
+--device_wallet         [OPTIONAL] Define wallet for custom device.
                     --device_pool=0:WALLET
---device_workername arg [OPTIONAL] Define workername for custom device.
+--device_workername     [OPTIONAL] Define workername for custom device.
                     --device_workername=0:MyWorkerName
 ```
 
@@ -86,7 +92,7 @@ cmake --build . --config Release
 [powkit](https://github.com/sencha-dev/powkit)  
 [progminer](https://github.com/2miners/progminer)
 [evrprogpowminer](https://github.com/EvrmoreOrg/evrprogpowminer)
-[progpowz](https://github.com/hyle-team/progminer)
+[progpowz](https://github.com/hyle-team/progminer)  
 
 ## References - Algos
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)  

@@ -18,12 +18,16 @@ namespace stratum
     struct Stratum : public network::NetworkTCPClient
     {
     public:
+        static constexpr uint32_t OVERCOM_NONCE { 1000u };
         static constexpr uint32_t ID_MINING_SUBSCRIBE { 1u };
         static constexpr uint32_t ID_MINING_AUTHORIZE { 2u };
-        static constexpr uint32_t ID_MINING_SUBMIT { 1000u };
+        static constexpr uint32_t ID_MINING_SUBMIT { OVERCOM_NONCE };
 
         using callbackUpdateJob = std::function<void(uint32_t const _stratumUUID,
                                                      StratumJobInfo const&)>;
+        using callbackShareStatus = std::function<void(bool const isValid,
+                                                       uint32_t const requestID,
+                                                       uint32_t const _stratumUUID)>;
 
         uint32_t        uuid { 0u };
         StratumJobInfo  jobInfo{};
@@ -52,6 +56,7 @@ namespace stratum
         void onReceive(std::string const& message) final;
 
         void setCallbackUpdateJob(callbackUpdateJob cbUpdateJob);
+        void setCallbackShareStatus(callbackShareStatus cbShareStatus);
         void onMethod(boost::json::object const& root);
         void setExtraNonce(std::string const& paramExtraNonce);
         void setExtraNonce(std::string const& paramExtraNonce,
@@ -59,17 +64,13 @@ namespace stratum
         bool isValidJob() const;
 
     protected:
-        bool              authenticated{ false };
-        boost::mutex      mtxSubmit;
-        boost::mutex      mtxDispatchJob{};
-        callbackUpdateJob dispatchJob{};
+        bool                authenticated{ false };
+        boost::mutex        mtxSubmit;
+        boost::mutex        mtxDispatchJob{};
+        callbackUpdateJob   dispatchJob{};
+        callbackShareStatus shareStatus{};
 
         void onShare(boost::json::object const& root,
                      uint32_t const miningRequestID);
-
-    private:
-        uint64_t shareTotal { 0ull };
-        uint64_t shareValid { 0ull };
-        uint64_t shareInvalid { 0ull };
     };
 }
