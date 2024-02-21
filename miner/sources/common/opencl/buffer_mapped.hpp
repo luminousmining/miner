@@ -47,7 +47,9 @@ namespace common
                 }
 
                 SAFE_DELETE(buffer);
-                OPENCL_CATCH(buffer = new(std::nothrow) cl::Buffer(clContext, flags, size));
+                OPENCL_CATCH(
+                    buffer = new(std::nothrow) cl::Buffer(
+                        clContext, flags, size));
                 IS_NULL(buffer);
 
                 OPENCL_CATCH(
@@ -65,6 +67,12 @@ namespace common
                 }
 
                 return true;
+            }
+
+            inline
+            void free()
+            {
+                SAFE_DELETE(buffer);
             }
 
             inline
