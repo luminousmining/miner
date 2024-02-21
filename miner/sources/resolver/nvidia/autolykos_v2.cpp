@@ -40,9 +40,9 @@ bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    parameters.hostPeriod = jobInfo.period;
-    parameters.hostHeight = algo::be::U32(jobInfo.blockNumber);
-    parameters.hostDagItemCount = jobInfo.period;
+    parameters.hostPeriod = castU32(jobInfo.period);
+    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostDagItemCount = castU32(jobInfo.period);
     algo::copyHash(parameters.hostBoundary, jobInfo.boundary);
     algo::copyHash(parameters.hostHeader, jobInfo.headerHash);
     if (false == autolykosv2UpateConstants(parameters))

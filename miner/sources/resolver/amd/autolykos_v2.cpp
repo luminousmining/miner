@@ -21,9 +21,9 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    parameters.hostPeriod = jobInfo.period;
-    parameters.hostHeight = algo::be::U32(jobInfo.blockNumber);
-    parameters.hostDagItemCount = jobInfo.period;
+    parameters.hostPeriod = castU32(jobInfo.period);
+    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.BHashes.free();
@@ -34,8 +34,8 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     parameters.dagCache.setCapacity(parameters.hostDagItemCount);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.BHashes.alloc(clQueue, *clContext)
-        || false == parameters.dagCache.alloc(clQueue, *clContext)
+    if (   false == parameters.BHashes.alloc(*clContext)
+        || false == parameters.dagCache.alloc(*clContext)
         || false == parameters.boundaryCache.alloc(clQueue, *clContext)
         || false == parameters.headerCache.alloc(clQueue, *clContext)
         || false == parameters.resultCache.alloc(clQueue, *clContext))
@@ -77,9 +77,9 @@ bool resolver::ResolverAmdAutolykosV2::updateConstants(
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    parameters.hostPeriod = jobInfo.period;
-    parameters.hostHeight = algo::be::U32(jobInfo.blockNumber);
-    parameters.hostDagItemCount = jobInfo.period;
+    parameters.hostPeriod = castU32(jobInfo.period);
+    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const* const boundary { jobInfo.boundary.word32 };
@@ -96,8 +96,6 @@ bool resolver::ResolverAmdAutolykosV2::updateConstants(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const _threads { algo::autolykos_v2::AMD_THREADS_PER_ITER };
-    uint32_t const _blocks { algo::autolykos_v2::AMD_BLOCK_DIM };
     setBlocks(1u);
     setThreads(algo::autolykos_v2::AMD_NONCES_PER_ITER);
 

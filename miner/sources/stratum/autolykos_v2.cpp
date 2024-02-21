@@ -117,7 +117,7 @@ void stratum::StratumAutolykosV2::onMiningSetDifficulty(
 
 
 void stratum::StratumAutolykosV2::onMiningSetTarget(
-    boost::json::object const& root)
+    [[maybe_unused]] boost::json::object const& root)
 {
     // https://github.com/mhssamadani/ErgoStratumServer
     logErr() << "mining.set_target unimplemented!";
@@ -125,7 +125,7 @@ void stratum::StratumAutolykosV2::onMiningSetTarget(
 
 
 void stratum::StratumAutolykosV2::onMiningSetExtraNonce(
-    boost::json::object const& root)
+    [[maybe_unused]] boost::json::object const& root)
 {
     // https://github.com/mhssamadani/ErgoStratumServer
     logErr() << "mining.set_extranonce unimplemented!";

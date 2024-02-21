@@ -237,22 +237,8 @@ std::vector<uint32_t> common::Cli::getCustomMultiParamsU32(
     std::string const& paramName,
     std::vector<std::string>& options) const
 {
+    // TODO : OMG should be re write 100 %
     std::vector<uint32_t> values{};
-
-    if (true == contains(paramName))
-    {
-        for (std::string const& id_value : options)
-        {
-            std::string line{};
-            std::istringstream input{};
-            while (std::getline(input, line, ';'))
-            {
-                uint32_t const value { castU32(std::atoi(line.c_str())) };
-                values.emplace_back(value);
-            }
-        }
-    }
-
     return values;
 }
 

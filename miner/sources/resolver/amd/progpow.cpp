@@ -30,7 +30,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     parameters.lightCache.free();
     parameters.lightCache.setSize(context.lightCache.size);
-    if (false == parameters.lightCache.alloc(clQueue, *clContext))
+    if (false == parameters.lightCache.alloc(*clContext))
     {
         return false;
     }
@@ -38,7 +38,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     parameters.dagCache.free();
     parameters.dagCache.setSize(context.dagCache.size);
-    if (false == parameters.dagCache.alloc(clQueue, *clContext))
+    if (false == parameters.dagCache.alloc(*clContext))
     {
         return false;
     }
