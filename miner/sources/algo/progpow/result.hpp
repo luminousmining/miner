@@ -9,9 +9,9 @@ namespace algo
     namespace progpow
     {
 #if defined(__LIB_CUDA)
-        struct __align__(16) Result
+        struct __align__(8) Result
 #else
-        struct alignas(16) Result
+        struct alignas(8) Result
 #endif
         {
             bool     found;
