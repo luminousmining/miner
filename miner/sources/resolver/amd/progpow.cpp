@@ -299,7 +299,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
 
     if (true == data.found)
     {
-        resultShare.found = data.found;
+        resultShare.found = true;
         resultShare.count = data.count;
         resultShare.jobId.assign(_jobId);
 

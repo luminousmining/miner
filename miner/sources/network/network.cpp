@@ -39,7 +39,6 @@ bool network::NetworkTCPClient::connect()
 
         boost_error_code ec{};
         auto const& config{ common::Config::instance() };
-        auto const address{ boost::asio::ip::address::from_string(host, ec) };
 
         if (true == config.mining.secrureConnect)
         {
@@ -76,6 +75,7 @@ bool network::NetworkTCPClient::connect()
         }
         else
         {
+            auto const address{ boost::asio::ip::address::from_string(host, ec) };
             boost_endpoint endpoint{ address, static_cast<boost::asio::ip::port_type>(port) };
             socketTCP->next_layer().connect(endpoint, ec);
             if (boost_error::success != ec)
