@@ -19,12 +19,6 @@
 #include <wincrypt.h>
 #endif
 
-
-network::NetworkTCPClient::NetworkTCPClient()
-{
-}
-
-
 network::NetworkTCPClient::~NetworkTCPClient()
 {
     disconnect();

@@ -289,7 +289,7 @@ bool resolver::ResolverAmdAutolykosV2::execute(
 
 
 bool resolver::ResolverAmdAutolykosV2::getResultCache(
-    std::string const& jobId,
+    std::string const& _jobId,
     uint32_t const extraNonceSize)
 {
     algo::autolykos_v2::Result data{};
@@ -303,10 +303,10 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     ////////////////////////////////////////////////////////////////////////////
     if (true == data.found)
     {
-        resultShare.found = data.found;
+        resultShare.found = true;
         resultShare.count = data.count;
         resultShare.extraNonceSize = extraNonceSize;
-        resultShare.jobId.assign(jobId);
+        resultShare.jobId.assign(_jobId);
 
         for (uint32_t i { 0u }; i < data.count; ++i)
         {

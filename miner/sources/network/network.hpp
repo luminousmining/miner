@@ -51,7 +51,7 @@ namespace network
         boost_context                 context{ boost_context::tlsv12_client };
         std::unique_ptr<boost_socket> socketTCP;
 
-        explicit NetworkTCPClient();
+        NetworkTCPClient() = default;
         ~NetworkTCPClient();
 
         virtual void onConnect() = 0;

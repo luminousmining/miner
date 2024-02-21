@@ -510,6 +510,11 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
         }
     }
 
+    if (nullptr == stratum)
+    {
+        return nullptr;
+    }
+
     stratum->uuid = stratumCount++;
     if (stratumCount >= 100u)
     {

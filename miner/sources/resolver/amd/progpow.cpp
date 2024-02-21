@@ -178,10 +178,6 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     switch (progpowVersion)
     {
         case algo::progpow::VERSION::V_0_9_2:
-        {
-            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
-            break;
-        }
         case algo::progpow::VERSION::V_0_9_3:
         {
             kernelGenerator.declareDefine("__KERNEL_PROGPOW");
@@ -239,10 +235,10 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     std::string kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2: kernelDerived.assign("progpow_functions.cl"); break;
-        case algo::progpow::VERSION::V_0_9_3: kernelDerived.assign("progpow_functions.cl"); break;
-        case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cl"); break;
-        case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_3 */
+        case algo::progpow::VERSION::V_0_9_3:    kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::KAWPOW:     kernelDerived.assign("kawpow_functions.cl"); break;
+        case algo::progpow::VERSION::FIROPOW:    kernelDerived.assign("firopow_functions.cl"); break;
         case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
     }
     if (   false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
@@ -292,7 +288,7 @@ bool resolver::ResolverAmdProgPOW::execute(
 
 
 bool resolver::ResolverAmdProgPOW::getResultCache(
-    std::string const& jobId)
+    std::string const& _jobId)
 {
     algo::progpow::Result data{};
 
@@ -305,7 +301,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
     {
         resultShare.found = data.found;
         resultShare.count = data.count;
-        resultShare.jobId.assign(jobId);
+        resultShare.jobId.assign(_jobId);
 
         for (uint32_t i { 0u }; i < data.count; ++i)
         {
