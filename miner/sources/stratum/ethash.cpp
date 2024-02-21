@@ -139,14 +139,12 @@ void stratum::StratumEthash::miningSubmit(
 {
     UNIQUE_LOCK(mtxSubmit);
 
-    static thread_local uint32_t shareId { 1000u };
     boost::json::object root;
-    root["id"] = shareId + (1000u * deviceId);
+    root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
     root["params"] = boost::json::array{ wallet + workerName };
     root["params"].as_array().push_back(params.at(0));
     root["params"].as_array().push_back(params.at(1));
 
     send(root);
-    ++shareId;
 }

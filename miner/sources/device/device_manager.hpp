@@ -20,7 +20,7 @@ namespace device
         DeviceManager();
         ~DeviceManager();
 
-        static constexpr uint32_t WAITING_HASH_STATS{ 5000U };
+        static constexpr uint32_t WAITING_HASH_STATS{ 10000U };
         static constexpr uint32_t DEVICE_MAX_ID{ 1000000u };
 
         bool initialize();
@@ -28,6 +28,9 @@ namespace device
         void connectToPools();
         void onUpdateJob(uint32_t const _stratumUUID,
                          stratum::StratumJobInfo const& newJobInfo);
+        void onShareStatus(bool const isValid,
+                           uint32_t const requestID,
+                           uint32_t const stratumUUID);
 
     private:
         uint32_t                 stratumUUID{ 0u };

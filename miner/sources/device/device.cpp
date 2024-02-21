@@ -294,25 +294,47 @@ void device::Device::update(
 }
 
 
+void device::Device::increaseShare(
+    bool const isValid)
+{
+    statistical::Statistical::ShareInfo& info{ miningStats.getShares() };
+    ++info.total;
+    if (true == isValid)
+    {
+        ++info.valid;
+    }
+    else
+    {
+        ++info.invalid;
+    }
+}
+
+
 double device::Device::getHashrate()
 {
-    double hashrate { 0u };
     uint32_t const executeCount { miningStats.getKernelExecutedCount() };
 
     if (kernelMinimunExecuteNeeded <= executeCount)
     {
         miningStats.stop();
-        hashrate = miningStats.getHashrate();
+        miningStats.updateHashrate();
         miningStats.reset();
     }
 
-    return hashrate;
+    return miningStats.getHahrate();
 }
 
 
 stratum::Stratum* device::Device::getStratum()
 {
     return stratum;
+}
+
+
+statistical::Statistical::ShareInfo device::Device::getShare()
+{
+    statistical::Statistical::ShareInfo info { miningStats.getShares() };
+    return info;
 }
 
 

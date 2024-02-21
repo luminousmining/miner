@@ -9,6 +9,7 @@
 #include <common/dashboard.hpp>
 #include <common/custom.hpp>
 #include <common/date.hpp>
+#include <common/formater_hashrate.hpp>
 #include <common/error/cuda_error.hpp>
 #include <device/device_manager.hpp>
 #include <stratum/autolykos_v2.hpp>
@@ -150,6 +151,14 @@ bool device::DeviceManager::initializeStratum(
             std::placeholders::_1,
             std::placeholders::_2));
 
+    stratum->setCallbackShareStatus(
+        std::bind(
+            &device::DeviceManager::onShareStatus,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3));
+
     return true;
 }
 
@@ -268,6 +277,9 @@ void device::DeviceManager::loopStatistical()
     board.addColumn("Coin");
     board.addColumn("Pool");
     board.addColumn("Hashrate");
+    board.addColumn("Shares");
+
+    stratum::Stratum* stratum { nullptr };
 
     while (true)
     {
@@ -287,10 +299,7 @@ void device::DeviceManager::loopStatistical()
             {
                 continue;
             }
-            double const hashrate { device->getHashrate() };
-
-            stratum::Stratum* stratum { nullptr };
-
+ 
             auto const& itStratum { stratums.find(device->id) };
             if (itStratum != stratums.end())
             {
@@ -306,15 +315,20 @@ void device::DeviceManager::loopStatistical()
                 continue;
             }
 
-            std::stringstream ss;
-            ss << std::setprecision(4) << (hashrate / 1e6) << "MH/S";
+            double const hashrate { device->getHashrate() };
+            statistical::Statistical::ShareInfo shares { device->getShare() };
+
+            std::stringstream ssShares;
+            ssShares << shares.valid << "/" << shares.invalid << "/" << shares.total;
+
             board.addLine
             (
                 {
                     std::to_string(device->id),
                     algo::toString(device->algorithm),
                     stratum->host,
-                    ss.str()
+                    common::hashrateToString(hashrate),
+                    ssShares.str()
                 }
             );
 
@@ -382,19 +396,54 @@ void device::DeviceManager::onUpdateJob(
 }
 
 
+void device::DeviceManager::onShareStatus(
+    bool const isValid,
+    uint32_t const requestID,
+    uint32_t const stratumUUID)
+{
+    for (device::Device* const device : devices)
+    {
+        if (nullptr == device)
+        {
+            continue;
+        }
+        stratum::Stratum* stratum { device->getStratum() };
+        if (   nullptr == stratum
+            || stratum->uuid != stratumUUID)
+        {
+            continue;
+        }
+
+        uint32_t const shareID { (device->id + 1u) * stratum::Stratum::OVERCOM_NONCE };
+        if (shareID == requestID)
+        {
+            device->increaseShare(isValid);
+            return;
+        }
+    }
+}
+
+
 void device::DeviceManager::updateDevice(
-    uint32_t const _stratumUUID,
+    uint32_t const stratumUUID,
     bool const updateMemory,
     bool const updateConstants)
 {
     for (device::Device* const device : devices)
     {
-        if (   nullptr != device
-            && device->getStratum()->uuid == _stratumUUID)
+        if (nullptr == device)
         {
-            stratum::StratumJobInfo& jobInfo { jobInfos[_stratumUUID] };
-            device->update(updateMemory, updateConstants, jobInfo);
+            continue;
         }
+        stratum::Stratum* stratum { device->getStratum() };
+        if (   nullptr == stratum
+            || stratum->uuid != stratumUUID)
+        {
+            continue;
+        }
+
+        stratum::StratumJobInfo& jobInfo { jobInfos[stratumUUID] };
+        device->update(updateMemory, updateConstants, jobInfo);
     }
 }
 
