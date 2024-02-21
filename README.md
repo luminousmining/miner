@@ -90,8 +90,8 @@ cmake --build . --config Release
 [cpuminer](https://github.com/pooler/cpuminer)  
 [bitcoin](https://github.com/pakheili/sha-256-hash-algorithm-bitcoin-miner)  
 [powkit](https://github.com/sencha-dev/powkit)  
-[progminer](https://github.com/2miners/progminer)
-[evrprogpowminer](https://github.com/EvrmoreOrg/evrprogpowminer)
+[progminer](https://github.com/2miners/progminer)  
+[evrprogpowminer](https://github.com/EvrmoreOrg/evrprogpowminer)  
 [progpowz](https://github.com/hyle-team/progminer)  
 
 ## References - Algos
