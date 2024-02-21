@@ -5,13 +5,13 @@
 #include <common/log/log.hpp>
 
 
-void common::Dashboard::setDate(std::string newDateInfo)
+void common::Dashboard::setDate(std::string const& newDateInfo)
 {
     dateInfo.assign(newDateInfo);
 }
 
 
-void common::Dashboard::setTag(std::string newTag)
+void common::Dashboard::setTag(std::string const& newTag)
 {
     tag.clear();
     tag += "[";

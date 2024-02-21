@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -72,7 +74,7 @@ algo::hash256 algo::toHash256(
     static BigInteger base("0x00000000ffff0000000000000000000000000000000000000000000000000000");
     BigInteger product;
 
-    if (0.f == value)
+    if (0.0 == fabs(value))
     {
         product = BigInteger("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     }
@@ -84,8 +86,8 @@ algo::hash256 algo::toHash256(
         product = base * idiff;
 
         std::string sdiff = boost::lexical_cast<std::string>(value);
-        size_t ldiff = sdiff.length();
-        size_t offset = sdiff.find(".");
+        size_t const ldiff = sdiff.length();
+        size_t const offset = sdiff.find('.');
 
         if (offset != std::string::npos)
         {

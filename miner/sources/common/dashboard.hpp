@@ -12,8 +12,8 @@ namespace common
         Dashboard() = default;
         ~Dashboard() = default;
 
-        void setDate(std::string newDateInfo);
-        void setTag(std::string newTag);
+        void setDate(std::string const& newDateInfo);
+        void setTag(std::string const& newTag);
         void setTitle(std::string const& newTitle);
         void setFooter(std::string const& key,
                        std::string const& value);

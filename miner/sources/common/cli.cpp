@@ -201,7 +201,7 @@ common::Cli::customTupleU32 common::Cli::getCustomParamsU32(
     {
         for (std::string const& id_value : options)
         {
-            size_t const pos{ id_value.find(":") };
+            size_t const pos{ id_value.find(':') };
             if (pos == std::string::npos)
             {
                 logErr() << "missing ':' [" << id_value.c_str() << "]";
@@ -214,11 +214,11 @@ common::Cli::customTupleU32 common::Cli::getCustomParamsU32(
             uint32_t value { 0u };
             if (subStr == "true" || subStr == "True" || subStr == "TRUE")
             {
-                value = true;
+                value = 1;
             }
             else if (subStr == "false" || subStr == "False" || subStr == "FALSE")
             {
-                value = false;
+                value = 0;
             }
             else
             {
@@ -267,7 +267,7 @@ common::Cli::customTupleStr common::Cli::getCustomParamsStr(
     {
         for (std::string const& id_value : options)
         {
-            size_t const pos{ id_value.find(":") };
+            size_t const pos{ id_value.find(':') };
             if (pos == std::string::npos)
             {
                 logErr() << "missing ':' [" << id_value.c_str() << "]";

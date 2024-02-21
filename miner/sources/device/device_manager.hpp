@@ -17,7 +17,7 @@ namespace device
     class DeviceManager
     {
     public:
-        DeviceManager();
+        DeviceManager() = default;
         ~DeviceManager();
 
         static constexpr uint32_t WAITING_HASH_STATS{ 10000U };
@@ -26,14 +26,14 @@ namespace device
         bool initialize();
         void run();
         void connectToPools();
-        void onUpdateJob(uint32_t const _stratumUUID,
+        void onUpdateJob(uint32_t const stratumUUID,
                          stratum::StratumJobInfo const& newJobInfo);
         void onShareStatus(bool const isValid,
                            uint32_t const requestID,
                            uint32_t const stratumUUID);
 
     private:
-        uint32_t                 stratumUUID{ 0u };
+        uint32_t                 stratumCount{ 0u };
         boost::thread            threadStatistical{};
         boost::mutex             mtxJobInfo{};
         std::vector<Device*>     devices{};
@@ -45,7 +45,7 @@ namespace device
                                algo::ALGORITHM const algorithm);
         bool initializeNvidia();
         bool initializeAmd();
-        void updateDevice(uint32_t const _stratumUUID,
+        void updateDevice(uint32_t const stratumUUID,
                           bool const updateMemory,
                           bool const updateConstants);
         bool containStratum(uint32_t const deviceId) const;
