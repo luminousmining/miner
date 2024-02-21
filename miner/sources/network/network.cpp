@@ -54,6 +54,7 @@ bool network::NetworkTCPClient::connect()
 
         socketTCP.reset(new boost_socket(ioService, context));
 
+        auto const address{ boost::asio::ip::address::from_string(host, ec) };
         if (boost_error::success != ec)
         {
             boost_resolver resolver{ ioService };
@@ -75,7 +76,6 @@ bool network::NetworkTCPClient::connect()
         }
         else
         {
-            auto const address{ boost::asio::ip::address::from_string(host, ec) };
             boost_endpoint endpoint{ address, static_cast<boost::asio::ip::port_type>(port) };
             socketTCP->next_layer().connect(endpoint, ec);
             if (boost_error::success != ec)

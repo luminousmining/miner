@@ -9,7 +9,7 @@ namespace statistical
     struct Statistical
     {
     public:
-        struct alignas(64) ShareInfo
+        struct ShareInfo
         {
             uint64_t total{ 0llu };
             uint64_t invalid{ 0llu };
