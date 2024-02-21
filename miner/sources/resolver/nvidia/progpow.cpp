@@ -58,10 +58,6 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     switch (progpowVersion)
     {
         case algo::progpow::VERSION::V_0_9_2:
-        {
-            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
-            break;
-        }
         case algo::progpow::VERSION::V_0_9_3:
         {
             kernelGenerator.declareDefine("__KERNEL_PROGPOW");
