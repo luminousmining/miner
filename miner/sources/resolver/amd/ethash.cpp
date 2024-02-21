@@ -43,8 +43,8 @@ bool resolver::ResolverAmdEthash::updateMemory(
     parameters.dagCache.setSize(context.dagCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.lightCache.alloc(clQueue, *clContext)
-        || false == parameters.dagCache.alloc(clQueue, *clContext)
+    if (   false == parameters.lightCache.alloc(*clContext)
+        || false == parameters.dagCache.alloc(*clContext)
         || false == parameters.headerCache.alloc(clQueue, *clContext)
         || false == parameters.resultCache.alloc(clQueue, *clContext))
     {

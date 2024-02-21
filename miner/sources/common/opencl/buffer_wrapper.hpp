@@ -49,8 +49,7 @@ namespace common
             }
 
             inline
-            bool alloc(cl::CommandQueue* const clQueue,
-                       cl::Context& clContext)
+            bool alloc(cl::Context& clContext)
             {
                 if (size == 0u)
                 {

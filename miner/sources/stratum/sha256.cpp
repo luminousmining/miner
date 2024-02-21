@@ -112,7 +112,9 @@ void stratum::StratumSha256::onMiningSetDifficulty(
     boost::json::object const& root)
 {
     auto const params{ root.at("params").as_array() };
-    double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
+
+    // TODO : SHA256
+    //double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     logInfo() << "Target: " << std::hex << jobInfo.boundaryU64;
 }
