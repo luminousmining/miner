@@ -26,33 +26,22 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     parameters.hostDagItemCount = jobInfo.period;
 
     ////////////////////////////////////////////////////////////////////////////
-    // TODO : delete and alloc memory only when it's mandatory.
-    SAFE_DELETE(parameters.dagCache);
-    SAFE_DELETE(parameters.BHashes);
+    parameters.BHashes.free();
+    parameters.BHashes.setCapacity(algo::autolykos_v2::NONCES_PER_ITER);
 
     ////////////////////////////////////////////////////////////////////////////
-    OPENCL_CATCH(
-        parameters.BHashes = new (std::nothrow) cl::Buffer(
-            *clContext,
-            CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
-            algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256));
-    OPENCL_CATCH(
-        parameters.dagCache = new (std::nothrow) cl::Buffer(
-            *clContext,
-            CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
-            parameters.hostDagItemCount * algo::LEN_HASH_256));
+    parameters.dagCache.free();
+    parameters.dagCache.setCapacity(parameters.hostDagItemCount);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.boundaryCache.alloc(clQueue, *clContext)
+    if (   false == parameters.BHashes.alloc(clQueue, *clContext)
+        || false == parameters.dagCache.alloc(clQueue, *clContext)
+        || false == parameters.boundaryCache.alloc(clQueue, *clContext)
         || false == parameters.headerCache.alloc(clQueue, *clContext)
         || false == parameters.resultCache.alloc(clQueue, *clContext))
     {
         return false;
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    IS_NULL(parameters.dagCache);
-    IS_NULL(parameters.BHashes);
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == kernelGeneratorDAG.isBuilt())
@@ -160,7 +149,7 @@ bool resolver::ResolverAmdAutolykosV2::fillDAG()
 {
     ////////////////////////////////////////////////////////////////////////////
     auto& clKernel { kernelGeneratorDAG.clKernel };
-    OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache)));
+    OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, parameters.hostHeight));
     OPENCL_ER(clKernel.setArg(2u, parameters.hostPeriod));
     uint32_t const blockDim { algo::autolykos_v2::AMD_BLOCK_DIM };
@@ -259,8 +248,8 @@ bool resolver::ResolverAmdAutolykosV2::execute(
     ////////////////////////////////////////////////////////////////////////////
     auto& clKernel { kernelGeneratorSearch.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.headerCache.getBuffer())));
-    OPENCL_ER(clKernel.setArg(1u, *(parameters.dagCache)));
-    OPENCL_ER(clKernel.setArg(2u, *(parameters.BHashes)));
+    OPENCL_ER(clKernel.setArg(1u, *(parameters.dagCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(2u, *(parameters.BHashes.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, parameters.hostNonce));
     OPENCL_ER(clKernel.setArg(4u, parameters.hostPeriod));
     OPENCL_ER(
@@ -274,8 +263,8 @@ bool resolver::ResolverAmdAutolykosV2::execute(
     ////////////////////////////////////////////////////////////////////////////
     auto& clKernelVerify { kernelGeneratorVerify.clKernel };
     OPENCL_ER(clKernelVerify.setArg(0u, *(parameters.boundaryCache.getBuffer())));
-    OPENCL_ER(clKernelVerify.setArg(1u, *(parameters.dagCache)));
-    OPENCL_ER(clKernelVerify.setArg(2u, *(parameters.BHashes)));
+    OPENCL_ER(clKernelVerify.setArg(1u, *(parameters.dagCache.getBuffer())));
+    OPENCL_ER(clKernelVerify.setArg(2u, *(parameters.BHashes.getBuffer())));
     OPENCL_ER(clKernelVerify.setArg(3u, *(parameters.resultCache.getBuffer())));
     OPENCL_ER(clKernelVerify.setArg(4u, parameters.hostNonce));
     OPENCL_ER(clKernelVerify.setArg(5u, parameters.hostPeriod));

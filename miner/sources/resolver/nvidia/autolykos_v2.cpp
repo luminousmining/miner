@@ -11,9 +11,9 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    parameters.hostPeriod = jobInfo.period;
-    parameters.hostHeight = algo::be::U32(jobInfo.blockNumber);
-    parameters.hostDagItemCount = jobInfo.period;
+    parameters.hostPeriod = castU32(jobInfo.period);
+    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == autolykosv2InitMemory(parameters))
@@ -34,7 +34,6 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
 bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
-    logInfo() << "======================";
     ////////////////////////////////////////////////////////////////////////////
     setThreads(64u);
     setBlocks(131072u);

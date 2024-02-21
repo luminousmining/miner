@@ -37,43 +37,27 @@ bool resolver::ResolverAmdEthash::updateMemory(
     updateContext(jobInfo);
 
     ////////////////////////////////////////////////////////////////////////////
-    SAFE_DELETE(parameters.lightCache);
-    SAFE_DELETE(parameters.dagCache);
+    parameters.lightCache.free();
+    parameters.lightCache.setSize(context.lightCache.size);
+    parameters.dagCache.free();
+    parameters.dagCache.setSize(context.dagCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
-    OPENCL_CATCH(
-        parameters.lightCache = new (std::nothrow) cl::Buffer(
-                *clContext,
-                CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-                context.lightCache.size));
-    OPENCL_CATCH(
-        parameters.dagCache = new (std::nothrow) cl::Buffer(
-                *clContext,
-                CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
-                context.dagCache.size));
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.headerCache.alloc(clQueue, *clContext)
+    if (   false == parameters.lightCache.alloc(clQueue, *clContext)
+        || false == parameters.dagCache.alloc(clQueue, *clContext)
+        || false == parameters.headerCache.alloc(clQueue, *clContext)
         || false == parameters.resultCache.alloc(clQueue, *clContext))
     {
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   nullptr == parameters.lightCache
-        || nullptr == parameters.dagCache)
+    if (false == parameters.lightCache.write(context.lightCache.hash,
+                                             context.lightCache.size,
+                                             clQueue))
     {
-        logErr() << "Fail to alloc memory";
         return false;
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    OPENCL_ER(clQueue->enqueueWriteBuffer(
-        *parameters.lightCache,
-        CL_TRUE,
-        0,
-        context.lightCache.size,
-        context.lightCache.hash));
 
     ////////////////////////////////////////////////////////////////////////////
     if (   false == buildDAG()
@@ -138,8 +122,8 @@ bool resolver::ResolverAmdEthash::buildDAG()
     ////////////////////////////////////////////////////////////////////////////
     // Set kernel parameters
     auto& clKernel { kernelGenerator.clKernel };
-    OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache)));
-    OPENCL_ER(clKernel.setArg(1u, *(parameters.lightCache)));
+    OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(1u, *(parameters.lightCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(2u, algo::ethash::DAG_ITEM_PARENTS));
     OPENCL_ER(clKernel.setArg(3u, castU32(context.dagCache.numberItem)));
     OPENCL_ER(clKernel.setArg(4u, castU32(context.lightCache.numberItem)));
@@ -208,7 +192,7 @@ bool resolver::ResolverAmdEthash::execute(
     stratum::StratumJobInfo const& jobInfo)
 {
     auto& clKernel { kernelGenerator.clKernel };
-    OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache)));
+    OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, *(parameters.resultCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(2u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, jobInfo.nonce));
