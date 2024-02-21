@@ -6,11 +6,7 @@ uint32_t algo::autolykos_v2::computePeriod(uint32_t const blockNumber)
 {
     uint32_t period{ algo::autolykos_v2::EPOCH_MIN };
 
-    if (blockNumber < algo::autolykos_v2::BLOCK_BEGIN)
-    {
-        period = algo::autolykos_v2::EPOCH_MIN;
-    }
-    else if (blockNumber >= algo::autolykos_v2::BLOCK_END)
+    if (blockNumber >= algo::autolykos_v2::BLOCK_END)
     {
         period = algo::autolykos_v2::EPOCH_MAX;
     }
