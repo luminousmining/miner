@@ -216,7 +216,7 @@ bool resolver::ResolverAmdEthash::execute(
 
 
 bool resolver::ResolverAmdEthash::getResultCache(
-    std::string const& jobId,
+    std::string const& _jobId,
     uint32_t const extraNonceSize)
 {
     algo::ethash::Result data{};
@@ -228,10 +228,10 @@ bool resolver::ResolverAmdEthash::getResultCache(
 
     if (true == data.found)
     {
-        resultShare.found = data.found;
+        resultShare.found = true;
         resultShare.count = data.count;
         resultShare.extraNonceSize = extraNonceSize;
-        resultShare.jobId.assign(jobId);
+        resultShare.jobId.assign(_jobId);
 
         for (uint32_t i { 0u }; i < data.count; ++i)
         {

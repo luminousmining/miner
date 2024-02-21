@@ -3,7 +3,6 @@
 
 std::optional<common::TYPELOG> common::Cli::getLevelLog() const
 {
-    std::optional<std::string> value;
     if (true == contains("level_log"))
     {
         std::string levelLog{ params["level_log"].as<std::string>() };
@@ -30,7 +29,6 @@ std::optional<common::TYPELOG> common::Cli::getLevelLog() const
 
 std::optional<std::string> common::Cli::getHost() const
 {
-    std::optional<std::string> value;
     if (true == contains("host"))
     {
         return params["host"].as<std::string>();
@@ -71,7 +69,6 @@ uint32_t common::Cli::getPort() const
 
 std::optional<std::string> common::Cli::getAlgo() const
 {
-    std::optional<std::string> value;
     if (true == contains("algo"))
     {
         return params["algo"].as<std::string>();
@@ -82,7 +79,6 @@ std::optional<std::string> common::Cli::getAlgo() const
 
 std::optional<std::string> common::Cli::getWallet() const
 {
-    std::optional<std::string> value;
     if (true == contains("wallet"))
     {
         return params["wallet"].as<std::string>();
@@ -93,7 +89,6 @@ std::optional<std::string> common::Cli::getWallet() const
 
 std::optional<std::string> common::Cli::getWorkerName() const
 {
-    std::optional<std::string> value;
     if (true == contains("workername"))
     {
         return params["workername"].as<std::string>();
@@ -104,7 +99,6 @@ std::optional<std::string> common::Cli::getWorkerName() const
 
 std::optional<std::string> common::Cli::getPassword() const
 {
-    std::optional<std::string> value;
     if (true == contains("password"))
     {
         return params["password"].as<std::string>();

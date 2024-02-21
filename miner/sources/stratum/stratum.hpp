@@ -23,11 +23,11 @@ namespace stratum
         static constexpr uint32_t ID_MINING_AUTHORIZE { 2u };
         static constexpr uint32_t ID_MINING_SUBMIT { OVERCOM_NONCE };
 
-        using callbackUpdateJob = std::function<void(uint32_t const _stratumUUID,
+        using callbackUpdateJob = std::function<void(uint32_t const stratumUUID,
                                                      StratumJobInfo const&)>;
         using callbackShareStatus = std::function<void(bool const isValid,
                                                        uint32_t const requestID,
-                                                       uint32_t const _stratumUUID)>;
+                                                       uint32_t const stratumUUID)>;
 
         uint32_t        uuid { 0u };
         StratumJobInfo  jobInfo{};

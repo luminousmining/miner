@@ -49,7 +49,7 @@ void common::KernelGenerator::addInclude(
 void common::KernelGenerator::declareDefine(
     std::string const& name)
 {
-    defines[name] = "";
+    defines[name].clear();
 }
 
 

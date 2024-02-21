@@ -21,11 +21,6 @@
 #include <stratum/sha256.hpp>
 
 
-device::DeviceManager::DeviceManager()
-{
-}
-
-
 device::DeviceManager::~DeviceManager()
 {
     for ([[maybe_unused]] auto [_, stratum] : stratums)
@@ -348,12 +343,12 @@ void device::DeviceManager::loopStatistical()
 
 
 void device::DeviceManager::onUpdateJob(
-    uint32_t const _stratumUUID,
+    uint32_t const stratumUUID,
     stratum::StratumJobInfo const& newJobInfo)
 {
     UNIQUE_LOCK(mtxJobInfo);
 
-    stratum::StratumJobInfo& jobInfo { jobInfos[_stratumUUID] };
+    stratum::StratumJobInfo& jobInfo { jobInfos[stratumUUID] };
 
     bool updateMemory { false };
     bool updateConstants { false };
@@ -391,7 +386,7 @@ void device::DeviceManager::onUpdateJob(
 #else
         logInfo() << "New Job[" << jobInfo.jobID << "]";
 #endif
-        updateDevice(_stratumUUID, updateMemory, updateConstants);
+        updateDevice(stratumUUID, updateMemory, updateConstants);
     }
 }
 
@@ -515,10 +510,15 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
         }
     }
 
-    stratum->uuid = stratumUUID++;
-    if (stratumUUID >= 100u)
+    if (nullptr == stratum)
     {
-        stratumUUID = 0u;
+        return nullptr;
+    }
+
+    stratum->uuid = stratumCount++;
+    if (stratumCount >= 100u)
+    {
+        stratumCount = 0u;
     }
 
     stratums[deviceId] = stratum;

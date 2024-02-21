@@ -142,10 +142,12 @@ void stratum::StratumAutolykosV2::miningSubmit(
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
     root["params"] = boost::json::array{ wallet + workerName};
-    root["params"].as_array().push_back(params.at(0));
-    root["params"].as_array().push_back(params.at(1));
-    root["params"].as_array().push_back("");
-    root["params"].as_array().push_back(params.at(2));
+
+    boost::json::array& arr{ root["params"].as_array() };
+    arr.push_back(params.at(0));
+    arr.push_back(params.at(1));
+    arr.push_back("");
+    arr.push_back(params.at(2));
 
     send(root);
 }

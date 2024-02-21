@@ -19,12 +19,6 @@
 #include <wincrypt.h>
 #endif
 
-
-network::NetworkTCPClient::NetworkTCPClient()
-{
-}
-
-
 network::NetworkTCPClient::~NetworkTCPClient()
 {
     disconnect();
@@ -45,7 +39,6 @@ bool network::NetworkTCPClient::connect()
 
         boost_error_code ec{};
         auto const& config{ common::Config::instance() };
-        auto const address{ boost::asio::ip::address::from_string(host, ec) };
 
         if (true == config.mining.secrureConnect)
         {
@@ -61,6 +54,7 @@ bool network::NetworkTCPClient::connect()
 
         socketTCP.reset(new boost_socket(ioService, context));
 
+        auto const address{ boost::asio::ip::address::from_string(host, ec) };
         if (boost_error::success != ec)
         {
             boost_resolver resolver{ ioService };
