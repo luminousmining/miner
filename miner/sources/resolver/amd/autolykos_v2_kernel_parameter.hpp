@@ -4,6 +4,7 @@
 
 #include <algo/autolykos/result.hpp>
 #include <common/opencl/buffer_mapped.hpp>
+#include <common/opencl/buffer_wrapper.hpp>
 
 #define NEW_BUFFER
 
@@ -21,8 +22,8 @@ namespace resolver
                 uint64_t hostNonce { 0ull };
                 algo::hash256 hostHeader {};
 
-                cl::Buffer* dagCache { nullptr };
-                cl::Buffer* BHashes { nullptr };
+                common::opencl::Buffer<algo::u_hash256> BHashes { CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
+                common::opencl::Buffer<algo::u_hash256> dagCache { CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
                 common::opencl::BufferMapped<uint32_t> boundaryCache
                 {
                     CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,

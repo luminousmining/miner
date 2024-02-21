@@ -37,6 +37,12 @@ namespace common
             }
 
             inline
+            void setCapacity(size_t const capacity)
+            {
+                size = capacity * sizeof(TBuffer);
+            }
+
+            inline
             cl::Buffer* getBuffer()
             {
                 return buffer;
