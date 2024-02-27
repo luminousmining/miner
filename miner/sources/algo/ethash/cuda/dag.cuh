@@ -15,10 +15,10 @@ void doCopy(
     #pragma unroll
     for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
     {
-        uint32_t const x{  __shfl_sync(0xffffffff, src[i].x, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const y{  __shfl_sync(0xffffffff, src[i].y, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const z{  __shfl_sync(0xffffffff, src[i].z, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const w{  __shfl_sync(0xffffffff, src[i].w, laneId, DAG_PARRALLEL_LANE) };
+        uint32_t const x{ reg_load(src[i].x, laneId, DAG_PARRALLEL_LANE) };
+        uint32_t const y{ reg_load(src[i].y, laneId, DAG_PARRALLEL_LANE) };
+        uint32_t const z{ reg_load(src[i].z, laneId, DAG_PARRALLEL_LANE) };
+        uint32_t const w{ reg_load(src[i].w, laneId, DAG_PARRALLEL_LANE) };
 
         if (i == workerId)
         {
@@ -54,10 +54,10 @@ void buildItemFromCache(
         #pragma unroll
         for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
         {
-            cache64Bytes[i].x = __shfl_sync(0xffffffff, cache16Bytes.x, i, DAG_PARRALLEL_LANE);
-            cache64Bytes[i].y = __shfl_sync(0xffffffff, cache16Bytes.y, i, DAG_PARRALLEL_LANE);
-            cache64Bytes[i].z = __shfl_sync(0xffffffff, cache16Bytes.z, i, DAG_PARRALLEL_LANE);
-            cache64Bytes[i].w = __shfl_sync(0xffffffff, cache16Bytes.w, i, DAG_PARRALLEL_LANE);
+            cache64Bytes[i].x = reg_load(cache16Bytes.x, i, DAG_PARRALLEL_LANE);
+            cache64Bytes[i].y = reg_load(cache16Bytes.y, i, DAG_PARRALLEL_LANE);
+            cache64Bytes[i].z = reg_load(cache16Bytes.z, i, DAG_PARRALLEL_LANE);
+            cache64Bytes[i].w = reg_load(cache16Bytes.w, i, DAG_PARRALLEL_LANE);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -99,10 +99,10 @@ void buildItem(
         #pragma unroll
         for (uint32_t i{ 0u }; i < DAG_PARRALLEL_LANE; ++i)
         {
-            tmp_hash[i].x = __shfl_sync(0xffffffff, tmp_cache.x, i, DAG_PARRALLEL_LANE);
-            tmp_hash[i].y = __shfl_sync(0xffffffff, tmp_cache.y, i, DAG_PARRALLEL_LANE);
-            tmp_hash[i].z = __shfl_sync(0xffffffff, tmp_cache.z, i, DAG_PARRALLEL_LANE);
-            tmp_hash[i].w = __shfl_sync(0xffffffff, tmp_cache.w, i, DAG_PARRALLEL_LANE);
+            tmp_hash[i].x = reg_load(tmp_cache.x, i, DAG_PARRALLEL_LANE);
+            tmp_hash[i].y = reg_load(tmp_cache.y, i, DAG_PARRALLEL_LANE);
+            tmp_hash[i].z = reg_load(tmp_cache.z, i, DAG_PARRALLEL_LANE);
+            tmp_hash[i].w = reg_load(tmp_cache.w, i, DAG_PARRALLEL_LANE);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ void buildItem(
     for (uint32_t laneId{ 0u }; laneId < DAG_HASH_U4_SIZE; ++laneId)
     {
         doCopy(&itemHash, hash, workerId, laneId);
-        uint32_t const tmpDagIndex{ __shfl_sync(0xffffffff, dagIndex, laneId, DAG_PARRALLEL_LANE) };
+        uint32_t const tmpDagIndex{ reg_load(0xffffffff, dagIndex, laneId, DAG_PARRALLEL_LANE) };
         if (true == is_access)
         {
             uint32_t const index{ tmpDagIndex + workerId };

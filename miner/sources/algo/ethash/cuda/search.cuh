@@ -158,25 +158,25 @@ uint32_t mix_reduce(
         uint32_t const index_mix{ i & 7u };
 
         {
-            start_index = fnv1(index_gap ^ word, __shfl_sync(0xffffffff, matrix.x, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1(index_gap ^ word, reg_load(matrix.x, index_mix, SEARCH_PARRALLEL_LANE));
             start_index %= d_dag_number_item;
             start_index *= 8u;
             fnv1(matrix, d_dag[start_index + thread_lane_id]);
         }
         {
-            start_index = fnv1((index_gap + 1u) ^ word, __shfl_sync(0xffffffff, matrix.y, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1((index_gap + 1u) ^ word, reg_load(matrix.y, index_mix, SEARCH_PARRALLEL_LANE));
             start_index %= d_dag_number_item;
             start_index *= 8u;
             fnv1(matrix, d_dag[start_index + thread_lane_id]);
         }
         {
-            start_index = fnv1((index_gap + 2u) ^ word, __shfl_sync(0xffffffff, matrix.z, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1((index_gap + 2u) ^ word, reg_load(matrix.z, index_mix, SEARCH_PARRALLEL_LANE));
             start_index %= d_dag_number_item;
             start_index *= 8u;
             fnv1(matrix, d_dag[start_index + thread_lane_id]);
         }
         {
-            start_index = fnv1((index_gap + 3u) ^ word, __shfl_sync(0xffffffff, matrix.w, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1((index_gap + 3u) ^ word, reg_load(matrix.w, index_mix, SEARCH_PARRALLEL_LANE));
             start_index %= d_dag_number_item;
             start_index *= 8u;
             fnv1(matrix, d_dag[start_index + thread_lane_id]);
@@ -207,10 +207,10 @@ void ethash_create_mix_hash(
         #pragma unroll
         for (uint32_t i{ 0u }; i < 4u; ++i)
         {
-            copy_matrix.x = __shfl_sync(0xffffffff, seed[i].x, lane_id, SEARCH_PARRALLEL_LANE);
-            copy_matrix.y = __shfl_sync(0xffffffff, seed[i].y, lane_id, SEARCH_PARRALLEL_LANE);
-            copy_matrix.z = __shfl_sync(0xffffffff, seed[i].z, lane_id, SEARCH_PARRALLEL_LANE);
-            copy_matrix.w = __shfl_sync(0xffffffff, seed[i].w, lane_id, SEARCH_PARRALLEL_LANE);
+            copy_matrix.x = reg_load(seed[i].x, lane_id, SEARCH_PARRALLEL_LANE);
+            copy_matrix.y = reg_load(seed[i].y, lane_id, SEARCH_PARRALLEL_LANE);
+            copy_matrix.z = reg_load(seed[i].z, lane_id, SEARCH_PARRALLEL_LANE);
+            copy_matrix.w = reg_load(seed[i].w, lane_id, SEARCH_PARRALLEL_LANE);
             if (i == index_seed)
             {
                 matrix = copy_matrix;
@@ -225,18 +225,18 @@ void ethash_create_mix_hash(
 
         uint4 const shuffle_1
         {
-            __shfl_sync(0xffffffff, matrix_reduce, 0, SEARCH_PARRALLEL_LANE),
-            __shfl_sync(0xffffffff, matrix_reduce, 1, SEARCH_PARRALLEL_LANE),
-            __shfl_sync(0xffffffff, matrix_reduce, 2, SEARCH_PARRALLEL_LANE),
-            __shfl_sync(0xffffffff, matrix_reduce, 3, SEARCH_PARRALLEL_LANE)
+            reg_load(matrix_reduce, 0, SEARCH_PARRALLEL_LANE),
+            reg_load(matrix_reduce, 1, SEARCH_PARRALLEL_LANE),
+            reg_load(matrix_reduce, 2, SEARCH_PARRALLEL_LANE),
+            reg_load(matrix_reduce, 3, SEARCH_PARRALLEL_LANE)
         };
 
         uint4 const shuffle_2
         {
-            __shfl_sync(0xffffffff, matrix_reduce, 4, SEARCH_PARRALLEL_LANE),
-            __shfl_sync(0xffffffff, matrix_reduce, 5, SEARCH_PARRALLEL_LANE),
-            __shfl_sync(0xffffffff, matrix_reduce, 6, SEARCH_PARRALLEL_LANE),
-            __shfl_sync(0xffffffff, matrix_reduce, 7, SEARCH_PARRALLEL_LANE)
+            reg_load(matrix_reduce, 4, SEARCH_PARRALLEL_LANE),
+            reg_load(matrix_reduce, 5, SEARCH_PARRALLEL_LANE),
+            reg_load(matrix_reduce, 6, SEARCH_PARRALLEL_LANE),
+            reg_load(matrix_reduce, 7, SEARCH_PARRALLEL_LANE)
         };
 
         if (lane_id == thread_lane_id)
