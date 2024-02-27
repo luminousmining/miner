@@ -9,6 +9,7 @@
 
 #include <common/cuda/be_u64.cuh>
 #include <common/cuda/copy_u4.cuh>
+#include <common/cuda/register.cuh>
 
 #include <algo/crypto/cuda/fnv1.cuh>
 #include <algo/crypto/cuda/keccak_f800.cuh>

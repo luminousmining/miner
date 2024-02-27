@@ -58,7 +58,7 @@ void loop_math(
     {
         mix0 = hash[0];
 
-        uint32_t dagIndex = __shfl_sync(0xffffffff, mix0, cnt % LANES, LANES);
+        uint32_t dagIndex = reg_load(mix0, cnt % LANES, LANES);
         dagIndex %= DAG_SIZE;
         dagIndex *= LANES;
         dagIndex += ((lane_id ^ cnt) % LANES);
@@ -86,7 +86,7 @@ void reduce_hash(
     #pragma unroll
     for (uint32_t i = 0u; i < LANES; ++i)
     {
-        tmp[i] = __shfl_sync(0xffffffff, value, i, LANES);
+        tmp[i] = reg_load(value, i, LANES);
     }
 
     if (is_same_lane == true)
@@ -137,8 +137,8 @@ void progpowSearch(
     #pragma unroll 1
     for (uint32_t l_id = 0u; l_id < LANES; ++l_id)
     {
-        uint32_t const lane_lsb = __shfl_sync(0xffffffff, lsb, l_id, LANES);
-        uint32_t const lane_msb = __shfl_sync(0xffffffff, msb, l_id, LANES);
+        uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
+        uint32_t const lane_msb = reg_load(msb, l_id, LANES);
         fill_hash(lane_id, lane_lsb, lane_msb, hash);
         loop_math(lane_id, dag, hash, header_dag);
         reduce_hash(l_id == lane_id, hash, digest);
