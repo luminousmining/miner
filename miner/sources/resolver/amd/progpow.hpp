@@ -16,12 +16,13 @@ namespace resolver
     {
     public:
         ResolverAmdProgPOW() = default;
-        ~ResolverAmdProgPOW() = default;
+        ~ResolverAmdProgPOW();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;
         bool updateConstants(stratum::StratumJobInfo const& jobInfo) final;
         bool execute(stratum::StratumJobInfo const& jobInfo) final;
         void submit(stratum::Stratum* const stratum) final;
+        void submit(stratum::StratumSmartMining* const stratum) final;
 
     protected:
         algo::progpow::VERSION progpowVersion { algo::progpow::VERSION::V_0_9_2 };

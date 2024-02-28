@@ -20,6 +20,7 @@ cli.cpp
 cli_device_custom.cpp
 cli_device_setting.cpp
 cli_pool.cpp
+cli_smart_mining.cpp
 config.cpp
 dashboard.cpp
 kernel_generator.cpp

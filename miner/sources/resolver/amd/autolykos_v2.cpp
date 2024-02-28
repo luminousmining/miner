@@ -11,6 +11,16 @@
 #include <resolver/amd/autolykos_v2.hpp>
 
 
+resolver::ResolverAmdAutolykosV2::~ResolverAmdAutolykosV2()
+{
+    parameters.BHashes.free();
+    parameters.dagCache.free();
+    parameters.boundaryCache.free();
+    parameters.headerCache.free();
+    parameters.resultCache.free();
+}
+
+
 bool resolver::ResolverAmdAutolykosV2::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
@@ -27,10 +37,13 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.BHashes.free();
-    parameters.BHashes.setCapacity(algo::autolykos_v2::NONCES_PER_ITER);
+    parameters.dagCache.free();
+    parameters.boundaryCache.free();
+    parameters.headerCache.free();
+    parameters.resultCache.free();
 
     ////////////////////////////////////////////////////////////////////////////
-    parameters.dagCache.free();
+    parameters.BHashes.setCapacity(algo::autolykos_v2::NONCES_PER_ITER);
     parameters.dagCache.setCapacity(parameters.hostDagItemCount);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -324,6 +337,38 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
 
 void resolver::ResolverAmdAutolykosV2::submit(
     stratum::Stratum* const stratum)
+{
+    if (true == resultShare.found)
+    {
+        if (false == isStale(resultShare.jobId))
+        {
+            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            {
+                std::stringstream nonceHexa;
+                nonceHexa << std::hex << resultShare.nonces[i];
+
+                boost::json::array params
+                {
+                    resultShare.jobId,
+                    nonceHexa.str().substr(stratum->jobInfo.extraNonceSize),
+                    nonceHexa.str()
+                };
+
+                stratum->miningSubmit(deviceId, params);
+
+                resultShare.nonces[i] = 0ull;
+            }
+
+        }
+    }
+
+    resultShare.count = 0u;
+    resultShare.found = false;
+}
+
+
+void resolver::ResolverAmdAutolykosV2::submit(
+    stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {

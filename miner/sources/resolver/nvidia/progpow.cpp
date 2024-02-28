@@ -263,3 +263,40 @@ void resolver::ResolverNvidiaProgPOW::submit(
         resultShare.found = false;
     }
 }
+
+
+void resolver::ResolverNvidiaProgPOW::submit(
+    stratum::StratumSmartMining* const stratum)
+{
+    if (true == resultShare.found)
+    {
+        if (false == isStale(resultShare.jobId))
+        {
+            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            {
+                std::stringstream nonceHexa;
+                nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+
+                uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
+                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                {
+                    hash[j] = resultShare.hash[i][j];
+                }
+
+                boost::json::array params
+                {
+                    resultShare.jobId,
+                    nonceHexa.str(),
+                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                };
+
+                stratum->miningSubmit(deviceId, params);
+
+                resultShare.nonces[i] = 0ull;
+            }
+        }
+
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
+}

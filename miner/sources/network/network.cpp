@@ -52,7 +52,8 @@ bool network::NetworkTCPClient::connect()
             context.set_verify_mode(boost::asio::ssl::verify_none);
         }
 
-        socketTCP.reset(new boost_socket(ioService, context));
+        SAFE_DELETE(socketTCP);
+        socketTCP = new (std::nothrow) boost_socket(ioService, context);
 
         auto const address{ boost::asio::ip::address::from_string(host, ec) };
         if (boost_error::success != ec)
@@ -317,6 +318,12 @@ void network::NetworkTCPClient::send(
 {
     UNIQUE_LOCK(txMutex);
 
+    if (nullptr == socketTCP)
+    {
+        logErr() << "Cannot send packet, socketTCP is nullptr!";
+        return;
+    }
+
     if (true == secureConnection)
     {
         boost::asio::async_write(
@@ -349,6 +356,6 @@ void network::NetworkTCPClient::send(
     oss << root;
     std::string str{ oss.str() + "\n" };
 
-    logDebug() << root;
+    logDebug() << "-->" << root;
     send(str.c_str(), str.size());
 }

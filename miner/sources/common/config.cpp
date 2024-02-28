@@ -28,11 +28,30 @@ bool common::Config::load(int argc, char** argv)
 bool common::Config::isValidConfig() const
 {
     bool error{ false };
-    CLI_CHECK(mining.host.empty() == true, "missing --host");
-    CLI_CHECK(mining.port == 0, "missing --port");
-    CLI_CHECK(mining.algo.empty() == true, "missing --algo");
-    CLI_CHECK(mining.workerName.empty() == true, "missing --wokername");
-    CLI_CHECK(mining.wallet.empty() == true, "missing --wallet");
+
+    if (common::PROFILE::STANDARD == profile)
+    {
+        CLI_CHECK(mining.host.empty() == true,       "missing --host");
+        CLI_CHECK(mining.port == 0,                  "missing --port");
+        CLI_CHECK(mining.algo.empty() == true,       "missing --algo");
+        CLI_CHECK(mining.workerName.empty() == true, "missing --wokername");
+        CLI_CHECK(mining.password.empty() == true,   "missing --password");
+        CLI_CHECK(mining.wallet.empty() == true,     "missing --wallet");
+    }
+    else if (common::PROFILE::SMART_MINING == profile)
+    {
+        CLI_CHECK(mining.workerName.empty() == true,          "missing --wokername");
+        CLI_CHECK(mining.password.empty() == true,            "missing --password");
+        CLI_CHECK(smartMining.coinPoolConfig.empty() == true, "missing --sm_wallet and --sm_pool");
+        for (auto const& it : smartMining.coinPoolConfig)
+        {
+            PoolConfig const& poolConfig { it.second };
+            CLI_CHECK(poolConfig.host.empty() == true,     "missing --sm_pool");
+            CLI_CHECK(poolConfig.port == 0,                "missing --sm_pool");
+            CLI_CHECK(poolConfig.wallet.empty() == true,   "missing --sm_wallet");
+            CLI_CHECK(poolConfig.password.empty() == true, "missing --sm_wallet");
+        }
+    }
 
     return true;
 }
@@ -103,8 +122,8 @@ bool common::Config::loadCli(int argc, char** argv)
             mining.workerName.assign(*workerName);
         }
 
-        mining.secrureConnect = cli.getSSL();
-        mining.stale = cli.getStale();
+        mining.secrureConnect = cli.isSSL();
+        mining.stale = cli.isStale();
 
         ////////////////////////////////////////////////////////////////////////
         deviceEnable.nvidiaEnable = cli.isNvidiaEnable();
@@ -158,6 +177,46 @@ bool common::Config::loadCli(int argc, char** argv)
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->workerName.assign(value);
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        if (true == cli.isSmartMining())
+        {
+            profile = common::PROFILE::SMART_MINING;
+
+            for (auto const& it : cli.getSmartMiningWallet())
+            {
+                std::string const& coin{ std::get<0>(it) };
+                std::string const& wallet{ std::get<1>(it) };
+
+                if (smartMining.coinPoolConfig.find(coin) == smartMining.coinPoolConfig.end())
+                {
+                    smartMining.coinPoolConfig[coin].wallet.assign(wallet);
+                }
+                else
+                {
+                    logErr() << "sm_wallet => duplicate coin[" << coin << "]";
+                    return false;
+                }
+            }
+
+            for (auto const& it : cli.getSmartMiningPool())
+            {
+                std::string const& coin{ std::get<0>(it) };
+                std::string const& url{ std::get<1>(it) };
+                uint32_t const& port{ std::get<2>(it) };
+
+                common::Config::PoolConfig& poolConfig { smartMining.coinPoolConfig[coin] };
+                if (   false == poolConfig.host.empty()
+                    || 0u != poolConfig.port)
+                {
+                    logErr() << "sm_pool => duplicate coin[" << coin << "]";
+                    return false;
+                }
+                poolConfig.host.assign(url);
+                poolConfig.port = port;
+                poolConfig.password = mining.password;
+            }
+        }
     }
     catch(std::exception const& e)
     {
@@ -185,24 +244,7 @@ bool common::Config::isEnable(uint32_t const deviceId) const
 
 algo::ALGORITHM common::Config::getAlgorithm() const
 {
-    return getAlgorithm(mining.algo);
-}
-
-
-algo::ALGORITHM common::Config::getAlgorithm(
-    std::string const& algo) const
-{
-    if      (algo == "sha256")      { return algo::ALGORITHM::SHA256;       }
-    else if (algo == "ethash")      { return algo::ALGORITHM::ETHASH;       }
-    else if (algo == "etchash")     { return algo::ALGORITHM::ETCHASH;      }
-    else if (algo == "progpow")     { return algo::ALGORITHM::PROGPOW;      }
-    else if (algo == "progpowz")    { return algo::ALGORITHM::PROGPOW;      }
-    else if (algo == "kawpow")      { return algo::ALGORITHM::KAWPOW;       }
-    else if (algo == "firopow")     { return algo::ALGORITHM::FIROPOW;      }
-    else if (algo == "evrprogpow")  { return algo::ALGORITHM::EVRPROGPOW;   }
-    else if (algo == "autolykosv2") { return algo::ALGORITHM::AUTOLYKOS_V2; }
-
-    return algo::ALGORITHM::UNKNOW;
+    return algo::toEnum(mining.algo);
 }
 
 

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <functional>
 
 #include <boost/thread/mutex.hpp>
@@ -36,9 +35,7 @@ namespace stratum
         std::string     wallet{};
         std::string     password{};
 
-        Stratum();
         virtual ~Stratum();
-
         virtual void onResponse(boost::json::object const& root) = 0;
         virtual void miningSubmit(uint32_t const deviceId,
                                   boost::json::array const& params) = 0;
@@ -67,8 +64,8 @@ namespace stratum
         bool                authenticated{ false };
         boost::mutex        mtxSubmit;
         boost::mutex        mtxDispatchJob{};
-        callbackUpdateJob   dispatchJob{};
-        callbackShareStatus shareStatus{};
+        callbackUpdateJob   dispatchJob{ nullptr };
+        callbackShareStatus shareStatus{ nullptr };
 
         void onShare(boost::json::object const& root,
                      uint32_t const miningRequestID);

@@ -221,6 +221,12 @@ void device::Device::setStratum(
 }
 
 
+void device::Device::setStratumSmartMining(
+    stratum::StratumSmartMining* const newStratum)
+{
+    stratumSmartMining = newStratum;
+}
+
 void device::Device::kill(
     device::KILL_STATE const state)
 {
@@ -331,6 +337,12 @@ stratum::Stratum* device::Device::getStratum()
 }
 
 
+stratum::StratumSmartMining* device::Device::getStratumSmartMining()
+{
+    return stratumSmartMining;
+}
+
+
 statistical::Statistical::ShareInfo device::Device::getShare()
 {
     statistical::Statistical::ShareInfo info { miningStats.getShares() };
@@ -437,6 +449,7 @@ void device::Device::loopDoWork()
     }
     if (nullptr == resolver)
     {
+        logErr() << "Cannot work, device need resolver";
         return;
     }
 
@@ -474,7 +487,16 @@ void device::Device::loopDoWork()
             kill(device::KILL_STATE::KERNEL_EXECUTE_FAIL);
             continue;
         }
-        resolver->submit(stratum);
+
+        if (common::PROFILE::STANDARD == config.profile)
+        {
+            resolver->submit(stratum);
+        }
+        else
+        {
+            resolver->submit(stratumSmartMining);
+        }
+
         miningStats.increaseKernelExecuted();
 
         // Increasing nonce to next kernel.

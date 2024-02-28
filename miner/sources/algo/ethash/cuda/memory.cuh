@@ -28,6 +28,10 @@ bool ethashInitMemory(
     params.resultCache->nonces[2] = 0ull;
     params.resultCache->nonces[3] = 0ull;
 
+    IS_NULL(params.lightCache);
+    IS_NULL(params.dagCache);
+    IS_NULL(params.resultCache);
+
     CUDA_ER(cudaMemcpyToSymbol(d_light_cache, (void**)&params.lightCache, sizeof(uint4*)));
     CUDA_ER(cudaMemcpyToSymbol(d_dag, (void**)&params.dagCache, sizeof(uint4*)));
 

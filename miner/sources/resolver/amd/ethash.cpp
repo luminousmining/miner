@@ -10,6 +10,16 @@
 #include <resolver/amd/ethash.hpp>
 
 
+resolver::ResolverAmdEthash::~ResolverAmdEthash()
+{
+    parameters.lightCache.free();
+    parameters.dagCache.free();
+    parameters.headerCache.free();
+    parameters.resultCache.free();
+
+}
+
+
 void resolver::ResolverAmdEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
@@ -38,8 +48,12 @@ bool resolver::ResolverAmdEthash::updateMemory(
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.lightCache.free();
-    parameters.lightCache.setSize(context.lightCache.size);
     parameters.dagCache.free();
+    parameters.headerCache.free();
+    parameters.resultCache.free();
+
+    ////////////////////////////////////////////////////////////////////////////
+    parameters.lightCache.setSize(context.lightCache.size);
     parameters.dagCache.setSize(context.dagCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -250,6 +264,36 @@ bool resolver::ResolverAmdEthash::getResultCache(
 
 void resolver::ResolverAmdEthash::submit(
     stratum::Stratum* const stratum)
+{
+    if (true == resultShare.found)
+    {
+        if (false == isStale(resultShare.jobId))
+        {
+            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            {
+                std::stringstream nonceHexa;
+                nonceHexa << std::hex << resultShare.nonces[i];
+
+                boost::json::array params
+                {
+                    resultShare.jobId,
+                    nonceHexa.str().substr(resultShare.extraNonceSize)
+                };
+
+                stratum->miningSubmit(deviceId, params);
+
+                resultShare.nonces[i] = 0ull;
+            }
+        }
+
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
+}
+
+
+void resolver::ResolverAmdEthash::submit(
+    stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {

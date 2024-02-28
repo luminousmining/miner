@@ -34,7 +34,6 @@ int main(
         ////////////////////////////////////////////////////////////////////////
         if (false == config.load(argc, argv))
         {
-            logErr() << "Fail load";
             return 1;
         }
         if (true == config.cli.contains("help"))
@@ -48,8 +47,15 @@ int main(
         {
             return 1;
         }
-        deviceManager.run();
-        deviceManager.connectToPools();
+        if (common::PROFILE::STANDARD == config.profile)
+        {
+            deviceManager.run();
+            deviceManager.connectToPools();
+        }
+        else
+        {
+            deviceManager.connectToSmartMining();
+        }
     }
     catch(std::exception const& e)
     {
@@ -58,5 +64,6 @@ int main(
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "quitting...";
     return 0;
 }

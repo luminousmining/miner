@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <algo/algo_type.hpp>
 #pragma once
@@ -12,6 +13,7 @@
 #include <optional>
 
 #include <common/cli.hpp>
+#include <common/profile.hpp>
 
 
 namespace common
@@ -32,6 +34,12 @@ namespace common
             bool          stale { false };
         };
 
+        struct SmartMiningConfig
+        {
+            using MapCoinPool = std::unordered_map<std::string/*coin*/, PoolConfig>;
+            MapCoinPool coinPoolConfig{};
+        };
+
         struct DeviceEnableSetting
         {
             bool nvidiaEnable{ true };
@@ -39,8 +47,10 @@ namespace common
             bool cpuEnable{ true };
         };
 
+        common::PROFILE                profile { common::PROFILE::STANDARD };
         common::Cli                    cli{};
         PoolConfig                     mining{};
+        SmartMiningConfig              smartMining{};
         DeviceEnableSetting            deviceEnable{};
         std::vector<uint32_t>          deviceDisable{};
         std::map<uint32_t, PoolConfig> deviceSettings{};
@@ -51,7 +61,6 @@ namespace common
         std::optional<PoolConfig> getConfigDevice(uint32_t const deviceId) const;
 
         algo::ALGORITHM getAlgorithm() const;
-        algo::ALGORITHM getAlgorithm(std::string const& algo) const;
 
     private:
         bool loadCli(int argc, char** argv);

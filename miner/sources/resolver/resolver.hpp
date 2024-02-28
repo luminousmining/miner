@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stratum/smart_mining.hpp>
 #include <stratum/stratum.hpp>
 #include <stratum/job_info.hpp>
 
@@ -30,6 +31,7 @@ namespace resolver
         virtual bool updateConstants(stratum::StratumJobInfo const& jobInfo) = 0;
         virtual bool execute(stratum::StratumJobInfo const& jobInfo) = 0;
         virtual void submit(stratum::Stratum* const stratum) = 0;
+        virtual void submit(stratum::StratumSmartMining* const stratum) = 0;
 
     protected:
         uint32_t blocks{ 1024u };

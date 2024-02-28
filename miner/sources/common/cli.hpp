@@ -19,18 +19,30 @@ namespace common
         using customParamStr = std::tuple<uint32_t, std::string>;
         using customTupleStr = std::vector<customParamStr>;
 
+        using customParamStrStr = std::tuple<std::string, std::string>;
+        using customTupleStrStr = std::vector<customParamStrStr>;
+
+        using customParamStrStrU32 = std::tuple<std::string, std::string, uint32_t>;
+        using customTupleStrStrU32 = std::vector<customParamStrStrU32>;
+
         boost::program_options::variables_map params{};
         boost::program_options::options_description description{ "Options" };
 
         explicit Cli();
+
         bool parse(int argc, char** argv);
         bool contains(std::string const& key) const;
-        customTupleU32        getCustomParamsU32(std::string const& paramName, 
-                                                 std::vector<std::string>& options) const;
+
         std::vector<uint32_t> getCustomMultiParamsU32(std::string const& paramName,
                                                       std::vector<std::string>& options) const;
+        customTupleU32        getCustomParamsU32(std::string const& paramName, 
+                                                 std::vector<std::string>& options) const;
         customTupleStr        getCustomParamsStr(std::string const& paramName,
                                                  std::vector<std::string>& options) const;
+        customTupleStrStr     getCustomParamsStrStr(std::string const& paramName,
+                                                    std::vector<std::string>& options) const;
+        customTupleStrStrU32  getCustomParamsStrStrU32(std::string const& paramName,
+                                                       std::vector<std::string>& options) const;
         void help() const;
 
         // logger
@@ -38,8 +50,8 @@ namespace common
 
         // Pool Connection
         std::optional<std::string>   getHost() const;
-        bool                         getSSL() const;
-        bool                         getStale() const;
+        bool                         isSSL() const;
+        bool                         isStale() const;
         uint32_t                     getPort() const;
         std::optional<std::string>   getAlgo() const;
         std::optional<std::string>   getWallet() const;
@@ -59,5 +71,10 @@ namespace common
         customTupleStr getCustomAlgorithm() const;
         customTupleStr getCustomWallet() const;
         customTupleStr getCustomWorkerName() const;
+
+        // Smart mining settings
+        bool isSmartMining() const;
+        customTupleStrStr getSmartMiningWallet() const;
+        customTupleStrStrU32 getSmartMiningPool() const;
     };
 }

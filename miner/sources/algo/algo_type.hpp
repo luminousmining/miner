@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <string>
 
 
@@ -21,4 +20,5 @@ namespace algo
     };
 
     std::string toString(algo::ALGORITHM const algorithm);
+    algo::ALGORITHM toEnum(std::string const& algorithm);
 }

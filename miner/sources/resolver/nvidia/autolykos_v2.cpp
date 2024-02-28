@@ -117,3 +117,35 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
     resultShare.count = 0u;
     resultShare.found = false;
 }
+
+
+void resolver::ResolverNvidiaAutolykosV2::submit(
+    stratum::StratumSmartMining* const stratum)
+{
+    if (true == resultShare.found)
+    {
+        if (false == isStale(resultShare.jobId))
+        {
+            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            {
+                std::stringstream nonceHexa;
+                nonceHexa << std::hex << resultShare.nonces[i];
+
+                boost::json::array params
+                {
+                    resultShare.jobId,
+                    nonceHexa.str().substr(stratum->jobInfo.extraNonceSize),
+                    nonceHexa.str()
+                };
+
+                stratum->miningSubmit(deviceId, params);
+
+                resultShare.nonces[i] = 0ull;
+            }
+
+        }
+    }
+
+    resultShare.count = 0u;
+    resultShare.found = false;
+}

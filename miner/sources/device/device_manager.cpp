@@ -12,18 +12,12 @@
 #include <common/formater_hashrate.hpp>
 #include <common/error/cuda_error.hpp>
 #include <device/device_manager.hpp>
-#include <stratum/autolykos_v2.hpp>
-#include <stratum/etchash.hpp>
-#include <stratum/ethash.hpp>
-#include <stratum/evrprogpow.hpp>
-#include <stratum/firopow.hpp>
-#include <stratum/kawpow.hpp>
-#include <stratum/sha256.hpp>
+#include <stratum/stratums.hpp>
 
 
 device::DeviceManager::~DeviceManager()
 {
-    for ([[maybe_unused]] auto [_, stratum] : stratums)
+    for (auto [_, stratum] : stratums)
     {
         SAFE_DELETE(stratum);
     }
@@ -56,14 +50,32 @@ bool device::DeviceManager::initialize()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    for (device::Device* device : devices)
+    if (common::PROFILE::SMART_MINING == config.profile)
     {
-        if (nullptr != device)
+        initializeStratumSmartMining();
+        for (device::Device* device : devices)
         {
-            std::optional<common::Config::PoolConfig> settings
+            if (nullptr == device)
+            {
+                continue;
+            }
+            device->setStratumSmartMining(&stratumSmartMining);
+        }
+    }
+    else
+    {
+        for (device::Device* device : devices)
+        {
+            if (nullptr == device)
+            {
+                continue;
+            }
+
+            std::optional < common::Config::PoolConfig > settings
             {
                 config.getConfigDevice(device->id)
             };
+
             if (std::nullopt == settings)
             {
                 if (false == initializeStratum(device::DeviceManager::DEVICE_MAX_ID, algorithm))
@@ -76,7 +88,7 @@ bool device::DeviceManager::initialize()
             }
             else
             {
-                algo::ALGORITHM const customAlgo { config.getAlgorithm((*settings).algo) };
+                algo::ALGORITHM const customAlgo { algo::toEnum((*settings).algo) };
                 if (false == initializeStratum(device->id, customAlgo))
                 {
                     return false;
@@ -87,6 +99,38 @@ bool device::DeviceManager::initialize()
             }
         }
     }
+
+    return true;
+}
+
+bool device::DeviceManager::initializeStratumSmartMining()
+{
+    common::Config const& config { common::Config::instance() };
+
+    stratumSmartMining.host.assign("192.168.1.25");
+    stratumSmartMining.port = 8080;
+    stratumSmartMining.workerName.assign(config.mining.workerName);
+    stratumSmartMining.password.assign(config.mining.password);
+
+    stratumSmartMining.setCallbackSetAlgorithm(
+        std::bind(
+            &device::DeviceManager::onSmartMiningSetAlgorithm,
+            this,
+            std::placeholders::_1));
+
+    stratumSmartMining.setCallbackUpdateJob(
+        std::bind(
+            &device::DeviceManager::onSmartMiningUpdateJob,
+            this,
+            std::placeholders::_1));
+
+    stratumSmartMining.setCallbackShareStatus(
+        std::bind(
+            &device::DeviceManager::onShareStatus,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3));
 
     return true;
 }
@@ -262,9 +306,21 @@ void device::DeviceManager::connectToPools()
 }
 
 
+void device::DeviceManager::connectToSmartMining()
+{
+    if (true == stratumSmartMining.connect())
+    {
+        stratumSmartMining.wait();
+    }
+}
+
+
 void device::DeviceManager::loopStatistical()
 {
+    std::string host{};
     common::Dashboard board{};
+    stratum::Stratum* stratum { nullptr };
+    common::Config const& config { common::Config::instance() };
     boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_HASH_STATS };
 
     board.setTitle("HASHRATE");
@@ -273,8 +329,6 @@ void device::DeviceManager::loopStatistical()
     board.addColumn("Pool");
     board.addColumn("Hashrate");
     board.addColumn("Shares");
-
-    stratum::Stratum* stratum { nullptr };
 
     while (true)
     {
@@ -295,19 +349,27 @@ void device::DeviceManager::loopStatistical()
                 continue;
             }
  
-            auto const& itStratum { stratums.find(device->id) };
-            if (itStratum != stratums.end())
+            if (common::PROFILE::STANDARD == config.profile)
             {
-                stratum = itStratum->second;
+                auto const& itStratum { stratums.find(device->id) };
+                if (itStratum != stratums.end())
+                {
+                    stratum = itStratum->second;
+                }
+                else
+                {
+                    stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID);
+                }
+
+                if (nullptr == stratum)
+                {
+                    continue;
+                }
+                host.assign(stratum->host);
             }
             else
             {
-                stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID);
-            }
-
-            if (nullptr == stratum)
-            {
-                continue;
+                host.assign("smart_mining");
             }
 
             double const hashrate { device->getHashrate() };
@@ -321,7 +383,7 @@ void device::DeviceManager::loopStatistical()
                 {
                     std::to_string(device->id),
                     algo::toString(device->algorithm),
-                    stratum->host,
+                    host,
                     common::hashrateToString(hashrate),
                     ssShares.str()
                 }
@@ -396,17 +458,22 @@ void device::DeviceManager::onShareStatus(
     uint32_t const requestID,
     uint32_t const stratumUUID)
 {
+    common::Config const& config { common::Config::instance() };
+
     for (device::Device* const device : devices)
     {
         if (nullptr == device)
         {
             continue;
         }
-        stratum::Stratum* stratum { device->getStratum() };
-        if (   nullptr == stratum
-            || stratum->uuid != stratumUUID)
+        if (common::PROFILE::STANDARD == config.profile)
         {
-            continue;
+            stratum::Stratum* stratum { device->getStratum() };
+            if (   nullptr == stratum
+                || stratum->uuid != stratumUUID)
+            {
+                continue;
+            }
         }
 
         uint32_t const shareID { (device->id + 1u) * stratum::Stratum::OVERCOM_NONCE };
@@ -419,22 +486,66 @@ void device::DeviceManager::onShareStatus(
 }
 
 
+void device::DeviceManager::onSmartMiningSetAlgorithm(
+    algo::ALGORITHM const algorithm)
+{
+    threadStatistical.interrupt();
+
+    for (device::Device* device : devices)
+    {
+        if (nullptr == device)
+        {
+            continue;
+        }
+
+        device->kill(device::KILL_STATE::DISABLE);
+    }
+
+    for (device::Device* device : devices)
+    {
+        if (nullptr == device)
+        {
+            continue;
+        }
+
+        device->setAlgorithm(algorithm);
+        device->run();
+    }
+
+    threadStatistical = boost::thread{
+        boost::bind(&device::DeviceManager::loopStatistical, this) };
+}
+
+
+void device::DeviceManager::onSmartMiningUpdateJob(
+    stratum::StratumJobInfo const& newJobInfo)
+{
+    onUpdateJob(0, newJobInfo);
+}
+
+
 void device::DeviceManager::updateDevice(
     uint32_t const stratumUUID,
     bool const updateMemory,
     bool const updateConstants)
 {
+    common::Config const& config { common::Config::instance() };
+
     for (device::Device* const device : devices)
     {
         if (nullptr == device)
         {
             continue;
         }
-        stratum::Stratum* stratum { device->getStratum() };
-        if (   nullptr == stratum
-            || stratum->uuid != stratumUUID)
+
+        if (common::PROFILE::STANDARD == config.profile)
         {
-            continue;
+            stratum::Stratum* stratum { device->getStratum() };
+            if (   nullptr == stratum
+                || stratum->uuid != stratumUUID)
+            {
+                continue;
+            }
         }
 
         stratum::StratumJobInfo& jobInfo { jobInfos[stratumUUID] };
@@ -462,53 +573,7 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
         return it->second;
     }
 
-    switch (algorithm)
-    {
-        case algo::ALGORITHM::SHA256:
-        {
-            stratum = new (std::nothrow) stratum::StratumSha256;
-            break;
-        }
-        case algo::ALGORITHM::ETHASH:
-        {
-            stratum = new (std::nothrow) stratum::StratumEthash;
-            break;
-        }
-        case algo::ALGORITHM::ETCHASH:
-        {
-            stratum = new (std::nothrow) stratum::StratumEtchash;
-            break;
-        }
-        case algo::ALGORITHM::PROGPOW:
-        {
-            stratum = new (std::nothrow) stratum::StratumProgPOW;
-            break;
-        }
-        case algo::ALGORITHM::KAWPOW:
-        {
-            stratum = new (std::nothrow) stratum::StratumKawPOW;
-            break;
-        }
-        case algo::ALGORITHM::FIROPOW:
-        {
-            stratum = new (std::nothrow) stratum::StratumFiroPOW;
-            break;
-        }
-        case algo::ALGORITHM::EVRPROGPOW:
-        {
-            stratum = new (std::nothrow) stratum::StratumEvrprogPOW;
-            break;
-        }
-        case algo::ALGORITHM::AUTOLYKOS_V2:
-        {
-            stratum = new (std::nothrow) stratum::StratumAutolykosV2;
-            break;
-        }
-        case algo::ALGORITHM::UNKNOW:
-        {
-            break;
-        }
-    }
+    stratum = stratum::NewStratum(algorithm);
 
     if (nullptr == stratum)
     {
