@@ -230,6 +230,5 @@ void stratum::StratumSmartMining::miningSubmit(
     uint32_t const deviceId,
     boost::json::array const& params)
 {
-    __TRACE();
     stratumPool->miningSubmit(deviceId, params);
 }

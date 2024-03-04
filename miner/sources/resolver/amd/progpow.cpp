@@ -333,7 +333,6 @@ void resolver::ResolverAmdProgPOW::submit(
 {
     if (true == resultShare.found)
     {
-        __TRACE();
         if (false == isStale(resultShare.jobId))
         {
             for (uint32_t i { 0u }; i < resultShare.count; ++i)
