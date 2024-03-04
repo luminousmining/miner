@@ -71,6 +71,8 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
         resultShare.found = true;
         resultShare.count = parameters.resultCache->count;
         resultShare.jobId = jobInfo.jobIDStr;
+        resultShare.extraNonceSize = jobInfo.extraNonceSize;
+        resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
 
         for (uint32_t i { 0u }; i < parameters.resultCache->count; ++i)
         {
@@ -102,7 +104,7 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
                 boost::json::array params
                 {
                     resultShare.jobId,
-                    nonceHexa.str().substr(stratum->jobInfo.extraNonceSize),
+                    nonceHexa.str().substr(resultShare.extraNonceSize),
                     nonceHexa.str()
                 };
 
@@ -134,7 +136,7 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
                 boost::json::array params
                 {
                     resultShare.jobId,
-                    nonceHexa.str().substr(stratum->jobInfo.extraNonceSize),
+                    nonceHexa.str().substr(resultShare.extraNonceSize),
                     nonceHexa.str()
                 };
 

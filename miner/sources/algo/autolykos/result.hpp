@@ -26,6 +26,7 @@ namespace algo
             bool        found{ false };
             uint32_t    count{ 0u };
             uint32_t    extraNonceSize{ 0u };
+            uint32_t    extraNonce2Size{ 0u };
             uint64_t    nonces[4]{ 0ull, 0ull, 0ull, 0ull };
         };
 #endif

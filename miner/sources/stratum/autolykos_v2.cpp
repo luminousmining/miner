@@ -26,7 +26,7 @@ void stratum::StratumAutolykosV2::onResponse(
                 if (false == result.empty())
                 {
                     std::string extraNonceStr{ result.at(1).as_string().c_str() };
-                    uint32_t const extraNonce2Size { common::boostJsonGetNumber<uint32_t>(result.at(2)) };
+                    uint32_t const extraNonce2Size { common::boostJsonGetNumber<uint32_t const>(result.at(2)) };
                     setExtraNonce(extraNonceStr, extraNonce2Size);
                     miningAuthorize();
                 }
@@ -138,10 +138,12 @@ void stratum::StratumAutolykosV2::miningSubmit(
 {
     UNIQUE_LOCK(mtxSubmit);
 
+    logInfo() << "Ha bon !";
+
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array{ wallet + workerName};
+    root["params"] = boost::json::array{ wallet + "." + workerName};
 
     boost::json::array& arr{ root["params"].as_array() };
     arr.push_back(params.at(0));

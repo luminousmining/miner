@@ -289,7 +289,9 @@ bool resolver::ResolverAmdAutolykosV2::execute(
     OPENCL_ER(clQueue->finish());
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
+    if (false == getResultCache(jobInfo.jobIDStr,
+                                jobInfo.extraNonceSize,
+                                jobInfo.extraNonce2Size))
     {
         return false;
     }
@@ -301,7 +303,8 @@ bool resolver::ResolverAmdAutolykosV2::execute(
 
 bool resolver::ResolverAmdAutolykosV2::getResultCache(
     std::string const& _jobId,
-    uint32_t const extraNonceSize)
+    uint32_t const extraNonceSize,
+    uint32_t const extraNonce2Size)
 {
     algo::autolykos_v2::Result data{};
 
@@ -314,9 +317,11 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     ////////////////////////////////////////////////////////////////////////////
     if (true == data.found)
     {
+        logInfo() << "extraNonceSize <= " << extraNonceSize;
         resultShare.found = true;
         resultShare.count = data.count;
         resultShare.extraNonceSize = extraNonceSize;
+        resultShare.extraNonce2Size = extraNonce2Size;
         resultShare.jobId.assign(_jobId);
 
         for (uint32_t i { 0u }; i < data.count; ++i)
@@ -350,7 +355,7 @@ void resolver::ResolverAmdAutolykosV2::submit(
                 boost::json::array params
                 {
                     resultShare.jobId,
-                    nonceHexa.str().substr(stratum->jobInfo.extraNonceSize),
+                    nonceHexa.str().substr(resultShare.extraNonceSize),
                     nonceHexa.str()
                 };
 
@@ -382,7 +387,7 @@ void resolver::ResolverAmdAutolykosV2::submit(
                 boost::json::array params
                 {
                     resultShare.jobId,
-                    nonceHexa.str().substr(stratum->jobInfo.extraNonceSize),
+                    nonceHexa.str().substr(resultShare.extraNonceSize),
                     nonceHexa.str()
                 };
 
