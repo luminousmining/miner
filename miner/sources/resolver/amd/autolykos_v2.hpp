@@ -33,7 +33,8 @@ namespace resolver
         bool buildSearch();
         bool fillDAG();
         bool getResultCache(std::string const& _jobId,
-                            uint32_t const extraNonceSize);
+                            uint32_t const extraNonceSize,
+                            uint32_t const extraNonce2Size);
 
     private:
         uint32_t period { 0u };

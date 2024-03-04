@@ -119,8 +119,36 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
 {
     IS_NULL(stratumPool);
 
-    std::string extraNonceStr{ root.at("params").as_string().c_str() };
-    stratumPool->setExtraNonce(extraNonceStr);
+
+    switch (currentAlgorithm)
+    {
+        case algo::ALGORITHM::SHA256:
+        case algo::ALGORITHM::ETHASH:
+        case algo::ALGORITHM::ETCHASH:
+        case algo::ALGORITHM::PROGPOW:
+        case algo::ALGORITHM::KAWPOW:
+        case algo::ALGORITHM::FIROPOW:
+        case algo::ALGORITHM::EVRPROGPOW:
+        {
+            std::string extraNonceStr { root.at("params").as_string().c_str() };
+            stratumPool->setExtraNonce(extraNonceStr);
+            break;
+        }
+        case algo::ALGORITHM::AUTOLYKOS_V2:
+        {
+            auto params { root.at("params").as_array() };
+            std::string extraNonceStr { params.at(0).as_string().c_str() };
+            uint32_t const extraNonce2Size { common::boostJsonGetNumber<uint32_t const>(params.at(1)) };
+            logInfo() << "extraNonceStr: " << extraNonceStr;
+            logInfo() << "extraNonce2Size: " << extraNonce2Size;
+            stratumPool->setExtraNonce(extraNonceStr, extraNonce2Size);
+            break;
+        }
+        default:
+        {
+            return false;
+        }
+    }
 
     return true;
 }

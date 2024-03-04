@@ -53,7 +53,7 @@ bool common::Config::isValidConfig() const
         }
     }
 
-    return true;
+    return !error;
 }
 
 
