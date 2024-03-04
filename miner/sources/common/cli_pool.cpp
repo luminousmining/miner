@@ -37,7 +37,7 @@ std::optional<std::string> common::Cli::getHost() const
 }
 
 
-bool common::Cli::getSSL() const
+bool common::Cli::isSSL() const
 {
     if (true == contains("ssl"))
     {
@@ -47,7 +47,7 @@ bool common::Cli::getSSL() const
 }
 
 
-bool common::Cli::getStale() const
+bool common::Cli::isStale() const
 {
     if (true == contains("stale"))
     {

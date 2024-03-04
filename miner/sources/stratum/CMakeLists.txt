@@ -1,6 +1,5 @@
 
 set(STRATUM_HEADERS
-stratum.hpp
 autolykos_v2.hpp
 etchash.hpp
 ethash.hpp
@@ -10,10 +9,12 @@ firopow.hpp
 kawpow.hpp
 progpow.hpp
 sha256.hpp
+smart_mining.cpp
+stratum.hpp
+stratums.hpp
 )
 
 set(STRATUM_SOURCES
-stratum.cpp
 autolykos_v2.cpp
 etchash.cpp
 ethash.cpp
@@ -23,6 +24,9 @@ firopow.cpp
 kawpow.cpp
 progpow.cpp
 sha256.cpp
+smart_mining.cpp
+stratum.cpp
+stratums.cpp
 )
 
 target_sources(${MINER_EXE} PUBLIC

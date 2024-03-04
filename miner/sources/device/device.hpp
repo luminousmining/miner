@@ -9,6 +9,7 @@
 #include <algo/algo_type.hpp>
 #include <network/network.hpp>
 #include <statistical/statistical.hpp>
+#include <stratum/smart_mining.hpp>
 #include <stratum/stratum.hpp>
 #include <resolver/resolver.hpp>
 
@@ -50,6 +51,7 @@ namespace device
 
         void run();
         void setStratum(stratum::Stratum* const newStratum);
+        void setStratumSmartMining(stratum::StratumSmartMining* const newStratum);
         void setAlgorithm(algo::ALGORITHM newAlgorithm);
         void kill(device::KILL_STATE const state);
         bool isAlive() const;
@@ -59,6 +61,7 @@ namespace device
         void increaseShare(bool const isValid);
         double getHashrate();
         stratum::Stratum* getStratum();
+        stratum::StratumSmartMining* getStratumSmartMining();
         statistical::Statistical::ShareInfo getShare();
 
     protected:
@@ -73,15 +76,16 @@ namespace device
         void loopDoWork();
 
     private:
-        uint32_t                   kernelMinimunExecuteNeeded { 500u };
-        boost::atomic_bool         alive { false };
-        boost::thread              threadDoWork{};
-        boost::mutex               mtxUpdate{};
-        boost::condition_variable  notifyNewWork{};
-        boost::atomic_bool         needUpdateMemory{ false };
-        boost::atomic_bool         needUpdateConstants{ false };
-        stratum::Stratum*          stratum{ nullptr };
-        stratum::StratumJobInfo    jobInfo{};
-        stratum::StratumJobInfo    currentJobInfo{};
+        uint32_t                     kernelMinimunExecuteNeeded { 500u };
+        boost::atomic_bool           alive { false };
+        boost::thread                threadDoWork{};
+        boost::mutex                 mtxUpdate{};
+        boost::condition_variable    notifyNewWork{};
+        boost::atomic_bool           needUpdateMemory{ false };
+        boost::atomic_bool           needUpdateConstants{ false };
+        stratum::Stratum*            stratum{ nullptr };
+        stratum::StratumSmartMining* stratumSmartMining{ nullptr };
+        stratum::StratumJobInfo      jobInfo{};
+        stratum::StratumJobInfo      currentJobInfo{};
     };
 }

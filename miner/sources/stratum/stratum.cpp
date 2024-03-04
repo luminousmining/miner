@@ -7,11 +7,6 @@
 #include <stratum/stratum.hpp>
 
 
-stratum::Stratum::Stratum()
-{
-}
-
-
 stratum::Stratum::~Stratum()
 {
 }
@@ -43,7 +38,7 @@ void stratum::Stratum::onReceive(
     try
     {
         auto root{ boost::json::parse(message).as_object() };
-        logDebug() << root;
+        logDebug() << "<--" << root;
 
         if (true == root.contains("method"))
         {
@@ -202,45 +197,51 @@ void stratum::Stratum::updateJob()
     }
     else
     {
-        logErr() << "The callback updateJob is nullptr!";
+        common::Config const& config { common::Config::instance() };
+        if (common::PROFILE::STANDARD == config.profile)
+        {
+            logErr() << "The callback updateJob is nullptr!";
+        }
     }
 }
 
 
 bool stratum::Stratum::isValidJob() const
 {
+    bool ret { true };
+
     if (true == algo::isHashEmpty(jobInfo.jobID))
     {
         logDebug() << "jobID is empty";
-        return false;
+        ret = false;
     }
     if (true == algo::isHashEmpty(jobInfo.headerHash))
     {
         logDebug() << "HeaderHash is empty";
-        return false;
+        ret = false;
     }
     if (true == algo::isHashEmpty(jobInfo.boundary))
     {
         logDebug() << "BoundaryHash is empty";
-        return false;
+        ret = false;
     }
     if (0ull == jobInfo.boundaryU64)
     {
         logDebug() << "Boundary U64 == 0ull";
-        return false;
+        ret = false;
     }
     if (0 >= jobInfo.epoch)
     {
         logDebug() << "epoch == 0";
-        return false;
+        ret = false;
     }
-    if (0 >= jobInfo.nonce)
+    if (0ull >= jobInfo.nonce)
     {
         logDebug() << "nonce == 0";
-        return false;
+        ret = false;
     }
 
-    return true;
+    return ret;
 }
 
 

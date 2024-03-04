@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include <algo/hash.hpp>
+#include <algo/algo_type.hpp>
 #include <common/log/log_display.hpp>
 #include <common/log/log_type.hpp>
 #include <stratum/job_info.hpp>
@@ -22,6 +23,7 @@ namespace common
         ~Logger() noexcept;
 
         Logger& operator<<(bool const value);
+        Logger& operator<<(algo::ALGORITHM const algo);
         Logger& operator<<(algo::hash256 const& hash);
         Logger& operator<<(algo::hash512 const& hash);
         Logger& operator<<(algo::hash1024 const& hash);

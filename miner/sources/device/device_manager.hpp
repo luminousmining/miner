@@ -10,6 +10,7 @@
 #include <device/nvidia.hpp>
 #include <stratum/job_info.hpp>
 #include <stratum/stratum.hpp>
+#include <stratum/smart_mining.hpp>
 
 
 namespace device
@@ -26,11 +27,15 @@ namespace device
         bool initialize();
         void run();
         void connectToPools();
+        void connectToSmartMining();
         void onUpdateJob(uint32_t const stratumUUID,
                          stratum::StratumJobInfo const& newJobInfo);
         void onShareStatus(bool const isValid,
                            uint32_t const requestID,
                            uint32_t const stratumUUID);
+
+        void onSmartMiningSetAlgorithm(algo::ALGORITHM const algorithm);
+        void onSmartMiningUpdateJob(stratum::StratumJobInfo const& newJobInfo);
 
     private:
         uint32_t                 stratumCount{ 0u };
@@ -39,10 +44,12 @@ namespace device
         std::vector<Device*>     devices{};
         stratum::StratumJobInfo  jobInfos[100];
 
+        stratum::StratumSmartMining                        stratumSmartMining{};
         std::map<uint32_t/*DEVICE ID*/, stratum::Stratum*> stratums{};
 
         bool initializeStratum(uint32_t const deviceId,
                                algo::ALGORITHM const algorithm);
+        bool initializeStratumSmartMining();
         bool initializeNvidia();
         bool initializeAmd();
         void updateDevice(uint32_t const stratumUUID,

@@ -75,8 +75,21 @@ common::Logger& common::Logger::operator<<(
 
     ss << std::boolalpha << value << std::noboolalpha;
     return *this;
-
 }
+
+
+common::Logger& common::Logger::operator<<(
+    algo::ALGORITHM const algo)
+{
+    if (typeLog > LOGGER_LEVEL)
+    {
+        return *this;
+    }
+
+    ss << algo::toString(algo);
+    return *this;
+}
+
 
 common::Logger& common::Logger::operator<<(
     algo::hash256 const& hash)

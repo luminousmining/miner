@@ -38,18 +38,18 @@ namespace network
         // MAX RETRY CONNECTION
         static constexpr uint32_t MAX_RETRY_COUNT{ 10u };
 
-        bool                          secureConnection{ false };
-        std::string                   host{};
-        uint32_t                      port{ 0u };
-        uint32_t                      countRetryConnect{ 0u };
-        boost::asio::streambuf        recvBuffer;
-        boost_mutex                   rxMutex;
-        boost_mutex                   txMutex;
-        boost_thread                  runService;
-        boost::asio::io_service       ioService;
-        boost_queue                   tx{ 100 };
-        boost_context                 context{ boost_context::tlsv12_client };
-        std::unique_ptr<boost_socket> socketTCP;
+        bool                    secureConnection{ false };
+        std::string             host{};
+        uint32_t                port{ 0u };
+        uint32_t                countRetryConnect{ 0u };
+        boost::asio::streambuf  recvBuffer;
+        boost_mutex             rxMutex;
+        boost_mutex             txMutex;
+        boost_thread            runService;
+        boost::asio::io_service ioService;
+        boost_queue             tx{ 100 };
+        boost_context           context{ boost_context::tlsv12_client };
+        boost_socket*           socketTCP{ nullptr };
 
         NetworkTCPClient() = default;
         ~NetworkTCPClient();
@@ -59,13 +59,15 @@ namespace network
 
         void wait();
         bool connect();
+        void send(char const* data, std::size_t size);
+        void send(boost::json::object const& object);
+
+    private:
         void retryConnect();
         void shutdown();
         void disconnect();
         bool doSecureConnection();
         bool handshake();
-        void send(char const* data, std::size_t size);
-        void send(boost::json::object const& object);
         void asyncReceive();
         bool onVerifySSL(bool preverified, boost_verify_context& ctx);
         void onReceiveAsync(boost_error_code const& ec, size_t bytes);

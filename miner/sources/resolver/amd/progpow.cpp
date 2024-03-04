@@ -7,6 +7,15 @@
 #include <resolver/amd/progpow.hpp>
 
 
+resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
+{
+    parameters.lightCache.free();
+    parameters.dagCache.free();
+    parameters.headerCache.free();
+    parameters.resultCache.free();
+}
+
+
 void resolver::ResolverAmdProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
@@ -28,26 +37,20 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     updateContext(jobInfo);
 
     ////////////////////////////////////////////////////////////////////////////
-    parameters.lightCache.free();
-    parameters.lightCache.setSize(context.lightCache.size);
-    if (false == parameters.lightCache.alloc(*clContext))
-    {
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    parameters.dagCache.free();
-    parameters.dagCache.setSize(context.dagCache.size);
-    if (false == parameters.dagCache.alloc(*clContext))
-    {
-        return false;
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////
     parameters.headerCache.free();
     parameters.resultCache.free();
-    if (   false == parameters.headerCache.alloc(clQueue, *clContext)
+    parameters.dagCache.free();
+    parameters.lightCache.free();
+
+    ////////////////////////////////////////////////////////////////////////////
+    parameters.lightCache.setSize(context.lightCache.size);
+    parameters.dagCache.setSize(context.dagCache.size);
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (   false == parameters.lightCache.alloc(*clContext)
+        || false == parameters.dagCache.alloc(*clContext)
+        || false == parameters.headerCache.alloc(clQueue, *clContext)
         || false == parameters.resultCache.alloc(clQueue, *clContext))
     {
         return false;
@@ -327,6 +330,44 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
 
 void resolver::ResolverAmdProgPOW::submit(
     stratum::Stratum* const stratum)
+{
+    if (true == resultShare.found)
+    {
+        __TRACE();
+        if (false == isStale(resultShare.jobId))
+        {
+            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            {
+                std::stringstream nonceHexa;
+                nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+
+                uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
+                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                {
+                    hash[j] = resultShare.hash[i][j];
+                }
+
+                boost::json::array params
+                {
+                    resultShare.jobId,
+                    nonceHexa.str(),
+                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                };
+
+                stratum->miningSubmit(deviceId, params);
+
+                resultShare.nonces[i] = 0ull;
+            }
+        }
+
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
+}
+
+
+void resolver::ResolverAmdProgPOW::submit(
+    stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {

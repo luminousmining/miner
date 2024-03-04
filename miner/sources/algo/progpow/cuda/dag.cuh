@@ -45,7 +45,7 @@ void buildItemFromCache(
     for (uint32_t laneId{ 0u }; laneId < DAG_PARRALLEL_LANE; ++laneId)
     {
         ////////////////////////////////////////////////////////////////////////
-        uint32_t const tmpCacheIndex{ __shfl_sync(0xffffffff, cacheIndexLimit, laneId, DAG_PARRALLEL_LANE) };
+        uint32_t const tmpCacheIndex{ reg_load(cacheIndexLimit, laneId, DAG_PARRALLEL_LANE) };
         uint32_t const index{ tmpCacheIndex + workerId };
         uint4 cache16Bytes = d_light_cache[index];
 
@@ -90,7 +90,7 @@ void buildItem(
     for (uint32_t lane_id{ 0u }; lane_id < DAG_PARRALLEL_LANE; ++lane_id)
     {
         ////////////////////////////////////////////////////////////////////////
-        uint32_t const tmpCacheStartIndex{ __shfl_sync(0xffffffff, cacheStartIndex, lane_id, DAG_PARRALLEL_LANE) };
+        uint32_t const tmpCacheStartIndex{ reg_load(cacheStartIndex, lane_id, DAG_PARRALLEL_LANE) };
         uint32_t const tmpCacheIndex{ tmpCacheStartIndex + workerId };
         uint4 const tmp_cache{ d_light_cache[tmpCacheIndex] };
         uint4 tmp_hash[DAG_HASH_U4_SIZE];

@@ -13,6 +13,8 @@ std::vector<std::string> optionDevicePassword;
 std::vector<std::string> optionDeviceAlgorithm;
 std::vector<std::string> optionDeviceWallet;
 std::vector<std::string> optionDeviceWorkerName;
+std::vector<std::string> optionSmartMiningWallet;
+std::vector<std::string> optionSmartMiningPool;
 
 
 common::Cli::Cli()
@@ -149,6 +151,22 @@ common::Cli::Cli()
             "[OPTIONAL] Define workername for custom device.\n"
             "--device_workername=0:MyWorkerName"
         )
+
+        // smart mining
+        (
+            "sm_wallet",
+            value<std::vector<std::string>>(&optionSmartMiningWallet)->multitoken(),
+            "[OPTIONAL] assign a wallet with a coin.\n"
+            "You must define it if you are use --smart_mining=true.\n"
+            "--sm_wallet=COIN:WALLET"
+        )
+        (
+            "sm_pool",
+            value<std::vector<std::string>>(&optionSmartMiningPool)->multitoken(),
+            "[OPTIONAL] assign a pool with a coin.\n"
+            "You must define it if you are use --smart_mining=true.\n"
+            "--sm_pool=COIN@POOL_URL:POOL_PORT"
+        )
         ;
 }
 
@@ -202,7 +220,7 @@ common::Cli::customTupleU32 common::Cli::getCustomParamsU32(
         for (std::string const& id_value : options)
         {
             size_t const pos{ id_value.find(':') };
-            if (pos == std::string::npos)
+            if (std::string::npos == pos)
             {
                 logErr() << "missing ':' [" << id_value.c_str() << "]";
                 continue;
@@ -254,7 +272,7 @@ common::Cli::customTupleStr common::Cli::getCustomParamsStr(
         for (std::string const& id_value : options)
         {
             size_t const pos{ id_value.find(':') };
-            if (pos == std::string::npos)
+            if (std::string::npos == pos)
             {
                 logErr() << "missing ':' [" << id_value.c_str() << "]";
                 continue;
@@ -267,6 +285,74 @@ common::Cli::customTupleStr common::Cli::getCustomParamsStr(
             values.emplace_back(customParams);
         }
     }
+    return values;
+}
+
+
+common::Cli::customTupleStrStr common::Cli::getCustomParamsStrStr(
+    std::string const& paramName,
+    std::vector<std::string>& options) const
+{
+    customTupleStrStr values;
+
+    if (true == contains(paramName))
+    {
+        for (std::string const& id_value : options)
+        {
+            size_t const pos{ id_value.find(':') };
+            if (std::string::npos == pos)
+            {
+                logErr() << "missing ':' [" << id_value.c_str() << "]";
+                continue;
+            }
+
+            std::string const right{ id_value.substr(0, pos) };
+            std::string const left{ id_value.substr(pos + 1, id_value.size() - 1) };
+
+            customParamStrStr customParams{ right, left };
+            values.emplace_back(customParams);
+        }
+    }
+
+    return values;
+}
+
+
+common::Cli::customTupleStrStrU32 common::Cli::getCustomParamsStrStrU32(
+    std::string const& paramName,
+    std::vector<std::string>& options) const
+{
+    customTupleStrStrU32 values;
+
+    if (true == contains(paramName))
+    {
+        for (std::string const& id_value : options)
+        {
+            size_t pos{ id_value.find('@') };
+            if (std::string::npos == pos)
+            {
+                logErr() << "missing '@' [" << id_value.c_str() << "]";
+                continue;
+            }
+
+            std::string const right{ id_value.substr(0, pos) };
+            std::string const left{ id_value.substr(pos + 1, id_value.size() - 1) };
+
+            pos = left.find(':');
+            if (std::string::npos == pos)
+            {
+                logErr() << "missing ':' [" << left.c_str() << "]";
+                continue;
+            }
+            std::string const leftLeft { left.substr(0, pos) };
+            std::string const leftRight { left.substr(pos + 1, left.size() - 1) };
+            uint32_t const valueLeftRight { castU32(std::atoi(leftRight.c_str())) };
+
+            customParamStrStrU32 customParams { right, leftLeft, valueLeftRight };
+            values.emplace_back(customParams);
+        }
+    }
+
     return values;
 }
 

@@ -21,6 +21,7 @@ namespace resolver
         bool updateConstants(stratum::StratumJobInfo const& jobInfo) final;
         bool execute(stratum::StratumJobInfo const& jobInfo) final;
         void submit(stratum::Stratum* const stratum) final;
+        void submit(stratum::StratumSmartMining* const stratum) final;
 
     protected:
         algo::autolykos_v2::ResultShare resultShare{};
