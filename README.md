@@ -4,6 +4,14 @@ Free mining software with 0% fees! Enjoy your mining time.
   
 Project aims for learning and sharing about mining software.  
 All algorithms used are referenced.  
+  
+Different profiles are available:
+* STANDAR
+* SMART MINING
+
+`STANDAR` we must set your mining session and get 0% fees.  
+`SMART MINING` define the list coin coins need and let the system mine for you. 1% fees will be applied.  
+
 
 Algorithms:
 - autolykosv2
@@ -65,6 +73,18 @@ ___Specific device options:___
                     --device_pool=0:WALLET
 --device_workername     [OPTIONAL] Define workername for custom device.
                     --device_workername=0:MyWorkerName
+```
+
+___Smart Mining options:___
+```
+--sm_wallet arg         [OPTIONAL] assign a wallet with a coin.
+                    You must define it if you are use
+                    --smart_mining=true.
+                    --sm_wallet=COIN:WALLET
+--sm_pool arg           [OPTIONAL] assign a pool with a coin.
+                    You must define it if you are use
+                    --smart_mining=true.
+                    --sm_pool=COIN@POOL_URL:POOL_PORT
 ```
 
 ## Require
