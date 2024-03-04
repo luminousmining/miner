@@ -138,8 +138,6 @@ void stratum::StratumAutolykosV2::miningSubmit(
 {
     UNIQUE_LOCK(mtxSubmit);
 
-    logInfo() << "Ha bon !";
-
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
