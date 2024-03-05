@@ -9,19 +9,17 @@
 #include <common/system.hpp>
 #include <network/network.hpp>
 
-
 #include <boost/asio/buffer.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/chrono.hpp>
-
 
 #if defined(_WIN32)
 #include <wincrypt.h>
 #endif
 
+
 network::NetworkTCPClient::~NetworkTCPClient()
 {
-    disconnect();
 }
 
 
