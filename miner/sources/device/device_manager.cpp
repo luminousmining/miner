@@ -325,7 +325,7 @@ void device::DeviceManager::loopStatistical()
 
     board.setTitle("HASHRATE");
     board.addColumn("DeviceID");
-    board.addColumn("Coin");
+    board.addColumn("Algorithm");
     board.addColumn("Pool");
     board.addColumn("Hashrate");
     board.addColumn("Shares");
@@ -508,6 +508,7 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
             continue;
         }
 
+        device->setStratumSmartMining(&stratumSmartMining);
         device->setAlgorithm(algorithm);
         device->run();
     }
