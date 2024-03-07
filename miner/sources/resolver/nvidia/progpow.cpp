@@ -8,6 +8,12 @@
 #include <algo/progpow/cuda/progpow.cuh>
 
 
+resolver::ResolverNvidiaProgPOW::~ResolverNvidiaProgPOW()
+{
+    progpowFreeMemory(parameters);
+}
+
+
 void resolver::ResolverNvidiaProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {

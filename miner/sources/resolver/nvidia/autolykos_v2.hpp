@@ -15,7 +15,7 @@ namespace resolver
     {
     public:
         ResolverNvidiaAutolykosV2() = default;
-        virtual ~ResolverNvidiaAutolykosV2() = default;
+        virtual ~ResolverNvidiaAutolykosV2();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;
         bool updateConstants(stratum::StratumJobInfo const& jobInfo) final;

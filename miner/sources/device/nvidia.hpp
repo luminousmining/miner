@@ -11,8 +11,6 @@ namespace device
     class DeviceNvidia : public device::Device
     {
     public:
-        ~DeviceNvidia();
-
         uint32_t       cuIndex{ 0u };
         cudaDeviceProp properties;
         CUdevice       cuDevice;

@@ -9,19 +9,17 @@
 #include <common/system.hpp>
 #include <network/network.hpp>
 
-
 #include <boost/asio/buffer.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/chrono.hpp>
-
 
 #if defined(_WIN32)
 #include <wincrypt.h>
 #endif
 
+
 network::NetworkTCPClient::~NetworkTCPClient()
 {
-    disconnect();
 }
 
 
@@ -53,7 +51,7 @@ bool network::NetworkTCPClient::connect()
         }
 
         SAFE_DELETE(socketTCP);
-        socketTCP = new (std::nothrow) boost_socket(ioService, context);
+        socketTCP = NEW(boost_socket(ioService, context));
 
         auto const address{ boost::asio::ip::address::from_string(host, ec) };
         if (boost_error::success != ec)

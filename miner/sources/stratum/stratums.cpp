@@ -1,3 +1,4 @@
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <stratum/stratums.hpp>
 
@@ -10,42 +11,42 @@ stratum::Stratum* stratum::NewStratum(
     {
         case algo::ALGORITHM::SHA256:
         {
-            stratum = new (std::nothrow) stratum::StratumSha256;
+            stratum = NEW(stratum::StratumSha256);
             break;
         }
         case algo::ALGORITHM::ETHASH:
         {
-            stratum = new (std::nothrow) stratum::StratumEthash;
+            stratum = NEW(stratum::StratumEthash);
             break;
         }
         case algo::ALGORITHM::ETCHASH:
         {
-            stratum = new (std::nothrow) stratum::StratumEtchash;
+            stratum = NEW(stratum::StratumEtchash);
             break;
         }
         case algo::ALGORITHM::PROGPOW:
         {
-            stratum = new (std::nothrow) stratum::StratumProgPOW;
+            stratum = NEW(stratum::StratumProgPOW);
             break;
         }
         case algo::ALGORITHM::KAWPOW:
         {
-            stratum = new (std::nothrow) stratum::StratumKawPOW;
+            stratum = NEW(stratum::StratumKawPOW);
             break;
         }
         case algo::ALGORITHM::FIROPOW:
         {
-            stratum = new (std::nothrow) stratum::StratumFiroPOW;
+            stratum = NEW(stratum::StratumFiroPOW);
             break;
         }
         case algo::ALGORITHM::EVRPROGPOW:
         {
-            stratum = new (std::nothrow) stratum::StratumEvrprogPOW;
+            stratum = NEW(stratum::StratumEvrprogPOW);
             break;
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
         {
-            stratum = new (std::nothrow) stratum::StratumAutolykosV2;
+            stratum = NEW(stratum::StratumAutolykosV2);
             break;
         }
         case algo::ALGORITHM::UNKNOW:

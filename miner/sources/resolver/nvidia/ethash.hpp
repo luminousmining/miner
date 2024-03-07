@@ -13,7 +13,7 @@ namespace resolver
     {
     public:
         ResolverNvidiaEthash() = default;
-        ~ResolverNvidiaEthash() = default;
+        ~ResolverNvidiaEthash();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;
         bool updateConstants(stratum::StratumJobInfo const& jobInfo) final;

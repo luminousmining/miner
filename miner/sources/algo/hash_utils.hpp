@@ -153,7 +153,7 @@ namespace algo
         T hash{};
 
         uint32_t const lenght{ castU32(input.size()) };
-        uint32_t* fs{ new (std::nothrow) uint32_t[lenght] };
+        uint32_t* fs{ NEW(uint32_t[lenght]) };
         if (nullptr == fs)
         {
             return hash;

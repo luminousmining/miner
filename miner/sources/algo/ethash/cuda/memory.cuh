@@ -4,23 +4,39 @@
 
 
 __host__
-bool ethashInitMemory(
-    algo::DagContext const& context,
+bool ethashFreeMemory(
     resolver::nvidia::ethash::KernelParameters& params)
 {
     CU_SAFE_DELETE(params.lightCache);
     CU_SAFE_DELETE(params.dagCache);
     CU_SAFE_DELETE_HOST(params.resultCache);
+    return true;
+}
 
+
+__host__
+bool ethashInitMemory(
+    algo::DagContext const& context,
+    resolver::nvidia::ethash::KernelParameters& params)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == ethashFreeMemory(params))
+    {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMalloc((void**)&params.lightCache, context.lightCache.size));
     CUDA_ER(cudaMalloc((void**)&params.dagCache, context.dagCache.size));
+    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::ethash::Result), 0));
 
+    ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMemcpy((void*)params.lightCache,
                        (void const*)context.lightCache.hash->bytes,
                        context.lightCache.size,
                        cudaMemcpyHostToDevice));
 
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::ethash::Result), 0));
+    ////////////////////////////////////////////////////////////////////////////
     params.resultCache->found = false;
     params.resultCache->count = 0u;
     params.resultCache->nonces[0] = 0ull;
@@ -28,21 +44,26 @@ bool ethashInitMemory(
     params.resultCache->nonces[2] = 0ull;
     params.resultCache->nonces[3] = 0ull;
 
+    ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);
     IS_NULL(params.dagCache);
     IS_NULL(params.resultCache);
 
+    ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMemcpyToSymbol(d_light_cache, (void**)&params.lightCache, sizeof(uint4*)));
     CUDA_ER(cudaMemcpyToSymbol(d_dag, (void**)&params.dagCache, sizeof(uint4*)));
 
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t const dagNumberItemU32{ (uint32_t)context.dagCache.numberItem };
     void* ptrDagNumberItemDag{ (void*)&dagNumberItemU32 };
     CUDA_ER(cudaMemcpyToSymbol(d_dag_number_item, ptrDagNumberItemDag, sizeof(uint32_t)));
 
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t const lightNnumberItem{ (uint32_t)context.lightCache.numberItem };
     void* ptrLightNumberItemDag{ (void*)&lightNnumberItem };
     CUDA_ER(cudaMemcpyToSymbol(d_light_number_item, ptrLightNumberItemDag, sizeof(uint32_t)));
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 

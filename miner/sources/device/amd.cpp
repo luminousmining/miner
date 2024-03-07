@@ -3,14 +3,10 @@
 #include <resolver/amd/amd.hpp>
 
 
-device::DeviceAmd::~DeviceAmd()
-{
-    cleanUp();
-}
-
-
 bool device::DeviceAmd::initialize()
 {
+    cleanUp();
+
     clContext = cl::Context(clDevice);
     clQueue = cl::CommandQueue(clContext, clDevice);
 
@@ -31,4 +27,3 @@ bool device::DeviceAmd::initialize()
 void device::DeviceAmd::cleanUp()
 {
 }
-

@@ -11,7 +11,6 @@ namespace device
     class DeviceAmd : public device::Device
     {
     public:
-        ~DeviceAmd();
         cl::Device clDevice;
 
     protected:

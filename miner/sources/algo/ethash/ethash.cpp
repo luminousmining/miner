@@ -3,6 +3,7 @@
 #include <algo/math.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
 
 
@@ -83,7 +84,7 @@ void algo::ethash::initializeDagContext(
 
     ////////////////////////////////////////////////////////////////////////////
     size_t const dataLength{ algo::LEN_HASH_512 + context.lightCache.size };
-    context.data = new (std::nothrow) char[dataLength]{};
+    context.data = NEW(char[dataLength]{});
     if (nullptr == context.data)
     {
         logErr() << "Cannot alloc context data";
