@@ -51,7 +51,7 @@ bool network::NetworkTCPClient::connect()
         }
 
         SAFE_DELETE(socketTCP);
-        socketTCP = new (std::nothrow) boost_socket(ioService, context);
+        socketTCP = NEW(boost_socket(ioService, context));
 
         auto const address{ boost::asio::ip::address::from_string(host, ec) };
         if (boost_error::success != ec)

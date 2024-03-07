@@ -48,6 +48,9 @@
         CUDA_ER(cudaFreeHost(ptr));\
     }
 
+#define NEW(type)\
+    new (std::nothrow) type
+
 namespace common
 {
     template<typename T>

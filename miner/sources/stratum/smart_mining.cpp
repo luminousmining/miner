@@ -199,14 +199,14 @@ void stratum::StratumSmartMining::onResponse(
     bool isValid { true };
     bool const isErrResult
     {
-        false == common::boostJsonContains(root, "result")
-            || true == root.at("result").is_null()
-            || false == root.at("result").as_bool()
+           false == common::boostJsonContains(root, "result")
+        || true == root.at("result").is_null()
+        || false == root.at("result").as_bool()
     };
     bool const isErrError
     {
-        true == common::boostJsonContains(root, "error")
-            && false == root.at("error").is_null()
+           true == common::boostJsonContains(root, "error")
+        && false == root.at("error").is_null()
     };
     if (true == isErrResult || true == isErrError)
     {

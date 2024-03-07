@@ -6,7 +6,7 @@
 #include <algo/dag_context.hpp>
 #include <resolver/nvidia/progpow_kernel_parameter.hpp>
 
-
+bool progpowFreeMemory(resolver::nvidia::progpow::KernelParameters& params);
 bool progpowInitMemory(algo::DagContext const& context,
                        resolver::nvidia::progpow::KernelParameters& params);
 bool progpowUpdateConstants(uint32_t const* const headerSrc,

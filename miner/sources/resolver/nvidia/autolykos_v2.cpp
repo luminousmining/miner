@@ -7,6 +7,12 @@
 #include <resolver/nvidia/autolykos_v2.hpp>
 
 
+resolver::ResolverNvidiaAutolykosV2::~ResolverNvidiaAutolykosV2()
+{
+    autolykosv2FreeMemory(parameters);
+}
+
+
 bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {

@@ -8,6 +8,7 @@
 #include <resolver/nvidia/ethash_kernel_parameter.hpp>
 
 
+bool ethashFreeMemory(resolver::nvidia::ethash::KernelParameters& params);
 bool ethashInitMemory(algo::DagContext const& context,
                       resolver::nvidia::ethash::KernelParameters& params);
 bool ethashUpdateConstants(uint32_t const* const header,

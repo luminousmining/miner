@@ -38,13 +38,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaEthash;
+                    resolver = NEW(resolver::ResolverNvidiaEthash);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdEthash;
+                    resolver = NEW(resolver::ResolverAmdEthash);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -61,13 +61,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaEtchash;
+                    resolver = NEW(resolver::ResolverNvidiaEtchash);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdEtchash;
+                    resolver = NEW(resolver::ResolverAmdEtchash);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -84,13 +84,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaProgPOW;
+                    resolver = NEW(resolver::ResolverNvidiaProgPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdProgPOW;
+                    resolver = NEW(resolver::ResolverAmdProgPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -107,13 +107,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaKawPOW;
+                    resolver = NEW(resolver::ResolverNvidiaKawPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdKawPOW;
+                    resolver = NEW(resolver::ResolverAmdKawPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -130,13 +130,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaFiroPOW;
+                    resolver = NEW(resolver::ResolverNvidiaFiroPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdFiroPOW;
+                    resolver = NEW(resolver::ResolverAmdFiroPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -153,13 +153,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaEvrprogPOW;
+                    resolver = NEW(resolver::ResolverNvidiaEvrprogPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdEvrprogPOW;
+                    resolver = NEW(resolver::ResolverAmdEvrprogPOW);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -176,13 +176,13 @@ void device::Device::setAlgorithm(
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverNvidiaAutolykosV2;
+                    resolver = NEW(resolver::ResolverNvidiaAutolykosV2);
                     break;
                 }
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
-                    resolver = new (std::nothrow) resolver::ResolverAmdAutolykosV2;
+                    resolver = NEW(resolver::ResolverAmdAutolykosV2);
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:
@@ -443,13 +443,15 @@ void device::Device::loopDoWork()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == initialize())
-    {
-        return;
-    }
     if (nullptr == resolver)
     {
         logErr() << "Cannot work, device need resolver";
+        return;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == initialize())
+    {
         return;
     }
 
@@ -463,7 +465,8 @@ void device::Device::loopDoWork()
     miningStats.reset();
 
     ////////////////////////////////////////////////////////////////////////////
-    while (true == isAlive())
+    while (   true == isAlive()
+           && nullptr != resolver)
     {
         // Check and update the job.
         // Do not compute directly after update device.
@@ -502,4 +505,7 @@ void device::Device::loopDoWork()
         // Increasing nonce to next kernel.
         currentJobInfo.nonce += miningStats.getBatchNonce();
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    cleanUp();
 }

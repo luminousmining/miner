@@ -17,7 +17,7 @@ namespace resolver
     {
     public:
         ResolverNvidiaProgPOW() = default;
-        virtual ~ResolverNvidiaProgPOW() = default;
+        virtual ~ResolverNvidiaProgPOW();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;
         bool updateConstants(stratum::StratumJobInfo const& jobInfo) final;

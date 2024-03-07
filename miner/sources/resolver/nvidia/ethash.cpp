@@ -8,6 +8,12 @@
 #include <resolver/nvidia/ethash.hpp>
 
 
+resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
+{
+    ethashFreeMemory(parameters);
+}
+
+
 void resolver::ResolverNvidiaEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
