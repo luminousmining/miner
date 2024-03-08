@@ -57,10 +57,10 @@ namespace common
                     return false;
                 }
 
-                SAFE_DELETE(buffer);
+                free();
+
                 OPENCL_CATCH(
-                    buffer = new(std::nothrow) cl::Buffer(
-                        clContext, flags, size));
+                    buffer = NEW(cl::Buffer(clContext, flags, size)));
                 IS_NULL(buffer);
 
                 return true;
@@ -69,7 +69,12 @@ namespace common
             inline
             void free()
             {
-                SAFE_DELETE(buffer);
+                if (nullptr != buffer)
+                {
+                    *buffer = nullptr;
+                    delete buffer;
+                    buffer = nullptr;
+                }
             }
 
             inline
