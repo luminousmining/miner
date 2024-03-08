@@ -53,8 +53,9 @@ namespace common
 #define logTrace()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__TRACE)
 #define logDebug()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__DEBUG)
 
-#if defined(_DEBUG)
-#define __TRACE() { logTrace(); }
-#else
 #define __TRACE() { logTrace() << __FUNCTION__ << ":" << __LINE__; }
-#endif
+#define __TRACE_DEVICE()                                                       \
+    {                                                                          \
+        logTrace() << __FUNCTION__ << ":" << __LINE__                          \
+        << ": device[" << id << "]";                                           \
+    }
