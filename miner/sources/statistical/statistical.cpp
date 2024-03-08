@@ -66,10 +66,18 @@ void statistical::Statistical::updateHashrate()
 }
 
 
+void statistical::Statistical::resetHashrate()
+{
+    kernelExecuted = 0u;
+    hashrates = 0.0;
+}
+
+
 double statistical::Statistical::getHahrate() const
 {
     return hashrates;
 }
+
 
 statistical::Statistical::ShareInfo& statistical::Statistical::getShares()
 {

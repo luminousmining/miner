@@ -21,7 +21,8 @@ namespace device
         DeviceManager() = default;
         ~DeviceManager();
 
-        static constexpr uint32_t WAITING_HASH_STATS{ 10000U };
+        static constexpr uint32_t WAITING_DEVICE_STOP_COMPUTE{ 100u };
+        static constexpr uint32_t WAITING_HASH_STATS{ 10000u };
         static constexpr uint32_t DEVICE_MAX_ID{ 1000000u };
 
         bool initialize();

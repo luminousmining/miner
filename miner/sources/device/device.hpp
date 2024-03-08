@@ -53,8 +53,10 @@ namespace device
         void setStratum(stratum::Stratum* const newStratum);
         void setStratumSmartMining(stratum::StratumSmartMining* const newStratum);
         void setAlgorithm(algo::ALGORITHM newAlgorithm);
+        void cleanJob();
         void kill(device::KILL_STATE const state);
         bool isAlive() const;
+        bool isComputing() const;
         void update(bool const memory,
                     bool const constants,
                     stratum::StratumJobInfo const& newJobInfo);
@@ -78,6 +80,7 @@ namespace device
     private:
         uint32_t                     kernelMinimunExecuteNeeded { 500u };
         boost::atomic_bool           alive { false };
+        boost::atomic_bool           computing { false };
         boost::thread                threadDoWork{};
         boost::mutex                 mtxUpdate{};
         boost::condition_variable    notifyNewWork{};

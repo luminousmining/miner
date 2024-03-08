@@ -25,6 +25,7 @@ namespace statistical
         void setBatchNonce(uint64_t const newBatchNonce);
         uint64_t getBatchNonce() const;
         void updateHashrate();
+        void resetHashrate();
         double getHahrate() const;
         ShareInfo& getShares();
 

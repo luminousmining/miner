@@ -491,6 +491,8 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
 {
     threadStatistical.interrupt();
 
+    boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_DEVICE_STOP_COMPUTE };
+
     for (device::Device* device : devices)
     {
         if (nullptr == device)
@@ -499,6 +501,11 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
         }
 
         device->kill(device::KILL_STATE::DISABLE);
+        while (true == device->isComputing())
+        {
+            boost::this_thread::sleep_for(ms);
+        }
+        device->cleanJob();
     }
 
     for (device::Device* device : devices)
@@ -510,11 +517,9 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
 
         device->setStratumSmartMining(&stratumSmartMining);
         device->setAlgorithm(algorithm);
-        device->run();
     }
 
-    threadStatistical = boost::thread{
-        boost::bind(&device::DeviceManager::loopStatistical, this) };
+    run();
 }
 
 

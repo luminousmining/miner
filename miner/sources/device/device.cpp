@@ -285,6 +285,12 @@ bool device::Device::isAlive() const
 }
 
 
+bool device::Device::isComputing() const
+{
+    return computing.load(boost::memory_order::relaxed);
+}
+
+
 void device::Device::update(
     bool const memory,
     bool const constants,
@@ -364,6 +370,13 @@ void device::Device::waitJob()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+}
+
+
+void device::Device::cleanJob()
+{
+    stratum::StratumJobInfo clean{};
+    jobInfo = clean;
 }
 
 
@@ -463,6 +476,10 @@ void device::Device::loopDoWork()
     // Statistical to compute the hashrate.
     miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads());
     miningStats.reset();
+    miningStats.resetHashrate();
+
+    ////////////////////////////////////////////////////////////////////////////
+    computing.store(true, boost::memory_order::seq_cst);
 
     ////////////////////////////////////////////////////////////////////////////
     while (   true == isAlive()
@@ -508,4 +525,7 @@ void device::Device::loopDoWork()
 
     ////////////////////////////////////////////////////////////////////////////
     cleanUp();
+
+    ////////////////////////////////////////////////////////////////////////////
+    computing.store(false, boost::memory_order::seq_cst);
 }
