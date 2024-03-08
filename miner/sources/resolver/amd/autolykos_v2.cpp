@@ -317,7 +317,6 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     ////////////////////////////////////////////////////////////////////////////
     if (true == data.found)
     {
-        logInfo() << "extraNonceSize <= " << extraNonceSize;
         resultShare.found = true;
         resultShare.count = data.count;
         resultShare.extraNonceSize = extraNonceSize;
