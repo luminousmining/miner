@@ -68,24 +68,30 @@ void stratum::StratumEthash::onResponse(
 void stratum::StratumEthash::onMiningNotify(
     boost::json::object const& root)
 {
+    ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxDispatchJob);
 
+    ////////////////////////////////////////////////////////////////////////////
     auto const params{ root.at("params").as_array() };
 
+    ////////////////////////////////////////////////////////////////////////////
     std::string const jobID{ params.at(0).as_string().c_str() };
     jobInfo.seedHash = algo::toHash256(params.at(1).as_string().c_str());
     jobInfo.headerHash = algo::toHash256(params.at(2).as_string().c_str());
     jobInfo.cleanJob = params.at(3).as_bool();
 
+    ////////////////////////////////////////////////////////////////////////////
     jobInfo.jobIDStr.assign(jobID);
     jobInfo.jobID = algo::toHash256(jobID);
 
+    ////////////////////////////////////////////////////////////////////////////
     int32_t const epoch{ algo::ethash::findEpoch(jobInfo.seedHash, maxEpochNumber) };
     if (-1 != epoch)
     {
         jobInfo.epoch = epoch;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     updateJob();
 }
 
