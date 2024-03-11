@@ -365,7 +365,6 @@ void device::Device::run()
 
 void device::Device::waitJob()
 {
-    boost::mutex localMutex;
     while (jobInfo.epoch == -1)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -456,15 +455,15 @@ void device::Device::loopDoWork()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (nullptr == resolver)
+    if (false == initialize())
     {
-        logErr() << "Cannot work, device need resolver";
         return;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == initialize())
+    if (nullptr == resolver)
     {
+        logErr() << "Cannot works, device need resolver";
         return;
     }
 
@@ -475,8 +474,8 @@ void device::Device::loopDoWork()
     ////////////////////////////////////////////////////////////////////////////
     // Statistical to compute the hashrate.
     miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads());
-    miningStats.reset();
     miningStats.resetHashrate();
+    miningStats.reset();
 
     ////////////////////////////////////////////////////////////////////////////
     computing.store(true, boost::memory_order::seq_cst);

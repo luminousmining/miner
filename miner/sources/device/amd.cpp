@@ -1,3 +1,4 @@
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <device/amd.hpp>
 #include <resolver/amd/amd.hpp>
