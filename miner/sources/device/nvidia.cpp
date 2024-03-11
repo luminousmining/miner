@@ -1,6 +1,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <common/custom.hpp>
 #include <common/error/cuda_error.hpp>
 #include <device/nvidia.hpp>
 #include <resolver/nvidia/nvidia.hpp>

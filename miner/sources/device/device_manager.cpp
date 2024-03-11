@@ -276,15 +276,30 @@ bool device::DeviceManager::initializeAmd()
 
 void device::DeviceManager::run()
 {
+    ////////////////////////////////////////////////////////////////////////////
+    stratum::StratumJobInfo cleanJob{};
+
+    ////////////////////////////////////////////////////////////////////////////
+    threadStatistical.interrupt();
+
+    ////////////////////////////////////////////////////////////////////////////
+    for (uint32_t i { 0u }; i < device::DeviceManager::MAX_STRATUMS; ++i)
+    {
+        stratum::StratumJobInfo& jobInfo { jobInfos[i] };
+        jobInfo = cleanJob;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     for (device::Device* const device : devices)
     {
         if (nullptr != device)
         {
+            device->cleanJob();
             device->run();
         }
     }
 
-    threadStatistical.interrupt();
+    ////////////////////////////////////////////////////////////////////////////
     threadStatistical = boost::thread{ boost::bind(&device::DeviceManager::loopStatistical, this) };
 }
 
@@ -505,7 +520,6 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
         {
             boost::this_thread::sleep_for(ms);
         }
-        device->cleanJob();
     }
 
     for (device::Device* device : devices)
@@ -526,7 +540,7 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
 void device::DeviceManager::onSmartMiningUpdateJob(
     stratum::StratumJobInfo const& newJobInfo)
 {
-    onUpdateJob(0, newJobInfo);
+    onUpdateJob(0u, newJobInfo);
 }
 
 
