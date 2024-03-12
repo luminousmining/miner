@@ -47,18 +47,25 @@ namespace common
             bool cpuEnable{ true };
         };
 
-        common::PROFILE                profile { common::PROFILE::STANDARD };
-        common::Cli                    cli{};
-        PoolConfig                     mining{};
-        SmartMiningConfig              smartMining{};
-        DeviceEnableSetting            deviceEnable{};
-        std::vector<uint32_t>          deviceDisable{};
-        std::map<uint32_t, PoolConfig> deviceSettings{};
+        struct DeviceOptionsDev
+        {
+            bool doubleStream { false };
+        };
+
+        common::PROFILE                      profile { common::PROFILE::STANDARD };
+        common::Cli                          cli{};
+        PoolConfig                           mining{};
+        SmartMiningConfig                    smartMining{};
+        DeviceEnableSetting                  deviceEnable{};
+        std::vector<uint32_t>                deviceDisable{};
+        std::map<uint32_t, PoolConfig>       deviceSettings{};
+        std::map<uint32_t, DeviceOptionsDev> deviceOptionDev{};
 
         static Config& instance();
         bool load(int argc, char** argv);
         bool isEnable(uint32_t const deviceId) const;
         std::optional<PoolConfig> getConfigDevice(uint32_t const deviceId) const;
+        std::optional<DeviceOptionsDev> getConfigDev(uint32_t const deviceId) const;
 
         algo::ALGORITHM getAlgorithm() const;
 
@@ -66,5 +73,6 @@ namespace common
         bool loadCli(int argc, char** argv);
         bool isValidConfig() const;
         PoolConfig* getOrAddDeviceSettings(uint32_t const deviceId);
+        DeviceOptionsDev* getOrAddDevOption(uint32_t const deviceId);
     };
 }

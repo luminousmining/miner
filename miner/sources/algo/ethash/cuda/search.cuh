@@ -292,8 +292,5 @@ bool ethashSearch(
     uint64_t const startNonce)
 {
     search<<<blocks, threads, 0, stream>>>(result, startNonce);
-    CUDA_ER(cudaStreamSynchronize(stream));
-    CUDA_ER(cudaGetLastError());
-
     return true;
 }

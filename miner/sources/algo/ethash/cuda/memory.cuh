@@ -28,7 +28,7 @@ bool ethashInitMemory(
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMalloc((void**)&params.lightCache, context.lightCache.size));
     CUDA_ER(cudaMalloc((void**)&params.dagCache, context.dagCache.size));
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::ethash::Result), 0));
+    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::ethash::Result) * 2, 0));
 
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMemcpy((void*)params.lightCache,
@@ -37,17 +37,23 @@ bool ethashInitMemory(
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    params.resultCache->found = false;
-    params.resultCache->count = 0u;
-    params.resultCache->nonces[0] = 0ull;
-    params.resultCache->nonces[1] = 0ull;
-    params.resultCache->nonces[2] = 0ull;
-    params.resultCache->nonces[3] = 0ull;
-
-    ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);
     IS_NULL(params.dagCache);
     IS_NULL(params.resultCache);
+
+    ////////////////////////////////////////////////////////////////////////////
+    params.resultCache[0].found = false;
+    params.resultCache[0].count = 0u;
+    params.resultCache[0].nonces[0] = 0ull;
+    params.resultCache[0].nonces[1] = 0ull;
+    params.resultCache[0].nonces[2] = 0ull;
+    params.resultCache[0].nonces[3] = 0ull;
+    params.resultCache[1].found = false;
+    params.resultCache[1].count = 0u;
+    params.resultCache[1].nonces[0] = 0ull;
+    params.resultCache[1].nonces[1] = 0ull;
+    params.resultCache[1].nonces[2] = 0ull;
+    params.resultCache[1].nonces[3] = 0ull;
 
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMemcpyToSymbol(d_light_cache, (void**)&params.lightCache, sizeof(uint4*)));

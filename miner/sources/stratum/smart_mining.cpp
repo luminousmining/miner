@@ -101,6 +101,10 @@ bool stratum::StratumSmartMining::onSmartMiningSetAlgo(
     boost::json::object const& root)
 {
     std::string const& algorithm { root.at("params").as_string().c_str() };
+    logDebug()
+        << "======================================\n"
+        << "Algo => " << algorithm << "\n"
+        << "======================================";
     currentAlgorithm = algo::toEnum(algorithm);
     doSetAlgorithm(currentAlgorithm);
 

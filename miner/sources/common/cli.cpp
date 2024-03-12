@@ -6,6 +6,7 @@
 #include <common/cli.hpp>
 #include <common/log/log.hpp>
 
+// global
 std::vector<std::string> optionDeviceEnable;
 std::vector<std::string> optionDevicePool;
 std::vector<std::string> optionDevicePort;
@@ -15,6 +16,9 @@ std::vector<std::string> optionDeviceWallet;
 std::vector<std::string> optionDeviceWorkerName;
 std::vector<std::string> optionSmartMiningWallet;
 std::vector<std::string> optionSmartMiningPool;
+
+// devs
+std::vector<std::string> devOptionDoubleStream;
 
 
 common::Cli::Cli()
@@ -166,6 +170,14 @@ common::Cli::Cli()
             "[OPTIONAL] assign a pool with a coin.\n"
             "You must define it if you are use --smart_mining=true.\n"
             "--sm_pool=COIN@POOL_URL:POOL_PORT"
+        )
+
+        // dev options
+        (
+            "dev_device_2stream",
+            value<std::vector<std::string>>(&devOptionDoubleStream)->multitoken(),
+            "[OPTIONAL][DEVELOPMENT] Device use double stream or not.\n"
+            "--dev_device_2stream=0:true"
         )
         ;
 }
