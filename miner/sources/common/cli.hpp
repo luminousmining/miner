@@ -76,5 +76,8 @@ namespace common
         bool isSmartMining() const;
         customTupleStrStr getSmartMiningWallet() const;
         customTupleStrStrU32 getSmartMiningPool() const;
+
+        // Dev options
+        customTupleU32 getDevDeviceDoubleStream() const;
     };
 }

@@ -39,7 +39,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == progpowBuildDag(cuStream,
+    if (false == progpowBuildDag(getCurrentStream(),
                                  dagItemParents,
                                  castU32(context.dagCache.numberItem)))
     {
@@ -180,53 +180,112 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
 bool resolver::ResolverNvidiaProgPOW::execute(
     stratum::StratumJobInfo const& jobInfo)
 {
-    ////////////////////////////////////////////////////////////////////////////
-    uint64_t nonce{ jobInfo.nonce };
-    uint64_t boundary{ jobInfo.boundaryU64 };
-    void* arguments[]
+    if (false == isDoubleStream)
     {
-        &nonce,
-        &boundary,
-        &parameters.headerCache,
-        &parameters.dagCache,
-        &parameters.resultCache
-    };
-
-    ////////////////////////////////////////////////////////////////////////////
-    CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
-                         blocks,  1u, 1u,
-                         threads, 1u, 1u,
-                         0u,
-                         cuStream,
-                         arguments,
-                         nullptr));
-    CUDA_ER(cudaStreamSynchronize(cuStream));
-    CUDA_ER(cudaGetLastError());
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (true == parameters.resultCache->found)
-    {
-        uint32_t count = parameters.resultCache->count;
-        if (count > 4u)
+        ////////////////////////////////////////////////////////////////////////
+        uint64_t nonce { jobInfo.nonce };
+        uint64_t boundary { jobInfo.boundaryU64 };
+        void* arguments[]
         {
-            count = 4u;
-        }
+            &nonce,
+            &boundary,
+            &parameters.headerCache,
+            &parameters.dagCache,
+            &parameters.resultCache[getCurrentIndex()]
+        };
+        CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
+                             blocks,  1u, 1u,
+                             threads, 1u, 1u,
+                             0u,
+                             getCurrentStream(),
+                             arguments,
+                             nullptr));
 
-        resultShare.found = true;
-        resultShare.count = count;
-        resultShare.jobId = jobInfo.jobIDStr;
+        ////////////////////////////////////////////////////////////////////////
+        CUDA_ER(cudaStreamSynchronize(getCurrentStream()));
+        CUDA_ER(cudaGetLastError());
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        ////////////////////////////////////////////////////////////////////////
+        algo::progpow::Result& resultCache { parameters.resultCache[getCurrentIndex()] };
+        if (true == resultCache.found)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
-            for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+            uint32_t count = resultCache.count;
+            if (count > 4u)
             {
-                resultShare.hash[i][j] = parameters.resultCache->hash[i][j];
+                count = 4u;
             }
+
+            resultShare.found = true;
+            resultShare.count = count;
+            resultShare.jobId = jobInfo.jobIDStr;
+
+            for (uint32_t i { 0u }; i < count; ++i)
+            {
+                resultShare.nonces[i] = resultCache.nonces[i];
+                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                {
+                    resultShare.hash[i][j] = resultCache.hash[i][j];
+                }
+            }
+
+            resultCache.found = false;
+            resultCache.count = 0u;
+        }
+    }
+    else
+    {
+        ////////////////////////////////////////////////////////////////////////
+        CUDA_ER(cudaStreamSynchronize(getCurrentStream()));
+        CUDA_ER(cudaGetLastError());
+
+        ////////////////////////////////////////////////////////////////////////
+        uint64_t nonce { jobInfo.nonce };
+        uint64_t boundary { jobInfo.boundaryU64 };
+        void* arguments[]
+        {
+            &nonce,
+            &boundary,
+            &parameters.headerCache,
+            &parameters.dagCache,
+            &parameters.resultCache[getNextIndex()]
+        };
+        CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
+                             blocks,  1u, 1u,
+                             threads, 1u, 1u,
+                             0u,
+                             getNextStream(),
+                             arguments,
+                             nullptr));
+
+        ////////////////////////////////////////////////////////////////////////
+        algo::progpow::Result& resultCache { parameters.resultCache[getCurrentIndex()] };
+        if (true == resultCache.found)
+        {
+            uint32_t count = resultCache.count;
+            if (count > 4u)
+            {
+                count = 4u;
+            }
+
+            resultShare.found = true;
+            resultShare.count = count;
+            resultShare.jobId = jobInfo.jobIDStr;
+
+            for (uint32_t i { 0u }; i < count; ++i)
+            {
+                resultShare.nonces[i] = resultCache.nonces[i];
+                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                {
+                    resultShare.hash[i][j] = resultCache.hash[i][j];
+                }
+            }
+
+            resultCache.found = false;
+            resultCache.count = 0u;
         }
 
-        parameters.resultCache->found = false;
-        parameters.resultCache->count = 0u;
+        ////////////////////////////////////////////////////////////////////////
+        swapStream();
     }
 
     ////////////////////////////////////////////////////////////////////////////

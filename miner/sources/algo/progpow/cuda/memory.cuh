@@ -32,7 +32,7 @@ bool progpowInitMemory(
     CUDA_ER(cudaMalloc((void**)&params.lightCache, context.lightCache.size));
     CUDA_ER(cudaMalloc((void**)&params.dagCache, context.dagCache.size));
     CUDA_ER(cudaMalloc((void**)&params.headerCache, sizeof(uint32_t) * algo::LEN_HASH_256_WORD_32));
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::progpow::Result), 0));
+    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::progpow::Result) * 2, 0));
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);
@@ -47,17 +47,30 @@ bool progpowInitMemory(
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    params.resultCache->count = 0u;
-    params.resultCache->found = false;
+    params.resultCache[0].count = 0u;
+    params.resultCache[0].found = false;
     for (uint32_t i{ 0u }; i < 4u; ++i)
     {
-        params.resultCache->nonces[i] = 0ull;
+        params.resultCache[0].nonces[i] = 0ull;
     }
     for (uint32_t i{ 0u }; i < 4u; ++i)
     {
         for (uint32_t x{ 0u }; x < 8u; ++x)
         {
-            params.resultCache->hash[i][x] = 0u;
+            params.resultCache[0].hash[i][x] = 0u;
+        }
+    }
+    params.resultCache[1].count = 0u;
+    params.resultCache[1].found = false;
+    for (uint32_t i{ 0u }; i < 4u; ++i)
+    {
+        params.resultCache[1].nonces[i] = 0ull;
+    }
+    for (uint32_t i{ 0u }; i < 4u; ++i)
+    {
+        for (uint32_t x{ 0u }; x < 8u; ++x)
+        {
+            params.resultCache[1].hash[i][x] = 0u;
         }
     }
 

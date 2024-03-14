@@ -29,6 +29,11 @@ bool common::Config::isValidConfig() const
 {
     bool error{ false };
 
+    if (true == cli.contains("help"))
+    {
+        return true;
+    }
+
     if (common::PROFILE::STANDARD == profile)
     {
         CLI_CHECK(mining.host.empty() == true,       "missing --host");
@@ -65,6 +70,17 @@ common::Config::PoolConfig* common::Config::getOrAddDeviceSettings(
         deviceSettings[deviceId] = {};
     }
     return &deviceSettings.at(deviceId);
+}
+
+
+common::Config::DeviceOptionsDev* common::Config::getOrAddDevOption(
+    uint32_t const deviceId)
+{
+    if (deviceOptionDev.find(deviceId) == deviceOptionDev.end())
+    {
+        deviceOptionDev[deviceId] = {};
+    }
+    return &deviceOptionDev.at(deviceId);
 }
 
 
@@ -217,6 +233,22 @@ bool common::Config::loadCli(int argc, char** argv)
                 poolConfig.password = mining.password;
             }
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        for (auto const& it : cli.getDevDeviceDoubleStream())
+        {
+            uint32_t const& index{ std::get<0>(it) };
+            uint32_t const& value{ std::get<1>(it) };
+            common::Config::DeviceOptionsDev* devOption{ getOrAddDevOption(index) };
+            if (value == 1)
+            {
+                devOption->doubleStream = true;
+            }
+            else
+            {
+                devOption->doubleStream = false;
+            }
+        }
     }
     catch(std::exception const& e)
     {
@@ -253,6 +285,18 @@ std::optional<common::Config::PoolConfig> common::Config::getConfigDevice(
 {
     auto it { deviceSettings.find(deviceId) };
     if (it != deviceSettings.end())
+    {
+        return { it->second };
+    }
+    return std::nullopt;
+}
+
+
+std::optional<common::Config::DeviceOptionsDev> common::Config::getConfigDev(
+    uint32_t const deviceId) const
+{
+    auto it { deviceOptionDev.find(deviceId) };
+    if (it != deviceOptionDev.end())
     {
         return { it->second };
     }

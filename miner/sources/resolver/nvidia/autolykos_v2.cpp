@@ -27,7 +27,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
         return false;
     }
     ////////////////////////////////////////////////////////////////////////////
-    if (false == autolykosv2BuildDag(cuStream, parameters))
+    if (false == autolykosv2BuildDag(getCurrentStream(), parameters))
     {
         return false;
     }
@@ -66,7 +66,10 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    if (false == autolykosv2Search(cuStream, blocks, threads, parameters))
+    if (false == autolykosv2Search(getCurrentStream(),
+                                   blocks,
+                                   threads,
+                                   parameters))
     {
         return false;
     }

@@ -17,6 +17,7 @@ set(COMMON_SOURCES
 boost_utils.cpp
 chrono.cpp
 cli.cpp
+cli_dev.cpp
 cli_device_custom.cpp
 cli_device_setting.cpp
 cli_pool.cpp

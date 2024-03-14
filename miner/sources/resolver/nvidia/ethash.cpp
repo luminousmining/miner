@@ -38,7 +38,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == ethashBuildDag(cuStream,
+    if (false == ethashBuildDag(getCurrentStream(),
                                 algo::ethash::DAG_ITEM_PARENTS,
                                 castU32(context.dagCache.numberItem)))
     {
@@ -70,29 +70,78 @@ bool resolver::ResolverNvidiaEthash::updateConstants(
 bool resolver::ResolverNvidiaEthash::execute(
     stratum::StratumJobInfo const& jobInfo)
 {
-    if (false == ethashSearch(cuStream,
-                              parameters.resultCache,
-                              blocks,
-                              threads,
-                              jobInfo.nonce))
+    if (false == isDoubleStream)
     {
-        return false;
-    }
-
-    if (true == parameters.resultCache->found)
-    {
-        resultShare.found = true;
-        resultShare.count = parameters.resultCache->count;
-        resultShare.jobId = jobInfo.jobIDStr;
-        resultShare.extraNonceSize = jobInfo.extraNonceSize;
-
-        for (uint32_t i { 0u }; i < parameters.resultCache->count; ++i)
+        ////////////////////////////////////////////////////////////////////////
+        if (false == ethashSearch(getCurrentStream(),
+                                  &parameters.resultCache[getCurrentIndex()],
+                                  blocks,
+                                  threads,
+                                  jobInfo.nonce))
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            return false;
         }
 
-        parameters.resultCache->found = false;
-        parameters.resultCache->count = 0u;
+        ////////////////////////////////////////////////////////////////////////
+        CUDA_ER(cudaStreamSynchronize(getCurrentStream()));
+        CUDA_ER(cudaGetLastError());
+
+        ////////////////////////////////////////////////////////////////////////
+        algo::ethash::Result& resultCache { parameters.resultCache[getCurrentIndex()] };
+        if (true == resultCache.found)
+        {
+            resultShare.found = true;
+            resultShare.count = resultCache.count;
+            resultShare.jobId = jobInfo.jobIDStr;
+            resultShare.extraNonceSize = jobInfo.extraNonceSize;
+
+            for (uint32_t i { 0u }; i < resultCache.count; ++i)
+            {
+                resultShare.nonces[i] = resultCache.nonces[i];
+            }
+
+            resultCache.found = false;
+            resultCache.count = 0u;
+        }
+
+    }
+    else
+    {
+        ////////////////////////////////////////////////////////////////////////
+        CUDA_ER(cudaStreamSynchronize(getCurrentStream()));
+        CUDA_ER(cudaGetLastError());
+
+        ////////////////////////////////////////////////////////////////////////
+        if (false == ethashSearch(getNextStream(),
+                                  &parameters.resultCache[getNextIndex()],
+                                  blocks,
+                                  threads,
+                                  jobInfo.nonce))
+        {
+            return false;
+        }
+
+
+        ////////////////////////////////////////////////////////////////////////
+        algo::ethash::Result& resultCache { parameters.resultCache[getCurrentIndex()] };
+        if (true == resultCache.found)
+        {
+            resultShare.found = true;
+            resultShare.count = resultCache.count;
+            resultShare.jobId = jobInfo.jobIDStr;
+            resultShare.extraNonceSize = jobInfo.extraNonceSize;
+
+            for (uint32_t i { 0u }; i < resultCache.count; ++i)
+            {
+                resultShare.nonces[i] = resultCache.nonces[i];
+            }
+
+            resultCache.found = false;
+            resultCache.count = 0u;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        swapStream();
     }
 
     return true;

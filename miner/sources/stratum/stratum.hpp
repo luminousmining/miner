@@ -65,7 +65,7 @@ namespace stratum
         boost::mutex        mtxSubmit;
         boost::mutex        mtxDispatchJob{};
         callbackUpdateJob   dispatchJob{ nullptr };
-        callbackShareStatus shareStatus{ nullptr };
+        callbackShareStatus doShareStatus{ nullptr };
 
         void onShare(boost::json::object const& root,
                      uint32_t const miningRequestID);

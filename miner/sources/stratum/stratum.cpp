@@ -27,7 +27,7 @@ void stratum::Stratum::setCallbackShareStatus(
 {
     if (nullptr != cbShareStatus)
     {
-        shareStatus = cbShareStatus;
+        doShareStatus = cbShareStatus;
     }
 }
 
@@ -267,8 +267,16 @@ void stratum::Stratum::onShare(
         isValid = false;
     }
 
-    if (nullptr != shareStatus)
+    if (nullptr != doShareStatus)
     {
-        shareStatus(isValid, miningRequestID, uuid);
+        if (isValid)
+        {
+            logInfo() << "valid share found!";
+        }
+        else
+        {
+            logErr() << "invalid share!";
+        }
+        doShareStatus(isValid, miningRequestID, uuid);
     }
 }
