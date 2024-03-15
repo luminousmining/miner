@@ -59,6 +59,7 @@ void algo::ethash::initializeDagContext(
     if (   context.epoch <= 0
         || castU32(context.epoch) > maxEpoch)
     {
+        logErr() << "context.epoch: " << context.epoch << " | maxEpoch: " << maxEpoch;
         return;
     }
 
@@ -72,14 +73,14 @@ void algo::ethash::initializeDagContext(
     uint64_t lightCacheNumItemsUpperBound { castU64(epochEIP) };
     lightCacheNumItemsUpperBound *= algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH;
     lightCacheNumItemsUpperBound += algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT;
-    context.lightCache.numberItem = algo::primeLarge(lightCacheNumItemsUpperBound);
+    context.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
     context.lightCache.size = context.lightCache.numberItem * algo::LEN_HASH_512;
 
     ////////////////////////////////////////////////////////////////////////////
     uint64_t numberItemUpperBound{ castU64(epochEIP) };
     numberItemUpperBound *= dagCountItemsGrowth;
     numberItemUpperBound += dagCountItemsInit;
-    context.dagCache.numberItem = algo::primeLarge(numberItemUpperBound);
+    context.dagCache.numberItem = algo::largestPrime(numberItemUpperBound);
     context.dagCache.size = context.dagCache.numberItem * algo::LEN_HASH_1024;
 
     ////////////////////////////////////////////////////////////////////////////

@@ -17,6 +17,6 @@ namespace resolver
         ~ResolverAmdEtchash() = default;
 
     protected:
-        void updateContext(stratum::StratumJobInfo const& jobInfo) final;
+        bool updateContext(stratum::StratumJobInfo const& jobInfo) final;
     };
 }

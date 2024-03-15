@@ -27,3 +27,10 @@ target_sources(${MINER_EXE} PUBLIC
 ${RESOLVER_AMD_HEADERS}
 ${RESOLVER_AMD_SOURCES}
 )
+
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${RESOLVER_AMD_HEADERS}
+${RESOLVER_AMD_SOURCES}
+)
+
+add_subdirectory(tests)

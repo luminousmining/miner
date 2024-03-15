@@ -1,0 +1,12 @@
+set(TEST_CRYPTO_HEADERS
+)
+
+set(TEST_CRYPTO_SOURCES
+fnv1.cpp
+kiss99.cpp
+)
+
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${TEST_CRYPTO_HEADERS}
+${TEST_CRYPTO_SOURCES}
+)

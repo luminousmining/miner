@@ -16,7 +16,7 @@ resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
 }
 
 
-void resolver::ResolverAmdProgPOW::updateContext(
+bool resolver::ResolverAmdProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     algo::ethash::initializeDagContext(context,
@@ -24,6 +24,25 @@ void resolver::ResolverAmdProgPOW::updateContext(
                                        maxEpoch,
                                        dagCountItemsGrowth,
                                        dagCountItemsInit);
+
+    if (   context.lightCache.numberItem == 0ull
+        || context.lightCache.size == 0ull
+        || context.dagCache.numberItem == 0ull
+        || context.dagCache.size == 0ull)
+    {
+        logErr()
+            << "\n"
+            << "=========================================================================" << "\n"
+            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+            << "context.lightCache.size: " << context.lightCache.size << "\n"
+            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+            << "context.dagCache.size: " << context.dagCache.size << "\n"
+            << "=========================================================================" << "\n"
+            ;
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -34,7 +53,10 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     IS_NULL(clQueue);
 
     ////////////////////////////////////////////////////////////////////////////
-    updateContext(jobInfo);
+    if (false == updateContext(jobInfo))
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.headerCache.free();
@@ -302,15 +324,17 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
 
     if (true == data.found)
     {
+        uint32_t const count { MAX_LIMIT(data.count , 4u) };
+
         resultShare.found = true;
-        resultShare.count = data.count;
+        resultShare.count = count;
         resultShare.jobId.assign(_jobId);
 
-        for (uint32_t i { 0u }; i < data.count; ++i)
+        for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = data.nonces[i];
         }
-        for (uint32_t i { 0u }; i < data.count; ++i)
+        for (uint32_t i { 0u }; i < count; ++i)
         {
             for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {

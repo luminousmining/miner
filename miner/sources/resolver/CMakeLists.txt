@@ -10,5 +10,10 @@ ${RESOLVER_HEADERS}
 ${RESOLVER_SOURCES}
 )
 
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${RESOLVER_HEADERS}
+${RESOLVER_SOURCES}
+)
+
 add_subdirectory(amd)
 add_subdirectory(nvidia)

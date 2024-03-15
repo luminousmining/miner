@@ -14,7 +14,7 @@ resolver::ResolverNvidiaProgPOW::~ResolverNvidiaProgPOW()
 }
 
 
-void resolver::ResolverNvidiaProgPOW::updateContext(
+bool resolver::ResolverNvidiaProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -23,6 +23,25 @@ void resolver::ResolverNvidiaProgPOW::updateContext(
                                        maxEpoch,
                                        dagCountItemsGrowth,
                                        dagCountItemsInit);
+
+    if (   context.lightCache.numberItem == 0ull
+        || context.lightCache.size == 0ull
+        || context.dagCache.numberItem == 0ull
+        || context.dagCache.size == 0ull)
+    {
+        logErr()
+            << "\n"
+            << "=========================================================================" << "\n"
+            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+            << "context.lightCache.size: " << context.lightCache.size << "\n"
+            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+            << "context.dagCache.size: " << context.dagCache.size << "\n"
+            << "=========================================================================" << "\n"
+            ;
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -30,7 +49,10 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    updateContext(jobInfo);
+    if (false == updateContext(jobInfo))
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == progpowInitMemory(context, parameters))
@@ -137,6 +159,8 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.setKernelName("progpowSearch");
 
+    IS_NULL(cuProperties);
+
     ////////////////////////////////////////////////////////////////////////////
     if (false == kernelGenerator.buildCuda(castU32(cuProperties->major),
                                            castU32(cuProperties->minor)))
@@ -206,11 +230,7 @@ bool resolver::ResolverNvidiaProgPOW::execute(
     ////////////////////////////////////////////////////////////////////////////
     if (true == parameters.resultCache->found)
     {
-        uint32_t count = parameters.resultCache->count;
-        if (count > 4u)
-        {
-            count = 4u;
-        }
+        uint32_t const count { MAX_LIMIT(parameters.resultCache->count, 4u) };
 
         resultShare.found = true;
         resultShare.count = count;
@@ -219,6 +239,10 @@ bool resolver::ResolverNvidiaProgPOW::execute(
         for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = parameters.resultCache->nonces[i];
+        }
+
+        for (uint32_t i { 0u }; i < count; ++i)
+        {
             for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {
                 resultShare.hash[i][j] = parameters.resultCache->hash[i][j];

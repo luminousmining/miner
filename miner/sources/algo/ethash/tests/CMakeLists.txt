@@ -1,0 +1,11 @@
+set(TEST_ETHASH_HEADERS
+)
+
+set(TEST_ETHASH_SOURCES
+ethash.cpp
+)
+
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${TEST_ETHASH_HEADERS}
+${TEST_ETHASH_SOURCES}
+)

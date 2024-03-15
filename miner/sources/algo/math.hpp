@@ -6,7 +6,7 @@
 namespace algo
 {
     bool isOddPrime(uint64_t number);
-    uint64_t primeLarge(uint64_t number);
+    uint64_t largestPrime(uint64_t number);
 
     template<typename T>
     T min(T const l, T const r)

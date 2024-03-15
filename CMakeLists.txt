@@ -17,6 +17,7 @@ endif()
 ### PROJECTS NAME                                                           ####
 ################################################################################
 set(MINER_EXE miner)
+set(UNIT_TEST_EXE unit_test)
 set(LIB_CRYPTO_NVIDIA libCryptoNvidia)
 
 ################################################################################

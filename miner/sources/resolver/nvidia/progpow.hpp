@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/ethash/ethash.hpp>
@@ -41,6 +40,6 @@ namespace resolver
         resolver::nvidia::progpow::KernelParameters parameters{};
 
         bool buildSearch();
-        virtual void updateContext(stratum::StratumJobInfo const& jobInfo);
+        virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
     };
 }

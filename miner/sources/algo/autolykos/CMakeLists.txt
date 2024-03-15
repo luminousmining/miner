@@ -12,4 +12,9 @@ ${AUTOLYKOS_HEADERS}
 ${AUTOLYKOS_SOURCES}
 )
 
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${AUTOLYKOS_HEADERS}
+${AUTOLYKOS_SOURCES}
+)
+
 add_subdirectory(opencl)
