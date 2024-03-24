@@ -25,7 +25,6 @@ namespace resolver
 
     protected:
         algo::autolykos_v2::ResultShare resultShare{};
-        common::KernelGenerator kernelGenerator{};
         resolver::nvidia::autolykos_v2::KernelParameters parameters{};
     };
 }

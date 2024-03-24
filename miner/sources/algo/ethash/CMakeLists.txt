@@ -13,4 +13,10 @@ ${ETHASH_HEADERS}
 ${ETHASH_SOURCES}
 )
 
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${ETHASH_HEADERS}
+${ETHASH_SOURCES}
+)
+
 add_subdirectory(opencl)
+add_subdirectory(tests)

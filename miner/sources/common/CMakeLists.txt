@@ -1,4 +1,3 @@
-
 set(COMMON_HEADERS
 boost_utils.hpp
 cast.hpp
@@ -31,8 +30,13 @@ ${COMMON_HEADERS}
 ${COMMON_SOURCES}
 )
 
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${COMMON_HEADERS}
+${COMMON_SOURCES}
+)
+
 add_subdirectory(cuda)
 add_subdirectory(error)
 add_subdirectory(log)
 add_subdirectory(opencl)
-
+add_subdirectory(mocker)

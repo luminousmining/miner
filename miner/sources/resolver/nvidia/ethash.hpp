@@ -26,6 +26,6 @@ namespace resolver
         resolver::nvidia::ethash::KernelParameters parameters{};
         algo::DagContext context{};
 
-        virtual void updateContext(stratum::StratumJobInfo const& jobInfo);
+        virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
     };
 }

@@ -74,13 +74,15 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
     ////////////////////////////////////////////////////////////////////////////
     if (true == parameters.resultCache->found)
     {
+        uint32_t const count { MAX_LIMIT(parameters.resultCache->count, 4u) };
+
         resultShare.found = true;
-        resultShare.count = parameters.resultCache->count;
+        resultShare.count = count;
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
         resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
 
-        for (uint32_t i { 0u }; i < parameters.resultCache->count; ++i)
+        for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = parameters.resultCache->nonces[i];
         }

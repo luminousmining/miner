@@ -4,9 +4,9 @@
 bool algo::isOddPrime(
     uint64_t const number)
 {
-    for (uint64_t d{ 3 }; (d * d) <= number; d += 2)
+    for (uint64_t d{ 3u }; (d * d) <= number; d += 2)
     {
-        if (0 == (number % d))
+        if (0u == (number % d))
         {
             return false;
         }
@@ -16,7 +16,7 @@ bool algo::isOddPrime(
 }
 
 
-uint64_t algo::primeLarge(
+uint64_t algo::largestPrime(
     uint64_t number)
 {
     if (2 > number)

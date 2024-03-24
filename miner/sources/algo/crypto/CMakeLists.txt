@@ -13,5 +13,11 @@ ${CRYPTO_HEADERS}
 ${CRYPTO_SOURCES}
 )
 
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${CRYPTO_HEADERS}
+${CRYPTO_SOURCES}
+)
+
 add_subdirectory(cuda)
 add_subdirectory(opencl)
+add_subdirectory(tests)

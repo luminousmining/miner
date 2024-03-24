@@ -20,7 +20,7 @@ resolver::ResolverAmdEthash::~ResolverAmdEthash()
 }
 
 
-void resolver::ResolverAmdEthash::updateContext(
+bool resolver::ResolverAmdEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     algo::ethash::initializeDagContext(context,
@@ -28,6 +28,25 @@ void resolver::ResolverAmdEthash::updateContext(
                                        algo::ethash::MAX_EPOCH_NUMBER,
                                        algo::ethash::DAG_COUNT_ITEMS_GROWTH,
                                        algo::ethash::DAG_COUNT_ITEMS_INIT);
+
+    if (   context.lightCache.numberItem == 0ull
+        || context.lightCache.size == 0ull
+        || context.dagCache.numberItem == 0ull
+        || context.dagCache.size == 0ull)
+    {
+        logErr()
+            << "\n"
+            << "=========================================================================" << "\n"
+            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+            << "context.lightCache.size: " << context.lightCache.size << "\n"
+            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+            << "context.dagCache.size: " << context.dagCache.size << "\n"
+            << "=========================================================================" << "\n"
+            ;
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -44,7 +63,10 @@ bool resolver::ResolverAmdEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    updateContext(jobInfo);
+    if (false == updateContext(jobInfo))
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.lightCache.free();
@@ -242,12 +264,14 @@ bool resolver::ResolverAmdEthash::getResultCache(
 
     if (true == data.found)
     {
+        uint32_t const count { MAX_LIMIT(data.count, 4u) };
+
         resultShare.found = true;
-        resultShare.count = data.count;
+        resultShare.count = count;
         resultShare.extraNonceSize = extraNonceSize;
         resultShare.jobId.assign(_jobId);
 
-        for (uint32_t i { 0u }; i < data.count; ++i)
+        for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = data.nonces[i];
         }
