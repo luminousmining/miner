@@ -201,19 +201,19 @@ bool common::Config::loadCli(int argc, char** argv)
 
             for (auto const& it : cli.getSmartMiningPool())
             {
-                std::string const& coin{ std::get<0>(it) };
-                std::string const& url{ std::get<1>(it) };
-                uint32_t const& port{ std::get<2>(it) };
+                std::string const& smartMiningCoin{ std::get<0>(it) };
+                std::string const& smartMiningUrl{ std::get<1>(it) };
+                uint32_t const& smartMiningPort{ std::get<2>(it) };
 
-                common::Config::PoolConfig& poolConfig { smartMining.coinPoolConfig[coin] };
+                common::Config::PoolConfig& poolConfig { smartMining.coinPoolConfig[smartMiningCoin] };
                 if (   false == poolConfig.host.empty()
                     || 0u != poolConfig.port)
                 {
-                    logErr() << "sm_pool => duplicate coin[" << coin << "]";
+                    logErr() << "sm_pool => duplicate coin[" << smartMiningCoin << "]";
                     return false;
                 }
-                poolConfig.host.assign(url);
-                poolConfig.port = port;
+                poolConfig.host.assign(smartMiningUrl);
+                poolConfig.port = smartMiningPort;
                 poolConfig.password = mining.password;
             }
         }
