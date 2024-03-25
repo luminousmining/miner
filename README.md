@@ -1,5 +1,7 @@
 # LuminousMiner
 
+Come talk with us [Discord](https://discord.gg/uTNRBFVz)  
+  
 Free mining software with 0% fees! Enjoy your mining time.  
   
 Project aims for learning and sharing about mining software.  

@@ -22,7 +22,13 @@ ${ALGO_HEADERS}
 ${ALGO_SOURCES}
 )
 
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${ALGO_HEADERS}
+${ALGO_SOURCES}
+)
+
 add_subdirectory(autolykos)
 add_subdirectory(crypto)
 add_subdirectory(ethash)
 add_subdirectory(progpow)
+add_subdirectory(tests)

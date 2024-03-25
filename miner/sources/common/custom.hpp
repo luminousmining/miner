@@ -51,6 +51,9 @@
 #define NEW(type)\
     new (std::nothrow) type
 
+#define MAX_LIMIT(value, max)\
+    (value <= max ? value : max)
+
 namespace common
 {
     template<typename T>

@@ -14,7 +14,7 @@ resolver::ResolverNvidiaProgPOW::~ResolverNvidiaProgPOW()
 }
 
 
-void resolver::ResolverNvidiaProgPOW::updateContext(
+bool resolver::ResolverNvidiaProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -23,6 +23,25 @@ void resolver::ResolverNvidiaProgPOW::updateContext(
                                        maxEpoch,
                                        dagCountItemsGrowth,
                                        dagCountItemsInit);
+
+    if (   context.lightCache.numberItem == 0ull
+        || context.lightCache.size == 0ull
+        || context.dagCache.numberItem == 0ull
+        || context.dagCache.size == 0ull)
+    {
+        logErr()
+            << "\n"
+            << "=========================================================================" << "\n"
+            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+            << "context.lightCache.size: " << context.lightCache.size << "\n"
+            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+            << "context.dagCache.size: " << context.dagCache.size << "\n"
+            << "=========================================================================" << "\n"
+            ;
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -30,7 +49,10 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    updateContext(jobInfo);
+    if (false == updateContext(jobInfo))
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == progpowInitMemory(context, parameters))
@@ -137,6 +159,8 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.setKernelName("progpowSearch");
 
+    IS_NULL(cuProperties);
+
     ////////////////////////////////////////////////////////////////////////////
     if (false == kernelGenerator.buildCuda(castU32(cuProperties->major),
                                            castU32(cuProperties->minor)))
@@ -180,8 +204,14 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
 bool resolver::ResolverNvidiaProgPOW::execute(
     stratum::StratumJobInfo const& jobInfo)
 {
+    IS_NULL(parameters.lightCache);
+    IS_NULL(parameters.dagCache);
+
     if (false == isDoubleStream)
     {
+        ////////////////////////////////////////////////////////////////////////
+        algo::progpow::Result& paramResultCache { parameters.resultCache[getCurrentIndex()] };
+
         ////////////////////////////////////////////////////////////////////////
         uint64_t nonce { jobInfo.nonce };
         uint64_t boundary { jobInfo.boundaryU64 };
@@ -191,29 +221,24 @@ bool resolver::ResolverNvidiaProgPOW::execute(
             &boundary,
             &parameters.headerCache,
             &parameters.dagCache,
-            &parameters.resultCache[getCurrentIndex()]
+            &paramResultCache
         };
-        CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
-                             blocks,  1u, 1u,
-                             threads, 1u, 1u,
-                             0u,
-                             getCurrentStream(),
-                             arguments,
-                             nullptr));
 
-        ////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+        CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
+                            blocks,  1u, 1u,
+                            threads, 1u, 1u,
+                            0u,
+                            getCurrentStream(),
+                            arguments,
+                            nullptr));
         CUDA_ER(cudaStreamSynchronize(getCurrentStream()));
         CUDA_ER(cudaGetLastError());
 
-        ////////////////////////////////////////////////////////////////////////
-        algo::progpow::Result& resultCache { parameters.resultCache[getCurrentIndex()] };
-        if (true == resultCache.found)
+        ////////////////////////////////////////////////////////////////////////////
+        if (true == paramResultCache.found)
         {
-            uint32_t count = resultCache.count;
-            if (count > 4u)
-            {
-                count = 4u;
-            }
+            uint32_t const count { MAX_LIMIT(paramResultCache.count, 4u) };
 
             resultShare.found = true;
             resultShare.count = count;
@@ -221,15 +246,15 @@ bool resolver::ResolverNvidiaProgPOW::execute(
 
             for (uint32_t i { 0u }; i < count; ++i)
             {
-                resultShare.nonces[i] = resultCache.nonces[i];
+                resultShare.nonces[i] = paramResultCache.nonces[i];
                 for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
-                    resultShare.hash[i][j] = resultCache.hash[i][j];
+                    resultShare.hash[i][j] = paramResultCache.hash[i][j];
                 }
             }
 
-            resultCache.found = false;
-            resultCache.count = 0u;
+            paramResultCache.found = false;
+            paramResultCache.count = 0u;
         }
     }
     else
@@ -239,6 +264,7 @@ bool resolver::ResolverNvidiaProgPOW::execute(
         CUDA_ER(cudaGetLastError());
 
         ////////////////////////////////////////////////////////////////////////
+        algo::progpow::Result& paramResultCacheNext { parameters.resultCache[getNextIndex()] };
         uint64_t nonce { jobInfo.nonce };
         uint64_t boundary { jobInfo.boundaryU64 };
         void* arguments[]
@@ -247,7 +273,7 @@ bool resolver::ResolverNvidiaProgPOW::execute(
             &boundary,
             &parameters.headerCache,
             &parameters.dagCache,
-            &parameters.resultCache[getNextIndex()]
+            &paramResultCacheNext
         };
         CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
                              blocks,  1u, 1u,
@@ -258,14 +284,10 @@ bool resolver::ResolverNvidiaProgPOW::execute(
                              nullptr));
 
         ////////////////////////////////////////////////////////////////////////
-        algo::progpow::Result& resultCache { parameters.resultCache[getCurrentIndex()] };
-        if (true == resultCache.found)
+        algo::progpow::Result& paramResultCache { parameters.resultCache[getCurrentIndex()] };
+        if (true == paramResultCache.found)
         {
-            uint32_t count = resultCache.count;
-            if (count > 4u)
-            {
-                count = 4u;
-            }
+            uint32_t const count { MAX_LIMIT(paramResultCache.count, 4u) };
 
             resultShare.found = true;
             resultShare.count = count;
@@ -273,15 +295,15 @@ bool resolver::ResolverNvidiaProgPOW::execute(
 
             for (uint32_t i { 0u }; i < count; ++i)
             {
-                resultShare.nonces[i] = resultCache.nonces[i];
+                resultShare.nonces[i] = paramResultCache.nonces[i];
                 for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
-                    resultShare.hash[i][j] = resultCache.hash[i][j];
+                    resultShare.hash[i][j] = paramResultCache.hash[i][j];
                 }
             }
 
-            resultCache.found = false;
-            resultCache.count = 0u;
+            paramResultCache.found = false;
+            paramResultCache.count = 0u;
         }
 
         ////////////////////////////////////////////////////////////////////////

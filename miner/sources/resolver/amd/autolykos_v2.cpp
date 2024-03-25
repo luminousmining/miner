@@ -317,13 +317,15 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     ////////////////////////////////////////////////////////////////////////////
     if (true == data.found)
     {
+        uint32_t const count { MAX_LIMIT(data.count, 4u) };
+
         resultShare.found = true;
-        resultShare.count = data.count;
+        resultShare.count = count;
         resultShare.extraNonceSize = extraNonceSize;
         resultShare.extraNonce2Size = extraNonce2Size;
         resultShare.jobId.assign(_jobId);
 
-        for (uint32_t i { 0u }; i < data.count; ++i)
+        for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = data.nonces[i];
         }

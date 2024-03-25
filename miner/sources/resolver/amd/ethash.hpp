@@ -28,7 +28,7 @@ namespace resolver
         algo::DagContext context{};
         common::KernelGenerator kernelGenerator{};
 
-        virtual void updateContext(stratum::StratumJobInfo const& jobInfo);
+        virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
 
         bool buildDAG();
         bool buildSearch();
