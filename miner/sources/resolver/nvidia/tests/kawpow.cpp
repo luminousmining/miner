@@ -23,7 +23,9 @@ struct ResolverKawpowNvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.isDoubleStream = false;
+        resolver.cuStream[0] = properties.cuStream;
+        resolver.cuStream[1] = nullptr;
         resolver.cuProperties = &properties.cuProperties;
     }
 
@@ -50,12 +52,15 @@ TEST_F(ResolverKawpowNvidiaTest, findNonce)
 {
     initializeJob(0xdec100000704757f);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
+    ASSERT_EQ(nullptr, resolver.cuStream[1]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.execute(jobInfo));
     resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
 
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
@@ -68,7 +73,8 @@ TEST_F(ResolverKawpowNvidiaTest, notFindNonce)
 {
     initializeJob(0x000100000704757f);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
+    ASSERT_EQ(nullptr, resolver.cuStream[1]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));

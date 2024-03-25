@@ -65,6 +65,8 @@ TEST_F(ResolverEthashAmdTest, findNonce)
     ASSERT_TRUE(resolver.execute(jobInfo));
     resolver.submit(&stratum);
 
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;

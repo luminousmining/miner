@@ -23,7 +23,9 @@ struct ResolverFiropowNvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.isDoubleStream = false;
+        resolver.cuStream[0] = properties.cuStream;
+        resolver.cuStream[1] = nullptr;
         resolver.cuProperties = &properties.cuProperties;
     }
 
@@ -56,6 +58,8 @@ TEST_F(ResolverFiropowNvidiaTest, findNonce)
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.execute(jobInfo));
     resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
 
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 

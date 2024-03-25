@@ -21,15 +21,15 @@ bool device::DeviceNvidia::initialize()
     cleanUp();
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_ER(cuInit(0));
-    CU_ER(cuDeviceGet(&cuDevice, cuIndex));
-    CU_ER(cuCtxCreate(&cuContext, CU_CTX_SCHED_BLOCKING_SYNC, cuDevice));
-
-    ////////////////////////////////////////////////////////////////////////////
     if (nullptr == resolverNvidia)
     {
         return false;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    CU_ER(cuInit(0));
+    CU_ER(cuDeviceGet(&cuDevice, cuIndex));
+    CU_ER(cuCtxCreate(&cuContext, CU_CTX_SCHED_BLOCKING_SYNC, cuDevice));
 
     ////////////////////////////////////////////////////////////////////////////
     resolverNvidia->cuProperties = &properties;

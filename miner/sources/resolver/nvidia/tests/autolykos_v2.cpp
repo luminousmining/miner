@@ -24,7 +24,10 @@ struct ResolverAutolykosv2NvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.isDoubleStream = false;
+        resolver.cuStream[0] = properties.cuStream;
+        resolver.cuStream[1] = nullptr;
+        resolver.cuProperties = &properties.cuProperties;
     }
 
     ~ResolverAutolykosv2NvidiaTest()
