@@ -157,14 +157,12 @@ common::Cli::Cli()
             "sm_wallet",
             value<std::vector<std::string>>(&optionSmartMiningWallet)->multitoken(),
             "[OPTIONAL] assign a wallet with a coin.\n"
-            "You must define it if you are use --smart_mining=true.\n"
             "--sm_wallet=COIN:WALLET"
         )
         (
             "sm_pool",
             value<std::vector<std::string>>(&optionSmartMiningPool)->multitoken(),
             "[OPTIONAL] assign a pool with a coin.\n"
-            "You must define it if you are use --smart_mining=true.\n"
             "--sm_pool=COIN@POOL_URL:POOL_PORT"
         )
         ;
