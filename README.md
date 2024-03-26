@@ -85,10 +85,6 @@ ___Smart Mining options:___
                     --sm_pool=COIN@POOL_URL:POOL_PORT
 ```
 
-___Developper options:___
-```
---
-```
 
 ## Require
 - cuda 12.3 => Windows
