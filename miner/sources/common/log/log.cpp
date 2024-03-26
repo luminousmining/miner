@@ -2,6 +2,7 @@
 #include <algo/hash_utils.hpp>
 #include <common/date.hpp>
 #include <common/log/log.hpp>
+#include <common/log/log_file.hpp>
 
 
 common::TYPELOG LOGGER_LEVEL { common::TYPELOG::__INFO };
@@ -62,6 +63,12 @@ common::Logger::~Logger() noexcept
     info.typeLog = typeLog;
 
     common::Logger::logDisplay.print(info);
+
+    common::LoggerFile& logFile { common::LoggerFile::instance() };
+    if (true == logFile.isOpen())
+    {
+        logFile.write(info.message);
+    }
 }
 
 

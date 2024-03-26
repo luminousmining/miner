@@ -30,6 +30,8 @@ ___Common options:___
 --help            Help screen.
 --level_log       [OPTIONAL] Set level of log.
                --level_log=<debug|info|error|warning>
+--log_file        [OPTIONAL] Set level of log.
+               --log_file=PATH
 --host             [MANDATORY] Hostname of the pool.
                --host="ethw.2miners.com"
 --port             [MANDATORY] Port of the pool.

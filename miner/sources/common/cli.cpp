@@ -34,6 +34,12 @@ common::Cli::Cli()
             "[OPTIONAL] Set level of log.\n"
             "--level_log=<debug|info|error|warning>"
         )
+        (
+            "log_file",
+            value<std::string>(),
+            "[OPTIONAL] Set path to write log.\n"
+            "--log_file=PATH"
+        )
 
         // Pool Connection
         (

@@ -47,6 +47,7 @@ namespace common
 
         // logger
         std::optional<common::TYPELOG> getLevelLog() const;
+        std::optional<std::string> getLogFilenaName() const;
 
         // Pool Connection
         std::optional<std::string>   getHost() const;
