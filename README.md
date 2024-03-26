@@ -80,14 +80,11 @@ ___Specific device options:___
 ___Smart Mining options:___
 ```
 --sm_wallet arg         [OPTIONAL] assign a wallet with a coin.
-                    You must define it if you are use
-                    --smart_mining=true.
                     --sm_wallet=COIN:WALLET
 --sm_pool arg           [OPTIONAL] assign a pool with a coin.
-                    You must define it if you are use
-                    --smart_mining=true.
                     --sm_pool=COIN@POOL_URL:POOL_PORT
 ```
+
 
 ## Require
 - cuda 12.3 => Windows
