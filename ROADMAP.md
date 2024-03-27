@@ -22,7 +22,7 @@ current version `v0.0`
 -- http server (API)  
 -- write log in file  
   
-+ v1.0  
++ v1.x  
 -- algo SHA256  
 -- algo blockflow (alephium)  
 -- algo kHeavyHash (kaspa)  
