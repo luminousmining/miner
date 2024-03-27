@@ -19,7 +19,7 @@ current version `v0.0`
 -- option mining global  
 -- option mining by gpu  
 -- terminal display stats mining  
--- http server API  
+-- http server (API)  
 -- write log in file  
   
 + v1.0  
