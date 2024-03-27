@@ -6,4 +6,4 @@
 CUSTOM_NAME=miner
 CUSTOM_VERSION=0.1
 CUSTOM_CONFIG_FILENAME=
-CUSTOM_LOG_BASENAME=/var/log/luminousminer/miner.log
+CUSTOM_LOG_BASENAME=/var/log/luminousminer.log

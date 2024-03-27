@@ -43,6 +43,6 @@ echo \
 " --wallet=${WALLET}"\
 " --workername=${WORKERNAME}"\
 " --password=${PASSWORD}"\
-" --log_file=/var/log/luminousminer/miner.log"\
+" --log_file=/var/log/luminousminer.log"\
 " ${CUSTOM_USER_CONFIG}"\
 > ${MINER_DIR}/luminousminer/mining_arguments.conf
