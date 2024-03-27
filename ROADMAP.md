@@ -19,6 +19,8 @@ current version `v0.0`
 -- option mining global  
 -- option mining by gpu  
 -- terminal display stats mining  
+-- http server (API)  
+-- write log in file  
   
 + v1.0  
 -- algo SHA256  
@@ -27,7 +29,6 @@ current version `v0.0`
 -- profile smart mining  
 -- profile ravenminer  
 -- os RaveOS  
--- http server API  
 -- compil from conan  
   
 + v2.x  

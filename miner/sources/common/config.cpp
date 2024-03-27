@@ -1,6 +1,7 @@
 #include <algo/math.hpp>
 #include <common/config.hpp>
 #include <common/log/log.hpp>
+#include <common/log/log_file.hpp>
 
 
 #define CLI_CHECK(condition, msg) if ((condition)) { error = true; logErr() << msg; }
@@ -82,7 +83,15 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const levelLog { cli.getLevelLog() };
         if (std::nullopt != levelLog)
         {
+            log.level = *levelLog;
             setLogLevel(*levelLog);
+        }
+
+        auto const logFile { cli.getLogFilenaName() };
+        if (std::nullopt != logFile)
+        {
+            log.file.assign(*logFile);
+            common::LoggerFile::instance().openFilename();
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -185,16 +194,16 @@ bool common::Config::loadCli(int argc, char** argv)
 
             for (auto const& it : cli.getSmartMiningWallet())
             {
-                std::string const& coin{ std::get<0>(it) };
-                std::string const& wallet{ std::get<1>(it) };
+                std::string const& smCoin{ std::get<0>(it) };
+                std::string const& smWallet{ std::get<1>(it) };
 
-                if (smartMining.coinPoolConfig.find(coin) == smartMining.coinPoolConfig.end())
+                if (smartMining.coinPoolConfig.find(smCoin) == smartMining.coinPoolConfig.end())
                 {
-                    smartMining.coinPoolConfig[coin].wallet.assign(wallet);
+                    smartMining.coinPoolConfig[smCoin].wallet.assign(smWallet);
                 }
                 else
                 {
-                    logErr() << "sm_wallet => duplicate coin[" << coin << "]";
+                    logErr() << "sm_wallet => duplicate coin[" << smCoin << "]";
                     return false;
                 }
             }

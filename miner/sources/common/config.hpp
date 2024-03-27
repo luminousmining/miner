@@ -47,8 +47,15 @@ namespace common
             bool cpuEnable{ true };
         };
 
+        struct LogConfig
+        {
+            common::TYPELOG level { common::TYPELOG::__INFO };
+            std::string file{};
+        };
+
         common::PROFILE                profile { common::PROFILE::STANDARD };
         common::Cli                    cli{};
+        LogConfig                      log{};
         PoolConfig                     mining{};
         SmartMiningConfig              smartMining{};
         DeviceEnableSetting            deviceEnable{};

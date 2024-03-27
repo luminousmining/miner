@@ -23,6 +23,18 @@ std::optional<common::TYPELOG> common::Cli::getLevelLog() const
             return common::TYPELOG::__ERROR;
         }
     }
+
+    return std::nullopt;
+}
+
+
+std::optional<std::string> common::Cli::getLogFilenaName() const
+{
+    if (true == contains("log_file"))
+    {
+        return params["log_file"].as<std::string>();
+    }
+
     return std::nullopt;
 }
 
