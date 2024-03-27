@@ -28,8 +28,14 @@ struct Kiss99Test : public testing::Test
 
 TEST_F(Kiss99Test, kiss99)
 {
-    EXPECT_EQ(2437187438u, algo::kiss99(build(1u, 2u, 3u, 4u)));
-    EXPECT_EQ(1111177990u, algo::kiss99(build(4u, 3u, 2u, 1u)));
+    {
+        algo::Kiss99Properties properties { build(1u, 2u, 3u, 4u) };
+        EXPECT_EQ(2437187438u, algo::kiss99(properties));
+    }
+    {
+        algo::Kiss99Properties properties { build(4u, 3u, 2u, 1u) };
+        EXPECT_EQ(1111177990u, algo::kiss99(properties));
+    }
 }
 
 
