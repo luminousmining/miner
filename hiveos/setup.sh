@@ -11,7 +11,7 @@ mkdir ${PROJECT}
 
 # Setup folder
 cp hiveos/h-config.sh ${PROJECT}/
-cp hiveos/h-manifest.sh ${PROJECT}/
+cp hiveos/h-manifest.conf ${PROJECT}/
 cp hiveos/h-run.sh ${PROJECT}/
 cp hiveos/h-stats.sh ${PROJECT}/
 cp bin/miner ${PROJECT}/
