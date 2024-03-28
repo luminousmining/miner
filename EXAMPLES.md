@@ -3,7 +3,6 @@
 ## AUTOLYKOS V2
 ```bat
 miner.exe^
- --level_log=debug^
  --host="erg.2miners.com"^
  --port=8888^
  --wallet="YOUR_WALLET"^
@@ -62,7 +61,7 @@ miner.exe^
 ```
 
 # SPLIT MINING
-In this examples the RIG contains more than 2 GPUs !
+In these examples the RIG contains more than 2 GPUs !
 
 ## Many Coins
 All gpu will mine `RVN` on `rvn.2miners.com:6060` except GPUs 1 and 2 !  
