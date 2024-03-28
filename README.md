@@ -9,7 +9,7 @@ Free GPU mining with 0% fees! Enjoy your mining time.
 Project aims for learning and sharing about mining software.  
   
 See the [roadmap](https://github.com/luminousmining/miner/tree/main/ROADMAP.md) of luminousminer.  
-See the [pools](https://github.com/luminousmining/miner/tree/main/POOLS.md) testes!  
+See the [pools](https://github.com/luminousmining/miner/tree/main/POOLS.md) tested!  
   
 Different profiles are available:
 * STANDAR
