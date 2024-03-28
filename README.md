@@ -29,9 +29,9 @@ Different profiles are available:
 - evrprogpow
 
 ## Internal Documentation
-[Build](https://github.com/luminousmining/miner/tree/main/BUILD.md)
-[Parameteres](https://github.com/luminousmining/miner/tree/main/PARAMETERS.md)
-[Examples](https://github.com/luminousmining/miner/tree/main/EXAMPLES.md)
+[Build](https://github.com/luminousmining/miner/tree/main/BUILD.md)  
+[Parameteres](https://github.com/luminousmining/miner/tree/main/PARAMETERS.md)  
+[Examples](https://github.com/luminousmining/miner/tree/main/EXAMPLES.md)  
 
 ## References - Miners
 [ethminer](https://github.com/ethereum-mining/ethminer)  
