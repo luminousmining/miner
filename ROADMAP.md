@@ -1,39 +1,37 @@
 # Roadmap
   
-current version `v0.0`
+current version `v0.1`
   
 + v0.x  
--- GPU mining Nvidia  
--- GPU mining AMD  
--- os Windows  
--- os Linux  
--- os Hiveos  
--- algo autolykos v2  
--- algo ethash  
--- algo etchash  
--- algo progpow  
--- algo progpowZ  
--- algo evrprogpow  
--- algo kawpow  
--- algo firopow  
--- option mining global  
--- option mining by gpu  
--- terminal display stats mining  
--- http server (API)  
--- write log in file  
+- [x] GPU mining Nvidia  
+- [x] GPU mining AMD  
+- [x] os Windows  
+- [x] os Linux  
+- [ ] os Hiveos  
+- [x] algo autolykos v2  
+- [x] algo ethash  
+- [x] algo etchash  
+- [x] algo progpow  
+- [x] algo progpowZ  
+- [x] algo evrprogpow  
+- [x] algo kawpow  
+- [x] algo firopow  
+- [x] option mining global  
+- [x] option mining by gpu  
+- [x] terminal display stats mining  
+- [ ] http server (API)  
+- [x] write log in file  
   
 + v1.x  
--- algo SHA256  
--- algo blockflow (alephium)  
--- algo kHeavyHash (kaspa)  
--- profile smart mining  
--- profile ravenminer  
--- os RaveOS  
--- compil from conan  
+- [ ] algo ?? help us to define list
+- [ ] profile smart mining  
+- [ ] profile ravenminer  
+- [ ] os RaveOS  
+- [ ] build by conan  
   
 + v2.x  
--- profile traiding  
+- [ ] profile traiding  
   
 + v3.x  
--- CPU mining  
+- [ ] CPU mining  
   
