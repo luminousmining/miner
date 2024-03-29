@@ -128,7 +128,6 @@ void api::ServerAPI::onHiveOSGetStats(
         if (nullptr == device)
         {
             hs.push_back(0);
-            continue;
         }
         else
         {
