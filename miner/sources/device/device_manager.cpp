@@ -330,6 +330,12 @@ void device::DeviceManager::connectToSmartMining()
 }
 
 
+std::vector<device::Device*>& device::DeviceManager::getDevices()
+{
+    return devices;
+}
+
+
 void device::DeviceManager::loopStatistical()
 {
     std::string host{};

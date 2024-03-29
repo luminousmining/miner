@@ -1,6 +1,10 @@
 #pragma once
 
 #include <sstream>
+#include <string>
+#include <string_view>
+
+#include <boost/beast/core/string_type.hpp>
 
 #include <algo/hash.hpp>
 #include <algo/algo_type.hpp>
@@ -29,6 +33,8 @@ namespace common
         Logger& operator<<(algo::hash1024 const& hash);
         Logger& operator<<(algo::hash2048 const& hash);
         Logger& operator<<(std::string const& str);
+        Logger& operator<<(std::string_view const& str);
+        Logger& operator<<(boost::beast::string_view const& str);
         Logger& operator<<(stratum::StratumJobInfo const& jobInfo);
 
         template<typename T>

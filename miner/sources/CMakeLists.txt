@@ -1,4 +1,5 @@
 add_subdirectory(algo)
+add_subdirectory(api)
 add_subdirectory(common)
 add_subdirectory(device)
 add_subdirectory(network)

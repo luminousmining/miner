@@ -8,11 +8,13 @@
 #endif // !__LIB_CUDA
 
 ////////////////////////////////////////////////////////////////////////////////
+#define castU2(value) static_cast<unsigned short>(value)
 #define castU8(value)  static_cast<uint8_t>(value)
 #define castU16(value) static_cast<uint16_t>(value)
 #define castU32(value) static_cast<uint32_t>(value)
 #define castU64(value) static_cast<uint64_t>(value)
 ////////////////////////////////////////////////////////////////////////////////
+#define cast2(value) static_cast<short>(value)
 #define cast8(value)  static_cast<int8_t>(value)
 #define cast16(value) static_cast<int16_t>(value)
 #define cast32(value) static_cast<int32_t>(value)

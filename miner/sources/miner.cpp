@@ -1,5 +1,6 @@
 #include <string>
 
+#include <api/api.hpp>
 #include <common/app.hpp>
 #include <common/config.hpp>
 #include <common/log/log.hpp>
@@ -27,6 +28,7 @@ int main(
         ////////////////////////////////////////////////////////////////////////
         device::DeviceManager deviceManager{};
         common::Config& config { common::Config::instance() };
+        api::ServerAPI serverAPI{};
 
         ////////////////////////////////////////////////////////////////////////
         welcome();
@@ -43,10 +45,18 @@ int main(
         }
 
         ////////////////////////////////////////////////////////////////////////
+        serverAPI.setPort(8080);
+        if (false == serverAPI.bind())
+        {
+            return 1;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
         if (false == deviceManager.initialize())
         {
             return 1;
         }
+        serverAPI.setDeviceManager(&deviceManager);
         if (common::PROFILE::STANDARD == config.profile)
         {
             deviceManager.run();
