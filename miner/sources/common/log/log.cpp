@@ -149,6 +149,7 @@ common::Logger& common::Logger::operator<<(
     return *this;
 }
 
+
 common::Logger& common::Logger::operator<<(
     std::string const& str)
 {
@@ -158,6 +159,32 @@ common::Logger& common::Logger::operator<<(
     }
 
     ss << str.c_str();
+    return *this;
+}
+
+
+common::Logger& common::Logger::operator<<(
+    std::string_view const& str)
+{
+    if (typeLog > LOGGER_LEVEL)
+    {
+        return *this;
+    }
+
+    ss << std::string(str);
+    return *this;
+}
+
+
+common::Logger& common::Logger::operator<<(
+    boost::beast::string_view const& str)
+{
+    if (typeLog > LOGGER_LEVEL)
+    {
+        return *this;
+    }
+
+    ss << std::string_view(str.data(), str.size());
     return *this;
 }
 

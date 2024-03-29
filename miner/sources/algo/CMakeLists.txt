@@ -1,4 +1,3 @@
-
 set(ALGO_HEADERS
 algo_type.hpp
 bitwise.hpp

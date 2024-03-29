@@ -30,6 +30,8 @@ namespace device
         void run();
         void connectToPools();
         void connectToSmartMining();
+        std::vector<Device*>& getDevices();
+
         void onUpdateJob(uint32_t const stratumUUID,
                          stratum::StratumJobInfo const& newJobInfo);
         void onShareStatus(bool const isValid,
