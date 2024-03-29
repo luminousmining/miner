@@ -48,12 +48,10 @@ namespace api
     private:
         device::DeviceManager* deviceManager{ nullptr };
         void onMessage(boost_socket& socket,
-            boost_request const& request);
+                       boost_request const& request);
         void onHiveOSGetStats(boost_socket& socket,
-                              boost_request const& request,
                               boost_response& response);
         void onHiveOSGetTotalHashrate(boost_socket& socket,
-                                      boost_request const& request,
                                       boost_response& response);
     };
 }

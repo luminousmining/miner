@@ -11,6 +11,7 @@
 #include <common/date.hpp>
 #include <common/formater_hashrate.hpp>
 #include <common/error/cuda_error.hpp>
+#include <common/error/opencl_error.hpp>
 #include <device/device_manager.hpp>
 #include <stratum/stratums.hpp>
 
@@ -226,6 +227,7 @@ bool device::DeviceManager::initializeNvidia()
         }
         device->cuIndex = castU32(i);
         device->id = castU32(devices.size());
+        device->pciBus = device->properties.pciBusID;
 
         logInfo() << "GPU[" << devices.size() << "] " << device->properties.name;
         devices.push_back(device);
@@ -264,6 +266,16 @@ bool device::DeviceManager::initializeAmd()
                 continue;
             }
             device->id = castU32(devices.size());
+
+            cl_char topology[24]{ 0, };
+            OPENCL_ER(
+                clGetDeviceInfo(
+                    device->clDevice.get(),
+                    CL_DEVICE_TOPOLOGY_AMD,
+                    sizeof(topology),
+                    &topology,
+                    nullptr));
+            device->pciBus = castU32(topology[21]);
 
             logInfo() << "GPU[" << device->id << "] " << device->clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>();
             devices.push_back(device);

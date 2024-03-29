@@ -73,25 +73,29 @@ void api::ServerAPI::onMessage(
     ////////////////////////////////////////////////////////////////////////
     boost_http::response<boost_http::string_body> response{};
     response.version(request.version());
-    response.result(boost_http::status::ok);
     response.set(boost_http::field::server, "LuminousMiner API");
     response.set(boost_http::field::content_type, "application/json");
 
     ////////////////////////////////////////////////////////////////////////
     if ("/hiveos/getStats" == target)
     {
-        onHiveOSGetStats(socket, request, response);
+        onHiveOSGetStats(socket, response);
+        response.result(boost_http::status::ok);
     }
     else if ("/hiveos/getTotalHashrate" == target)
     {
-        onHiveOSGetTotalHashrate(socket, request, response);
+        onHiveOSGetTotalHashrate(socket, response);
+        response.result(boost_http::status::ok);
+    }
+    else
+    {
+        response.result(boost_http::status::not_found);
     }
 }
 
 
 void api::ServerAPI::onHiveOSGetStats(
     boost_socket& socket,
-    boost_request const& request,
     boost_response& response)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -106,7 +110,7 @@ void api::ServerAPI::onHiveOSGetStats(
     boost::json::object root
     {
         { "hs", boost::json::array{} },         // array of hashes
-        { "hs_units", "khs" },                  // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs".   
+        { "hs_units", "hs" },                   // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs".
         { "temp", boost::json::array{} },       // array of miner temps
         { "fan", boost::json::array{} },        // array of miner fans
         { "uptime", 0 },                        // seconds elapsed from miner stats
@@ -128,15 +132,18 @@ void api::ServerAPI::onHiveOSGetStats(
         if (nullptr == device)
         {
             hs.push_back(0);
+            ar.push_back(0);
         }
         else
         {
-            hs.push_back(device->getHashrate());
+            hs.push_back(castU64(device->getHashrate()));
+            statistical::Statistical::ShareInfo shareInfo { device->getShare() };
+            ar.push_back(shareInfo.invalid);
+            root["algo"] = algo::toString(device->algorithm);
         }
         temp.push_back(0);
         fan.push_back(0);
-        ar.push_back(0);
-        busNumbers.push_back(device->id);
+        busNumbers.push_back(device->pciBus);
     }
     root["hs"] = hs;
     root["temp"] = temp;
@@ -155,10 +162,9 @@ void api::ServerAPI::onHiveOSGetStats(
 
 void api::ServerAPI::onHiveOSGetTotalHashrate(
     boost_socket& socket,
-    boost_request const& request,
     boost_response& response)
 {
-    double totalHashrate{ 0.0 };
+    uint64_t totalHashrate{ 0ull };
     boost::json::object root{};
     std::vector<device::Device*> devices{ deviceManager->getDevices() };
 
@@ -168,7 +174,7 @@ void api::ServerAPI::onHiveOSGetTotalHashrate(
         {
             continue;
         }
-        totalHashrate += device->getHashrate();
+        totalHashrate += castU64(device->getHashrate());
     }
 
     root["total_hash_rate"] = totalHashrate;

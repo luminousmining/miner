@@ -37,6 +37,7 @@ namespace device
     {
     public:
         uint32_t            id{ 0u };
+        uint32_t            pciBus { 0u };
         device::DEVICE_TYPE deviceType { device::DEVICE_TYPE::UNKNOW };
         algo::ALGORITHM     algorithm { algo::ALGORITHM::UNKNOW };
         uint32_t            stratumUUID { 0u };
