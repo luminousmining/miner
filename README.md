@@ -10,6 +10,7 @@ Project aims for learning and sharing about mining software.
   
 See the [roadmap](https://github.com/luminousmining/miner/tree/main/ROADMAP.md) of luminousminer.  
 See the [pools](https://github.com/luminousmining/miner/tree/main/POOLS.md) tested!  
+See the [hiveos](https://github.com/luminousmining/miner/tree/main/HIVEOS.md) to install on HiveOS!  
   
 Different profiles are available:
 * STANDAR

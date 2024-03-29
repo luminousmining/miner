@@ -7,7 +7,7 @@ current version `v0.1`
 - [x] GPU mining AMD  
 - [x] os Windows  
 - [x] os Linux  
-- [ ] os Hiveos  
+- [x] os Hiveos  
 - [x] algo autolykos v2  
 - [x] algo ethash  
 - [x] algo etchash  
@@ -19,7 +19,7 @@ current version `v0.1`
 - [x] option mining global  
 - [x] option mining by gpu  
 - [x] terminal display stats mining  
-- [ ] http server (API)  
+- [x] http server (API)  
 - [x] write log in file  
   
 + v1.x  
