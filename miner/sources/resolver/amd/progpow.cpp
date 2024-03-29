@@ -266,6 +266,11 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
         case algo::progpow::VERSION::FIROPOW:    kernelDerived.assign("firopow_functions.cl"); break;
         case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    kernelGenerator.appendLine("#pragma OPENCL EXTENSION cl_khr_fp16 : enable");
+
+    ////////////////////////////////////////////////////////////////////////////
     if (   false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
         || false == kernelGenerator.appendFile("kernel/progpow/" + kernelDerived)
         || false == kernelGenerator.appendFile(fileSequenceMathPeriod)
