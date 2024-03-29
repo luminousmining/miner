@@ -1,6 +1,6 @@
 # Roadmap
   
-current version `v0.1`
+current version `v1.0`
   
 + v0.x  
 - [x] GPU mining Nvidia  
