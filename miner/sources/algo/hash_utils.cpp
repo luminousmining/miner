@@ -64,38 +64,37 @@ algo::hash256 algo::toHash256(
 
 
 algo::hash256 algo::toHash256(
-    double const hashOrigin)
+    double const valueOriginal)
 {
     using namespace boost::multiprecision;
     using BigInteger = boost::multiprecision::cpp_int;
 
-    double value{ hashOrigin };
+    static BigInteger const base { "0xffff0000000000000000000000000000000000000000000000000000" };
 
-    static BigInteger base("0x00000000ffff0000000000000000000000000000000000000000000000000000");
-    BigInteger product;
+    BigInteger product{};
 
-    if (0.0 == fabs(value))
+    if (0.0 == fabs(valueOriginal))
     {
         product = BigInteger("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     }
     else
     {
-        value = 1 / value;
+        double const value{ 1.0 / valueOriginal };
 
-        BigInteger idiff(value);
+        BigInteger const idiff{ value };
         product = base * idiff;
 
-        std::string sdiff = boost::lexical_cast<std::string>(value);
-        size_t const ldiff = sdiff.length();
-        size_t const offset = sdiff.find('.');
+        std::string const stringDifficulty{ boost::lexical_cast<std::string>(value) };
+        size_t const lengthDifficulty { stringDifficulty.length() };
+        size_t const offset { stringDifficulty.find('.') };
 
         if (offset != std::string::npos)
         {
             // Number of decimal places
-            size_t precision = (ldiff - 1) - offset;
+            size_t const precision { (lengthDifficulty - 1u) - offset };
 
             // Effective sequence of decimal places
-            std::string decimals = sdiff.substr(offset + 1);
+            std::string decimals { stringDifficulty.substr(offset + 1u) };
 
             // Strip leading zeroes. If a string begins with
             // 0 or 0x boost parser considers it hex
@@ -103,17 +102,16 @@ algo::hash256 algo::toHash256(
 
             // Build up the divisor as string - just in case
             // parser does some implicit conversion with 10^precision
-            std::string decimalDivisor = "1";
-            decimalDivisor.resize(precision + 1, '0');
+            std::string decimalDivisor { "1" };
+            decimalDivisor.resize(precision + 1u, '0');
 
-            // This is the multiplier for the decimal part
-            BigInteger multiplier(decimals);
+            // This is the multiplier for decimalsthe decimal part
+            BigInteger const multiplier { decimals };
 
             // This is the divisor for the decimal part
-            BigInteger divisor(decimalDivisor);
+            BigInteger const divisor { decimalDivisor };
 
-            BigInteger decimalproduct;
-            decimalproduct = base * multiplier;
+            BigInteger decimalproduct{  base * multiplier };
             decimalproduct /= divisor;
 
             // Add the computed decimal part

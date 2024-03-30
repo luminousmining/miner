@@ -54,6 +54,9 @@
 #define MAX_LIMIT(value, max)\
     (value <= max ? value : max)
 
+#define MIN_LIMIT(value, minimun)\
+    (value >= minimun ? value : minimun)
+
 namespace common
 {
     template<typename T>
