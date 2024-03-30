@@ -1,10 +1,10 @@
 # Smart Mining
-
+  
 ## What is it ?
-
-SmartMining is a protocol allowing you to switch coins during your mining session.
-The server will send the best algorithm and associated jobs based on the listed coins.
-
+  
+SmartMining is a protocol allowing you to switch coins during your mining session.  
+The server will send the best algorithm and associated jobs based on the listed coins.  
+  
 ## Protocol
 ```
 miner                               pool
@@ -15,7 +15,7 @@ miner                               pool
 | <--- smart_mining.set_extra_nonce |
 |                                   |
 ```
-
+  
 `mining.subscribe`:
 ```json
 {
@@ -33,12 +33,12 @@ miner                               pool
     ]
 }
 ```
-`COIN_TAG` -> `string`: name of coin, examples CLORE, FIRO,...  
-`POOL_HOST` -> `string`: pool host, examples "clore.2miners.com", "pool.eu.woolypooly.com",...  
-`POOL_PORT` -> `integer`: pool port, examples 2020,3126,...  
-`YOUR_WALLET` -> `string`: your wallet linked to `COIN_TAG`.  
+**COIN_TAG** -> `string`: name of coin, examples CLORE, FIRO,...  
+**POOL_HOST** -> `string`: pool host, examples "clore.2miners.com", "pool.eu.woolypooly.com",...  
+**POOL_PORT** -> `integer`: pool port, examples 2020,3126,...  
+**YOUR_WALLET** -> `string`: your wallet linked to `COIN_TAG`.  
   
-
+  
 `smart_mining.set_algo`:
 ```json
 {
@@ -47,7 +47,7 @@ miner                               pool
     "params": "ALGORITHM"
 }
 ```
-`ALGORITHM` -> name of algorithm, example kawpow, ethash,...  
+**ALGORITHM** -> `string` name of algorithm, example kawpow, ethash,...  
   
   
 `smart_mining.set_extra_nonce`:
@@ -58,5 +58,5 @@ miner                               pool
     "params": PARAMS_EXTRA_NONCE
 }
 ```
-`PARAMS_EXTRA_NONCE` -> array or integer  
+**PARAMS_EXTRA_NONCE** -> `array` or `integer` contains the extraNonce(s)  
   
