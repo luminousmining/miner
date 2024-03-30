@@ -100,7 +100,17 @@ void stratum::StratumEthash::onMiningSetDifficulty(
     boost::json::object const& root)
 {
     auto const params{ root.at("params").as_array() };
-    double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
+    double const currentDifficulty { common::boostJsonGetNumber<double>(params.at(0)) };
+
+    double difficulty
+    {
+        currentDifficulty <= 2.0
+            ? currentDifficulty
+            : ((currentDifficulty * 2.0) / 8589934592.0)
+    };
+
+    difficulty = MIN_LIMIT(difficulty, 0.0001);
+    difficulty = MAX_LIMIT(difficulty, 2.0);
 
     jobInfo.boundary = algo::toHash256(difficulty);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
@@ -109,7 +119,10 @@ void stratum::StratumEthash::onMiningSetDifficulty(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
-    logInfo() << "Target: " << std::hex << jobInfo.boundaryU64;
+    logInfo()
+        << "Target: "
+        << std::hex << jobInfo.boundaryU64
+        << std::dec << " (" << difficulty << ")";
 }
 
 
@@ -117,8 +130,8 @@ void stratum::StratumEthash::onMiningSetTarget(
     boost::json::object const& root)
 {
     auto const params{ root.at("params").as_array() };
-    auto boundary{ params.at(0).as_string().c_str() };
-    
+    std::string const boundary{ params.at(0).as_string().c_str() };
+
     jobInfo.boundary = algo::toHash256(boundary);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
     if (jobInfo.boundaryU64 < jobInfo.targetBits)

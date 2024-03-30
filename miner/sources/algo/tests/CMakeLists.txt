@@ -4,6 +4,7 @@ set(TEST_ALGO_HEADERS
 
 set(TEST_ALGO_SOURCES
 algo_type.cpp
+hash.cpp
 math.cpp
 rol.cpp
 )
