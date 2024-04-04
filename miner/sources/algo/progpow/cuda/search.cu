@@ -155,7 +155,7 @@ void progpowSearch(
     if (bytes_result < boundary)
     {
         uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
-        if (index < 4u)
+        if (index < algo::progpow::MAX_RESULT)
         {
             result->found = true;
             result->nonces[index] = nonce;

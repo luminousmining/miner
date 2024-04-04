@@ -10,6 +10,12 @@
 #include <stratum/progpow.hpp>
 
 
+stratum::StratumProgPOW::StratumProgPOW()
+{
+    stratumName.assign("EthereumStratum/1.0.0");
+}
+
+
 void stratum::StratumProgPOW::onResponse(
     boost::json::object const& root)
 {
@@ -68,6 +74,8 @@ void stratum::StratumProgPOW::miningSubmit(
     uint32_t const deviceId,
     boost::json::array const& params)
 {
+    using namespace std::string_literals;
+
     UNIQUE_LOCK(mtxSubmit);
 
     boost::json::object root;
@@ -75,7 +83,7 @@ void stratum::StratumProgPOW::miningSubmit(
     root["method"] = "mining.submit";
     root["params"] = boost::json::array
     {
-        wallet + "." + workerName,              // login.workername
+        wallet + "."s + workerName,             // login.workername
         params.at(0),                           // JobID
         params.at(1),                           // nonce
         "0x" + algo::toHex(jobInfo.headerHash), // header

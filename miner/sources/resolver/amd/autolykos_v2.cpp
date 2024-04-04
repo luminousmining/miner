@@ -317,7 +317,10 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     ////////////////////////////////////////////////////////////////////////////
     if (true == data.found)
     {
-        uint32_t const count { MAX_LIMIT(data.count, 4u) };
+        uint32_t const count
+        {
+            MAX_LIMIT(data.count, algo::autolykos_v2::MAX_RESULT)
+        };
 
         resultShare.found = true;
         resultShare.count = count;

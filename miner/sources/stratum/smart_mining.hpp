@@ -37,6 +37,8 @@ namespace stratum
         void onResponse(boost::json::object const& root);
         void miningSubmit(uint32_t const deviceId,
                           boost::json::array const& params);
+        void miningSubmit(uint32_t const deviceId,
+                          boost::json::object const& params);
 
         bool onSmartMiningSetAlgo(boost::json::object const& root);
         bool onSmartMiningSetExtraNonce(boost::json::object const& root);

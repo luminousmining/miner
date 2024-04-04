@@ -4,7 +4,6 @@
 #include <cuda_runtime.h>
 
 #include <algo/dag_context.hpp>
-#include <algo/ethash/result.hpp>
 #include <resolver/nvidia/ethash_kernel_parameter.hpp>
 
 

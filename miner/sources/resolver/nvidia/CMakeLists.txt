@@ -2,8 +2,10 @@ set(RESOLVER_NVIDIA_HEADERS
 nvidia.hpp
 autolykos_v2.hpp
 autolykos_v2_kernel_parameter.hpp
-ethash.hpp
+blake3.hpp
+blake3_kernel_parameter.hpp
 etchash.hpp
+ethash.hpp
 ethash_kernel_parameter.hpp
 evrprogpow.hpp
 firopow.hpp
@@ -15,6 +17,7 @@ progpow_kernel_parameter.hpp
 set(RESOLVER_NVIDIA_SOURCES
 nvidia.cpp
 autolykos_v2.cpp
+blake3.cpp
 etchash.cpp
 ethash.cpp
 evrprogpow.cpp

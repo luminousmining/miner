@@ -32,6 +32,8 @@ namespace common
         Logger& operator<<(algo::hash512 const& hash);
         Logger& operator<<(algo::hash1024 const& hash);
         Logger& operator<<(algo::hash2048 const& hash);
+        Logger& operator<<(algo::hash3072 const& hash);
+        Logger& operator<<(algo::hash4096 const& hash);
         Logger& operator<<(std::string const& str);
         Logger& operator<<(std::string_view const& str);
         Logger& operator<<(boost::beast::string_view const& str);

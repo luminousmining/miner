@@ -49,6 +49,11 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumAutolykosV2);
             break;
         }
+        case algo::ALGORITHM::BLAKE3:
+        {
+            stratum = NEW(stratum::StratumBlake3);
+            break;
+        }
         case algo::ALGORITHM::UNKNOW:
         {
             break;

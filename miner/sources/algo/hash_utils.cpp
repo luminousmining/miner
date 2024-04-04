@@ -139,7 +139,7 @@ algo::hash1024 algo::toHash1024(
 {
     algo::hash1024 hash{};
     std::string hex{ str };
-    size_t index{ hex.length() };
+    int64_t index{ cast64(hex.length()) };
 
     if ((hex.length() % 2) != 0)
     {
@@ -147,16 +147,16 @@ algo::hash1024 algo::toHash1024(
         hex.push_back('0');
     }
 
-    uint64_t pos{ algo::LEN_HASH_1024 - 1 };
+    int64_t pos{ cast64(algo::LEN_HASH_1024) - 1ll };
 
-    while (index > 0u)
+    while (index > 0 && pos > 0)
     {
-        std::string strHex;
+        std::string strHex{};
         strHex += hex.at(index - 2);
         strHex += hex.at(index - 1);
 
-        auto valHex{ std::stoul(strHex, nullptr, 16) };
-        auto byte{ castU8(valHex) };
+        uint32_t const valHex{ std::stoul(strHex, nullptr, 16) };
+        uint8_t const byte{ castU8(valHex) };
 
         hash.ubytes[pos] = byte;
 

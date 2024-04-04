@@ -35,6 +35,12 @@ namespace stratum
         uint32_t       extraNonceSize{ 0u };
         uint32_t       extraNonce2Size{ 0u };
 
+        // BLAKE3
+        algo::hash3072 headerBlob{};
+        algo::hash256  targetBlob{};
+        uint32_t       fromGroup { 0u };
+        uint32_t       toGroup { 0u };
+
         StratumJobInfo(StratumJobInfo&& obj) = delete;
         StratumJobInfo& operator=(StratumJobInfo&& obj) = delete;
 

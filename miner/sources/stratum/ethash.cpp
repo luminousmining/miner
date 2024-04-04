@@ -10,6 +10,12 @@
 #include <stratum/ethash.hpp>
 
 
+stratum::StratumEthash::StratumEthash()
+{
+    stratumName.assign("EthereumStratum/1.0.0");
+}
+
+
 void stratum::StratumEthash::onResponse(
     boost::json::object const& root)
 {
@@ -156,14 +162,19 @@ void stratum::StratumEthash::miningSubmit(
     uint32_t const deviceId,
     boost::json::array const& params)
 {
+    using namespace std::string_literals;
+
     UNIQUE_LOCK(mtxSubmit);
 
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array{ wallet + workerName };
-    root["params"].as_array().push_back(params.at(0));
-    root["params"].as_array().push_back(params.at(1));
+    root["params"] = boost::json::array
+    {
+        wallet + "."s + workerName, // login.workername
+        params.at(0),               // JobID
+        params.at(1),               // nonce
+    };
 
     send(root);
 }

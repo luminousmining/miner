@@ -11,6 +11,7 @@
 namespace common
 {
     template<typename T>
+    inline
     T boostJsonGetNumber(boost::json::value const& v)
     {
         try
@@ -23,15 +24,18 @@ namespace common
             {
                 return static_cast<T>(v.as_uint64());
             }
-            return static_cast<T>(v.as_int64());
         }
         catch(boost::exception const& e)
         {
             logErr() << diagnostic_information(e);
             return T{0};
         }
+
+        return static_cast<T>(v.as_int64());
     }
 
     bool boostJsonContains(boost::json::object const& obj,
                            std::string const& keyName);
+    std::string boostGetString(boost::json::object const& obj,
+                               std::string const& keyName);
 }

@@ -1,33 +1,22 @@
 #include <algo/hash_utils.hpp>
-#include <algo/bitwise.hpp>
-#include <algo/autolykos/cuda/autolykos.cuh>
+#include <algo/blake3/cuda/blake3.cuh>
 #include <common/cast.hpp>
-#include <common/error/cuda_error.hpp>
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
-#include <resolver/nvidia/autolykos_v2.hpp>
+#include <resolver/nvidia/blake3.hpp>
 
 
-resolver::ResolverNvidiaAutolykosV2::~ResolverNvidiaAutolykosV2()
+resolver::ResolverNvidiaBlake3::~ResolverNvidiaBlake3()
 {
-    autolykosv2FreeMemory(parameters);
+    blake3FreeMemory(parameters);
 }
 
 
-bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::updateMemory(
+    [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    parameters.hostPeriod = castU32(jobInfo.period);
-    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
-    parameters.hostDagItemCount = castU32(jobInfo.period);
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (false == autolykosv2InitMemory(parameters))
-    {
-        return false;
-    }
-    ////////////////////////////////////////////////////////////////////////////
-    if (false == autolykosv2BuildDag(cuStream, parameters))
+    if (false == blake3InitMemory(parameters))
     {
         return false;
     }
@@ -37,21 +26,26 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
 }
 
 
-bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::updateConstants(
+    [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    setThreads(64u);
-    setBlocks(131072u);
+    setBlocks(8192u);
+    setThreads(128u);
+
+//    setBlocks(1u);
+//    setThreads(128u);
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    parameters.hostPeriod = castU32(jobInfo.period);
-    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
-    parameters.hostDagItemCount = castU32(jobInfo.period);
+    parameters.hostToGroup = jobInfo.toGroup;
+    parameters.hostFromGroup = jobInfo.fromGroup;
     algo::copyHash(parameters.hostBoundary, jobInfo.boundary);
-    algo::copyHash(parameters.hostHeader, jobInfo.headerHash);
-    if (false == autolykosv2UpateConstants(parameters))
+    algo::copyHash(parameters.hostTargetBlob, jobInfo.targetBlob);
+    algo::copyHash(parameters.hostHeaderBlob, jobInfo.headerBlob);
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == blake3UpateConstants(parameters))
     {
         return false;
     }
@@ -61,12 +55,15 @@ bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaAutolykosV2::execute(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::execute(
+    [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    if (false == autolykosv2Search(cuStream, blocks, threads, parameters))
+    if (false == blake3Search(cuStream,
+                              parameters,
+                              blocks,
+                              threads))
     {
         return false;
     }
@@ -76,14 +73,15 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::autolykos_v2::MAX_RESULT)
+            MAX_LIMIT(parameters.resultCache->count, algo::blake3::MAX_RESULT)
         };
 
         resultShare.found = true;
+        resultShare.fromGroup = jobInfo.fromGroup;
+        resultShare.toGroup = jobInfo.toGroup;
         resultShare.count = count;
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
-        resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
@@ -94,12 +92,11 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
         parameters.resultCache->count = 0u;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
 
-void resolver::ResolverNvidiaAutolykosV2::submit(
+void resolver::ResolverNvidiaBlake3::submit(
     stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
@@ -111,18 +108,27 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
+                std::string nonceStr { nonceHexa.str() };
+
+                while (nonceStr.size() < 48)
                 {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize),
-                    nonceHexa.str()
-                };
+                    nonceStr += "0";
+                }
+
+                logInfo() << "extraNonceSize: " << resultShare.extraNonceSize;
+                logInfo() << "nonceHexa: " << nonceStr;
+                logInfo() << "subNonce: " << nonceStr.substr(resultShare.extraNonceSize);
+
+                boost::json::object params{};
+                params["jobId"] = resultShare.jobId;
+                params["fromGroup"] = resultShare.fromGroup;
+                params["toGroup"] = resultShare.toGroup;
+                params["nonce"] = nonceStr;
 
                 stratum->miningSubmit(deviceId, params);
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
     }
 
@@ -131,7 +137,7 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
 }
 
 
-void resolver::ResolverNvidiaAutolykosV2::submit(
+void resolver::ResolverNvidiaBlake3::submit(
     stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
@@ -143,18 +149,16 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize),
-                    nonceHexa.str()
-                };
+                boost::json::object params{};
+                params["jobId"] = resultShare.jobId;
+                params["fromGroup"] = resultShare.fromGroup;
+                params["toGroup"] = resultShare.toGroup;
+                params["nonce"] = nonceHexa.str().substr(resultShare.extraNonceSize);
 
                 stratum->miningSubmit(deviceId, params);
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
     }
 

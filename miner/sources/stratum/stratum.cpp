@@ -12,6 +12,22 @@ stratum::Stratum::~Stratum()
 }
 
 
+void stratum::Stratum::miningSubmit(
+    [[maybe_unused]] uint32_t const deviceId,
+    [[maybe_unused]] boost::json::array const& params)
+{
+    logErr() << "mining.submit params[array] was not implemented!";
+}
+
+
+void stratum::Stratum::miningSubmit(
+    [[maybe_unused]] uint32_t const deviceId,
+    [[maybe_unused]] boost::json::object const& params)
+{
+    logErr() << "mining.submit params[array] was not implemented!";
+}
+
+
 void stratum::Stratum::setCallbackUpdateJob(
     stratum::Stratum::callbackUpdateJob cbUpdateJob)
 {
@@ -93,7 +109,7 @@ void stratum::Stratum::onMethod(
     }
     else
     {
-        logErr() << "Unknow[" << method << "]";
+        onUnknowMethod(root);
     }
 }
 
@@ -116,6 +132,16 @@ void stratum::Stratum::onConnect()
 }
 
 
+void stratum::Stratum::onUnknowMethod(
+    boost::json::object const& root)
+{
+    std::string const method{ root.at("method").as_string().c_str() };
+
+    logErr()
+        << "Unknow[" << method << "]"
+        << " " << root;
+}
+
 void stratum::Stratum::miningSubscribe()
 {
     auto const softwareName
@@ -129,7 +155,7 @@ void stratum::Stratum::miningSubscribe()
     boost::json::object root;
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
     root["method"] = "mining.subscribe";
-    root["params"] = boost::json::array{ softwareName, stratum::STRATUM_VERSION };
+    root["params"] = boost::json::array{ softwareName, stratumName };
 
     send(root);
 }
@@ -215,9 +241,10 @@ bool stratum::Stratum::isValidJob() const
         logDebug() << "jobID is empty";
         ret = false;
     }
-    if (true == algo::isHashEmpty(jobInfo.headerHash))
+    if (   true == algo::isHashEmpty(jobInfo.headerHash)
+        && true == algo::isHashEmpty(jobInfo.headerBlob))
     {
-        logDebug() << "HeaderHash is empty";
+        logDebug() << "HeaderHash or headerBlob is empty";
         ret = false;
     }
     if (true == algo::isHashEmpty(jobInfo.boundary))

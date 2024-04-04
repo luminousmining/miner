@@ -8,6 +8,8 @@ namespace algo
 {
     namespace autolykos_v2
     {
+        constexpr uint32_t MAX_RESULT { 4u };
+
 #if defined(__LIB_CUDA)
         struct __align__(8) Result
 #else
@@ -16,7 +18,7 @@ namespace algo
         {
             bool     found;
             uint32_t count;
-            uint64_t nonces[4];
+            uint64_t nonces[algo::autolykos_v2::MAX_RESULT];
         };
 
 #if !defined(__LIB_CUDA)
@@ -27,7 +29,7 @@ namespace algo
             uint32_t    count{ 0u };
             uint32_t    extraNonceSize{ 0u };
             uint32_t    extraNonce2Size{ 0u };
-            uint64_t    nonces[4]{ 0ull, 0ull, 0ull, 0ull };
+            uint64_t    nonces[algo::autolykos_v2::MAX_RESULT]{ 0ull, 0ull, 0ull, 0ull };
         };
 #endif
     }

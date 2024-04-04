@@ -1,6 +1,7 @@
 
 set(STRATUM_HEADERS
 autolykos_v2.hpp
+blake3.hpp
 etchash.hpp
 ethash.hpp
 evrprogpow.hpp
@@ -16,6 +17,7 @@ stratums.hpp
 
 set(STRATUM_SOURCES
 autolykos_v2.cpp
+blake3.cpp
 etchash.cpp
 ethash.cpp
 evrprogpow.cpp

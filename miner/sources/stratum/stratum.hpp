@@ -12,8 +12,6 @@
 
 namespace stratum
 {
-    constexpr char STRATUM_VERSION[22]{ "EthereumStratum/1.0.0" };
-
     struct Stratum : public network::NetworkTCPClient
     {
     public:
@@ -34,11 +32,14 @@ namespace stratum
         std::string     workerName{};
         std::string     wallet{};
         std::string     password{};
+        std::string     stratumName{};
 
         virtual ~Stratum();
         virtual void onResponse(boost::json::object const& root) = 0;
         virtual void miningSubmit(uint32_t const deviceId,
-                                  boost::json::array const& params) = 0;
+                                  boost::json::array const& params);
+        virtual void miningSubmit(uint32_t const deviceId,
+                                  boost::json::object const& params);
 
         virtual void onMiningNotify(boost::json::object const& root) = 0;
         virtual void onMiningSetDifficulty(boost::json::object const& root) = 0;
@@ -46,6 +47,7 @@ namespace stratum
         virtual void onMiningSetExtraNonce(boost::json::object const& root) = 0;
 
         virtual void onConnect();
+        virtual void onUnknowMethod(boost::json::object const& root);
         virtual void updateJob();
         virtual void miningSubscribe();
         virtual void miningAuthorize();

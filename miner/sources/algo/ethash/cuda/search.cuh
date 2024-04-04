@@ -258,7 +258,7 @@ void check_nonce(
     {
         result->found = true;
         uint32_t const index{ atomicAdd((uint32_t* const)&result->count, 1) };
-        if (4u > index)
+        if (index < algo::ethash::MAX_RESULT)
         {
             result->nonces[index] = nonce;
         }
