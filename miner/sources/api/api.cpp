@@ -126,25 +126,38 @@ void api::ServerAPI::onHiveOSGetStats(
     boost::json::array busNumbers{};
 
     ////////////////////////////////////////////////////////////////////////////
+    uint64_t sharesValid { 0ull };
+    uint64_t sharesInvalid { 0ull };
+    std::string sharesInvalidGpus{};
+
+    ////////////////////////////////////////////////////////////////////////////
     std::vector<device::Device*> devices{ deviceManager->getDevices() };
     for (device::Device* device : devices)
     {
+        sharesInvalidGpus += "0;";
         if (nullptr == device)
         {
             hs.push_back(0);
-            ar.push_back(0);
         }
         else
         {
             hs.push_back(castU64(device->getHashrate()));
-            statistical::Statistical::ShareInfo shareInfo { device->getShare() };
-            ar.push_back(shareInfo.invalid);
             root["algo"] = algo::toString(device->algorithm);
+
+            statistical::Statistical::ShareInfo shareInfo { device->getShare() };
+            sharesInvalid += shareInfo.invalid;
+            sharesValid += shareInfo.valid;
         }
         temp.push_back(0);
         fan.push_back(0);
         busNumbers.push_back(device->pciBus);
     }
+    ar.push_back(sharesValid);               // share valid
+    ar.push_back(sharesInvalid);             // share rejected
+    ar.push_back(0);                         // share invalid
+    ar.push_back(sharesInvalidGpus.c_str()); // shares invalid by gpus
+
+
     root["hs"] = hs;
     root["temp"] = temp;
     root["fan"] = fan;

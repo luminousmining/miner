@@ -139,7 +139,7 @@ namespace algo
             strHex += hex.at(index - 2ll);
             strHex += hex.at(index - 1ll);
 
-            uint32_t const valHex{ std::stoul(strHex, nullptr, 16) };
+            uint32_t const valHex{ castU32(std::stoul(strHex, nullptr, 16)) };
             uint8_t byte{ castU8(valHex) };
 
             hash.ubytes[pos] = byte;

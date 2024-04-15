@@ -29,24 +29,28 @@ void keccak_f800_round(
     out[10] ^= tmp;
     out[15] ^= tmp;
     out[20] ^= tmp;
+
     tmp = bc[0] ^ rol_u32(bc[2], 1u);
     out[1]  ^= tmp;
     out[6]  ^= tmp;
     out[11] ^= tmp;
     out[16] ^= tmp;
     out[21] ^= tmp;
+
     tmp = bc[1] ^ rol_u32(bc[3], 1u);
     out[2]  ^= tmp;
     out[7]  ^= tmp;
     out[12] ^= tmp;
     out[17] ^= tmp;
     out[22] ^= tmp;
+
     tmp = bc[2] ^ rol_u32(bc[4], 1u);
     out[3]  ^= tmp;
     out[8]  ^= tmp;
     out[13] ^= tmp;
     out[18] ^= tmp;
     out[23] ^= tmp;
+
     tmp = bc[3] ^ rol_u32(bc[0], 1u);
     out[4]  ^= tmp;
     out[9]  ^= tmp;

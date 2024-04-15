@@ -1,7 +1,7 @@
 # Roadmap
   
-current version `v1.0`  
-stable version `v0.2`  
+current version `v0.x`  
+stable version `v0.3`  
   
 + v0.x  
 - [x] GPU mining Nvidia
@@ -24,8 +24,11 @@ stable version `v0.2`
 - [x] write log in file
   
 + v1.x  
-- [ ] algo ?? help us to define list
-- [ ] algo alephium
+- [ ] algo blake3/alephium
+- [ ] algo blake3/decred
+- [ ] algo ethashb3
+- [ ] algo kHeavyHash
+- [ ] algo blake3/karlsen
 - [ ] profile smart mining
 - [ ] profile ravenminer
 - [ ] os RaveOS

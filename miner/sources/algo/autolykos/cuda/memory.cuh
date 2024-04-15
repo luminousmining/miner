@@ -48,6 +48,7 @@ bool autolykosv2InitMemory(
 }
 
 
+__host__
 bool autolykosv2UpateConstants(
     resolver::nvidia::autolykos_v2::KernelParameters& params)
 {
