@@ -103,7 +103,10 @@ bool resolver::ResolverNvidiaEthash::execute(
 
     if (true == parameters.resultCache->found)
     {
-        uint32_t const count { MAX_LIMIT(parameters.resultCache->count, 4u) };
+        uint32_t const count
+        {
+            MAX_LIMIT(parameters.resultCache->count, algo::ethash::MAX_RESULT)
+        };
 
         resultShare.found = true;
         resultShare.count = count;

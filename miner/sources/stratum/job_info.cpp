@@ -36,7 +36,6 @@ void stratum::StratumJobInfo::copy(
     nonce = obj.nonce;
     startNonce = obj.startNonce;
     extraNonce = obj.extraNonce;
-    extraNonceSize = obj.extraNonceSize;
     gapNonce = obj.gapNonce;
     blockNumber = obj.blockNumber;
     period = obj.period;
@@ -44,4 +43,14 @@ void stratum::StratumJobInfo::copy(
     targetBits = obj.targetBits;
     cleanJob = obj.cleanJob;
     jobIDStr.assign(obj.jobIDStr);
+
+    // ETHASH && PROGPOW
+    extraNonceSize = obj.extraNonceSize;
+    extraNonce2Size = obj.extraNonce2Size;
+
+    // Blake 3
+    algo::copyHash(headerBlob, obj.headerBlob);
+    algo::copyHash(targetBlob, obj.targetBlob);
+    fromGroup = obj.fromGroup;
+    toGroup = obj.toGroup;
 }

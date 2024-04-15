@@ -449,16 +449,17 @@ void device::DeviceManager::onUpdateJob(
     bool updateConstants { false };
     bool const isSameEpoch { jobInfo.epoch == newJobInfo.epoch };
     bool const isSameHeader { algo::isEqual(jobInfo.headerHash, newJobInfo.headerHash) };
+    bool const isSameHeaderBlob { algo::isEqual(jobInfo.headerBlob, newJobInfo.headerBlob) };
 
-    if (true == isSameHeader && true == isSameEpoch)
+    if (   true == isSameHeader
+        && true == isSameEpoch
+        && true == isSameHeaderBlob)
     {
-#if defined(_DEBUG)
         logDebug()
             << "Skip Job"
             << ", isSameEpoch " << std::boolalpha << isSameEpoch << std::dec
             << ", isSameHeader " << std::boolalpha << isSameHeader << std::dec
             << newJobInfo;
-#endif
         return;
     }
 
@@ -467,12 +468,14 @@ void device::DeviceManager::onUpdateJob(
         updateMemory = true;
     }
 
-    if (false == isSameHeader)
+    if (   false == isSameHeader
+        || false == isSameHeaderBlob)
     {
         updateConstants = true;
     }
 
-    if (true == updateMemory || true == updateConstants)
+    if (   true == updateMemory
+        || true == updateConstants)
     {
         jobInfo = newJobInfo;
         jobInfo.gapNonce /= devices.size();

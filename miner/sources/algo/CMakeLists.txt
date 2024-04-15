@@ -27,6 +27,7 @@ ${ALGO_SOURCES}
 )
 
 add_subdirectory(autolykos)
+add_subdirectory(blake3)
 add_subdirectory(crypto)
 add_subdirectory(ethash)
 add_subdirectory(progpow)

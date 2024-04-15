@@ -12,6 +12,7 @@
 #include <resolver/amd/kawpow.hpp>
 #include <resolver/amd/progpow.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
+#include <resolver/nvidia/blake3.hpp>
 #include <resolver/nvidia/etchash.hpp>
 #include <resolver/nvidia/ethash.hpp>
 #include <resolver/nvidia/evrprogpow.hpp>
@@ -183,6 +184,27 @@ void device::Device::setAlgorithm(
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverAmdAutolykosV2);
+                    break;
+                }
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+        case algo::ALGORITHM::BLAKE3:
+        {
+            switch (deviceType)
+            {
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaBlake3);
+                    break;
+                }
+                case device::DEVICE_TYPE::AMD:
+                {
                     break;
                 }
                 case device::DEVICE_TYPE::UNKNOW:

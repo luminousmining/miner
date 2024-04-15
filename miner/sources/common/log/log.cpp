@@ -151,6 +151,31 @@ common::Logger& common::Logger::operator<<(
 
 
 common::Logger& common::Logger::operator<<(
+    algo::hash3072 const& hash)
+{
+    if (typeLog > LOGGER_LEVEL)
+    {
+        return *this;
+    }
+
+    ss << algo::toHex(hash, false);
+    return *this;
+}
+
+
+common::Logger& common::Logger::operator<<(
+    algo::hash4096 const& hash)
+{
+    if (typeLog > LOGGER_LEVEL)
+    {
+        return *this;
+    }
+
+    ss << algo::toHex(hash, false);
+    return *this;
+}
+
+common::Logger& common::Logger::operator<<(
     std::string const& str)
 {
     if (typeLog > LOGGER_LEVEL)

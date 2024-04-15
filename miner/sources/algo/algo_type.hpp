@@ -15,6 +15,7 @@ namespace algo
         FIROPOW,
         EVRPROGPOW,
         AUTOLYKOS_V2,
+        BLAKE3,
         UNKNOW,
         MAX_SIZE = algo::ALGORITHM::UNKNOW
     };

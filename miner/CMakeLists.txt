@@ -3,6 +3,7 @@
 ################################################################################
 cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
     sources/algo/autolykos/cuda/autolykos_v2.cu
+    sources/algo/blake3/cuda/blake3.cu
     sources/algo/ethash/cuda/ethash.cu
     sources/algo/progpow/cuda/progpow.cu)
 

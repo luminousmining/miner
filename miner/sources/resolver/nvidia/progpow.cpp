@@ -230,7 +230,10 @@ bool resolver::ResolverNvidiaProgPOW::execute(
     ////////////////////////////////////////////////////////////////////////////
     if (true == parameters.resultCache->found)
     {
-        uint32_t const count { MAX_LIMIT(parameters.resultCache->count, 4u) };
+        uint32_t const count
+        {
+            MAX_LIMIT(parameters.resultCache->count, algo::progpow::MAX_RESULT)
+        };
 
         resultShare.found = true;
         resultShare.count = count;

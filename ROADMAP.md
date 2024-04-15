@@ -25,6 +25,7 @@ stable version `v0.2`
   
 + v1.x  
 - [ ] algo ?? help us to define list
+- [ ] algo alephium
 - [ ] profile smart mining
 - [ ] profile ravenminer
 - [ ] os RaveOS

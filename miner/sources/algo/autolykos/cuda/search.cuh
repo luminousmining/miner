@@ -631,7 +631,7 @@ kernel_autolykos_verify(
     if (j)
     {
         uint32_t const index = atomicAdd((uint32_t*)&result->count, 1);
-        if (index < 4u)
+        if (index < algo::autolykos_v2::MAX_RESULT)
         {
             result->found = true;
             result->nonces[index] = tid + nonce;

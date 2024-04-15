@@ -12,6 +12,13 @@
 
 namespace algo
 {
+    enum class HASH_SHIFT : uint8_t
+    {
+        RIGHT,
+        LEFT,
+        NOTHING
+    };
+
     uint64_t       toUINT64(algo::hash256 const& hash);
     algo::hash256  toHash256(uint8_t const* bytes);
     algo::hash256  toHash256(std::string const& str);
@@ -96,11 +103,27 @@ namespace algo
 
     template<typename T>
     inline
-    T toHash(std::string const& str)
+    T toHash(std::string const& str,
+             algo::HASH_SHIFT shift = algo::HASH_SHIFT::NOTHING)
     {
         T hash{};
         std::string hex{ str };
-        size_t index{ hex.length() };
+
+        size_t const lengthU8 { (sizeof(T) / sizeof(uint8_t)) * 2u };
+
+        if (algo::HASH_SHIFT::LEFT == shift)
+        {
+            for (size_t i { hex.size() }; i < lengthU8; ++i)
+            {
+                hex += "0";
+            }
+        }
+        else if (algo::HASH_SHIFT::RIGHT == shift)
+        {
+            // TODO : add shifting right
+        }
+
+        int64_t index{ cast64(hex.length()) };
 
         if ((hex.length() % 2) != 0)
         {
@@ -108,20 +131,20 @@ namespace algo
             hex.push_back('0');
         }
 
-        uint64_t pos{ sizeof(T) - 1 };
+        int64_t pos { cast64(sizeof(T)) - 1ll };
 
-        while (index > 0u)
+        while (index > 0 && pos > 0)
         {
             std::string strHex;
-            strHex += hex.at(index - 2);
-            strHex += hex.at(index - 1);
+            strHex += hex.at(index - 2ll);
+            strHex += hex.at(index - 1ll);
 
-            auto valHex{ std::stoul(strHex, nullptr, 16) };
-            auto byte{ castU8(valHex) };
+            uint32_t const valHex{ std::stoul(strHex, nullptr, 16) };
+            uint8_t byte{ castU8(valHex) };
 
             hash.ubytes[pos] = byte;
 
-            index -= 2;
+            index -= 2ll;
             --pos;
         }
 

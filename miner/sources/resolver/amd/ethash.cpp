@@ -264,7 +264,10 @@ bool resolver::ResolverAmdEthash::getResultCache(
 
     if (true == data.found)
     {
-        uint32_t const count { MAX_LIMIT(data.count, 4u) };
+        uint32_t const count
+        {
+            MAX_LIMIT(data.count, algo::ethash::MAX_RESULT)
+        };
 
         resultShare.found = true;
         resultShare.count = count;

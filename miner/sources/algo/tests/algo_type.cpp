@@ -21,6 +21,7 @@ TEST_F(AlgoTypeTest, stringToEnumSuccess)
     EXPECT_EQ(algo::toEnum("firopow"),      algo::ALGORITHM::FIROPOW);
     EXPECT_EQ(algo::toEnum("evrprogpow"),   algo::ALGORITHM::EVRPROGPOW);
     EXPECT_EQ(algo::toEnum("autolykosv2"),  algo::ALGORITHM::AUTOLYKOS_V2);
+    EXPECT_EQ(algo::toEnum("blake3"),       algo::ALGORITHM::BLAKE3);
 
     EXPECT_EQ(algo::toEnum(""),             algo::ALGORITHM::UNKNOW);
     EXPECT_EQ(algo::toEnum("unknow"),       algo::ALGORITHM::UNKNOW);
@@ -39,4 +40,5 @@ TEST_F(AlgoTypeTest, stringToEnumFail)
     EXPECT_NE(algo::toEnum("evrprogpow"),   algo::ALGORITHM::FIROPOW);
     EXPECT_NE(algo::toEnum("autolykosv2"),  algo::ALGORITHM::EVRPROGPOW);
     EXPECT_NE(algo::toEnum("sha256"),       algo::ALGORITHM::AUTOLYKOS_V2);
+    EXPECT_NE(algo::toEnum("autolykosv2"),  algo::ALGORITHM::BLAKE3);
 }

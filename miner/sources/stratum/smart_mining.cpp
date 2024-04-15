@@ -119,7 +119,6 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
 {
     IS_NULL(stratumPool);
 
-
     switch (currentAlgorithm)
     {
         case algo::ALGORITHM::SHA256:
@@ -144,6 +143,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         }
         default:
         {
+            logErr() << "Unknow algorithm!";
             return false;
         }
     }
@@ -255,6 +255,14 @@ void stratum::StratumSmartMining::subscribe()
 void stratum::StratumSmartMining::miningSubmit(
     uint32_t const deviceId,
     boost::json::array const& params)
+{
+    stratumPool->miningSubmit(deviceId, params);
+}
+
+
+void stratum::StratumSmartMining::miningSubmit(
+    uint32_t const deviceId,
+    boost::json::object const& params)
 {
     stratumPool->miningSubmit(deviceId, params);
 }
