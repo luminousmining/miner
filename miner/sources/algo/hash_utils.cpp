@@ -155,7 +155,7 @@ algo::hash1024 algo::toHash1024(
         strHex += hex.at(index - 2);
         strHex += hex.at(index - 1);
 
-        uint32_t const valHex{ std::stoul(strHex, nullptr, 16) };
+        uint32_t const valHex{ castU32(std::stoul(strHex, nullptr, 16)) };
         uint8_t const byte{ castU8(valHex) };
 
         hash.ubytes[pos] = byte;
