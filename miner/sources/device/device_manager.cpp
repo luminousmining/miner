@@ -357,11 +357,14 @@ void device::DeviceManager::loopStatistical()
     boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_HASH_STATS };
 
     board.setTitle("HASHRATE");
-    board.addColumn("DeviceID");
+    board.addColumn("Type");
+    board.addColumn("ID");
+    board.addColumn("Pci");
     board.addColumn("Algorithm");
     board.addColumn("Pool");
     board.addColumn("Hashrate");
-    board.addColumn("Shares");
+    board.addColumn("Valid");
+    board.addColumn("Reject");
 
     while (true)
     {
@@ -408,17 +411,24 @@ void device::DeviceManager::loopStatistical()
             double const hashrate { device->getHashrate() };
             statistical::Statistical::ShareInfo shares { device->getShare() };
 
-            std::stringstream ssShares;
-            ssShares << shares.valid << "/" << shares.invalid << "/" << shares.total;
+            std::string deviceType
+            {
+                device->deviceType == device::DEVICE_TYPE::NVIDIA
+                    ? "NVIDIA"
+                    : "AMD"
+            };
 
             board.addLine
             (
                 {
+                    deviceType,
                     std::to_string(device->id),
+                    std::to_string(device->pciBus),
                     algo::toString(device->algorithm),
                     host,
                     common::hashrateToString(hashrate),
-                    ssShares.str()
+                    std::to_string(shares.valid),
+                    std::to_string(shares.invalid)
                 }
             );
 
@@ -451,14 +461,15 @@ void device::DeviceManager::onUpdateJob(
     bool const isSameHeader { algo::isEqual(jobInfo.headerHash, newJobInfo.headerHash) };
     bool const isSameHeaderBlob { algo::isEqual(jobInfo.headerBlob, newJobInfo.headerBlob) };
 
-    if (   true == isSameHeader
-        && true == isSameEpoch
+    if (   true == isSameEpoch
+        && true == isSameHeader
         && true == isSameHeaderBlob)
     {
         logDebug()
             << "Skip Job"
             << ", isSameEpoch " << std::boolalpha << isSameEpoch << std::dec
             << ", isSameHeader " << std::boolalpha << isSameHeader << std::dec
+            << ", isSameHeaderBlob " << std::boolalpha << isSameHeaderBlob << std::dec
             << newJobInfo;
         return;
     }

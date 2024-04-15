@@ -112,7 +112,10 @@ void stratum::StratumAutolykosV2::onMiningSetDifficulty(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
-    logInfo() << "Target: " << std::hex << jobInfo.boundaryU64;
+    logInfo()
+        << "Target: "
+        << std::hex << jobInfo.boundaryU64
+        << std::dec << " (" << difficulty << ")";
 }
 
 
