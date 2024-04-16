@@ -320,8 +320,8 @@ void device::Device::update(
 {
     UNIQUE_LOCK(mtxUpdate);
 
-    jobInfo = newJobInfo;
-    jobInfo.nonce += (jobInfo.gapNonce * id);
+    nextjobInfo = newJobInfo;
+    nextjobInfo.nonce += (nextjobInfo.gapNonce * id);
 
     needUpdateMemory.store(memory, boost::memory_order::seq_cst);
     needUpdateConstants.store(constants, boost::memory_order::seq_cst);
@@ -387,7 +387,7 @@ void device::Device::run()
 
 void device::Device::waitJob()
 {
-    while (jobInfo.epoch == -1)
+    while (nextjobInfo.epoch == -1)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -397,7 +397,7 @@ void device::Device::waitJob()
 void device::Device::cleanJob()
 {
     stratum::StratumJobInfo clean{};
-    jobInfo = clean;
+    nextjobInfo = clean;
 }
 
 
@@ -419,12 +419,12 @@ bool device::Device::updateJob()
         if (   true == expectedMemory
             || true == expectedConstants)
         {
-            if (   jobInfo.epoch != currentJobInfo.epoch
-                || jobInfo.period != currentJobInfo.period)
+            if (   nextjobInfo.epoch != currentJobInfo.epoch
+                || nextjobInfo.period != currentJobInfo.period)
             {
                 miningStats.reset();
             }
-            currentJobInfo = jobInfo;
+            currentJobInfo = nextjobInfo;
         }
     }
 
