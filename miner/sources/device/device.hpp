@@ -89,7 +89,7 @@ namespace device
         boost::atomic_bool           needUpdateConstants{ false };
         stratum::Stratum*            stratum{ nullptr };
         stratum::StratumSmartMining* stratumSmartMining{ nullptr };
-        stratum::StratumJobInfo      jobInfo{};
+        stratum::StratumJobInfo      nextjobInfo{};
         stratum::StratumJobInfo      currentJobInfo{};
     };
 }
