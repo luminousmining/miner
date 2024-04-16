@@ -1,9 +1,8 @@
 # Roadmap
   
-current version `v0.x`  
-stable version `v0.3`  
+current version `v0.4`  
   
-+ v0.x  
++ step 1
 - [x] GPU mining Nvidia
 - [x] GPU mining AMD
 - [x] os Windows
@@ -23,7 +22,7 @@ stable version `v0.3`
 - [x] http server (API)
 - [x] write log in file
   
-+ v1.x  
++ step 2
 - [ ] algo blake3/alephium
 - [ ] algo blake3/decred
 - [ ] algo ethashb3
@@ -34,6 +33,6 @@ stable version `v0.3`
 - [ ] os RaveOS
 - [ ] build by conan
   
-+ v2.x  
++ step 3
 - [ ] profile traiding
   
