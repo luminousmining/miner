@@ -61,6 +61,20 @@ namespace common
 #define logTrace()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__TRACE)
 #define logDebug()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__DEBUG)
 
+#define deviceCustom() common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__CUSTOM)  << "Device[" << id << "]: "
+#define deviceErr()    common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__ERROR)   << "Device[" << id << "]: "
+#define deviceInfo()   common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__INFO)    << "Device[" << id << "]: "
+#define deviceWarn()   common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__WARNING) << "Device[" << id << "]: "
+#define deviceTrace()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__TRACE)   << "Device[" << id << "]: "
+#define deviceDebug()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__DEBUG)   << "Device[" << id << "]: "
+
+#define resolverCustom() common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__CUSTOM)  << "Device[" << deviceId << "]: "
+#define resolverErr()    common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__ERROR)   << "Device[" << deviceId << "]: "
+#define resolverInfo()   common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__INFO)    << "Device[" << deviceId << "]: "
+#define resolverWarn()   common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__WARNING) << "Device[" << deviceId << "]: "
+#define resolverTrace()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__TRACE)   << "Device[" << deviceId << "]: "
+#define resolverDebug()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__DEBUG)   << "Device[" << deviceId << "]: "
+
 #define __TRACE() { logTrace() << __FUNCTION__ << ":" << __LINE__; }
 #define __TRACE_DEVICE()                                                       \
     {                                                                          \
