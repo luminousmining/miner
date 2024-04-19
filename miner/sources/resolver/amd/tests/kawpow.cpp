@@ -20,15 +20,6 @@ struct ResolverKawpowAmdTest : public testing::Test
     ResolverKawpowAmdTest()
     {
         common::setLogLevel(common::TYPELOG::__DEBUG);
-
-        if (false == resolver::tests::initializeOpenCL(properties))
-        {
-            logErr() << "fail init opencl";
-        }
-
-        resolver.setDevice(&properties.clDevice);
-        resolver.setQueue(&properties.clQueue);
-        resolver.setContext(&properties.clContext);
     }
 
     ~ResolverKawpowAmdTest()
@@ -36,6 +27,18 @@ struct ResolverKawpowAmdTest : public testing::Test
         properties.clDevice = nullptr;
         properties.clContext = nullptr;
         properties.clQueue = nullptr;
+    }
+
+    void initializeDevice(uint32_t const index)
+    {
+        if (false == resolver::tests::initializeOpenCL(properties, index))
+        {
+            logErr() << "fail init opencl";
+        }
+
+        resolver.setDevice(&properties.clDevice);
+        resolver.setQueue(&properties.clQueue);
+        resolver.setContext(&properties.clContext);
     }
 
     void initializeJob(uint64_t const nonce)
@@ -55,7 +58,27 @@ struct ResolverKawpowAmdTest : public testing::Test
 
 TEST_F(ResolverKawpowAmdTest, findNonce)
 {
+    initializeDevice(0u);
     initializeJob(0xdec100000704757f);
+
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.execute(jobInfo));
+    resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+
+    using namespace std::string_literals;
+    EXPECT_EQ("0xdec100000704757f"s, nonceStr);
+}
+
+
+TEST_F(ResolverKawpowAmdTest, aroundFindNonce)
+{
+    initializeDevice(0u);
+    initializeJob(0xdec100000704757f - 1024u);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -73,6 +96,7 @@ TEST_F(ResolverKawpowAmdTest, findNonce)
 
 TEST_F(ResolverKawpowAmdTest, notFindNonce)
 {
+    initializeDevice(0u);
     initializeJob(0x000100000704757f);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
@@ -81,4 +105,27 @@ TEST_F(ResolverKawpowAmdTest, notFindNonce)
     resolver.submit(&stratum);
 
     EXPECT_TRUE(stratum.paramSubmit.empty());
+}
+
+
+TEST_F(ResolverKawpowAmdTest, allDeviceFindNonce)
+{
+    uint32_t const countDevice { 1u };
+    for (uint32_t index { 0u }; index < countDevice; ++index)
+    {
+        initializeDevice(index);
+        initializeJob(0xdec100000704757f);
+
+        ASSERT_TRUE(resolver.updateMemory(jobInfo));
+        ASSERT_TRUE(resolver.updateConstants(jobInfo));
+        ASSERT_TRUE(resolver.execute(jobInfo));
+        resolver.submit(&stratum);
+
+        ASSERT_FALSE(stratum.paramSubmit.empty());
+
+        std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+
+        using namespace std::string_literals;
+        EXPECT_EQ("0xdec100000704757f"s, nonceStr);
+    }
 }

@@ -22,14 +22,16 @@ namespace resolver
             return true;
         }
 
-        inline bool initializeCuda(resolver::tests::Properties& properties)
+        inline bool initializeCuda(
+            resolver::tests::Properties& properties,
+            uint32_t const index = 0u)
         {
             if (false == cleanUpCuda())
             {
                 return false;
             }
 
-            properties.cuIndex = 0u;
+            properties.cuIndex = index;
 
             CU_ER(cuInit(0));
             CU_ER(cuDeviceGet(&properties.cuDevice, properties.cuIndex));
