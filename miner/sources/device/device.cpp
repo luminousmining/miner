@@ -256,42 +256,42 @@ void device::Device::kill(
     {
         case device::KILL_STATE::ALGORITH_UNDEFINED:
         {
-            logWarn()
+            deviceWarn()
                 << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " ALGORITH_UNDEFINED";
             break;
         }
         case device::KILL_STATE::RESOLVER_NULLPTR:
         {
-            logWarn()
+            deviceWarn()
                 << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " RESOLVER_NULLPTR";
             break;
         }
         case device::KILL_STATE::UPDATE_MEMORY_FAIL:
         {
-            logWarn()
+            deviceWarn()
                 << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " UPDATE_MEMORY_FAIL";
             break;
         }
         case device::KILL_STATE::UPDATE_CONSTANT_FAIL:
         {
-            logWarn()
+            deviceWarn()
                 << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " UPDATE_CONSTANT_FAIL";
             break;
         }
         case device::KILL_STATE::KERNEL_EXECUTE_FAIL:
         {
-            logWarn()
+            deviceWarn()
                 << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " KERNEL_EXECUTE_FAIL";
             break;
         }
         case device::KILL_STATE::DISABLE:
         {
-            logWarn()
+            deviceWarn()
                 << "device[" << id << "] " << "Killed by code " << castU32(state)
                 << " DISABLE";
             break;
@@ -438,7 +438,7 @@ bool device::Device::updateJob()
             return false;
         }
         chrono.stop();
-        logInfo() << "device[" << id << "] Update memory in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+        deviceInfo() << "Update memory in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -452,7 +452,7 @@ bool device::Device::updateJob()
             return true;
         }
         chrono.stop();
-        logDebug() << "device[" << id << "] Update constants in " << chrono.elapsed(common::CHRONO_UNIT::US) << "us";
+        deviceDebug() << "Update constants in " << chrono.elapsed(common::CHRONO_UNIT::US) << "us";
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -485,7 +485,7 @@ void device::Device::loopDoWork()
     ////////////////////////////////////////////////////////////////////////////
     if (nullptr == resolver)
     {
-        logErr() << "Cannot works, device need resolver";
+        deviceErr() << "Cannot works, device need resolver";
         return;
     }
 

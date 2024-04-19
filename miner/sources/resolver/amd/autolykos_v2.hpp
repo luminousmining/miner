@@ -37,7 +37,6 @@ namespace resolver
                             uint32_t const extraNonce2Size);
 
     private:
-        uint32_t period { 0u };
         uint32_t const maxGroupSizeSearch
         {
             ((algo::autolykos_v2::AMD_THREADS_PER_ITER / (algo::autolykos_v2::AMD_BLOCK_DIM * 4u)) + 1u)

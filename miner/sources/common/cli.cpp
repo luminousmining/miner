@@ -119,7 +119,7 @@ common::Cli::Cli()
             "devices_disable",
             value<std::vector<std::string>>(&optionDeviceEnable)->multitoken(),
             "[OPTIONAL] List device disable.\n"
-            "--device_disable=0,1"
+            "--devices_disable=0,1"
         )
         (
             "device_pool",
@@ -259,8 +259,29 @@ std::vector<uint32_t> common::Cli::getCustomMultiParamsU32(
     std::string const& paramName,
     std::vector<std::string>& options) const
 {
-    // TODO : OMG should be re write 100 %
     std::vector<uint32_t> values{};
+
+    if (true == contains(paramName))
+    {
+        size_t pos { 0u };
+        std::string token{};
+
+        for (std::string flags : options)
+        {
+            uint32_t index{ 0u };
+            pos = flags.find(",");
+            while (pos != std::string::npos)
+            {
+                index = castU32(std::atoi(flags.substr(0, pos).c_str()));
+                flags.erase(0, pos + 1);
+                values.emplace_back(index);
+                pos = flags.find(",");
+            }
+            index = castU32(std::atoi(flags.substr(0, pos).c_str()));
+            values.emplace_back(index);
+        }
+    }
+
     return values;
 }
 
