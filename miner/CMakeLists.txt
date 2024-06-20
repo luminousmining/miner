@@ -75,8 +75,8 @@ target_sources(${UNIT_TEST_EXE} PUBLIC
 
 include_directories(${MINER_EXE} PUBLIC
     ${Boost_INCLUDE_DIR}
-	${OPENSSL_INCLUDE_DIR}
-	${OpenCL_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIR}
+    ${OpenCL_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/sources
@@ -84,7 +84,7 @@ include_directories(${MINER_EXE} PUBLIC
 
 include_directories(${UNIT_TEST_EXE} PUBLIC
     ${Boost_INCLUDE_DIR}
-	${OPENSSL_INCLUDE_DIR}
+    ${OPENSSL_INCLUDE_DIR}
     ${OpenCL_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -118,13 +118,13 @@ target_link_libraries(${UNIT_TEST_EXE}
 
 
 if (UNIX)
-	target_link_libraries(${MINER_EXE}
-		${GNUTLS_LIBRARIES}
-		"stdc++fs"
-	)
-	target_link_libraries(${UNIT_TEST_EXE}
-		${GNUTLS_LIBRARIES}
-		"stdc++fs"
-	)
+    target_link_libraries(${MINER_EXE}
+        ${GNUTLS_LIBRARIES}
+        "stdc++fs"
+    )
+    target_link_libraries(${UNIT_TEST_EXE}
+        ${GNUTLS_LIBRARIES}
+        "stdc++fs"
+    )
 endif()
 

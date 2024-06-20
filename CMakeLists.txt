@@ -113,7 +113,9 @@ set(Boost_USE_STATIC_RUNTIME   OFF)
 ################################################################################
 ### OPENSSL                                                                 ####
 ################################################################################
-set(OPENSSL_ROOT_DIR "C:\\Program Files\\OpenSSL")
+if (WIN32)
+    set(OPENSSL_ROOT_DIR "C:\\Program Files\\OpenSSL")
+endif()
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 set(OPEN_SSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
 
