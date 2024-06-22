@@ -34,7 +34,6 @@ namespace api
 
         uint32_t        port{ 0u };
         boost_address   address{};
-        boost_acceptor* acceptor{ nullptr };
 
         boost_thread      threadDoAccept{};
         boost_mutex       mtx{};
