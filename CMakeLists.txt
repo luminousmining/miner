@@ -35,7 +35,7 @@ if (WIN32)
 ################################################################################
     set(CMAKE_GENERATOR_PLATFORM "x64")
     set(VISUAL_STUDIO_VERSION 143)
-    set(CMAKE_SYSTEM_VERSION 10.0.20348.0)
+    set(CMAKE_SYSTEM_VERSION 10.0.22621.0)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
     else()
@@ -154,12 +154,12 @@ list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
 ################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
-find_package(Boost 1.83.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+find_package(Boost 1.85.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
 find_package(OpenCL 2.2 REQUIRED COMPONENTS OpenCL)
 if (UNIX)
-    find_package(CUDA 12.0 EXACT COMPONENTS cudart)
+    find_package(CUDA 12.5 EXACT COMPONENTS cudart)
 else()
-    find_package(CUDA 12.3 EXACT COMPONENTS cudart)
+    find_package(CUDA 12.5 EXACT COMPONENTS cudart)
 endif()
 find_package(OpenSSL 1.1.1 REQUIRED COMPONENTS SSL Crypto)
 if (UNIX)
