@@ -66,6 +66,26 @@ TEST_F(ResolverKawpowNvidiaTest, findNonce)
 }
 
 
+TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
+{
+    initializeJob(0xdec100000704757f - 1024u);
+
+    ASSERT_NE(nullptr, resolver.cuStream);
+
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.execute(jobInfo));
+    resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+
+    using namespace std::string_literals;
+    EXPECT_EQ("0xdec100000704757f"s, nonceStr);
+}
+
+
 TEST_F(ResolverKawpowNvidiaTest, notFindNonce)
 {
     initializeJob(0x000100000704757f);
