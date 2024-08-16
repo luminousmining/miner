@@ -26,6 +26,14 @@ common::Logger::Logger(
         << common::COLOR_PURPLE
         << "[" << function << "][" << line << "]"
         << common::COLOR_DEFAULT;
+#else
+    if (common::TYPELOG::__ERROR == tl)
+    {
+        ss
+            << common::COLOR_PURPLE
+            << "[" << function << "][" << line << "]"
+            << common::COLOR_DEFAULT;
+    }
 #endif
 
     if (typeLog > LOGGER_LEVEL)
