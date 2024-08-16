@@ -17,7 +17,7 @@ std::optional<uint32_t> common::Cli::getNvidiaPort() const
     {
         return params["nvidia_port"].as<uint32_t>();
     }
-    return 0u;
+    return std::nullopt;
 }
 
 

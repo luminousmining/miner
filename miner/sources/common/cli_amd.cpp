@@ -17,7 +17,7 @@ std::optional<uint32_t> common::Cli::getAMDPort() const
     {
         return params["amd_port"].as<uint32_t>();
     }
-    return 0u;
+    return std::nullopt;
 }
 
 
