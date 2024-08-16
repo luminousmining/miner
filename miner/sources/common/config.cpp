@@ -22,6 +22,12 @@ bool common::Config::load(int argc, char** argv)
         return false;
     }
 
+    if (true == cli.contains("help"))
+    {
+        cli.help();
+        return false;
+    }
+
     return isValidConfig();
 }
 

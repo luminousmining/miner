@@ -37,11 +37,6 @@ int main(
         {
             return 1;
         }
-        if (true == config.cli.contains("help"))
-        {
-            config.cli.help();
-            return 0;
-        }
 
         ////////////////////////////////////////////////////////////////////////
         serverAPI.setPort(8080);

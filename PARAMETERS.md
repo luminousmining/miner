@@ -36,9 +36,38 @@
                --cpu=<true|false>
 ```
 
-## Specific GPU
+## AMD Settings
 ```
---amd_disable       [OPTIONAL] 
+--amd_host arg          [OPTIONAL] Set defaut hostname of pool for all gpu 
+                        AMD.
+                        If defined, the parameters amd_port and amd_algo must
+                        be defined.
+                    --amd_host="ethw.2miners.com"
+--amd_port arg          [OPTIONAL] Set port of the pool for all gpu AMD.
+                        If defined, the parameters amd_host and amd_algo must
+                        be defined.
+                    --amd_port=2020
+--amd_algo arg          [MANDATORY] <ethash>
+                        If defined, the parameters amd_host and amd_port must
+                        be defined.
+                        --amd_algo="etash"
+```
+
+## Nvidia Settings
+```
+--nvidia_host arg       [OPTIONAL] Set defaut hostname of pool for all gpu 
+                        NVIDIA.
+                        If defined, the parameters nvidia_port and 
+                        nvidia_algo must be defined.
+                    --nvidia_host="ethw.2miners.com"
+--nvidia_port arg       [OPTIONAL] Set port of the pool for all gpu NVIDIA.
+                        If defined, the parameters nvidia_host and 
+                        nvidia_algo must be defined.
+                    --nvidia_port=2020
+--nvidia_algo arg       [MANDATORY] <ethash>
+                        If defined, the parameters nvidia_host and 
+                        nvidia_port must be defined.
+                    --nvidia_algo="etash"
 ```
 
 ## Specific Device
