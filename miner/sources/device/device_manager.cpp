@@ -119,7 +119,7 @@ bool device::DeviceManager::initialize()
                 return false;
             }
 
-            stratum::Stratum* stratum { stratums.at(device->id) };
+            stratum::Stratum* stratum { stratums.at(customDeviceID) };
             device->setAlgorithm(customAlgorithm);
             device->setStratum(stratum);
         }
