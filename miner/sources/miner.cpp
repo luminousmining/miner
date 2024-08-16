@@ -8,7 +8,6 @@
 #include <network/network.hpp>
 
 
-
 static void welcome()
 {
     logCustom()
@@ -37,11 +36,6 @@ int main(
         if (false == config.load(argc, argv))
         {
             return 1;
-        }
-        if (true == config.cli.contains("help"))
-        {
-            config.cli.help();
-            return 0;
         }
 
         ////////////////////////////////////////////////////////////////////////

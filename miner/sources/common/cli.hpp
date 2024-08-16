@@ -73,6 +73,16 @@ namespace common
         customTupleStr getCustomWallet() const;
         customTupleStr getCustomWorkerName() const;
 
+        // AMD settings
+        std::optional<std::string> getAMDHost() const;
+        std::optional<uint32_t>    getAMDPort() const;
+        std::optional<std::string> getAMDAlgo() const;
+
+        // NVIDIA settings
+        std::optional<std::string> getNvidiaHost() const;
+        std::optional<uint32_t>    getNvidiaPort() const;
+        std::optional<std::string> getNvidiaAlgo() const;
+
         // Smart mining settings
         bool isSmartMining() const;
         customTupleStrStr getSmartMiningWallet() const;

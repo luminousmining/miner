@@ -22,6 +22,12 @@ bool common::Config::load(int argc, char** argv)
         return false;
     }
 
+    if (true == cli.contains("help"))
+    {
+        cli.help();
+        return false;
+    }
+
     return isValidConfig();
 }
 
@@ -138,6 +144,40 @@ bool common::Config::loadCli(int argc, char** argv)
         deviceEnable.nvidiaEnable = cli.isNvidiaEnable();
         deviceEnable.amdEnable = cli.isAmdEnable();
         deviceEnable.cpuEnable = cli.isCpuEnable();
+
+        ////////////////////////////////////////////////////////////////////////
+        if (true == deviceEnable.amdEnable)
+        {
+            auto const amdHost{ cli.getAMDHost() };
+            auto const amdPort{ cli.getAMDPort() };
+            auto const amdAlgo{ cli.getAMDAlgo() };
+
+            if (   std::nullopt != amdHost
+                && std::nullopt != amdPort
+                && std::nullopt != amdAlgo)
+            {
+                amdSetting.host.assign(amdHost.value());
+                amdSetting.port = amdPort.value();
+                amdSetting.algo = amdAlgo.value();
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        if (true == deviceEnable.nvidiaEnable)
+        {
+            auto const nvidiaHost{ cli.getNvidiaHost() };
+            auto const nvidiaPort{ cli.getNvidiaPort() };
+            auto const nvidiaAlgo{ cli.getNvidiaAlgo() };
+
+            if (   std::nullopt != nvidiaHost
+                && std::nullopt != nvidiaPort
+                && std::nullopt != nvidiaAlgo)
+            {
+                nvidiaSetting.host.assign(nvidiaHost.value());
+                nvidiaSetting.port = nvidiaPort.value();
+                nvidiaSetting.algo = nvidiaAlgo.value();
+            }
+        }
 
         ////////////////////////////////////////////////////////////////////////
         for (uint32_t const& deviceIdDisable : cli.getDevicesDisable())

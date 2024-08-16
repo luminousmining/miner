@@ -123,7 +123,7 @@ void progpowSearch(
     uint32_t const thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
     uint32_t const group_id = get_lane_id();
     uint32_t const lane_id = threadIdx.x & 15; // (LANES - 1)
-    uint64_t const nonce = startNonce + thread_id;
+    uint64_t nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
     initialize_header_dag(threadIdx.x, header_dag, (uint32_t const* const)dag);

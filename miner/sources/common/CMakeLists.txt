@@ -15,9 +15,11 @@ system.hpp
 set(COMMON_SOURCES
 boost_utils.cpp
 chrono.cpp
+cli_amd.cpp
 cli.cpp
 cli_device_custom.cpp
 cli_device_setting.cpp
+cli_nvidia.cpp
 cli_pool.cpp
 cli_smart_mining.cpp
 config.cpp

@@ -72,32 +72,56 @@ bool device::DeviceManager::initialize()
                 continue;
             }
 
-            std::optional < common::Config::PoolConfig > settings
-            {
-                config.getConfigDevice(device->id)
-            };
+            algo::ALGORITHM customAlgorithm { algorithm };
+            uint32_t        customDeviceID { device::DeviceManager::DEVICE_MAX_ID };
+            auto            settings { config.getConfigDevice(device->id) };
 
             if (std::nullopt == settings)
             {
-                if (false == initializeStratum(device::DeviceManager::DEVICE_MAX_ID, algorithm))
+                switch (device->deviceType)
                 {
-                    return false;
+                    case device::DEVICE_TYPE::AMD:
+                    {
+                        if (   false == config.amdSetting.host.empty()
+                            && 0 < config.amdSetting.port
+                            && false == config.amdSetting.algo.empty())
+                        {
+                            customDeviceID = device->id;
+                            customAlgorithm = algo::toEnum(config.amdSetting.algo);
+                        }
+                        break;
+                    }
+                    case device::DEVICE_TYPE::NVIDIA:
+                    {
+                        if (   false == config.nvidiaSetting.host.empty()
+                            && 0 < config.nvidiaSetting.port
+                            && false == config.nvidiaSetting.algo.empty())
+                        {
+                            customDeviceID = device->id;
+                            customAlgorithm = algo::toEnum(config.nvidiaSetting.algo);
+                        }
+                        break;
+                    }
+                    case device::DEVICE_TYPE::UNKNOW:
+                    {
+                        break;
+                    }
                 }
-                stratum::Stratum* stratum { stratums.at(device::DeviceManager::DEVICE_MAX_ID) };
-                device->setAlgorithm(algorithm);
-                device->setStratum(stratum);
             }
             else
             {
-                algo::ALGORITHM const customAlgo { algo::toEnum((*settings).algo) };
-                if (false == initializeStratum(device->id, customAlgo))
-                {
-                    return false;
-                }
-                stratum::Stratum* stratum { stratums.at(device->id) };
-                device->setAlgorithm(customAlgo);
-                device->setStratum(stratum);
+                customAlgorithm = algo::toEnum((*settings).algo);
+                customDeviceID = device->id;
             }
+
+            if (false == initializeStratum(customDeviceID, customAlgorithm))
+            {
+                return false;
+            }
+
+            stratum::Stratum* stratum { stratums.at(device->id) };
+            device->setAlgorithm(customAlgorithm);
+            device->setStratum(stratum);
         }
     }
 
@@ -172,16 +196,22 @@ bool device::DeviceManager::initializeStratum(
         {
             config.getConfigDevice(deviceId)
         };
-        if (std::nullopt == customSettings)
+        if (std::nullopt != customSettings)
         {
-            logErr() << "Device have not custom settings";
-            return false;
+            stratum->host.assign((*customSettings).host);
+            stratum->port = (*customSettings).port;
+            stratum->workerName.assign((*customSettings).workerName);
+            stratum->wallet.assign((*customSettings).wallet);
+            stratum->password.assign((*customSettings).password);
         }
-        stratum->host.assign((*customSettings).host);
-        stratum->port = (*customSettings).port;
-        stratum->workerName.assign((*customSettings).workerName);
-        stratum->wallet.assign((*customSettings).wallet);
-        stratum->password.assign((*customSettings).password);
+        else
+        {
+            stratum->host.assign(config.mining.host);
+            stratum->port = config.mining.port;
+            stratum->workerName.assign(config.mining.workerName);
+            stratum->wallet.assign(config.mining.wallet);
+            stratum->password.assign(config.mining.password);
+        }
     }
 
     stratum->setCallbackUpdateJob(
