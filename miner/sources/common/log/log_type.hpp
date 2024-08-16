@@ -17,8 +17,8 @@ namespace common
     {
         __CUSTOM,
         __ERROR,
-        __INFO,
         __WARNING,
+        __INFO,
         __TRACE,
         __DEBUG,
     };
