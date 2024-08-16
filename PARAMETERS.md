@@ -36,6 +36,11 @@
                --cpu=<true|false>
 ```
 
+## Specific GPU
+```
+--amd_disable       [OPTIONAL] 
+```
+
 ## Specific Device
 ```
 --devices_disable       [OPTIONAL] List device disable.

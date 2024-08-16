@@ -8,7 +8,6 @@
 #include <network/network.hpp>
 
 
-
 static void welcome()
 {
     logCustom()

@@ -1,17 +1,13 @@
 #pragma once
 
-#include <chrono>
 #include <cstdint>
-#include <optional>
 #include <string>
 #include <vector>
 #include <unordered_map>
-
-#include <algo/algo_type.hpp>
-#pragma once
-
 #include <optional>
 
+#include <algo/algo_type.hpp>
+#include <device/type.hpp>
 #include <common/cli.hpp>
 #include <common/profile.hpp>
 
@@ -61,6 +57,8 @@ namespace common
         DeviceEnableSetting            deviceEnable{};
         std::vector<uint32_t>          deviceDisable{};
         std::map<uint32_t, PoolConfig> deviceSettings{};
+        PoolConfig                     amdSetting{};
+        PoolConfig                     nvidiaSetting{};
 
         static Config& instance();
         bool load(int argc, char** argv);

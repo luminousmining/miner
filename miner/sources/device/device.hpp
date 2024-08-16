@@ -7,6 +7,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include <algo/algo_type.hpp>
+#include <device/type.hpp>
 #include <network/network.hpp>
 #include <statistical/statistical.hpp>
 #include <stratum/smart_mining.hpp>
@@ -16,13 +17,6 @@
 
 namespace device
 {
-    enum class DEVICE_TYPE : uint8_t
-    {
-        NVIDIA,
-        AMD,
-        UNKNOW
-    };
-
     enum class KILL_STATE : uint32_t
     {
         ALGORITH_UNDEFINED,
