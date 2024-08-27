@@ -13,6 +13,7 @@ namespace algo
         PROGPOW,
         KAWPOW,
         FIROPOW,
+        MEOWPOW,
         EVRPROGPOW,
         AUTOLYKOS_V2,
         BLAKE3,

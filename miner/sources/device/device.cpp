@@ -147,6 +147,29 @@ void device::Device::setAlgorithm(
             }
             break;
         }
+        casealgo::ALGORITHM::MEOWPOW:
+        {
+            switch (deviceType)
+            {
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaFiroPOW);
+                    break;
+                }
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverAmdFiroPOW);
+                    break;
+                }
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
         case algo::ALGORITHM::EVRPROGPOW:
         {
             switch (deviceType)

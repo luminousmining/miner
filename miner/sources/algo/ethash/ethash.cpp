@@ -2,6 +2,7 @@
 #include <algo/keccak.hpp>
 #include <algo/math.hpp>
 #include <algo/ethash/ethash.hpp>
+#include <algo/progpow/meowpow.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
@@ -66,7 +67,11 @@ void algo::ethash::initializeDagContext(
     uint64_t epochEIP { currentEpoch };
     if (maxEpoch == algo::ethash::EIP1099_MAX_EPOCH_NUMBER)
     {
-        epochEIP /= 2;
+        epochEIP /= 2ull;
+    }
+    else if (maxEpoch == algo::meowpow::MAX_EPOCH_NUMBER)
+    {
+        epochEIP *= 4ull;
     }
 
     ////////////////////////////////////////////////////////////////////////////

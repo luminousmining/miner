@@ -24,8 +24,8 @@ namespace algo
         constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_INIT{ algo::ethash::LIGHT_CACHE_INIT_SIZE / algo::LEN_HASH_512 };
         constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_GROWTH{ algo::ethash::LIGHT_CACHE_GROWTH / algo::LEN_HASH_512 };
 
-        constexpr uint32_t DAG_INIT_SIZE{ 1 << 30 };
-        constexpr uint32_t DAG_GROWTH{ 1 << 23 };
+        constexpr uint32_t DAG_INIT_SIZE{ 1u << 30u };
+        constexpr uint32_t DAG_GROWTH{ 1u << 23u };
         constexpr uint32_t DAG_ITEM_PARENTS{ 256u };
         constexpr uint64_t DAG_COUNT_ITEMS_INIT{ algo::ethash::DAG_INIT_SIZE / algo::LEN_HASH_1024 };
         constexpr uint64_t DAG_COUNT_ITEMS_GROWTH{ algo::ethash::DAG_GROWTH / algo::LEN_HASH_1024 };

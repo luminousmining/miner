@@ -10,6 +10,7 @@ ethash_kernel_parameter.hpp
 evrprogpow.hpp
 firopow.hpp
 kawpow.hpp
+meowpow.hpp
 progpow.hpp
 progpow_kernel_parameter.hpp
 )
@@ -23,6 +24,7 @@ ethash.cpp
 evrprogpow.cpp
 firopow.cpp
 kawpow.cpp
+meowpow.cpp
 progpow.cpp
 )
 
