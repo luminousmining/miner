@@ -64,7 +64,7 @@ common::Cli::Cli()
             "algo",
             value<std::string>(),
             "[MANDATORY] <ethash>\n"
-            "--algo=\"etash\""
+            "--algo=\"ethash\""
         )
         (
             "workername",
@@ -136,7 +136,7 @@ common::Cli::Cli()
             value<std::string>(),
             "[MANDATORY] <ethash>\n"
             "If defined, the parameters amd_host and amd_port must be defined.\n"
-            "--amd_algo=\"etash\""
+            "--amd_algo=\"ethash\""
         )
 
         // NVIDIA setting
@@ -159,7 +159,7 @@ common::Cli::Cli()
             value<std::string>(),
             "[MANDATORY] <ethash>\n"
             "If defined, the parameters nvidia_host and nvidia_port must be defined.\n"
-            "--nvidia_algo=\"etash\""
+            "--nvidia_algo=\"ethash\""
         )
 
         // Device setting custom

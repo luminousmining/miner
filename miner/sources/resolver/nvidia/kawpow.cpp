@@ -6,7 +6,7 @@
 resolver::ResolverNvidiaKawPOW::ResolverNvidiaKawPOW():
     resolver::ResolverNvidiaProgPOW()
 {
-    // Etash
+    // Ethash
     maxEpoch = algo::ethash::MAX_EPOCH_NUMBER;
     dagCountItemsGrowth = algo::ethash::DAG_COUNT_ITEMS_GROWTH;
     dagCountItemsInit = algo::ethash::DAG_COUNT_ITEMS_INIT;
