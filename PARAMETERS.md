@@ -50,7 +50,7 @@
 --amd_algo arg          [MANDATORY] <ethash>
                         If defined, the parameters amd_host and amd_port must
                         be defined.
-                        --amd_algo="etash"
+                        --amd_algo="ethash"
 ```
 
 ## Nvidia Settings
@@ -67,7 +67,7 @@
 --nvidia_algo arg       [MANDATORY] <ethash>
                         If defined, the parameters nvidia_host and 
                         nvidia_port must be defined.
-                    --nvidia_algo="etash"
+                    --nvidia_algo="ethash"
 ```
 
 ## Specific Device
