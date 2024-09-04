@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <algo/progpow/result.hpp>
@@ -24,3 +26,5 @@ namespace resolver
         }
     }
 }
+
+#endif

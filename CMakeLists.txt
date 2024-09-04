@@ -4,6 +4,11 @@ project(luminousminer VERSION 0.1)
 enable_language(C)
 enable_language(CXX)
 
+################################################################################
+### OPTION MACROS                                                           ####
+################################################################################
+option(BUILD_AMD "Build with OpenCL for AMD GPU" ON)
+option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" ON)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
@@ -18,7 +23,9 @@ endif()
 ################################################################################
 set(MINER_EXE miner)
 set(UNIT_TEST_EXE unit_test)
-set(LIB_CRYPTO_NVIDIA libCryptoNvidia)
+if (BUILD_NVIDIA)
+    set(LIB_CRYPTO_NVIDIA libCryptoNvidia)
+endif()
 
 ################################################################################
 ### CXX FLAGS                                                               ####
@@ -124,74 +131,84 @@ set(OPEN_SSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
 ### CUDA                                                                    ####
 ### https://cmake.org/cmake/help/latest/module/FindCUDA.html                ####
 ################################################################################
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    list(APPEND CUDA_NVCC_FLAGS_DEBUG -G -g -O0)
-else()
-    list(APPEND CUDA_NVCC_FLAGS_RELEASE -O3 -DNDEBUG)
+if (BUILD_NVIDIA)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        list(APPEND CUDA_NVCC_FLAGS_DEBUG -G -g -O0)
+    else()
+        list(APPEND CUDA_NVCC_FLAGS_RELEASE -O3 -DNDEBUG)
+    endif()
+    ### CUDA GLOBAL INFORMATIONS
+    set(CUDA_STANDARD                17)
+    set(CUDA_RUNTIME_LIBRARY         STATIC)
+    set(CUDA_USE_STATIC_CUDA_RUNTIME ON)
+    set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "C++ compiler" FORCE)
+    ### NVCC FLAGS
+    list(APPEND CUDA_NVCC_FLAGS "-std=c++17")
+    list(APPEND CUDA_NVCC_FLAGS "--ptxas-options=-v")
+    list(APPEND CUDA_NVCC_FLAGS "-use_fast_math")
+    ### NVCC FLAGS GENCODE
+    list(APPEND CUDA_NVCC_FLAGS "-arch=sm_60")
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_60,code=sm_60") # Pascal
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=sm_61") # Pascal
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_62,code=sm_62") # Pascal
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=sm_70") # Volta
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
+    ### Macros C++
+    add_compile_definitions(CUDA_ENABLE)
 endif()
-### CUDA GLOBAL INFORMATIONS
-set(CUDA_STANDARD                17)
-set(CUDA_RUNTIME_LIBRARY         STATIC)
-set(CUDA_USE_STATIC_CUDA_RUNTIME ON)
-set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "C++ compiler" FORCE)
-### NVCC FLAGS
-list(APPEND CUDA_NVCC_FLAGS "-std=c++17")
-list(APPEND CUDA_NVCC_FLAGS "--ptxas-options=-v")
-list(APPEND CUDA_NVCC_FLAGS "-use_fast_math")
-### NVCC FLAGS GENCODE
-list(APPEND CUDA_NVCC_FLAGS "-arch=sm_60")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_60,code=sm_60") # Pascal
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=sm_61") # Pascal
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_62,code=sm_62") # Pascal
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=sm_70") # Volta
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
-
 
 ################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
 find_package(Boost 1.85.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
 find_package(OpenCL 2.2 REQUIRED COMPONENTS OpenCL)
-if (UNIX)
-    find_package(CUDA 12.5 EXACT COMPONENTS cudart)
-else()
-    find_package(CUDA 12.5 EXACT COMPONENTS cudart)
+if (BUILD_NVIDIA)
+    if (UNIX)
+        find_package(CUDA 12.5 EXACT COMPONENTS cudart)
+    else()
+        find_package(CUDA 12.5 EXACT COMPONENTS cudart)
+    endif()
 endif()
 find_package(OpenSSL 1.1.1 REQUIRED COMPONENTS SSL Crypto)
 if (UNIX)
     find_package(GnuTLS)
 endif()
 find_library(OpenCL_LIBRARIES name OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
-if (WIN32)
-    SET(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib\\x64)
-    set(CUDA_NVRTC_BUILTINS_LIBRARY "")
-    set(CUDA_NVPTX_LIBRARY "")
-    find_library(CUDA_LIBRARY       name cuda  PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
-    find_library(CUDA_NVRTC_LIBRARY name nvrtc PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
-else()
-    set(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib/x64 lib64/stubs lib/x64/stubs)
-    find_library(CUDA_LIBRARY                name cuda                  PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
-    find_library(CUDA_NVRTC_LIBRARY          name nvrtc_static          PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
-    find_library(CUDA_NVPTX_LIBRARY          name nvptxcompiler_static  PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
-    find_library(CUDA_NVRTC_BUILTINS_LIBRARY name nvrtc-builtins_static PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+if (BUILD_NVIDIA)
+    if (WIN32)
+        SET(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib\\x64)
+        set(CUDA_NVRTC_BUILTINS_LIBRARY "")
+        set(CUDA_NVPTX_LIBRARY "")
+        find_library(CUDA_LIBRARY       name cuda  PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+        find_library(CUDA_NVRTC_LIBRARY name nvrtc PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+    else()
+        set(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib/x64 lib64/stubs lib/x64/stubs)
+        find_library(CUDA_LIBRARY                name cuda                  PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+        find_library(CUDA_NVRTC_LIBRARY          name nvrtc_static          PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+        find_library(CUDA_NVPTX_LIBRARY          name nvptxcompiler_static  PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+        find_library(CUDA_NVRTC_BUILTINS_LIBRARY name nvrtc-builtins_static PATHS ${CUDA_TOOLKIT_ROOT_DIR} PATH_SUFFIXES ${CUDA_TOOLKIT_PATH_SUFFIXES} NO_DEFAULT_PATH REQUIRED)
+    endif()
 endif()
 
 
 ################################################################################
 ### OPENCL                                                                  ####
 ################################################################################
-if (WIN32)
-    set(OpenCL_INCLUDE_DIRS "C:\\OpenCL\\include")
-else()
-    set(OpenCL_INCLUDE_DIRS "/usr/local/include")
+if (BUILD_AMD)
+    if (WIN32)
+        set(OpenCL_INCLUDE_DIRS "C:\\OpenCL\\include")
+    else()
+        set(OpenCL_INCLUDE_DIRS "/usr/local/include")
+    endif()
+    add_compile_definitions(CL_HPP_ENABLE_EXCEPTIONS=true)
+    add_compile_definitions(CL_HPP_TARGET_OPENCL_VERSION=300)
+    add_compile_definitions(CL_HPP_MINIMUM_OPENCL_VERSION=200)
+    add_compile_definitions(AMD_ENABLE)
 endif()
-add_compile_definitions(CL_HPP_ENABLE_EXCEPTIONS=true)
-add_compile_definitions(CL_HPP_TARGET_OPENCL_VERSION=300)
-add_compile_definitions(CL_HPP_MINIMUM_OPENCL_VERSION=200)
 
 
 ################################################################################
@@ -229,10 +246,15 @@ message("-- OpenSSL Version  : ${OPENSSL_VERSION}")
 message("-- OpenSSL Include  : ${OPENSSL_INCLUDE_DIR}")
 message("-- OpenSSL Library  : ${OPEN_SSL_LIBRARIES}")
 message("*********************************************************************")
+message("-- BUILD_AMD        : ${BUILD_AMD}")
+if (BUILD_AMD)
 message("-- OPENCL           : ${OpenCL_VERSION_STRING}")
 message("-- OPENCL Include   : ${OpenCL_INCLUDE_DIRS}")
 message("-- OPENCL Libraries : ${OpenCL_LIBRARIES}")
+endif()
 message("*********************************************************************")
+message("-- BUILD_NVIDIA     : ${BUILD_NVIDIA}")
+if (BUILD_NVIDIA)
 message("-- CUDA Version     : ${CUDA_VERSION}")
 message("-- CUDA Flags       : ${CUDA_NVCC_FLAGS};${CUDA_NVCC_FLAGS_DEBUG}${CUDA_NVCC_FLAGS_RELEASE}")
 message("-- CUDA TOOLKIT     : ${CUDA_TOOLKIT_ROOT_DIR}")
@@ -242,6 +264,7 @@ message("-- CUDA NVPTX       : ${CUDA_NVPTX_LIBRARY}")
 message("-- CUDA NVRTC       : ${CUDA_NVRTC_LIBRARY}")
 message("-- CUDA BUILTINS    : ${CUDA_NVRTC_BUILTINS_LIBRARY}")
 message("-- NVRTC LIBRARY    : ${CUDA_NVRTC_LIBRARY}")
+endif()
 message("*********************************************************************")
 message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LIBRAIRES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 get_target_property(LIST_LIBS ${MINER_EXE} LINK_LIBRARIES)

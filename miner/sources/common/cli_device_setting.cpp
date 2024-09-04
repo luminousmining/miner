@@ -1,6 +1,7 @@
 #include <common/cli.hpp>
 
 
+#if defined(CUDA_ENABLE)
 bool common::Cli::isNvidiaEnable() const
 {
     bool enable{ true };
@@ -10,8 +11,10 @@ bool common::Cli::isNvidiaEnable() const
     }
     return enable;
 }
+#endif
 
 
+#if defined(AMD_ENABLE)
 bool common::Cli::isAmdEnable() const
 {
     bool enable{ true };
@@ -21,6 +24,7 @@ bool common::Cli::isAmdEnable() const
     }
     return enable;
 }
+#endif
 
 
 bool common::Cli::isCpuEnable() const

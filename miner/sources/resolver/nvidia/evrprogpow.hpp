@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
+
 #include <resolver/nvidia/progpow.hpp>
 
 
@@ -12,3 +14,5 @@ namespace resolver
         ~ResolverNvidiaEvrprogPOW() = default;
     };
 }
+
+#endif

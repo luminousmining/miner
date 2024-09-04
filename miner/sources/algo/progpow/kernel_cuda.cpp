@@ -1,3 +1,5 @@
+#if defined(CUDA_ENABLE)
+
 #if defined(__linux__)
     #include <experimental/filesystem>
     namespace __fs = std::experimental::filesystem;
@@ -233,3 +235,5 @@ void algo::progpow::writeMathRandomKernelCuda(
 
     ofs << ss.str();
 }
+
+#endif

@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <algo/ethash/result.hpp>
@@ -25,3 +27,5 @@ namespace resolver
         }
     }
 }
+
+#endif

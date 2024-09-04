@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
+
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/ethash/result.hpp>
@@ -19,3 +21,5 @@ namespace resolver
         bool updateContext(stratum::StratumJobInfo const& jobInfo) final;
     };
 }
+
+#endif

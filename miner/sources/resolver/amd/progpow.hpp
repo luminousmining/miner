@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/ethash/ethash.hpp>
@@ -46,3 +48,5 @@ namespace resolver
         bool getResultCache(std::string const& jobId);
     };
 }
+
+#endif

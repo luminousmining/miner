@@ -1,5 +1,6 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
 
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
@@ -28,3 +29,5 @@ namespace resolver
         resolver::nvidia::autolykos_v2::KernelParameters parameters{};
     };
 }
+
+#endif

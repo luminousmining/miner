@@ -15,5 +15,9 @@ ${RESOLVER_HEADERS}
 ${RESOLVER_SOURCES}
 )
 
-add_subdirectory(amd)
-add_subdirectory(nvidia)
+if (BUILD_AMD)
+    add_subdirectory(amd)
+endif()
+if (BUILD_NVIDIA)
+    add_subdirectory(nvidia)
+endif()

@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
@@ -52,3 +54,5 @@ namespace resolver
         bool buildKernelVerify();
     };
 }
+
+#endif

@@ -1,5 +1,6 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -17,3 +18,5 @@ namespace resolver
         virtual ~ResolverNvidia() = default;
     };
 }
+
+#endif

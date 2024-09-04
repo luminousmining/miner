@@ -4,10 +4,14 @@
 #include <string>
 #include <list>
 
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <nvrtc.h>
-#include <CL/opencl.hpp>
+#if defined(CUDA_ENABLE)
+    #include <cuda.h>
+    #include <cuda_runtime.h>
+    #include <nvrtc.h>
+#endif
+#if defined(AMD_ENABLE)
+    #include <CL/opencl.hpp>
+#endif
 
 
 namespace common
@@ -15,10 +19,14 @@ namespace common
     struct KernelGenerator
     {
     public:
+#if defined(CUDA_ENABLE)
         ////////////////////////////////////////////////////////////////////
         CUfunction cuFunction{ nullptr };
+#endif
+#if defined(AMD_ENABLE)
         ////////////////////////////////////////////////////////////////////
         cl::Kernel clKernel{};
+#endif
 
         void clear();
         void setKernelName(std::string const& kernelFunctionName);
@@ -26,10 +34,14 @@ namespace common
         void declareDefine(std::string const& name);
         void appendLine(std::string const& line);
         bool appendFile(std::string const& pathFileName);
+#if defined(AMD_ENABLE)
         bool buildOpenCL(cl::Device* const clDevice,
                         cl::Context* const clContext);
+#endif
+#if defined(CUDA_ENABLE)
         bool buildCuda(uint32_t const major,
                        uint32_t miner);
+#endif
         bool isBuilt() const;
 
         template<typename T>
@@ -50,10 +62,14 @@ namespace common
         }
 
     private:
+#if defined(CUDA_ENABLE)
         ////////////////////////////////////////////////////////////////////
         nvrtcProgram cuProgram{};
+#endif
         ////////////////////////////////////////////////////////////////////
+#if defined(AMD_ENABLE)
         cl::Program  clProgram{};
+#endif
         ////////////////////////////////////////////////////////////////////
         bool built { false };
         std::string  kernelName{};

@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -14,3 +16,5 @@ bool autolykosv2Search(cudaStream_t stream,
                        uint32_t const blocks,
                        uint32_t const threads,
                        resolver::nvidia::autolykos_v2::KernelParameters& params);
+
+#endif

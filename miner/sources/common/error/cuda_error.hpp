@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -35,3 +37,5 @@
             return false;\
         }\
     }
+
+#endif

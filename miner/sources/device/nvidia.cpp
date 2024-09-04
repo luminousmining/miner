@@ -1,3 +1,5 @@
+#if defined(CUDA_ENABLE)
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -37,4 +39,4 @@ void device::DeviceNvidia::cleanUp()
             << cudaGetErrorString(cuCodeError);
     }
 }
-
+#endif

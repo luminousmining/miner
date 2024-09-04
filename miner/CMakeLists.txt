@@ -1,18 +1,20 @@
 ################################################################################
 ###  LIB CUDA ETHASH                                                        ####
 ################################################################################
-cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
-    sources/algo/autolykos/cuda/autolykos_v2.cu
-    sources/algo/blake3/cuda/blake3.cu
-    sources/algo/ethash/cuda/ethash.cu
-    sources/algo/progpow/cuda/progpow.cu)
+if (BUILD_NVIDIA)
+    cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
+        sources/algo/autolykos/cuda/autolykos_v2.cu
+        sources/algo/blake3/cuda/blake3.cu
+        sources/algo/ethash/cuda/ethash.cu
+        sources/algo/progpow/cuda/progpow.cu)
 
-target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA)
+    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
 
-include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
-    ${CUDA_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources
-)
+    include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
+        ${CUDA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/sources
+    )
+endif()
 
 ################################################################################
 ### HEADERS AND SOURCES FILES MINER                                         ####

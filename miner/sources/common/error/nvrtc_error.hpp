@@ -1,5 +1,6 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
 
 #include <nvrtc.h>
 
@@ -34,3 +35,5 @@
             return false;                                                      \
         }                                                                      \
     }
+
+#endif
