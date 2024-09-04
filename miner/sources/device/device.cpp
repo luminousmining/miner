@@ -36,12 +36,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaEthash);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -59,12 +61,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaEtchash);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -82,12 +86,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaProgPOW);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -105,12 +111,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaKawPOW);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -128,12 +136,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaFiroPOW);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -151,12 +161,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaEvrprogPOW);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -174,12 +186,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaAutolykosV2);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     SAFE_DELETE(resolver);
@@ -197,12 +211,14 @@ void device::Device::setAlgorithm(
         {
             switch (deviceType)
             {
+#if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaBlake3);
                     break;
                 }
+#endif
                 case device::DEVICE_TYPE::AMD:
                 {
                     break;

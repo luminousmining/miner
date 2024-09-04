@@ -191,7 +191,7 @@ bool common::KernelGenerator::buildOpenCL(
     return built;
 }
 
-
+#if defined(CUDA_ENABLE)
 bool common::KernelGenerator::buildCuda(
     uint32_t const major,
     uint32_t const minor)
@@ -286,6 +286,7 @@ bool common::KernelGenerator::buildCuda(
     built = true;
     return true;
 }
+#endif
 
 
 bool common::KernelGenerator::isBuilt() const

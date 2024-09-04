@@ -41,6 +41,7 @@ bool device::DeviceManager::initialize()
     }
 
     ////////////////////////////////////////////////////////////////////////////
+#if defined(CUDA_ENABLE)
     if (true == config.deviceEnable.nvidiaEnable)
     {
         if (false == initializeNvidia())
@@ -49,6 +50,7 @@ bool device::DeviceManager::initialize()
             return false;
         }
     }
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     if (common::PROFILE::SMART_MINING == config.profile)
@@ -91,6 +93,7 @@ bool device::DeviceManager::initialize()
                         }
                         break;
                     }
+#if defined(CUDA_ENABLE)
                     case device::DEVICE_TYPE::NVIDIA:
                     {
                         if (   false == config.nvidiaSetting.host.empty()
@@ -102,6 +105,7 @@ bool device::DeviceManager::initialize()
                         }
                         break;
                     }
+#endif
                     case device::DEVICE_TYPE::UNKNOW:
                     {
                         break;
@@ -233,6 +237,7 @@ bool device::DeviceManager::initializeStratum(
 }
 
 
+#if defined(CUDA_ENABLE)
 bool device::DeviceManager::initializeNvidia()
 {
     int32_t numberDevice{ 0 };
@@ -265,6 +270,7 @@ bool device::DeviceManager::initializeNvidia()
 
     return true;
 }
+#endif
 
 
 bool device::DeviceManager::initializeAmd()
@@ -441,12 +447,20 @@ void device::DeviceManager::loopStatistical()
             double const hashrate { device->getHashrate() };
             statistical::Statistical::ShareInfo shares { device->getShare() };
 
-            std::string deviceType
+            std::string deviceType{ "UNKNOW" };
+
+#if defined(CUDA_ENABLE)
+            if (device->deviceType == device::DEVICE_TYPE::NVIDIA)
             {
-                device->deviceType == device::DEVICE_TYPE::NVIDIA
-                    ? "NVIDIA"
-                    : "AMD"
-            };
+                deviceType = "NVIDIA";
+            }
+#endif
+#if defined(AMD_ENABLE)
+            if (device->deviceType == device::DEVICE_TYPE::AMD)
+            {
+                deviceType = "AMD";
+            }
+#endif
 
             board.addLine
             (

@@ -1,10 +1,11 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 
 #include <device/device.hpp>
-
 
 namespace device
 {
@@ -22,3 +23,4 @@ namespace device
         void cleanUp() final;
     };
 }
+#endif

@@ -60,7 +60,9 @@ namespace common
         std::optional<std::string>   getPassword() const;
 
         // Device settings common
+#if defined(CUDA_ENABLE)
         bool isNvidiaEnable() const;
+#endif
         bool isAmdEnable() const;
         bool isCpuEnable() const;
 

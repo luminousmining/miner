@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cuda_runtime.h>
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <device/device.hpp>
@@ -21,3 +22,4 @@ namespace device
         void cleanUp() final;
     };
 }
+#endif

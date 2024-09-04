@@ -191,7 +191,7 @@ namespace algo
 
         ////////////////////////////////////////////////////////////////////////
         uint32_t k{ 0u };
-        for (int32_t i { cast32(lenght - 1) }; i >= 0; --i)
+        for (int32_t i { cast32(lenght) - 1 }; i >= 0; --i)
         {
             auto value = castU32(input[i] - '0');
             fs[k++] = value;
@@ -241,7 +241,8 @@ namespace algo
         }
 
         ////////////////////////////////////////////////////////////////////////
-        for (int32_t i{ cast32(sizeof(T) - 1) }; i >= 0; --i)
+        // cppcheck-suppress internalAstError
+        for (int32_t i{ cast32(sizeof(T)) - 1 }; i >= 0; --i)
         {
             auto const value
             {
@@ -249,7 +250,7 @@ namespace algo
                     ? castU8(accs[i] + '0')
                     : castU8(accs[i] + 'A' - 0xA)
             };
-            hash.ubytes[(sizeof(T) - 1) - i] = value;
+            hash.ubytes[sizeof(T) - 1u - i] = value;
         }
 
         ////////////////////////////////////////////////////////////////////////

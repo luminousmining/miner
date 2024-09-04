@@ -38,7 +38,9 @@ namespace common
 
         struct DeviceEnableSetting
         {
+#if defined(CUDA_ENABLE)
             bool nvidiaEnable{ true };
+#endif
             bool amdEnable{ true };
             bool cpuEnable{ true };
         };

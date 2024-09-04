@@ -60,6 +60,7 @@ namespace algo
                                          uint32_t const countCache,
                                          uint32_t const countMath);
 
+#if defined(CUDA_ENABLE)
         namespace nvidia
         {
             void writeSequenceMergeEntries(std::stringstream& ss,
@@ -79,6 +80,7 @@ namespace algo
                                          uint32_t const dst,
                                          uint32_t const sel);
         }
+#endif
 
         namespace amd
         {

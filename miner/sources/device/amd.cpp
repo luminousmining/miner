@@ -1,3 +1,5 @@
+#if defined(AMD_ENABLE)
+
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <device/amd.hpp>
@@ -28,3 +30,4 @@ bool device::DeviceAmd::initialize()
 void device::DeviceAmd::cleanUp()
 {
 }
+#endif

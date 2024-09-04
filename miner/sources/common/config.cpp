@@ -141,7 +141,9 @@ bool common::Config::loadCli(int argc, char** argv)
         mining.stale = cli.isStale();
 
         ////////////////////////////////////////////////////////////////////////
+#if defined(CUDA_ENABLE)
         deviceEnable.nvidiaEnable = cli.isNvidiaEnable();
+#endif
         deviceEnable.amdEnable = cli.isAmdEnable();
         deviceEnable.cpuEnable = cli.isCpuEnable();
 
@@ -163,6 +165,7 @@ bool common::Config::loadCli(int argc, char** argv)
         }
 
         ////////////////////////////////////////////////////////////////////////
+#if defined(CUDA_ENABLE)
         if (true == deviceEnable.nvidiaEnable)
         {
             auto const nvidiaHost{ cli.getNvidiaHost() };
@@ -178,6 +181,7 @@ bool common::Config::loadCli(int argc, char** argv)
                 nvidiaSetting.algo = nvidiaAlgo.value();
             }
         }
+#endif
 
         ////////////////////////////////////////////////////////////////////////
         for (uint32_t const& deviceIdDisable : cli.getDevicesDisable())
