@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/ethash/result.hpp>
@@ -36,3 +38,5 @@ namespace resolver
                             uint32_t const extraNonceSize);
     };
 }
+
+#endif

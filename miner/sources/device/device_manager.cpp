@@ -30,6 +30,7 @@ bool device::DeviceManager::initialize()
     common::Config const& config { common::Config::instance() };
     algo::ALGORITHM const algorithm { config.getAlgorithm() };
 
+#if defined(AMD_ENABLE)
     ////////////////////////////////////////////////////////////////////////////
     if (true == config.deviceEnable.amdEnable)
     {
@@ -39,6 +40,7 @@ bool device::DeviceManager::initialize()
             return false;
         }
     }
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
 #if defined(CUDA_ENABLE)
@@ -82,6 +84,7 @@ bool device::DeviceManager::initialize()
             {
                 switch (device->deviceType)
                 {
+#if defined(AMD_ENABLE)
                     case device::DEVICE_TYPE::AMD:
                     {
                         if (   false == config.amdSetting.host.empty()
@@ -93,6 +96,7 @@ bool device::DeviceManager::initialize()
                         }
                         break;
                     }
+#endif
 #if defined(CUDA_ENABLE)
                     case device::DEVICE_TYPE::NVIDIA:
                     {
@@ -273,6 +277,7 @@ bool device::DeviceManager::initializeNvidia()
 #endif
 
 
+#if defined(AMD_ENABLE)
 bool device::DeviceManager::initializeAmd()
 {
     std::vector<cl::Device> cldevices{};
@@ -320,6 +325,7 @@ bool device::DeviceManager::initializeAmd()
 
     return true;
 }
+#endif
 
 
 void device::DeviceManager::run()

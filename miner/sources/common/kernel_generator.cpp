@@ -19,9 +19,11 @@
 
 void common::KernelGenerator::clear()
 {
+#if defined(AMD_ENABLE)
     // OpenCL
     clKernel = nullptr;
     clProgram = nullptr;
+#endif
 
     // Common
     sourceCode.clear();
@@ -91,6 +93,7 @@ bool common::KernelGenerator::appendFile(
 }
 
 
+#if defined(AMD_ENABLE)
 bool common::KernelGenerator::buildOpenCL(
     cl::Device* const clDevice,
     cl::Context* const clContext)
@@ -190,6 +193,8 @@ bool common::KernelGenerator::buildOpenCL(
     built = true;
     return built;
 }
+#endif
+
 
 #if defined(CUDA_ENABLE)
 bool common::KernelGenerator::buildCuda(

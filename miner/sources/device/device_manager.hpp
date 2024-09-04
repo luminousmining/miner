@@ -57,7 +57,9 @@ namespace device
 #if defined(CUDA_ENABLE)
         bool initializeNvidia();
 #endif
+#if defined(AMD_ENABLE)
         bool initializeAmd();
+#endif
         void updateDevice(uint32_t const stratumUUID,
                           bool const updateMemory,
                           bool const updateConstants);

@@ -14,6 +14,7 @@ bool common::Cli::isNvidiaEnable() const
 #endif
 
 
+#if defined(AMD_ENABLE)
 bool common::Cli::isAmdEnable() const
 {
     bool enable{ true };
@@ -23,6 +24,7 @@ bool common::Cli::isAmdEnable() const
     }
     return enable;
 }
+#endif
 
 
 bool common::Cli::isCpuEnable() const

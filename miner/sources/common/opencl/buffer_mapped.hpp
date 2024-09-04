@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <common/custom.hpp>
@@ -143,3 +145,5 @@ namespace common
         };
     }
 }
+
+#endif

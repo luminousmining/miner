@@ -8,7 +8,7 @@ enable_language(CXX)
 ### OPTION MACROS                                                           ####
 ################################################################################
 option(BUILD_AMD "Build with OpenCL for AMD GPU" ON)
-option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" OFF)
+option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" ON)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
@@ -158,7 +158,7 @@ if (BUILD_NVIDIA)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
     ### Macros C++
-    add_compile_definitions(-DCUDA_ENABLE)
+    add_compile_definitions(CUDA_ENABLE)
 endif()
 
 ################################################################################
@@ -207,7 +207,7 @@ if (BUILD_AMD)
     add_compile_definitions(CL_HPP_ENABLE_EXCEPTIONS=true)
     add_compile_definitions(CL_HPP_TARGET_OPENCL_VERSION=300)
     add_compile_definitions(CL_HPP_MINIMUM_OPENCL_VERSION=200)
-    add_compile_definitions(-DAMD_ENABLE)
+    add_compile_definitions(AMD_ENABLE)
 endif()
 
 

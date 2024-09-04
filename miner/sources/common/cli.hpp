@@ -63,7 +63,9 @@ namespace common
 #if defined(CUDA_ENABLE)
         bool isNvidiaEnable() const;
 #endif
+#if defined(AMD_ENABLE)
         bool isAmdEnable() const;
+#endif
         bool isCpuEnable() const;
 
         // Device settings custom

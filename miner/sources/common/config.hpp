@@ -41,7 +41,9 @@ namespace common
 #if defined(CUDA_ENABLE)
             bool nvidiaEnable{ true };
 #endif
+#if defined(AMD_ENABLE)
             bool amdEnable{ true };
+#endif
             bool cpuEnable{ true };
         };
 

@@ -144,9 +144,12 @@ bool common::Config::loadCli(int argc, char** argv)
 #if defined(CUDA_ENABLE)
         deviceEnable.nvidiaEnable = cli.isNvidiaEnable();
 #endif
+#if defined(AMD_ENABLE)
         deviceEnable.amdEnable = cli.isAmdEnable();
+#endif
         deviceEnable.cpuEnable = cli.isCpuEnable();
 
+#if defined(AMD_ENABLE)
         ////////////////////////////////////////////////////////////////////////
         if (true == deviceEnable.amdEnable)
         {
@@ -163,6 +166,7 @@ bool common::Config::loadCli(int argc, char** argv)
                 amdSetting.algo = amdAlgo.value();
             }
         }
+#endif
 
         ////////////////////////////////////////////////////////////////////////
 #if defined(CUDA_ENABLE)

@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <resolver/amd/progpow.hpp>
 
 
@@ -12,3 +14,5 @@ namespace resolver
         ~ResolverAmdKawPOW() = default;
     };
 }
+
+#endif

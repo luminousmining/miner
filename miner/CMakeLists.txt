@@ -8,7 +8,7 @@ if (BUILD_NVIDIA)
         sources/algo/ethash/cuda/ethash.cu
         sources/algo/progpow/cuda/progpow.cu)
 
-    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA)
+    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
 
     include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
         ${CUDA_INCLUDE_DIRS}
