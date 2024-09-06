@@ -36,6 +36,12 @@ namespace common
             MapCoinPool coinPoolConfig{};
         };
 
+        struct DeviceOccupancy
+        {
+            std::optional<uint32_t> threads{};
+            std::optional<uint32_t> blocks{};
+        };
+
         struct DeviceEnableSetting
         {
 #if defined(CUDA_ENABLE)
@@ -57,6 +63,7 @@ namespace common
         common::Cli                    cli{};
         LogConfig                      log{};
         PoolConfig                     mining{};
+        DeviceOccupancy                occupancy{};
         SmartMiningConfig              smartMining{};
         DeviceEnableSetting            deviceEnable{};
         std::vector<uint32_t>          deviceDisable{};

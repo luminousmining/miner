@@ -87,6 +87,10 @@ namespace common
         std::optional<uint32_t>    getNvidiaPort() const;
         std::optional<std::string> getNvidiaAlgo() const;
 
+        // Kernel
+        uint32_t getOccupancyThreads() const;
+        uint32_t getOccupancyBlocks() const;
+
         // Smart mining settings
         bool isSmartMining() const;
         customTupleStrStr getSmartMiningWallet() const;
