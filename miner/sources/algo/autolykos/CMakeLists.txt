@@ -1,20 +1,16 @@
-set(AUTOLYKOS_HEADERS
-autolykos.hpp
-result.hpp
-)
-
-set(AUTOLYKOS_SOURCES
-autolykos.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${AUTOLYKOS_HEADERS}
-${AUTOLYKOS_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${AUTOLYKOS_HEADERS}
-${AUTOLYKOS_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 add_subdirectory(opencl)
+
+set(SOURCES_ALGO_AUTOLYOS ${HEADERS} ${SOURCES} PARENT_SCOPE)

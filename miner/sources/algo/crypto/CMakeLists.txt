@@ -1,23 +1,19 @@
-set(CRYPTO_HEADERS
-fnv1.hpp
-kiss99.hpp
-)
-
-set(CRYPTO_SOURCES
-fnv1.cpp
-kiss99.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${CRYPTO_HEADERS}
-${CRYPTO_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${CRYPTO_HEADERS}
-${CRYPTO_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 add_subdirectory(cuda)
 add_subdirectory(opencl)
 add_subdirectory(tests)
+
+set(SOURCES_ALGO_CRYPTO ${HEADERS} ${SOURCES} PARENT_SCOPE)
+set(SOURCES_ALGO_CRYPTO_TESTS ${SOURCES_ALGO_CRYPTO_TESTS} PARENT_SCOPE)

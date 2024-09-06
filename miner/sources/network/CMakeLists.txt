@@ -1,19 +1,14 @@
-
-set(NETWORK_HEADERS
-network.hpp
-)
-
-set(NETWORK_SOURCES
-network.cpp
-network_callback.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${NETWORK_HEADERS}
-${NETWORK_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${NETWORK_HEADERS}
-${NETWORK_SOURCES}
+${HEADERS}
+${SOURCES}
 )
+
+set(SOURCES_NETWORK ${HEADERS} ${SOURCES} PARENT_SCOPE)

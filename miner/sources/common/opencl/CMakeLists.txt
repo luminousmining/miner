@@ -1,3 +1,5 @@
+file(GLOB SOURCES "*.cl")
+
 set(OUT_COMMON ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}/kernel/common)
 
 file(COPY rotate_byte.cl DESTINATION ${OUT_COMMON})
