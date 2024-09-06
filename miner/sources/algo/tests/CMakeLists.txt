@@ -1,15 +1,9 @@
-
-set(TEST_ALGO_HEADERS
-)
-
-set(TEST_ALGO_SOURCES
-algo_type.cpp
-hash.cpp
-math.cpp
-rol.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${TEST_ALGO_HEADERS}
-${TEST_ALGO_SOURCES}
+${HEADERS}
+${SOURCES}
 )
+
+set(SOURCES_ALGO_TESTS ${HEADERS} ${SOURCES} PARENT_SCOPE)

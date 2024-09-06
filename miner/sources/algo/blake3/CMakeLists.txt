@@ -1,18 +1,16 @@
-set(BLAKE3_HEADERS
-result.hpp
-)
-
-set(BLAKE3_SOURCES
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${BLAKE3_HEADERS}
-${BLAKE3_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${BLAKE3_HEADERS}
-${BLAKE3_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 add_subdirectory(opencl)
+
+set(SOURCES_ALGO_BLAKE3 ${HEADERS} ${SOURCES} PARENT_SCOPE)

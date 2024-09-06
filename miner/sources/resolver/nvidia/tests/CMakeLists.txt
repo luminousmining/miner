@@ -1,15 +1,9 @@
-set(TEST_RESOLVER_NVIDIA_HEADERS
-)
-
-set(TEST_RESOLVER_NVIDIA_SOURCES
-autolykos_v2.cpp
-blake3.cpp
-ethash.cpp
-firopow.cpp
-kawpow.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${TEST_RESOLVER_NVIDIA_HEADERS}
-${TEST_RESOLVER_NVIDIA_SOURCES}
+${HEADERS}
+${SOURCES}
 )
+
+set(SOURCES_RESOLVER_NVIDIA_TESTS ${HEADERS} ${SOURCES} PARENT_SCOPE)

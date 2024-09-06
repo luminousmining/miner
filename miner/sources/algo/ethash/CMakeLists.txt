@@ -1,22 +1,18 @@
-set(ETHASH_HEADERS
-ethash.hpp
-result.hpp
-cuda/ethash.cuh
-)
-
-set(ETHASH_SOURCES
-ethash.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${ETHASH_HEADERS}
-${ETHASH_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${ETHASH_HEADERS}
-${ETHASH_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 add_subdirectory(opencl)
 add_subdirectory(tests)
+
+set(SOURCES_ALGO_ETHASH ${HEADERS} ${SOURCES} PARENT_SCOPE)
+set(SOURCES_ALGO_ETHASH_TESTS ${SOURCES_ALGO_ETHASH_TESTS} PARENT_SCOPE)

@@ -1,23 +1,14 @@
-
-set(DEVICE_HEADERS
-amd.hpp
-device_manager.hpp
-nvidia.hpp
-)
-
-set(DEVICE_SOURCES
-amd.cpp
-device.cpp
-device_manager.cpp
-nvidia.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${DEVICE_HEADERS}
-${DEVICE_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${DEVICE_HEADERS}
-${DEVICE_SOURCES}
+${HEADERS}
+${SOURCES}
 )
+
+set(SOURCES_DEVICE ${HEADERS} ${SOURCES} PARENT_SCOPE)

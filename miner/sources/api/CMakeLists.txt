@@ -1,17 +1,15 @@
-set(API_HEADERS
-api.hpp
-)
-
-set(API_SOURCES
-api.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${API_HEADERS}
-${API_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${API_HEADERS}
-${API_SOURCES}
+${HEADERS}
+${SOURCES}
 )
+
+
+set(SOURCES_API ${HEADERS} ${SOURCES} PARENT_SCOPE)

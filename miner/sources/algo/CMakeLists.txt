@@ -1,29 +1,14 @@
-set(ALGO_HEADERS
-algo_type.hpp
-bitwise.hpp
-dag_context.hpp
-hash.hpp
-hash_utils.hpp
-math.hpp
-keccak.hpp
-rol.hpp
-)
-
-set(ALGO_SOURCES
-algo_type.cpp
-hash_utils.cpp
-keccak.cpp
-math.cpp
-)
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
 
 target_sources(${MINER_EXE} PUBLIC
-${ALGO_HEADERS}
-${ALGO_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
-${ALGO_HEADERS}
-${ALGO_SOURCES}
+${HEADERS}
+${SOURCES}
 )
 
 add_subdirectory(autolykos)
@@ -32,3 +17,13 @@ add_subdirectory(crypto)
 add_subdirectory(ethash)
 add_subdirectory(progpow)
 add_subdirectory(tests)
+
+set(SOURCES_ALGO ${HEADERS} ${SOURCES} PARENT_SCOPE)
+set(SOURCES_ALGO_AUTOLYOS ${SOURCES_ALGO_AUTOLYOS} PARENT_SCOPE)
+set(SOURCES_ALGO_BLAKE3 ${SOURCES_ALGO_BLAKE3} PARENT_SCOPE)
+set(SOURCES_ALGO_CRYPTO ${SOURCES_ALGO_CRYPTO} PARENT_SCOPE)
+set(SOURCES_ALGO_CRYPTO_TESTS ${SOURCES_ALGO_CRYPTO_TESTS} PARENT_SCOPE)
+set(SOURCES_ALGO_ETHASH ${SOURCES_ALGO_ETHASH} PARENT_SCOPE)
+set(SOURCES_ALGO_ETHASH_TESTS ${SOURCES_ALGO_ETHASH_TESTS} PARENT_SCOPE)
+set(SOURCES_ALGO_PROGPOW ${SOURCES_ALGO_PROGPOW} PARENT_SCOPE)
+set(SOURCES_ALGO_TESTS ${SOURCES_ALGO_TESTS} PARENT_SCOPE)
