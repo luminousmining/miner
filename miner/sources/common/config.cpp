@@ -169,6 +169,18 @@ bool common::Config::loadCli(int argc, char** argv)
 #endif
 
         ////////////////////////////////////////////////////////////////////////
+        uint32_t const occupancyThreads{ cli.getOccupancyThreads() };
+        uint32_t const occupancyBlocks{ cli.getOccupancyBlocks() };
+        if (0u != occupancyThreads)
+        {
+            occupancy.threads = occupancyThreads;
+        }
+        if (0u != occupancyBlocks)
+        {
+            occupancy.blocks = occupancyBlocks;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
 #if defined(CUDA_ENABLE)
         if (true == deviceEnable.nvidiaEnable)
         {

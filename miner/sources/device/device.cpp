@@ -25,6 +25,9 @@ void device::Device::setAlgorithm(
     algo::ALGORITHM newAlgorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config { common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
     algorithm = newAlgorithm;
     switch (algorithm)
     {
@@ -263,8 +266,14 @@ void device::Device::setAlgorithm(
     ////////////////////////////////////////////////////////////////////////////
     // Set default value
     resolver->deviceId = id;
-    resolver->setBlocks(128u);
-    resolver->setThreads(128u);
+    if (std::nullopt != config.occupancy.blocks)
+    {
+        resolver->setBlocks(config.occupancy.blocks.value());
+    }
+    if (std::nullopt != config.occupancy.threads)
+    {
+        resolver->setThreads(config.occupancy.threads.value());
+    }
 }
 
 

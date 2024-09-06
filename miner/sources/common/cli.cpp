@@ -206,6 +206,20 @@ common::Cli::Cli()
             "--device_workername=0:MyWorkerName"
         )
 
+        // Kernel
+        (
+            "threads",
+            value<uint32_t>(),
+            "[OPTIONAL] Set occupancy threads.\n"
+            "--threads=128"
+        )
+        (
+            "blocks",
+            value<uint32_t>(),
+            "[OPTIONAL] Set occupancy blocks.\n"
+            "--blocks=128"
+        )
+
         // smart mining
         (
             "sm_wallet",

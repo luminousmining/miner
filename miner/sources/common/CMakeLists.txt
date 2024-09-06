@@ -19,6 +19,7 @@ cli_amd.cpp
 cli.cpp
 cli_device_custom.cpp
 cli_device_setting.cpp
+cli_kernel.cpp
 cli_nvidia.cpp
 cli_pool.cpp
 cli_smart_mining.cpp

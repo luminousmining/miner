@@ -1,6 +1,7 @@
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
+#include <common/config.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/log/log.hpp>
 #include <resolver/nvidia/progpow.hpp>
@@ -176,6 +177,9 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config { common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
     if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
@@ -186,8 +190,26 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
             return false;
         }
 
-        setThreads(256u);
-        setBlocks(4096u);
+        if (std::nullopt != config.occupancy.threads)
+        {
+            setThreads(config.occupancy.threads.value());
+        }
+        else
+        {
+            setThreads(256u);
+        }
+        if (std::nullopt != config.occupancy.blocks)
+        {
+            setBlocks(config.occupancy.blocks.value());
+        }
+        else
+        {
+            setBlocks(4096u);
+        }
+
+        resolverDebug()
+            << "Occupancy - Threads[" << getThreads()
+            << "] Blocks[" << getBlocks() << "]";
     }
 
     ////////////////////////////////////////////////////////////////////////////
