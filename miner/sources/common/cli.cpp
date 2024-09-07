@@ -93,6 +93,50 @@ common::Cli::Cli()
             "--stale=<true|false>"
         )
 
+        // Pool Custom
+        (
+            "rm_rvn_btc".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with BTC wallet\n"
+            "--rm_rvn_btc=WALLET"
+        )
+        (
+            "rm_rvn_eth".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with ETH wallet\n"
+            "--rm_rvn_eth=WALLET"
+        )
+        (
+            "rm_rvn_ltc".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with LTC wallet\n"
+            "--rm_rvn_ltc=WALLET"
+        )
+        (
+            "rm_rvn_bch".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with BCH wallet\n"
+            "--rm_rvn_bch=WALLET"
+        )
+        (
+            "rm_rvn_ada".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with ADA wallet\n"
+            "--rm_rvn_ada=WALLET"
+        )
+        (
+            "rm_rvn_dodge".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with DODGE wallet\n"
+            "--rm_rvn_dodge=WALLET"
+        )
+        (
+            "rm_rvn_dodge".
+            value<std::string>(),
+            "[OPTIONAL] Mining on ravenminer RVN with MATIC wallet\n"
+            "--rm_rvn_dodge=WALLET"
+        )
+
         // Device settings common
         (
             "nvidia",

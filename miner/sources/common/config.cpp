@@ -141,6 +141,71 @@ bool common::Config::loadCli(int argc, char** argv)
         mining.stale = cli.isStale();
 
         ////////////////////////////////////////////////////////////////////////
+        auto const ravenMinerBTCWallet{ cli.getRavenMinerBTCWallet() };
+        if (std::nullopt != ravenMinerBTCWallet)
+        {
+            mining.wallet.assign(*ravenMinerBTCWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "btc";
+            mining.algo = "kawpow";
+        }
+        auto const ravenMinerETHWallet{ cli.getRavenMinerETHWallet() };
+        if (std::nullopt != ravenMinerETHWallet)
+        {
+            mining.wallet.assign(*ravenMinerETHWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "eth";
+            mining.algo = "kawpow";
+        }
+        auto const ravenMinerLTCWallet{ cli.getRavenMinerLTCWallet() };
+        if (std::nullopt != ravenMinerLTCWallet)
+        {
+            mining.wallet.assign(*ravenMinerLTCWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "ltc";
+            mining.algo = "kawpow";
+        }
+        auto const ravenMinerBCHWallet{ cli.getRavenMinerBCHWallet() };
+        if (std::nullopt != ravenMinerBCHWallet)
+        {
+            mining.wallet.assign(*ravenMinerBCHWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "bch";
+            mining.algo = "kawpow";
+        }
+        auto const ravenMinerADAWallet{ cli.getRavenMinerADAWallet() };
+        if (std::nullopt != ravenMinerADAWallet)
+        {
+            mining.wallet.assign(*ravenMinerADAWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "ada";
+            mining.algo = "kawpow";
+        }
+        auto const ravenMinerDODGEWallet{ cli.getRavenMinerDODGEWallet() };
+        if (std::nullopt != ravenMinerDODGEWallet)
+        {
+            mining.wallet.assign(*ravenMinerDODGEWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "dodge";
+            mining.algo = "kawpow";
+        }
+        auto const ravenMinerMATICWallet{ cli.getRavenMinerMATICWallet() };
+        if (std::nullopt != ravenMinerMATICWallet)
+        {
+            mining.wallet.assign(*ravenMinerMATICWallet);
+            mining.host.assign("stratum.ravenminer.com");
+            mining.port = 3838u;
+            mining.password = "matic";
+            mining.algo = "kawpow";
+        }
+
+        ////////////////////////////////////////////////////////////////////////
 #if defined(CUDA_ENABLE)
         deviceEnable.nvidiaEnable = cli.isNvidiaEnable();
 #endif
