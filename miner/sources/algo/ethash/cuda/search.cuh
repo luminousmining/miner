@@ -257,7 +257,7 @@ void check_nonce(
     if (be_u64(state0) <= d_boundary)
     {
         result->found = true;
-        uint32_t const index{ atomicAdd((uint32_t* const)&result->count, 1) };
+        uint32_t const index{ atomicAdd((uint32_t*)&result->count, 1) };
         if (index < algo::ethash::MAX_RESULT)
         {
             result->nonces[index] = nonce;

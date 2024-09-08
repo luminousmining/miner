@@ -73,7 +73,7 @@ bool ethashUpdateConstants(
     uint32_t const* const header,
     uint64_t const boundary)
 {
-    uint4 const* const headerU4{ (uint4 const* const)header };
+    uint4 const* const headerU4{ (uint4 const*)header };
     CUDA_ER(cudaMemcpyToSymbol(d_header, headerU4, sizeof(uint4) * 2));
     CUDA_ER(cudaMemcpyToSymbol(d_boundary, (void*)&boundary, sizeof(uint64_t)));
 

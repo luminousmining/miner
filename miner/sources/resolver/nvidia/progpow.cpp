@@ -111,6 +111,12 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const dagSize { castU32(context.dagCache.numberItem / 2ull) };
+    kernelGenerator.addDefine("LANES", algo::progpow::LANES);
+    kernelGenerator.addDefine("REGS", algo::progpow::REGS);
+    kernelGenerator.addDefine("MODULE_CACHE", algo::progpow::MODULE_CACHE);
+    kernelGenerator.addDefine("HEADER_ITEM_BY_THREAD", algo::progpow::MODULE_CACHE / getThreads());
+    kernelGenerator.addDefine("THREAD_COUNT", getThreads());
+    kernelGenerator.addDefine("LANE_ID_MAX", algo::progpow::LANES - 1u);
     kernelGenerator.addDefine("DAG_SIZE", dagSize);
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
     kernelGenerator.addDefine("STATE_LEN", 25u);
@@ -192,7 +198,19 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
 
         if (std::nullopt != config.occupancy.threads)
         {
-            setThreads(config.occupancy.threads.value());
+            uint32_t const threadsCount{ config.occupancy.threads.value() };
+            if (0u == threadsCount % 32u)
+            {
+                setThreads(threadsCount);
+            }
+            else
+            {
+                resolverErr()
+                    << "Cannot use " << threadsCount
+                    << " threads. You must define a multiple of 32."
+                    << " Kernel use 256u by default!";
+                setThreads(256u);
+            }
         }
         else
         {
