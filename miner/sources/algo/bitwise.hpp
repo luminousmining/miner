@@ -10,12 +10,14 @@
 #include <common/log/log.hpp>
 
 
-#if defined(_WIN32) && !defined(__BYTE_ORDER__)
-    constexpr std::int32_t __ORDER_LITTLE_ENDIAN__ { 1234 };
-    constexpr std::int32_t __ORDER_BIG_ENDIAN__    { 4321 };
-    constexpr std::int32_t __BYTE_ORDER__          { __ORDER_LITTLE_ENDIAN__ };
-#elif (defined(__linux__) || defined(__GNUC__)) && !defined(__BYTE_ORDER__)
-    #error "__GNUC__ should define __BYTE_ORDER__"
+#if !defined(__BYTE_ORDER__)
+    #if defined(_WIN32)
+        constexpr std::int32_t __ORDER_LITTLE_ENDIAN__ { 1234 };
+        constexpr std::int32_t __ORDER_BIG_ENDIAN__    { 4321 };
+        constexpr std::int32_t __BYTE_ORDER__          { __ORDER_LITTLE_ENDIAN__ };
+    #elif (defined(__linux__) || defined(__GNUC__))
+        #error "__GNUC__ should define __BYTE_ORDER__"
+    #endif
 #endif
 
 #if defined(__GNUC__)
@@ -55,7 +57,7 @@ namespace algo
     };
 
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#error "Big Endian unsupported!"
+    #error "Big Endian unsupported!"
 #endif
 
     template<typename T>
