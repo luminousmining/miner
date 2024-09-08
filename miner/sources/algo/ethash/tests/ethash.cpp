@@ -28,7 +28,7 @@ struct EthashTest : public testing::Test
 
 TEST_F(EthashTest, epoch)
 {
-    uint32_t const maxEpochNumber { algo::ethash::MAX_EPOCH_NUMBER };
+    int32_t const maxEpochNumber { cast32(algo::ethash::MAX_EPOCH_NUMBER) };
 
     EXPECT_EQ(0,                  algo::ethash::findEpoch(hashes[0], maxEpochNumber));
     EXPECT_EQ(1,                  algo::ethash::findEpoch(hashes[1], maxEpochNumber));
