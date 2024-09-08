@@ -452,4 +452,5 @@ FodyWeavers.xsd
 *.10x
 bin/
 build/
+build_vs/
 .vscode/
