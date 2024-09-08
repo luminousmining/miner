@@ -18,11 +18,6 @@
 #endif
 
 
-network::NetworkTCPClient::~NetworkTCPClient()
-{
-}
-
-
 void network::NetworkTCPClient::wait()
 {
     runService.join();
