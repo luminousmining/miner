@@ -268,11 +268,11 @@ void device::Device::setAlgorithm(
     resolver->deviceId = id;
     if (std::nullopt != config.occupancy.blocks)
     {
-        resolver->setBlocks(config.occupancy.blocks.value());
+        resolver->setBlocks(*config.occupancy.blocks);
     }
     if (std::nullopt != config.occupancy.threads)
     {
-        resolver->setThreads(config.occupancy.threads.value());
+        resolver->setThreads(*config.occupancy.threads);
     }
 }
 

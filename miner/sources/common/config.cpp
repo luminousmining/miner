@@ -226,9 +226,9 @@ bool common::Config::loadCli(int argc, char** argv)
                 && std::nullopt != amdPort
                 && std::nullopt != amdAlgo)
             {
-                amdSetting.host.assign(amdHost.value());
-                amdSetting.port = amdPort.value();
-                amdSetting.algo = amdAlgo.value();
+                amdSetting.host.assign(*amdHost);
+                amdSetting.port = *amdPort;
+                amdSetting.algo = *amdAlgo;
             }
         }
 #endif
@@ -257,9 +257,9 @@ bool common::Config::loadCli(int argc, char** argv)
                 && std::nullopt != nvidiaPort
                 && std::nullopt != nvidiaAlgo)
             {
-                nvidiaSetting.host.assign(nvidiaHost.value());
-                nvidiaSetting.port = nvidiaPort.value();
-                nvidiaSetting.algo = nvidiaAlgo.value();
+                nvidiaSetting.host.assign(*nvidiaHost);
+                nvidiaSetting.port = *nvidiaPort;
+                nvidiaSetting.algo = *nvidiaAlgo;
             }
         }
 #endif

@@ -198,7 +198,7 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
 
         if (std::nullopt != config.occupancy.threads)
         {
-            uint32_t const threadsCount{ config.occupancy.threads.value() };
+            uint32_t const threadsCount{ *config.occupancy.threads };
             if (0u == threadsCount % 32u)
             {
                 setThreads(threadsCount);
@@ -218,7 +218,7 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         }
         if (std::nullopt != config.occupancy.blocks)
         {
-            setBlocks(config.occupancy.blocks.value());
+            setBlocks(*config.occupancy.blocks);
         }
         else
         {
