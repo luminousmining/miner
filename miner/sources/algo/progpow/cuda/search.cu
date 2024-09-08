@@ -1,9 +1,5 @@
 #pragma once
 
-#define LANES 16
-#define MODULE_CACHE 4096
-#define REGS 32
-
 
 __device__ __forceinline__
 void fill_hash(
@@ -34,9 +30,9 @@ void initialize_header_dag(
     uint32_t const* __restrict__ const dag)
 {
     #pragma unroll
-    for (uint32_t i = 0u; i < 16u; ++i)
+    for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
     {
-        uint32_t const indexDAG = i * 256u + group_id;
+        uint32_t const indexDAG = i * THREAD_COUNT + group_id;
         uint32_t const itemDag = dag[indexDAG];
         header_dag[indexDAG] = itemDag;
     }
@@ -122,7 +118,7 @@ void progpowSearch(
     ////////////////////////////////////////////////////////////////////////
     uint32_t const thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
     uint32_t const group_id = get_lane_id();
-    uint32_t const lane_id = threadIdx.x & 15; // (LANES - 1)
+    uint32_t const lane_id = threadIdx.x & LANE_ID_MAX;
     uint64_t nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////

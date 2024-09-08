@@ -34,7 +34,7 @@ std::optional<std::string> common::Cli::getRavenMinerLTCWallet() const
 }
 
 
-std::optional<std::string> common::Cli::getRavenMinerLTCWallet() const
+std::optional<std::string> common::Cli::getRavenMinerBCHWallet() const
 {
     if (true == contains("rm_rvn_bch"))
     {
@@ -45,7 +45,7 @@ std::optional<std::string> common::Cli::getRavenMinerLTCWallet() const
 }
 
 
-std::optional<std::string> common::Cli::getRavenMinerBWallet() const
+std::optional<std::string> common::Cli::getRavenMinerADAWallet() const
 {
     if (true == contains("rm_rvn_ada"))
     {
@@ -56,7 +56,7 @@ std::optional<std::string> common::Cli::getRavenMinerBWallet() const
 }
 
 
-std::optional<std::string> common::Cli::getRavenMinerBWallet() const
+std::optional<std::string> common::Cli::getRavenMinerDODGEWallet() const
 {
     if (true == contains("rm_rvn_dodge"))
     {
@@ -67,7 +67,7 @@ std::optional<std::string> common::Cli::getRavenMinerBWallet() const
 }
 
 
-std::optional<std::string> common::Cli::getRavenMinerBWallet() const
+std::optional<std::string> common::Cli::getRavenMinerMATICWallet() const
 {
     if (true == contains("rm_rvn_matic"))
     {

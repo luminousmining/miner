@@ -60,13 +60,13 @@ namespace common
         std::optional<std::string>   getPassword() const;
 
         // Pool Custom
-        std::option<std::string>     getRavenMinerBTCWallet() const;
-        std::option<std::string>     getRavenMinerETHWallet() const;
-        std::option<std::string>     getRavenMinerLTCWallet() const;
-        std::option<std::string>     getRavenMinerBCHWallet() const;
-        std::option<std::string>     getRavenMinerADAWallet() const;
-        std::option<std::string>     getRavenMinerDODGEWallet() const;
-        std::option<std::string>     getRavenMinerMATICWallet() const;
+        std::optional<std::string>     getRavenMinerBTCWallet() const;
+        std::optional<std::string>     getRavenMinerETHWallet() const;
+        std::optional<std::string>     getRavenMinerLTCWallet() const;
+        std::optional<std::string>     getRavenMinerBCHWallet() const;
+        std::optional<std::string>     getRavenMinerADAWallet() const;
+        std::optional<std::string>     getRavenMinerDODGEWallet() const;
+        std::optional<std::string>     getRavenMinerMATICWallet() const;
 
         // Device settings common
 #if defined(CUDA_ENABLE)
