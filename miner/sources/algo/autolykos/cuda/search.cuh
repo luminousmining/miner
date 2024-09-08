@@ -241,7 +241,7 @@ kernel_autolykos_search(
         }
 
         {
-            uint8_t const* const r_u8 = (uint8_t const* const)r;
+            uint8_t const* const r_u8 = (uint8_t const*)r;
             uint8_t* const h2_u8 = (uint8_t*)&h2;
             h2_u8[0] = r_u8[31];
             h2_u8[1] = r_u8[30];
@@ -428,10 +428,10 @@ kernel_autolykos_verify(
     r[6] = BHashes[50331648 + tid];
     r[7] = BHashes[58720256 + tid];
 
-    ((uint8_t* const)r)[32] = ((uint8_t const* const)r)[0];
-    ((uint8_t* const)r)[33] = ((uint8_t const* const)r)[1];
-    ((uint8_t* const)r)[34] = ((uint8_t const* const)r)[2];
-    ((uint8_t* const)r)[35] = ((uint8_t const* const)r)[3];
+    ((uint8_t*)r)[32] = ((uint8_t*)r)[0];
+    ((uint8_t*)r)[33] = ((uint8_t*)r)[1];
+    ((uint8_t*)r)[34] = ((uint8_t*)r)[2];
+    ((uint8_t*)r)[35] = ((uint8_t*)r)[3];
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -609,9 +609,8 @@ kernel_autolykos_verify(
     //================================================================//
     //  Dump result to global memory -- LITTLE ENDIAN
     //================================================================//
-    uint64_t const* const r64 = (uint64_t const* const)r;
-    uint64_t const* const bound64 = (uint64_t const* const)d_bound;
-
+    uint64_t const* const r64 = (uint64_t const*)r;
+    uint64_t const* const bound64 = (uint64_t const*)d_bound;
 
     uint64_t const r3 = r64[3];
     uint64_t const r2 = r64[2];
@@ -649,9 +648,9 @@ bool autolykosv2Search(
 {
     kernel_autolykos_search<<<blocks / 4u, threads, 0, stream>>>
     (
-        (uint32_t* const)params.dag,
-        (uint64_t* const)params.header,
-        (uint32_t* const)params.BHashes,
+        (uint32_t*)params.dag,
+        (uint64_t*)params.header,
+        (uint32_t*)params.BHashes,
         params.hostNonce,
         params.hostPeriod
     );
@@ -662,8 +661,8 @@ bool autolykosv2Search(
     (
         params.hostPeriod,
         params.hostNonce,
-        (uint32_t* const)params.dag,
-        (uint32_t* const)params.BHashes,
+        (uint32_t*)params.dag,
+        (uint32_t*)params.BHashes,
         params.resultCache
     );
     CUDA_ER(cudaStreamSynchronize(stream));

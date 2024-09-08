@@ -1,9 +1,9 @@
 #pragma once
 
 #if defined(_MSC_VER)
-#include <stdlib.h>
+    #include <stdlib.h>
 #elif defined(__linux__) || defined(__GNUC__)
-#include <endian.h>
+    #include <endian.h>
 #endif
 
 #include <algo/hash.hpp>
