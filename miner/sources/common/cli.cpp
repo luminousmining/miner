@@ -370,7 +370,6 @@ std::vector<uint32_t> common::Cli::getCustomMultiParamsU32(
     if (true == contains(paramName))
     {
         size_t pos { 0u };
-        std::string token{};
 
         for (std::string flags : options)
         {
