@@ -30,7 +30,7 @@ endif()
 ################################################################################
 ### CXX FLAGS                                                               ####
 ################################################################################
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_CPPCHECK "cppcheck")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
@@ -138,12 +138,12 @@ if (BUILD_NVIDIA)
         list(APPEND CUDA_NVCC_FLAGS_RELEASE -O3 -DNDEBUG)
     endif()
     ### CUDA GLOBAL INFORMATIONS
-    set(CUDA_STANDARD                17)
+    set(CUDA_STANDARD                20)
     set(CUDA_RUNTIME_LIBRARY         STATIC)
     set(CUDA_USE_STATIC_CUDA_RUNTIME ON)
     set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "C++ compiler" FORCE)
     ### NVCC FLAGS
-    list(APPEND CUDA_NVCC_FLAGS "-std=c++17")
+    list(APPEND CUDA_NVCC_FLAGS "-std=c++20")
     list(APPEND CUDA_NVCC_FLAGS "--ptxas-options=-v")
     list(APPEND CUDA_NVCC_FLAGS "-use_fast_math")
     ### NVCC FLAGS GENCODE
