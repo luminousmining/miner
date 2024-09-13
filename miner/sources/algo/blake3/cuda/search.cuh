@@ -63,23 +63,24 @@ void chunk_header(
 __global__
 void kernel_blake3_search(
     algo::blake3::Result* __restrict__ result,
-    uint32_t* __restrict__ header,
+    uint32_t* __restrict__ const header,
     uint32_t* __restrict__ const target,
     uint64_t const startNonce,
     uint32_t const fromGroup,
     uint32_t const toGroup)
 {
-    uint32_t buffer[algo::LEN_HASH_3072_WORD_32];
+    __shared__ uint32_t buffer[algo::LEN_HASH_3072_WORD_32];
     uint32_t vector[algo::blake3::VECTOR_LENGTH];
     uint32_t hash[algo::blake3::HASH_LENGTH];
 
     uint64_t const nonce{ ((blockIdx.x * blockDim.x) + threadIdx.x) + startNonce };
 
+    #pragma unroll
     for (uint32_t i{ 0u }; i < algo::LEN_HASH_3072_WORD_32; ++i)
     {
         buffer[i] = header[i];
     }
-    ((uint64_t* const)buffer)[0] = nonce;
+    ((uint64_t*)buffer)[0] = nonce;
 
 //    printf("*****************************************************\n");
 //    THD_PRINT_BUFFER("header", buffer, algo::LEN_HASH_3072_WORD_32);
@@ -114,7 +115,7 @@ void kernel_blake3_search(
     ////////////////////////////////////////////////////////////////////////////
 //    THD_PRINT_BUFFER("final hash", hash,   algo::blake3::HASH_LENGTH);
 
-    if (true == isLowerOrEqual((uint8_t* const)hash, (uint8_t* const)target, algo::LEN_HASH_256_WORD_8))
+    if (true == isLowerOrEqual((uint8_t*)hash, (uint8_t*)target, algo::LEN_HASH_256_WORD_8))
     {
 //        printf("check_target => true - tid[%llu]\n", nonce);
         uint32_t const bigIndex{ (hash[7] >> 24) % algo::blake3::CHAIN_NUMBER };
