@@ -73,13 +73,14 @@ void kernel_blake3_search(
     uint32_t vector[algo::blake3::VECTOR_LENGTH];
     uint32_t hash[algo::blake3::HASH_LENGTH];
 
-    uint64_t const nonce{ ((blockIdx.x * blockDim.x) + threadIdx.x) + startNonce };
+    uint32_t const thread_id{ ((blockIdx.x * blockDim.x) + threadIdx.x) };
+    uint64_t const nonce{ thread_id + startNonce };
 
-    #pragma unroll
-    for (uint32_t i{ 0u }; i < algo::LEN_HASH_3072_WORD_32; ++i)
+    if (threadIdx.x < algo::LEN_HASH_3072_WORD_32)
     {
-        buffer[i] = header[i];
+        buffer[threadIdx.x] = header[threadIdx.x];
     }
+    __syncthreads();
     ((uint64_t*)buffer)[0] = nonce;
 
 //    printf("*****************************************************\n");
