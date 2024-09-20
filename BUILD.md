@@ -2,7 +2,7 @@
   
 ## Libraires
 - cuda 12.5 => Windows
-- cuda 12.5 => Ubuntu
+- cuda 12.4 => Ubuntu
 - OpenSSL 1.1.1
 - boost 1.85.0
 - OpenCL 3.0.15
@@ -86,15 +86,15 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DOPENCL_SDK_BUILD_SAMPLES=OFF -DOPENCL_SDK_TEST_SAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build . --target install
 ```
-cuda : https://developer.nvidia.com/cuda-12-5-0-download-archive  
+cuda : https://developer.nvidia.com/cuda-12-4-0-download-archive  
 ```sh
 wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-wsl-ubuntu.pin
 sudo mv cuda-wsl-ubuntu.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/12.5.0/local_installers/cuda-repo-wsl-ubuntu-12-5-local_12.5.0-1_amd64.deb
-sudo dpkg -i cuda-repo-wsl-ubuntu-12-5-local_12.5.0-1_amd64.deb
-sudo cp /var/cuda-repo-wsl-ubuntu-12-5-local/cuda-*-keyring.gpg /usr/share/keyrings/
+wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda-repo-wsl-ubuntu-12-4-local_12.4.0-1_amd64.deb
+sudo dpkg -i cuda-repo-wsl-ubuntu-12-4-local_12.4.0-1_amd64.deb
+sudo cp /var/cuda-repo-wsl-ubuntu-12-4-local/cuda-*-keyring.gpg /usr/share/keyrings/
 sudo apt-get update
-sudo apt-get -y install cuda-toolkit-12-5
+sudo apt-get -y install cuda-toolkit-12-4
 ```
 boost : https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.gz  
 ```sh
