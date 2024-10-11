@@ -10,3 +10,5 @@ file(COPY to_u4.cuh DESTINATION ${OUT_COMMON})
 file(COPY to_u64.cuh DESTINATION ${OUT_COMMON})
 file(COPY vectorize.cuh DESTINATION ${OUT_COMMON})
 file(COPY xor.cuh DESTINATION ${OUT_COMMON})
+
+message ("DESTINATION: ${OUT_COMMON} ")

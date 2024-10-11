@@ -191,11 +191,7 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         currentPeriod = jobInfo.period;
         resolverInfo() << "Build period " << currentPeriod;
 
-        if (false == buildSearch())
-        {
-            return false;
-        }
-
+        ////////////////////////////////////////////////////////////////////////////
         if (std::nullopt != config.occupancy.threads)
         {
             uint32_t const threadsCount{ *config.occupancy.threads };
@@ -216,6 +212,8 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         {
             setThreads(256u);
         }
+
+        ////////////////////////////////////////////////////////////////////////////
         if (std::nullopt != config.occupancy.blocks)
         {
             setBlocks(*config.occupancy.blocks);
@@ -223,6 +221,12 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         else
         {
             setBlocks(4096u);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        if (false == buildSearch())
+        {
+            return false;
         }
 
         resolverDebug()

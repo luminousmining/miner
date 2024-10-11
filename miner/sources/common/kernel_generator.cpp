@@ -308,6 +308,8 @@ void common::KernelGenerator::writeKernelInFile(
     pathKernel /= "kernel_" + kernelName + extension;
     __fs::create_directories(pathKernel.parent_path());
 
+    logDebug() << "Write kernel " << pathKernel;
+
     std::ofstream ofs { pathKernel };
     ofs << source.c_str();
     ofs.close();

@@ -25,14 +25,14 @@ void fill_hash(
 
 __device__ __forceinline__
 void initialize_header_dag(
-    uint32_t const group_id,
+    uint32_t const thread_id,
     uint32_t* __restrict__ const header_dag,
     uint32_t const* __restrict__ const dag)
 {
     #pragma unroll
     for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
     {
-        uint32_t const indexDAG = i * THREAD_COUNT + group_id;
+        uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
         uint32_t const itemDag = dag[indexDAG];
         header_dag[indexDAG] = itemDag;
     }
@@ -117,17 +117,19 @@ void progpowSearch(
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t const thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
-    uint32_t const group_id = get_lane_id();
     uint32_t const lane_id = threadIdx.x & LANE_ID_MAX;
     uint64_t nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
-    initialize_header_dag(threadIdx.x, header_dag, (uint32_t const* const)dag);
+    uint32_t const* const dag_u32 = (uint32_t const* const)dag;
+    initialize_header_dag(threadIdx.x, header_dag, dag_u32);
+
 #if defined(__KERNEL_PROGPOW)
     create_seed(header, nonce, &lsb, &msb);
 #else
     create_seed(nonce, state_init, header, &lsb, &msb);
 #endif
+
 
     ////////////////////////////////////////////////////////////////////////
     #pragma unroll 1
