@@ -50,7 +50,6 @@ bool device::DeviceManager::initialize()
         if (false == initializeNvidia())
         {
             logErr() << "Cannot initialize device Nvidia";
-            return false;
         }
         initialized =  true;
     }
