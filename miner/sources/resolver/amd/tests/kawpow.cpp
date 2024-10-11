@@ -110,7 +110,7 @@ TEST_F(ResolverKawpowAmdTest, notFindNonce)
 
 TEST_F(ResolverKawpowAmdTest, allDeviceFindNonce)
 {
-    uint32_t const countDevice { 1u };
+    uint32_t const countDevice { resolver::tests::getDeviceCount() };
     for (uint32_t index { 0u }; index < countDevice; ++index)
     {
         initializeDevice(index);

@@ -68,11 +68,10 @@ void ethash_build_dag(
             __attribute__((opencl_unroll_hint))
             for (uint j = 0; j < 4u; ++j)
             {
-                uint const index = j & 3u;
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ k,        item[index].x));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 1u), item[index].y));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 2u), item[index].z));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 3u), item[index].w));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ k,        item[j].x));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 1u), item[j].y));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 2u), item[j].z));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 3u), item[j].w));
                 k += 4u;
             }
         }

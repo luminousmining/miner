@@ -68,7 +68,6 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     parameters.lightCache.setSize(context.lightCache.size);
     parameters.dagCache.setSize(context.dagCache.size);
 
-
     ////////////////////////////////////////////////////////////////////////////
     if (   false == parameters.lightCache.alloc(*clContext)
         || false == parameters.dagCache.alloc(*clContext)

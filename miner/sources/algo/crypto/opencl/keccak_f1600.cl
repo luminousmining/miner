@@ -57,6 +57,7 @@ void keccak_f1600_round(
     state[24] ^= value;
 
     // Rho
+    tmp[0] = 0ul;
     tmp[1] = rol_u64(state[1], 1u);
     tmp[2] = rol_u64(state[2], 62u);
     tmp[3] = rol_u64(state[3], 28u);

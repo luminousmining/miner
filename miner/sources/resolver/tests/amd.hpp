@@ -2,6 +2,7 @@
 
 #include <CL/opencl.hpp>
 #include <common/log/log.hpp>
+#include <common/cast.hpp>
 
 
 namespace resolver
@@ -43,6 +44,7 @@ namespace resolver
             std::vector<cl::Platform> platforms{};
             cl::Platform::get(&platforms);
 
+            uint32_t currentIndex{ 0u };
             for (cl::Platform const& platform : platforms)
             {
                 std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
@@ -52,21 +54,26 @@ namespace resolver
                 }
 
                 platform.getDevices(CL_DEVICE_TYPE_GPU, &cldevices);
-                if (false == cldevices.empty())
+
+                if (true == cldevices.empty())
                 {
-                    if (cldevices.size() > index)
-                    {
-                        auto clDevice{ cldevices.at(index) };
-                        logInfo()
-                            << "Device ["
-                            << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>()
-                            << "] selected!";
-                        return clDevice;
-                    }
+                    continue;
                 }
 
-                logErr() << "Platform AMD does not gpu index[" << index << "]";
-                break;
+                uint32_t const countDevice{ castU32(cldevices.size()) };
+                uint32_t const totalIndex{ currentIndex + countDevice };
+                if (index < totalIndex)
+                {
+                    uint32_t const indexBuffer{ totalIndex - index - 1u };
+                    auto const& clDevice{ cldevices.at(indexBuffer) };
+                    logInfo()
+                        << "Device ["
+                        << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>()
+                        << "] selected!";
+                    return clDevice;
+                }
+
+                currentIndex += cldevices.size();
             }
 
             return {};

@@ -27,6 +27,7 @@ device::DeviceManager::~DeviceManager()
 
 bool device::DeviceManager::initialize()
 {
+    bool initialized{ false };
     common::Config const& config { common::Config::instance() };
     algo::ALGORITHM const algorithm { config.getAlgorithm() };
 
@@ -37,8 +38,8 @@ bool device::DeviceManager::initialize()
         if (false == initializeAmd())
         {
             logErr() << "Cannot initialize device Amd";
-            return false;
         }
+        initialized =  true;
     }
 #endif
 
@@ -51,8 +52,15 @@ bool device::DeviceManager::initialize()
             logErr() << "Cannot initialize device Nvidia";
             return false;
         }
+        initialized =  true;
     }
 #endif
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == initialized)
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     if (common::PROFILE::SMART_MINING == config.profile)
