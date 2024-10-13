@@ -46,6 +46,7 @@ void loop_math(
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
+
         uint dag_index = share_hash0[worker_group];
         dag_index %= DAG_SIZE;
         dag_index *= LANES;

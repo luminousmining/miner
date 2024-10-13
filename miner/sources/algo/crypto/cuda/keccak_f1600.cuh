@@ -76,30 +76,30 @@ void thetha(
     state[19] ^= value;
     state[24] ^= value;
 
-    tmp[1]  = rol_u64(state[1],  1u);
-    tmp[2]  = rol_u64(state[2],  62u);
-    tmp[3]  = rol_u64(state[3],  28u);
-    tmp[4]  = rol_u64(state[4],  27u);
-    tmp[5]  = rol_u64(state[5],  36u);
-    tmp[6]  = rol_u64(state[6],  44u);
-    tmp[7]  = rol_u64(state[7],  6u);
-    tmp[8]  = rol_u64(state[8],  55u);
-    tmp[9]  = rol_u64(state[9],  20u);
-    tmp[10] = rol_u64(state[10], 3u);
-    tmp[11] = rol_u64(state[11], 10u);
-    tmp[12] = rol_u64(state[12], 43u);
-    tmp[13] = rol_u64(state[13], 25u);
-    tmp[14] = rol_u64(state[14], 39u);
-    tmp[15] = rol_u64(state[15], 41u);
-    tmp[16] = rol_u64(state[16], 45u);
-    tmp[17] = rol_u64(state[17], 15u);
-    tmp[18] = rol_u64(state[18], 21u);
-    tmp[19] = rol_u64(state[19], 8u);
-    tmp[20] = rol_u64(state[20], 18u);
-    tmp[21] = rol_u64(state[21], 2u);
-    tmp[22] = rol_u64(state[22], 61u);
-    tmp[23] = rol_u64(state[23], 56u);
-    tmp[24] = rol_u64(state[24], 14u);
+    tmp[0]  = rol_u64(state[1],  1u);
+    tmp[1]  = rol_u64(state[2],  62u);
+    tmp[2]  = rol_u64(state[3],  28u);
+    tmp[3]  = rol_u64(state[4],  27u);
+    tmp[4]  = rol_u64(state[5],  36u);
+    tmp[5]  = rol_u64(state[6],  44u);
+    tmp[6]  = rol_u64(state[7],  6u);
+    tmp[7]  = rol_u64(state[8],  55u);
+    tmp[8]  = rol_u64(state[9],  20u);
+    tmp[9] = rol_u64(state[10], 3u);
+    tmp[10] = rol_u64(state[11], 10u);
+    tmp[11] = rol_u64(state[12], 43u);
+    tmp[12] = rol_u64(state[13], 25u);
+    tmp[13] = rol_u64(state[14], 39u);
+    tmp[14] = rol_u64(state[15], 41u);
+    tmp[15] = rol_u64(state[16], 45u);
+    tmp[16] = rol_u64(state[17], 15u);
+    tmp[17] = rol_u64(state[18], 21u);
+    tmp[18] = rol_u64(state[19], 8u);
+    tmp[19] = rol_u64(state[20], 18u);
+    tmp[20] = rol_u64(state[21], 2u);
+    tmp[21] = rol_u64(state[22], 61u);
+    tmp[22] = rol_u64(state[23], 56u);
+    tmp[23] = rol_u64(state[24], 14u);
 }
 
 
@@ -108,35 +108,34 @@ void pi(
     uint64_t* __restrict__ const state,
     uint64_t* __restrict__ const tmp)
 {
-    state[0] = tmp[0];
-    state[16] = tmp[5];
-    state[7] = tmp[10];
-    state[23] = tmp[15];
-    state[14] = tmp[20];
+    state[16] = tmp[4];
+    state[7] = tmp[9];
+    state[23] = tmp[14];
+    state[14] = tmp[19];
 
-    state[10] = tmp[1];
-    state[1] = tmp[6];
-    state[17] = tmp[11];
-    state[8] = tmp[16];
-    state[24] = tmp[21];
+    state[10] = tmp[0];
+    state[1] = tmp[5];
+    state[17] = tmp[10];
+    state[8] = tmp[15];
+    state[24] = tmp[20];
 
-    state[20] = tmp[2];
-    state[11] = tmp[7];
-    state[2] = tmp[12];
-    state[18] = tmp[17];
-    state[9] = tmp[22];
+    state[20] = tmp[1];
+    state[11] = tmp[6];
+    state[2] = tmp[11];
+    state[18] = tmp[16];
+    state[9] = tmp[21];
 
-    state[5] = tmp[3];
-    state[21] = tmp[8];
-    state[12] = tmp[13];
-    state[3] = tmp[18];
-    state[19] = tmp[23];
+    state[5] = tmp[2];
+    state[21] = tmp[7];
+    state[12] = tmp[12];
+    state[3] = tmp[17];
+    state[19] = tmp[22];
 
-    state[15] = tmp[4];
-    state[6] = tmp[9];
-    state[22] = tmp[14];
-    state[13] = tmp[19];
-    state[4] = tmp[24];
+    state[15] = tmp[3];
+    state[6] = tmp[8];
+    state[22] = tmp[13];
+    state[13] = tmp[18];
+    state[4] = tmp[23];
 }
 
 
@@ -180,7 +179,7 @@ void keccak_f1600_round(
 {
     uint64_t C[5];
     uint64_t D[5];
-    uint64_t tmp[25];
+    uint64_t tmp[24];
 
     thetha(state, C, D, tmp);
     pi(state, tmp);

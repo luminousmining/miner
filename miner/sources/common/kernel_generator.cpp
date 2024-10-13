@@ -174,7 +174,7 @@ bool common::KernelGenerator::buildOpenCL(
     }
     catch(cl::BuildError const& clErr)
     {
-        auto const clBuildStatus = clProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(*clDevice);
+        auto const clBuildStatus{ clProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(*clDevice) };
         logErr()
             << "(" << __FUNCTION__ << ")"
             << "{" << openclShowError(clErr.err()) << "}"

@@ -8,7 +8,7 @@
 
 inline
 void build_item_mix(
-    __global uint4* const restrict cache,
+    __global uint4 const* const restrict cache,
     uint4* const restrict item,
     uint const cache_number_item,
     uint const cache_index)
@@ -41,16 +41,16 @@ void ethash_build_dag(
 
     ////////////////////////////////////////////////////////////////////////////
     __attribute__((opencl_unroll_hint))
-    for (uint loop = 0; loop < 2u; ++loop)
+    for (uchar loop = 0; loop < 2; ++loop)
     {
         ////////////////////////////////////////////////////////////////////////
-        uint4 item[4];
         uint const cache_start_index = (dag_index * 2u) + loop;
         uint const cache_index = (cache_start_index % cache_number_item) * 4u;
 
         ////////////////////////////////////////////////////////////////////////
+        uint4 item[4];
         __attribute__((opencl_unroll_hint))
-        for (uint i = 0; i < 4u; ++i)
+        for (uchar i = 0; i < 4; ++i)
         {
             uint const index_tmp = cache_index + i;
             item[i] = cache[index_tmp];
@@ -63,15 +63,15 @@ void ethash_build_dag(
         ////////////////////////////////////////////////////////////////////////
         uint k = 0;
         __attribute__((opencl_unroll_hint))
-        for (uint i = 0u; i < DAG_LOOP; ++i)
+        for (uchar i = 0; i < DAG_LOOP; ++i)
         {
             __attribute__((opencl_unroll_hint))
-            for (uint j = 0; j < 4u; ++j)
+            for (uchar j = 0; j < 4u; ++j)
             {
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ k,        item[j].x));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 1u), item[j].y));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 2u), item[j].z));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 3u), item[j].w));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ k,        item[j & 3u].x));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 1u), item[j & 3u].y));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 2u), item[j & 3u].z));
+                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 3u), item[j & 3u].w));
                 k += 4u;
             }
         }
@@ -80,11 +80,12 @@ void ethash_build_dag(
         keccak_f1600(item);
 
         ////////////////////////////////////////////////////////////////////////
-        uint const gap_index = (dag_index * 8u) + (loop * 4u);
+        uint const gap_index = (dag_index * 8u) + (loop * 4);
         __attribute__((opencl_unroll_hint))
-        for (uint x = 0; x < 4u; ++x)
+        for (uint x = 0u; x < 4u; ++x)
         {
             dag[gap_index + x] = item[x];
         }
+
     }
 }
