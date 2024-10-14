@@ -92,9 +92,6 @@ void stratum::StratumAutolykosV2::onMiningNotify(
     jobInfo.period = algo::autolykos_v2::computePeriod(jobInfo.epoch);
 
     ////////////////////////////////////////////////////////////////////////////
-    logDebug() << jobInfo;
-
-    ////////////////////////////////////////////////////////////////////////////
     updateJob();
 }
 
@@ -144,13 +141,13 @@ void stratum::StratumAutolykosV2::miningSubmit(
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array{ wallet + "." + workerName};
+    root["params"] = boost::json::array{ wallet + "." + workerName };
 
     boost::json::array& arr{ root["params"].as_array() };
-    arr.push_back(params.at(0));
-    arr.push_back(params.at(1));
-    arr.push_back("");
-    arr.push_back(params.at(2));
+    arr.push_back(params.at(0)); // Job ID
+    arr.push_back(params.at(1)); // Nonce without extraNonce
+    arr.push_back("");           // empty
+    arr.push_back(params.at(2)); // Nonce
 
     send(root);
 }
