@@ -42,6 +42,16 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
         return false;
     }
 
+    uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
+    if (   0ull < deviceMemoryAvailable
+        && totalMemoryNeeded >= deviceMemoryAvailable)
+    {
+        logErr()
+            << "Device have not memory size available."
+            << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        return false;
+    }
+
     return true;
 }
 

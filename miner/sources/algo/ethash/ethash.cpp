@@ -11,18 +11,22 @@ int32_t algo::ethash::findEpoch(
     algo::hash256 const& seedHash,
     uint32_t const maxEpoch)
 {
+    ////////////////////////////////////////////////////////////////////////////
     static thread_local int32_t       cachedEpochNumber{ 0 };
     static thread_local algo::hash256 cachedSeed{};
 
+    ////////////////////////////////////////////////////////////////////////////
     int32_t const  epochNumber{ cachedEpochNumber };
     uint32_t const seedpart{ seedHash.word32[0] };
-    algo::hash256 cached{ cachedSeed };
+    algo::hash256  cached{ cachedSeed };
 
+    ////////////////////////////////////////////////////////////////////////////
     if (seedpart == cached.word32[0])
     {
         return epochNumber;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     cached = algo::keccak(cached);
     if (cached.word32[0] == seedpart)
     {
@@ -31,6 +35,7 @@ int32_t algo::ethash::findEpoch(
         return epochNumber + 1;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     algo::hash256 hash{};
     for (uint32_t i{ 0u }; i <= maxEpoch; ++i)
     {
@@ -43,6 +48,7 @@ int32_t algo::ethash::findEpoch(
         hash = algo::keccak(hash);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     return -1;
 }
 
@@ -63,6 +69,7 @@ void algo::ethash::initializeDagContext(
         return;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     uint64_t epochEIP { currentEpoch };
     if (maxEpoch == algo::ethash::EIP1099_MAX_EPOCH_NUMBER)
     {

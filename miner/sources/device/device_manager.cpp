@@ -261,8 +261,11 @@ bool device::DeviceManager::initializeNvidia()
 
     for (int32_t i{ 0 }; i < numberDevice; ++i)
     {
+        ////////////////////////////////////////////////////////////////////////////
         device::DeviceNvidia* device{ new device::DeviceNvidia };
         device->deviceType = device::DEVICE_TYPE::NVIDIA;
+
+        ////////////////////////////////////////////////////////////////////////////
         cudaError_t const codeError{ cudaGetDeviceProperties(&device->properties, i) };
         if (cudaSuccess != codeError)
         {
@@ -271,10 +274,13 @@ bool device::DeviceManager::initializeNvidia()
             device = nullptr;
             continue;
         }
+
+        ////////////////////////////////////////////////////////////////////////////
         device->cuIndex = castU32(i);
         device->id = castU32(devices.size());
         device->pciBus = device->properties.pciBusID;
 
+        ////////////////////////////////////////////////////////////////////////////
         logInfo() << "GPU[" << devices.size() << "] " << device->properties.name;
         devices.push_back(device);
     }
@@ -304,9 +310,11 @@ bool device::DeviceManager::initializeAmd()
         platform.getDevices(CL_DEVICE_TYPE_GPU, &cldevices);
         for (uint32_t i { 0u }; i < cldevices.size(); ++i)
         {
+            ////////////////////////////////////////////////////////////////////////////
             device::DeviceAmd* device{ new device::DeviceAmd };
             device->deviceType = device::DEVICE_TYPE::AMD;
 
+            ////////////////////////////////////////////////////////////////////////////
             device->clDevice = cldevices.at(i);
             if (CL_DEVICE_TYPE_GPU != device->clDevice.getInfo<CL_DEVICE_TYPE>())
             {
@@ -315,6 +323,7 @@ bool device::DeviceManager::initializeAmd()
             }
             device->id = castU32(devices.size());
 
+            ////////////////////////////////////////////////////////////////////////////
             cl_char topology[24]{ 0, };
             OPENCL_ER(
                 clGetDeviceInfo(
@@ -325,6 +334,18 @@ bool device::DeviceManager::initializeAmd()
                     nullptr));
             device->pciBus = castU32(topology[21]);
 
+            ////////////////////////////////////////////////////////////////////////////
+            cl_ulong memoryAvailable{ 0ull };
+            OPENCL_ER(
+                clGetDeviceInfo(
+                    device->clDevice.get(),
+                    0x4039,
+                    sizeof(memoryAvailable),
+                    &memoryAvailable,
+                    nullptr));
+            device->memoryAvailable = castU64(memoryAvailable) * (1024ull * 1024ull);
+
+            ////////////////////////////////////////////////////////////////////////////
             logInfo() << "GPU[" << device->id << "] " << device->clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>();
             devices.push_back(device);
         }

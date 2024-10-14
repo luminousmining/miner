@@ -12,6 +12,7 @@ namespace resolver
     public:
         uint32_t    deviceId { 0u };
         std::string jobId{};
+        uint64_t    deviceMemoryAvailable{ 0ull };
 
         Resolver() = default;
         virtual ~Resolver() = default;

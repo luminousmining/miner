@@ -266,6 +266,7 @@ void device::Device::setAlgorithm(
     ////////////////////////////////////////////////////////////////////////////
     // Set default value
     resolver->deviceId = id;
+    resolver->deviceMemoryAvailable = memoryAvailable;
     if (std::nullopt != config.occupancy.blocks)
     {
         resolver->setBlocks(*config.occupancy.blocks);

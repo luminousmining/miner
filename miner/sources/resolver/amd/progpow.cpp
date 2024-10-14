@@ -25,10 +25,10 @@ bool resolver::ResolverAmdProgPOW::updateContext(
                                        dagCountItemsGrowth,
                                        dagCountItemsInit);
 
-    if (   context.lightCache.numberItem == 0ull
-        || context.lightCache.size == 0ull
-        || context.dagCache.numberItem == 0ull
-        || context.dagCache.size == 0ull)
+    if (   0ull == context.lightCache.numberItem
+        || 0ull == context.lightCache.size
+        || 0ull == context.dagCache.numberItem
+        || 0ull == context.dagCache.size)
     {
         logErr()
             << "\n"
@@ -39,6 +39,15 @@ bool resolver::ResolverAmdProgPOW::updateContext(
             << "context.dagCache.size: " << context.dagCache.size << "\n"
             << "=========================================================================" << "\n"
             ;
+        return false;
+    }
+
+    uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
+    if (   0ull < deviceMemoryAvailable
+        && totalMemoryNeeded >= deviceMemoryAvailable)
+    {
+        logErr() << "Device have not memory size available."
+                 << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 

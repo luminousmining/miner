@@ -35,6 +35,7 @@ namespace device
         device::DEVICE_TYPE deviceType { device::DEVICE_TYPE::UNKNOW };
         algo::ALGORITHM     algorithm { algo::ALGORITHM::UNKNOW };
         uint32_t            stratumUUID { 0u };
+        uint64_t            memoryAvailable{ 0ull };
 
         Device() = default;
         virtual ~Device() = default;
