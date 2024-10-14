@@ -92,7 +92,7 @@ endif()
 ################################################################################
 if (WIN32)
     set(Boost_ROOT       "C:\\Boost")
-    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_83")
+    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_85")
     set(Boost_COMPILER   -vc${VISUAL_STUDIO_VERSION})
     set(Boost_THREADAPI  win32)
 else()
