@@ -89,7 +89,7 @@ void blake2b(
     v[14] ^= f;
 
     #pragma unroll
-    for (uint32_t round= 0u; round < 12u; ++round)
+    for (uint32_t round = 0u; round < 12u; ++round)
     {
         blake2b_round(matrice, v, round);
     }
