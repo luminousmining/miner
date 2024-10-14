@@ -176,6 +176,10 @@ bool resolver::ResolverAmdEthash::buildDAG()
             cl::NDRange(maxGroupSize, 1,            1)));
     OPENCL_ER(clQueue->finish());
 
+    ////////////////////////////////////////////////////////////////////////////
+    parameters.lightCache.free();
+
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 

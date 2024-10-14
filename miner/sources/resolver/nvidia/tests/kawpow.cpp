@@ -35,10 +35,10 @@ struct ResolverKawpowNvidiaTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber = 2268417ull;
-        jobInfo.headerHash = algo::toHash256("3a35ede9d95b2a36b258013f0175d5975e501ba5ee8d5a86ab5e62ca637d3de9");
-        jobInfo.seedHash = algo::toHash256("7a96d7292d380a8ab15178114db4146bf4fede6bf82b126a6ac16ca49e6a5e9f");
-        jobInfo.boundary = algo::toHash256("000000027d800000000000000000000000000000000000000000000000000000");
+        jobInfo.blockNumber = 965398ull;
+        jobInfo.headerHash = algo::toHash256("71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb");
+        jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
+        jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
         jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::kawpow::MAX_PERIOD;
@@ -48,7 +48,7 @@ struct ResolverKawpowNvidiaTest : public testing::Test
 
 TEST_F(ResolverKawpowNvidiaTest, findNonce)
 {
-    initializeJob(0xdec100000704757f);
+    initializeJob(0xce00000017f87f70);
 
     ASSERT_NE(nullptr, resolver.cuStream);
 
@@ -62,13 +62,13 @@ TEST_F(ResolverKawpowNvidiaTest, findNonce)
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0xdec100000704757f"s, nonceStr);
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
 
 
 TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
 {
-    initializeJob(0xdec100000704757f - 1024u);
+    initializeJob(0xce00000017f87f70 - 1024u);
 
     ASSERT_NE(nullptr, resolver.cuStream);
 
@@ -82,13 +82,13 @@ TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0xdec100000704757f"s, nonceStr);
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
 
 
 TEST_F(ResolverKawpowNvidiaTest, notFindNonce)
 {
-    initializeJob(0x000100000704757f);
+    initializeJob(0x00000017f87f7a);
 
     ASSERT_NE(nullptr, resolver.cuStream);
 
