@@ -1,7 +1,7 @@
 # Requirements
   
 ## Libraires
-- cuda 12.5 => Windows
+- cuda 12.6.2 => Windows
 - cuda 12.4 => Ubuntu
 - OpenSSL 1.1.1
 - boost 1.85.0
