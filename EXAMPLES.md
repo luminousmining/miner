@@ -75,14 +75,14 @@ miner.exe^
  --algo="kawpow"^
  --workername="luminousminer"^
  --password="x"^
- --ssl=false
- --device_algo=1:kawpow
- --device_pool=1:clore.2miner.com
- --device_port=1:2020
- --device_wallet=1:YOUR_WALLET
- --device_algo=2:etchash
- --device_pool=2:etc.2miner.com
- --device_port=2:1010
+ --ssl=false^
+ --device_algo=1:kawpow^
+ --device_pool=1:clore.2miner.com^
+ --device_port=1:2020^
+ --device_wallet=1:YOUR_WALLET^
+ --device_algo=2:etchash^
+ --device_pool=2:etc.2miner.com^
+ --device_port=2:1010^
  --device_wallet=2:YOUR_WALLET
 ```
 
@@ -98,14 +98,14 @@ miner.exe^
  --algo="kawpow"^
  --workername="luminousminer"^
  --password="x"^
- --ssl=false
- --device_algo=1:kawpow
- --device_pool=1:stratum-eu.rplant.xyz
- --device_port=1:17083
- --device_wallet=1:YOUR_WALLET
- --device_algo=2:kawpow
- --device_pool=2:pool.eu.woolypooly.com
- --device_port=2:3126
+ --ssl=false^
+ --device_algo=1:kawpow^
+ --device_pool=1:stratum-eu.rplant.xyz^
+ --device_port=1:17083^
+ --device_wallet=1:YOUR_WALLET^
+ --device_algo=2:kawpow^
+ --device_pool=2:pool.eu.woolypooly.com^
+ --device_port=2:3126^
  --device_wallet=2:YOUR_WALLET
 ```
 
@@ -121,13 +121,13 @@ miner.exe^
  --algo="kawpow"^
  --workername="luminousminer"^
  --password="x"^
- --ssl=false
- --device_algo=1:autolykosv2
- --device_pool=1:de.ergo.herominers.com
- --device_port=1:1180
- --device_wallet=1:YOUR_WALLET
- --device_algo=2:ethash
- --device_pool=2:pool.eu.woolypooly.com
- --device_port=2:3096
+ --ssl=false^
+ --device_algo=1:autolykosv2^
+ --device_pool=1:de.ergo.herominers.com^
+ --device_port=1:1180^
+ --device_wallet=1:YOUR_WALLET^
+ --device_algo=2:ethash^
+ --device_pool=2:pool.eu.woolypooly.com^
+ --device_port=2:3096^
  --device_wallet=2:YOUR_WALLET
 ```
