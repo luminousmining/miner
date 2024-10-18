@@ -3,16 +3,16 @@
 ################################################################################
 if (BUILD_NVIDIA)
     cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
-        sources/algo/autolykos/cuda/autolykos_v2.cu
-        sources/algo/blake3/cuda/blake3.cu
-        sources/algo/ethash/cuda/ethash.cu
-        sources/algo/progpow/cuda/progpow.cu)
+        algo/autolykos/cuda/autolykos_v2.cu
+        algo/blake3/cuda/blake3.cu
+        algo/ethash/cuda/ethash.cu
+        algo/progpow/cuda/progpow.cu)
 
     target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
 
     include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
         ${CUDA_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/sources
+        ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif()
 
@@ -21,7 +21,7 @@ endif()
 ################################################################################
 set(MINER_HEADERS)
 set(MINER_SOURCES
-sources/miner.cpp
+miner.cpp
 )
 
 ################################################################################
@@ -29,7 +29,7 @@ sources/miner.cpp
 ################################################################################
 set(UNIT_TEST_HEADERS)
 set(UNIT_TEST_SOURCES
-sources/unit_test.cpp
+unit_test.cpp
 )
 
 ################################################################################
@@ -80,8 +80,44 @@ set(SOURCES_RESOLVER_NVIDIA)
 set(SOURCES_RESOLVER_NVIDIA_TESTS)
 set(SOURCES_STRATISTICAL)
 set(SOURCES_STRATUM)
-add_subdirectory(sources)
-source_group("" FILES sources/miner.cpp sources/unit_test.cpp)
+
+add_subdirectory(algo)
+add_subdirectory(api)
+add_subdirectory(common)
+add_subdirectory(device)
+add_subdirectory(network)
+add_subdirectory(resolver)
+add_subdirectory(statistical)
+add_subdirectory(stratum)
+
+set(SOURCES_ALGO ${SOURCES_ALGO} PARENT_SCOPE)
+set(SOURCES_ALGO_AUTOLYOS ${SOURCES_ALGO_AUTOLYOS} PARENT_SCOPE)
+set(SOURCES_ALGO_BLAKE3 ${SOURCES_ALGO_BLAKE3} PARENT_SCOPE)
+set(SOURCES_ALGO_CRYPTO ${SOURCES_ALGO_CRYPTO} PARENT_SCOPE)
+set(SOURCES_ALGO_CRYPTO_TESTS ${SOURCES_ALGO_CRYPTO_TESTS} PARENT_SCOPE)
+set(SOURCES_ALGO_ETHASH ${SOURCES_ALGO_ETHASH} PARENT_SCOPE)
+set(SOURCES_ALGO_ETHASH_TESTS ${SOURCES_ALGO_ETHASH_TESTS} PARENT_SCOPE)
+set(SOURCES_ALGO_PROGPOW ${SOURCES_ALGO_PROGPOW} PARENT_SCOPE)
+set(SOURCES_ALGO_TESTS ${SOURCES_ALGO_TESTS} PARENT_SCOPE)
+set(SOURCES_API ${SOURCES_API} PARENT_SCOPE)
+set(SOURCES_COMMON ${SOURCES_COMMON} PARENT_SCOPE)
+set(SOURCES_COMMON_ERROR ${SOURCES_COMMON_ERROR} PARENT_SCOPE)
+set(SOURCES_COMMON_LOG ${SOURCES_COMMON_LOG} PARENT_SCOPE)
+set(SOURCES_COMMON_MOCKER ${SOURCES_COMMON_MOCKER} PARENT_SCOPE)
+set(SOURCES_DEVICE ${SOURCES_DEVICE} PARENT_SCOPE)
+set(SOURCES_NETWORK ${SOURCES_NETWORK} PARENT_SCOPE)
+set(SOURCES_RESOLVER ${SOURCES_RESOLVER} PARENT_SCOPE)
+set(SOURCES_RESOLVER_AMD ${SOURCES_RESOLVER_AMD} PARENT_SCOPE)
+set(SOURCES_RESOLVER_AMD_TESTS ${SOURCES_RESOLVER_AMD_TESTS} PARENT_SCOPE)
+set(SOURCES_RESOLVER_NVIDIA ${SOURCES_RESOLVER_NVIDIA} PARENT_SCOPE)
+set(SOURCES_RESOLVER_NVIDIA_TESTS ${SOURCES_RESOLVER_NVIDIA_TESTS} PARENT_SCOPE)
+set(SOURCES_STRATISTICAL ${SOURCES_STRATISTICAL} PARENT_SCOPE)
+set(SOURCES_STRATUM ${SOURCES_STRATUM} PARENT_SCOPE)
+
+################################################################################
+### FILTER SOLUTION VISUAL STUDIO                                            ###
+################################################################################
+source_group("" FILES miner.cpp unit_test.cpp)
 source_group("algo" FILES ${SOURCES_ALGO})
 source_group("algo/autolykos" FILES ${SOURCES_ALGO_AUTOLYOS})
 source_group("algo/blake3" FILES ${SOURCES_ALGO_BLAKE3})
@@ -106,6 +142,9 @@ source_group("resolver/nvidia/tests" FILES ${SOURCES_RESOLVER_NVIDIA_TESTS})
 source_group("stratums" FILES ${SOURCES_STRATUM})
 source_group("statistical" FILES ${SOURCES_STRATISTICAL})
 
+################################################################################
+###  LINK LIBRARIES                                                         ####
+################################################################################
 if (NOT WIN32)
     target_link_options(${MINER_EXE} PUBLIC -static-libstdc++ -static-libgcc)
     target_link_options(${UNIT_TEST_EXE} PUBLIC -static-libstdc++ -static-libgcc)
@@ -127,7 +166,6 @@ include_directories(${MINER_EXE} PUBLIC
     ${OpenCL_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources
 )
 
 include_directories(${UNIT_TEST_EXE} PUBLIC
@@ -136,7 +174,6 @@ include_directories(${UNIT_TEST_EXE} PUBLIC
     ${OpenCL_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources
 )
 
 target_link_libraries(${MINER_EXE}
@@ -175,4 +212,3 @@ if (UNIX)
         "stdc++fs"
     )
 endif()
-
