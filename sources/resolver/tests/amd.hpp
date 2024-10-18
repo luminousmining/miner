@@ -44,7 +44,7 @@ namespace resolver
             std::vector<cl::Platform> platforms{};
             cl::Platform::get(&platforms);
 
-            uint32_t currentIndex{ 0u };
+            size_t currentIndex{ 0u };
             for (cl::Platform const& platform : platforms)
             {
                 std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
@@ -60,11 +60,11 @@ namespace resolver
                     continue;
                 }
 
-                uint32_t const countDevice{ castU32(cldevices.size()) };
-                uint32_t const totalIndex{ currentIndex + countDevice };
+                size_t const countDevice{ castU32(cldevices.size()) };
+                size_t const totalIndex{ currentIndex + countDevice };
                 if (index < totalIndex)
                 {
-                    uint32_t const indexBuffer{ totalIndex - index - 1u };
+                    size_t const indexBuffer{ totalIndex - index - 1u };
                     auto const& clDevice{ cldevices.at(indexBuffer) };
                     logInfo()
                         << "Device ["
