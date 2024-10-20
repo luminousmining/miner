@@ -23,15 +23,16 @@ current version `v0.4`
 - [x] write log in file
   
 + step 2
+- [ ] algo ethashb3
+- [ ] algo meowcoin
+- [ ] algo kHeavyHash
 - [ ] algo blake3/alephium
 - [ ] algo blake3/decred
-- [ ] algo ethashb3
-- [ ] algo kHeavyHash
 - [ ] algo blake3/karlsen
 - [ ] profile smart mining
-- [ ] profile ravenminer
+- [x] profile ravenminer
 - [ ] os RaveOS
-- [ ] build by conan
+- [ ] os Easy-Mining
   
 + step 3
 - [ ] profile traiding
