@@ -12,6 +12,8 @@ Initialize default value of members variables in the declaration instead of cons
 Used `auto` only in loop or long type.  
 Used suffixes 64_t, 32_t, 16_t, 8_t instead of basic declarations int, long, char, etc.  
 Used `<>` for `#include`.  
+Added pointer symbol on type: `char** var;`.  
+Did not add `const` on left of the: `char const* const var;`  
 ```cpp
 constexpr uint32_t MY_MACRO{ 12u };
 
@@ -74,6 +76,19 @@ for (int i{ 0 }; i < value; ++i)
 Used `while` for looping by function returning `boo`, `pointer`.  
 ```cpp
 while (true == isOpen())
+{
+    // code
+}
+```
+
+---
+
+___function___
+```cpp
+inline
+void funciton(
+    uint8_t firstParameter,
+    uint32_t secondParameter)
 {
     // code
 }
