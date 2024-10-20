@@ -266,7 +266,9 @@ bool device::DeviceManager::initializeNvidia()
         device->deviceType = device::DEVICE_TYPE::NVIDIA;
 
         ////////////////////////////////////////////////////////////////////////////
-        cudaError_t const codeError{ cudaGetDeviceProperties(&device->properties, i) };
+        cudaError_t codeError{ cudaSuccess };
+
+        codeError = cudaGetDeviceProperties(&device->properties, i);
         if (cudaSuccess != codeError)
         {
             logErr() << "[" << codeError << "]" << __FUNCTION__ << cudaGetErrorString(codeError);
@@ -274,6 +276,11 @@ bool device::DeviceManager::initializeNvidia()
             device = nullptr;
             continue;
         }
+
+        size_t freeMem{ 0u };
+        size_t totalMem{ 0u };
+        codeError = cudaMemGetInfo(&freeMem, &totalMem);
+        device->memoryAvailable = castU64(freeMem);
 
         ////////////////////////////////////////////////////////////////////////////
         device->cuIndex = castU32(i);
