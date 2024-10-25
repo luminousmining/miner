@@ -130,7 +130,6 @@ void progpowSearch(
     create_seed(nonce, state_init, header, &lsb, &msb);
 #endif
 
-
     ////////////////////////////////////////////////////////////////////////
     #pragma unroll 1
     for (uint32_t l_id = 0u; l_id < LANES; ++l_id)

@@ -12,6 +12,7 @@ namespace algo
         ETCHASH,
         PROGPOW,
         KAWPOW,
+        MEOWPOW,
         FIROPOW,
         EVRPROGPOW,
         AUTOLYKOS_V2,

@@ -126,6 +126,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         case algo::ALGORITHM::ETCHASH:
         case algo::ALGORITHM::PROGPOW:
         case algo::ALGORITHM::KAWPOW:
+        case algo::ALGORITHM::MEOWPOW:
         case algo::ALGORITHM::FIROPOW:
         case algo::ALGORITHM::EVRPROGPOW:
         {

@@ -11,6 +11,7 @@ namespace __fs = std::filesystem;
 #include <algo/progpow/evrprogpow.hpp>
 #include <algo/progpow/firopow.hpp>
 #include <algo/progpow/kawpow.hpp>
+#include <algo/progpow/meowpow.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
@@ -130,7 +131,8 @@ void algo::progpow::writeMathRandomKernelOpenCL(
     uint32_t const deviceId,
     uint64_t const period,
     uint32_t const countCache,
-    uint32_t const countMath)
+    uint32_t const countMath,
+    uint32_t const regs)
 {
     using namespace std::string_literals;
 
@@ -146,9 +148,9 @@ void algo::progpow::writeMathRandomKernelOpenCL(
     std::ofstream ofs{ pathSequenceMath };
 
     ////////////////////////////////////////////////////////////////////////////
-    int32_t dst[algo::progpow::REGS]{};
-    int32_t src[algo::progpow::REGS]{};
-    algo::Kiss99Properties round { algo::progpow::initializeRound(period, dst, src) };
+    int32_t* dst{ NEW(int[regs]) };
+    int32_t* src{ NEW(int[regs]) };
+    algo::Kiss99Properties round { algo::progpow::initializeRound(period, dst, src, regs) };
 
     ////////////////////////////////////////////////////////////////////////////
     std::stringstream ss;
@@ -173,17 +175,19 @@ void algo::progpow::writeMathRandomKernelOpenCL(
         ////////////////////////////////////////////////////////////////////////////
         if (i < countCache)
         {
-            int32_t  const srcValue{ src[srcCnt % algo::progpow::REGS] };
-            int32_t  const dstValue{ dst[dstCnt % algo::progpow::REGS] };
+            int32_t  const srcValue{ src[srcCnt % regs] };
+            int32_t  const dstValue{ dst[dstCnt % regs] };
             uint32_t const sel{ algo::kiss99(round) };
             ++srcCnt;
             ++dstCnt;
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_3 */
-                case algo::progpow::VERSION::V_0_9_3:    amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_4:    amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
                 case algo::progpow::VERSION::KAWPOW:     kawpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::MEOWPOW:    meowpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
                 case algo::progpow::VERSION::FIROPOW:    firopow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
                 case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
             }
@@ -193,11 +197,11 @@ void algo::progpow::writeMathRandomKernelOpenCL(
         if (i < countMath)
         {
             uint32_t const srcRnd{ algo::kiss99(round) % algo::progpow::MODULE_SOURCE };
-            uint32_t const src1{ srcRnd % algo::progpow::REGS };
-            uint32_t       src2{ srcRnd / algo::progpow::REGS };
+            uint32_t const src1{ srcRnd % regs };
+            uint32_t       src2{ srcRnd / regs };
             uint32_t const sel1{ algo::kiss99(round) };
             uint32_t const sel2{ algo::kiss99(round) };
-            int32_t  const dstValue{ dst[dstCnt % algo::progpow::REGS] };
+            int32_t  const dstValue{ dst[dstCnt % regs] };
 
             if (src2 >= src1)
             {
@@ -207,9 +211,11 @@ void algo::progpow::writeMathRandomKernelOpenCL(
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_3 */
-                case algo::progpow::VERSION::V_0_9_3:    amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_4:    amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
                 case algo::progpow::VERSION::KAWPOW:     kawpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::MEOWPOW:    meowpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
                 case algo::progpow::VERSION::FIROPOW:    firopow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
                 case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
             }
@@ -222,7 +228,7 @@ void algo::progpow::writeMathRandomKernelOpenCL(
     {
         if (i != 0u)
         {
-            x = dst[dstCnt % algo::progpow::REGS];
+            x = dst[dstCnt % regs];
             ++dstCnt;
         }
         uint32_t const sel{ algo::kiss99(round) };
@@ -232,4 +238,7 @@ void algo::progpow::writeMathRandomKernelOpenCL(
     ss << "}" << "\n";
 
     ofs << ss.str();
+
+    SAFE_DELETE_ARRAY(src);
+    SAFE_DELETE_ARRAY(dst);
 }

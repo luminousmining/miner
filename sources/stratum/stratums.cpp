@@ -34,6 +34,11 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumKawPOW);
             break;
         }
+        case algo::ALGORITHM::MEOWPOW:
+        {
+            stratum = NEW(stratum::StratumMeowPOW);
+            break;
+        }
         case algo::ALGORITHM::FIROPOW:
         {
             stratum = NEW(stratum::StratumFiroPOW);

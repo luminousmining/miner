@@ -17,7 +17,9 @@ namespace algo
         {
             V_0_9_2,
             V_0_9_3,
+            V_0_9_4,
             KAWPOW,
+            MEOWPOW,
             FIROPOW,
             EVRPROGPOW
         };
@@ -45,20 +47,31 @@ namespace algo
             constexpr uint32_t COUNT_MATH{ 18u };
         }
 
+        namespace v_0_9_4
+        {
+            constexpr uint32_t MAX_PERIOD{ 3u };
+            constexpr uint32_t COUNT_CACHE{ 11u };
+            constexpr uint32_t COUNT_MATH{ 9u };
+        }
+
 #if !defined(__LIB_CUDA)
         algo::Kiss99Properties initializeRound(uint64_t const period,
                                                int32_t* const dst,
-                                               int32_t* const src);
+                                               int32_t* const src,
+                                               uint32_t const regs);
         void writeMathRandomKernelCuda(VERSION const progpowVersion,
                                        uint32_t const deviceId,
                                        uint64_t const period,
                                        uint32_t const countCache,
-                                       uint32_t const countMath);
+                                       uint32_t const countMath,
+                                       uint32_t const regs,
+                                       uint32_t const moduleSource);
         void writeMathRandomKernelOpenCL(VERSION const progpowVersion,
                                          uint32_t const deviceId,
                                          uint64_t const period,
                                          uint32_t const countCache,
-                                         uint32_t const countMath);
+                                         uint32_t const countMath,
+                                         uint32_t const regs);
 
 #if defined(CUDA_ENABLE)
         namespace nvidia
