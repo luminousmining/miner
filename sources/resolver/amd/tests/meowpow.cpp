@@ -44,10 +44,10 @@ struct ResolverMeowpowAmdTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber = 965398ull;
-        jobInfo.headerHash = algo::toHash256("71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb");
-        jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
-        jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
+        jobInfo.blockNumber = 1118706;
+        jobInfo.headerHash = algo::toHash256("44cf248a77ce1623d4fd833ec13ceab83d40591fb9dd7cf7ec28d08f298ba709");
+        jobInfo.seedHash = algo::toHash256("cfa3e37c459ebd9b4138bd2141a52d89f6f8f671ecf91456f5a29176eb132fc0");
+        jobInfo.boundary = algo::toHash256("0000000500000000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
         jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::meowpow::MAX_PERIOD;
@@ -59,7 +59,7 @@ struct ResolverMeowpowAmdTest : public testing::Test
 TEST_F(ResolverMeowpowAmdTest, findNonce)
 {
     initializeDevice(0u);
-    initializeJob(0xce00000017f87f70);
+    initializeJob(0x8071000061a58c77);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -71,14 +71,14 @@ TEST_F(ResolverMeowpowAmdTest, findNonce)
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+    EXPECT_EQ("0x8071000061a58c77"s, nonceStr);
 }
 
 
 TEST_F(ResolverMeowpowAmdTest, aroundFindNonce)
 {
     initializeDevice(0u);
-    initializeJob(0xce00000017f87f70 - 1024u);
+    initializeJob(0x8071000061a58c77 - 1024u);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -90,14 +90,14 @@ TEST_F(ResolverMeowpowAmdTest, aroundFindNonce)
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+    EXPECT_EQ("0x8071000061a58c77"s, nonceStr);
 }
 
 
 TEST_F(ResolverMeowpowAmdTest, notFindNonce)
 {
     initializeDevice(0u);
-    initializeJob(0x00000017f87f7a);
+    initializeJob(0x0071000061a58c77);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -114,7 +114,7 @@ TEST_F(ResolverMeowpowAmdTest, allDeviceFindNonce)
     for (uint32_t index { 0u }; index < countDevice; ++index)
     {
         initializeDevice(index);
-        initializeJob(0xce00000017f87f70);
+        initializeJob(0x8071000061a58c77);
 
         ASSERT_TRUE(resolver.updateMemory(jobInfo));
         ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -126,6 +126,6 @@ TEST_F(ResolverMeowpowAmdTest, allDeviceFindNonce)
         std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
         using namespace std::string_literals;
-        EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+        EXPECT_EQ("0x8071000061a58c77"s, nonceStr);
     }
 }

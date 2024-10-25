@@ -76,6 +76,7 @@ uint64_t sha3(
     state[21] = 'O';
     state[22] = 'I';
     state[23] = 'N';
+
     state[24] = 'M';
 
     keccak_f800(state);
