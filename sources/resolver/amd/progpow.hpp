@@ -30,6 +30,8 @@ namespace resolver
         algo::progpow::VERSION progpowVersion { algo::progpow::VERSION::V_0_9_2 };
         uint64_t currentPeriod { 0ull };
         uint32_t maxEpoch { algo::ethash::MAX_EPOCH_NUMBER };
+        uint32_t regs{ algo::progpow::REGS };
+        uint32_t moduleSource{ algo::progpow::MODULE_SOURCE };
         uint32_t dagItemParents { algo::ethash::DAG_ITEM_PARENTS };
         uint32_t dagCountItemsGrowth { algo::ethash::DAG_COUNT_ITEMS_GROWTH };
         uint32_t dagCountItemsInit { algo::ethash::DAG_COUNT_ITEMS_INIT };

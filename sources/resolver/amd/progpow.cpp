@@ -203,7 +203,9 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
                                                deviceId,
                                                currentPeriod,
                                                countCache,
-                                               countMath);
+                                               countMath,
+                                               regs,
+                                               moduleSource);
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.clear();
@@ -216,6 +218,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     {
         case algo::progpow::VERSION::V_0_9_2:
         case algo::progpow::VERSION::V_0_9_3:
+        case algo::progpow::VERSION::V_0_9_4:
         {
             kernelGenerator.declareDefine("__KERNEL_PROGPOW");
             break;
@@ -223,6 +226,11 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
         case algo::progpow::VERSION::KAWPOW:
         {
             kernelGenerator.declareDefine("__KERNEL_KAWPOW");
+            break;
+        }
+        case algo::progpow::VERSION::MEOWPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_MEOWPOW");
             break;
         }
         case algo::progpow::VERSION::FIROPOW:
@@ -242,7 +250,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     uint32_t const batchGroupLane { getMaxGroupSize() / algo::progpow::LANES };
     kernelGenerator.addDefine("GROUP_SIZE", maxThreadByGroup);
     kernelGenerator.addDefine("MAX_RESULT", 4u);
-    kernelGenerator.addDefine("REGS", algo::progpow::REGS);
+    kernelGenerator.addDefine("REGS", regs);
     kernelGenerator.addDefine("LANES", algo::progpow::LANES);
     kernelGenerator.addDefine("MODULE_CACHE", algo::progpow::MODULE_CACHE);
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
@@ -272,9 +280,11 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     std::string kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_3 */
-        case algo::progpow::VERSION::V_0_9_3:    kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_4:    kernelDerived.assign("progpow_functions.cl"); break;
         case algo::progpow::VERSION::KAWPOW:     kernelDerived.assign("kawpow_functions.cl"); break;
+        case algo::progpow::VERSION::MEOWPOW:    kernelDerived.assign("meowpow_functions.cl"); break;
         case algo::progpow::VERSION::FIROPOW:    kernelDerived.assign("firopow_functions.cl"); break;
         case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
     }

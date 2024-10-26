@@ -10,6 +10,7 @@ std::string algo::toString(algo::ALGORITHM const algorithm)
         case algo::ALGORITHM::ETCHASH:      { return "etchash";     }
         case algo::ALGORITHM::PROGPOW:      { return "progpow";     }
         case algo::ALGORITHM::KAWPOW:       { return "kawpow";      }
+        case algo::ALGORITHM::MEOWPOW:      { return "meowpow";     }
         case algo::ALGORITHM::FIROPOW:      { return "firopow";     }
         case algo::ALGORITHM::EVRPROGPOW:   { return "evrprogpow";  }
         case algo::ALGORITHM::AUTOLYKOS_V2: { return "autolykosv2"; }
@@ -30,6 +31,7 @@ algo::ALGORITHM algo::toEnum(
     else if (algo == "progpow")     { return algo::ALGORITHM::PROGPOW;      }
     else if (algo == "progpowz")    { return algo::ALGORITHM::PROGPOW;      }
     else if (algo == "kawpow")      { return algo::ALGORITHM::KAWPOW;       }
+    else if (algo == "meowpow")     { return algo::ALGORITHM::MEOWPOW;      }
     else if (algo == "firopow")     { return algo::ALGORITHM::FIROPOW;      }
     else if (algo == "evrprogpow")  { return algo::ALGORITHM::EVRPROGPOW;   }
     else if (algo == "autolykosv2") { return algo::ALGORITHM::AUTOLYKOS_V2; }

@@ -1,25 +1,22 @@
 #pragma once
 
-#include <cstring>
+#include <cstdint>
 #include <sstream>
-
-#include <algo/hash.hpp>
 
 
 namespace algo
 {
-    namespace firopow
+    namespace meowpow
     {
         // Override Ethash
         constexpr uint32_t DAG_ITEM_PARENTS { 512u };
-        constexpr uint32_t EPOCH_LENGTH{ 1300u };
-        constexpr uint32_t DAG_INIT_SIZE{ (1U << 30U) + (1U << 29U) };
-        constexpr uint64_t DAG_COUNT_ITEMS_INIT{ DAG_INIT_SIZE / LEN_HASH_1024 };
 
         // Override ProgPOW
-        constexpr uint32_t MAX_PERIOD{ 1u };
-        constexpr uint32_t COUNT_CACHE{ 11u };
-        constexpr uint32_t COUNT_MATH{ 18u };
+        constexpr uint32_t REGS{ 16u };
+        constexpr uint32_t MODULE_SOURCE{ algo::meowpow::REGS * (algo::meowpow::REGS - 1u) };
+        constexpr uint32_t MAX_PERIOD{ 6u };
+        constexpr uint32_t COUNT_CACHE{ 6u };
+        constexpr uint32_t COUNT_MATH{ 9u };
 
         namespace nvidia
         {

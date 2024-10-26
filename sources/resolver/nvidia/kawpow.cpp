@@ -11,8 +11,10 @@ resolver::ResolverNvidiaKawPOW::ResolverNvidiaKawPOW():
     dagCountItemsGrowth = algo::ethash::DAG_COUNT_ITEMS_GROWTH;
     dagCountItemsInit = algo::ethash::DAG_COUNT_ITEMS_INIT;
 
-    // KawPow
+    // ProgPow
     progpowVersion = algo::progpow::VERSION::KAWPOW;
+
+    // KawPow
     dagItemParents = algo::kawpow::DAG_ITEM_PARENTS;
     countCache = algo::kawpow::COUNT_CACHE;
     countMath = algo::kawpow::COUNT_MATH;

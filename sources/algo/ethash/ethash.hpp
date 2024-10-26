@@ -17,10 +17,11 @@ namespace algo
 
         constexpr uint32_t EIP1099_EPOCH_LENGTH{ 60000u };
         constexpr uint32_t EIP1099_MAX_EPOCH_NUMBER{ 30000u };
+        constexpr uint32_t EIP1057_MAX_EPOCH_NUMER{ 110u };
 
         constexpr uint64_t LIGHT_CACHE_INIT_SIZE{ 1 << 24 };
         constexpr uint64_t LIGHT_CACHE_GROWTH{ 1 << 17 };
-        constexpr uint64_t LIGHT_CACHE_ROUNDS{ 3 };
+        constexpr uint64_t LIGHT_CACHE_ROUNDS{ 3ull };
         constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_INIT{ algo::ethash::LIGHT_CACHE_INIT_SIZE / algo::LEN_HASH_512 };
         constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_GROWTH{ algo::ethash::LIGHT_CACHE_GROWTH / algo::LEN_HASH_512 };
 
