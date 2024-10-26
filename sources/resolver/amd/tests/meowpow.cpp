@@ -14,7 +14,7 @@ struct ResolverMeowpowAmdTest : public testing::Test
 {
     stratum::StratumJobInfo       jobInfo{};
     resolver::tests::Properties   properties{};
-    resolver::ResolverAmdMeowPOW   resolver{};
+    resolver::ResolverAmdMeowPOW  resolver{};
     common::mocker::MockerStratum stratum{};
 
     ResolverMeowpowAmdTest()
@@ -44,7 +44,7 @@ struct ResolverMeowpowAmdTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber = 1118706;
+        jobInfo.blockNumber = 1118706ull;
         jobInfo.headerHash = algo::toHash256("44cf248a77ce1623d4fd833ec13ceab83d40591fb9dd7cf7ec28d08f298ba709");
         jobInfo.seedHash = algo::toHash256("cfa3e37c459ebd9b4138bd2141a52d89f6f8f671ecf91456f5a29176eb132fc0");
         jobInfo.boundary = algo::toHash256("0000000500000000000000000000000000000000000000000000000000000000");
@@ -52,7 +52,6 @@ struct ResolverMeowpowAmdTest : public testing::Test
         jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::meowpow::MAX_PERIOD;
     }
-
 };
 
 

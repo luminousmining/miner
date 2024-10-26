@@ -132,7 +132,8 @@ void algo::progpow::writeMathRandomKernelOpenCL(
     uint64_t const period,
     uint32_t const countCache,
     uint32_t const countMath,
-    uint32_t const regs)
+    uint32_t const regs,
+    uint32_t const moduleSource)
 {
     using namespace std::string_literals;
 
@@ -196,7 +197,7 @@ void algo::progpow::writeMathRandomKernelOpenCL(
         ////////////////////////////////////////////////////////////////////////////
         if (i < countMath)
         {
-            uint32_t const srcRnd{ algo::kiss99(round) % algo::progpow::MODULE_SOURCE };
+            uint32_t const srcRnd{ algo::kiss99(round) % moduleSource };
             uint32_t const src1{ srcRnd % regs };
             uint32_t       src2{ srcRnd / regs };
             uint32_t const sel1{ algo::kiss99(round) };

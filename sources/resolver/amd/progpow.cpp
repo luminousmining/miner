@@ -204,7 +204,8 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
                                                currentPeriod,
                                                countCache,
                                                countMath,
-                                               regs);
+                                               regs,
+                                               moduleSource);
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.clear();

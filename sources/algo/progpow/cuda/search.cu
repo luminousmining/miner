@@ -47,12 +47,10 @@ void loop_math(
     uint32_t* __restrict__ const hash,
     uint32_t* __restrict__ const header_dag)
 {
-    uint32_t mix0;
-
     #pragma unroll 1
     for (uint32_t cnt = 0u; cnt < COUNT_DAG; ++cnt)
     {
-        mix0 = hash[0];
+        uint32_t const mix0 = hash[0];
 
         uint32_t dagIndex = reg_load(mix0, cnt % LANES, LANES);
         dagIndex %= DAG_SIZE;

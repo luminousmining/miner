@@ -71,7 +71,8 @@ namespace algo
                                          uint64_t const period,
                                          uint32_t const countCache,
                                          uint32_t const countMath,
-                                         uint32_t const regs);
+                                         uint32_t const regs,
+                                         uint32_t const moduleSource);
 
 #if defined(CUDA_ENABLE)
         namespace nvidia
