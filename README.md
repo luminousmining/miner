@@ -27,6 +27,7 @@ Different profiles are available:
 - progpowz
 - kawpow
 - firopow
+- meowpow
 - evrprogpow
 
 ## Internal Documentation
