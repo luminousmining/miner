@@ -16,6 +16,10 @@ namespace resolver
         cudaDeviceProp* cuProperties{ nullptr };
 
         virtual ~ResolverNvidia() = default;
+
+    protected:
+        void overrideOccupancy(uint32_t const defaultThreads,
+                               uint32_t const defaultBlocks) final;
     };
 }
 

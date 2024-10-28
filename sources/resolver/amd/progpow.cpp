@@ -121,9 +121,7 @@ bool resolver::ResolverAmdProgPOW::updateConstants(
         }
 
         ////////////////////////////////////////////////////////////////////////////
-        setBlocks(getMaxGroupSize());
-        setThreads(4096u);
-        resolverDebug() << "Occupancy - Blocks[" << getBlocks() << "] Threads[" << getThreads() << "]";
+        overrideOccupancy(4096u, getMaxGroupSize());
     }
 
     ////////////////////////////////////////////////////////////////////////////
