@@ -30,11 +30,7 @@ bool resolver::ResolverNvidiaBlake3::updateConstants(
     [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    setBlocks(8192u);
-    setThreads(128u);
-
-//    setBlocks(1u);
-//    setThreads(128u);
+    overrideOccupancy(128u, 8192u);
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;

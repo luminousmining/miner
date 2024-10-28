@@ -1,7 +1,6 @@
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
-#include <common/config.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/log/log.hpp>
 #include <resolver/nvidia/progpow.hpp>
@@ -203,55 +202,19 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
-
-    ////////////////////////////////////////////////////////////////////////////
     if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
         resolverInfo() << "Build period " << currentPeriod;
 
         ////////////////////////////////////////////////////////////////////////////
-        if (std::nullopt != config.occupancy.threads)
-        {
-            uint32_t const threadsCount{ *config.occupancy.threads };
-            if (0u == threadsCount % 32u)
-            {
-                setThreads(threadsCount);
-            }
-            else
-            {
-                resolverErr()
-                    << "Cannot use " << threadsCount
-                    << " threads. You must define a multiple of 32."
-                    << " Kernel use 256u by default!";
-                setThreads(256u);
-            }
-        }
-        else
-        {
-            setThreads(256u);
-        }
-
-        ////////////////////////////////////////////////////////////////////////////
-        if (std::nullopt != config.occupancy.blocks)
-        {
-            setBlocks(*config.occupancy.blocks);
-        }
-        else
-        {
-            setBlocks(4096u);
-        }
+        overrideOccupancy(256u, 4096u);
 
         ////////////////////////////////////////////////////////////////////////////
         if (false == buildSearch())
         {
             return false;
         }
-
-        resolverDebug()
-            << "Occupancy - Threads[" << getThreads()
-            << "] Blocks[" << getBlocks() << "]";
     }
 
     ////////////////////////////////////////////////////////////////////////////

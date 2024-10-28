@@ -39,5 +39,7 @@ namespace resolver
         uint32_t threads { 1024u };
 
         bool isStale(std::string const& _jobInfo) const;
+        virtual void overrideOccupancy(uint32_t const defaultThreads,
+                                       uint32_t const defaultBlocks) = 0;
     };
 }

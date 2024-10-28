@@ -92,8 +92,8 @@ bool resolver::ResolverNvidiaEthash::updateConstants(
         return false;
     }
 
-    setBlocks(8192u);
-    setThreads(128u);
+    ////////////////////////////////////////////////////////////////////////////
+    overrideOccupancy(128u, 8192u);
 
     return true;
 }
