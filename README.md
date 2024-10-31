@@ -20,7 +20,6 @@ Different profiles are available:
 `SMART MINING` define the list coin coins need and let the system mine for you. 1% fees will be applied.  
   
 ## Algorithms
-- autolykosv2
 - ethash
 - etchash
 - progpow

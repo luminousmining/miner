@@ -8,7 +8,7 @@ current version `v0.4`
 - [x] os Windows
 - [x] os Linux
 - [x] os Hiveos
-- [x] algo autolykos v2
+- [ ] algo autolykos v2
 - [x] algo ethash
 - [x] algo etchash
 - [x] algo progpow
