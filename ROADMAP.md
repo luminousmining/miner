@@ -24,7 +24,7 @@ current version `v0.4`
   
 + step 2
 - [ ] algo ethashb3
-- [ ] algo meowcoin
+- [x] algo meowcoin
 - [ ] algo kHeavyHash
 - [ ] algo blake3/alephium
 - [ ] algo blake3/decred

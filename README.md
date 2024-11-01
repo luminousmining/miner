@@ -44,8 +44,8 @@ Different profiles are available:
 [progminer](https://github.com/2miners/progminer)  
 [evrprogpowminer](https://github.com/EvrmoreOrg/evrprogpowminer)  
 [progpowz](https://github.com/hyle-team/progminer)  
-[firominer](https://github.com/firoorg/firominer)
-[meowpowminer](https://github.com/Meowcoin-Foundation/meowpowminer)
+[firominer](https://github.com/firoorg/firominer)  
+[meowpowminer](https://github.com/Meowcoin-Foundation/meowpowminer)  
 
 ## References - Algos
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)  
