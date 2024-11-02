@@ -6,6 +6,12 @@ ${HEADERS}
 ${SOURCES}
 )
 
+target_sources(${BENCH_EXE} PUBLIC
+${HEADERS}
+${SOURCES}
+)
+
+
 target_sources(${UNIT_TEST_EXE} PUBLIC
 ${HEADERS}
 ${SOURCES}

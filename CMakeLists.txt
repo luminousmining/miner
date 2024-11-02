@@ -24,9 +24,11 @@ endif()
 ### PROJECTS NAME                                                           ####
 ################################################################################
 set(MINER_EXE miner)
+set(BENCH_EXE benchmark)
 set(UNIT_TEST_EXE unit_test)
 if (BUILD_NVIDIA)
     set(LIB_CRYPTO_NVIDIA libCryptoNvidia)
+    set(LIB_BENCH_NVIDIA libBenchNvidia)
 endif()
 
 ################################################################################
