@@ -22,9 +22,8 @@ namespace resolver
             return true;
         }
 
-        inline bool initializeCuda(
-            resolver::tests::Properties& properties,
-            uint32_t const index = 0u)
+        inline bool initializeCuda(resolver::tests::Properties& properties,
+                                   uint32_t const index = 0u)
         {
             if (false == cleanUpCuda())
             {

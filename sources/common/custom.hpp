@@ -8,17 +8,14 @@
 #define UNIQUE_LOCK(mtxName)\
     boost::unique_lock<boost::mutex> lock{ mtxName };
 
-
 #define UNIQUE_LOCK_NAME(mtxName, lockName)\
     boost::unique_lock<boost::mutex> lockName{ mtxName };
-
 
 #define SAFE_DELETE(ptr)\
     {\
         delete ptr;\
         ptr = nullptr;\
     }
-
 
 #define SAFE_DELETE_ARRAY(ptr)\
     {\
@@ -35,6 +32,12 @@
             << " is nullptr";\
         return false;\
     }
+
+#define CU_ALLOC(src, size)\
+    CUDA_ER(cudaMalloc((void*)src, size));
+
+#define CU_ALLOC_HOST(src, size)\
+    CUDA_ER(cudaMallocHost((void**)src, size, 0));
 
 #define CU_SAFE_DELETE(ptr)\
     if (nullptr != ptr)\
@@ -56,6 +59,7 @@
 
 #define MIN_LIMIT(value, minimun)\
     (value >= minimun ? value : minimun)
+
 
 namespace common
 {

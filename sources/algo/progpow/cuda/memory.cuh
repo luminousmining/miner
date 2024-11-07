@@ -2,6 +2,7 @@
 
 #include <algo/hash.hpp>
 
+#include <common/error/cuda_error.hpp>
 #include <common/custom.hpp>
 
 

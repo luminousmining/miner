@@ -1,6 +1,7 @@
 #pragma once
 
 #include <CL/opencl.hpp>
+
 #include <common/log/log.hpp>
 #include <common/cast.hpp>
 
@@ -79,9 +80,8 @@ namespace resolver
             return {};
         }
 
-        inline bool initializeOpenCL(
-            resolver::tests::Properties& properties,
-            uint32_t index = 0u)
+        inline bool initializeOpenCL(resolver::tests::Properties& properties,
+                                     uint32_t index = 0u)
         {
             properties.clDevice = resolver::tests::getDevice(index);
             properties.clContext = cl::Context(properties.clDevice);

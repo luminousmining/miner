@@ -1,12 +1,20 @@
 #pragma once
 
-#include <cuda.h>
-#include <cuda_runtime.h>
+///////////////////////////////////////////////////////////////////////////////
+#include <string>
 
-#include <common/error/cuda_error.hpp>
+///////////////////////////////////////////////////////////////////////////////
+#include <algo/hash.hpp>
+#include <benchmark/result.hpp>
 
+///////////////////////////////////////////////////////////////////////////////
+bool init_array(cudaStream_t stream,
+                uint32_t* const dest,
+                uint64_t const size);
 
+///////////////////////////////////////////////////////////////////////////////
+bool init_ethash_v0(std::string const header);
 bool ethash_v0(cudaStream_t stream,
-                uint32_t const blocks,
-                uint32_t const threads);
+               uint32_t const blocks,
+               uint32_t const threads);
 

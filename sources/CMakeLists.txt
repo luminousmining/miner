@@ -21,10 +21,11 @@ endif()
 ################################################################################
 if (BUILD_NVIDIA)
     cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
-        benchmark/cuda/ethash_v0.cu
+        benchmark/cuda/common/array.cu
+        benchmark/cuda/ethash/ethash_v0.cu
     )
 
-    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
+    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE CUDA_ENABLE)
 
     include_directories(${LIB_BENCH_NVIDIA} PUBLIC
         ${CUDA_INCLUDE_DIRS}
@@ -97,6 +98,7 @@ set(SOURCES_ALGO_ETHASH_TESTS)
 set(SOURCES_ALGO_PROGPOW)
 set(SOURCES_ALGO_TESTS)
 set(SOURCES_API)
+set(SOURCES_BENCHMARK)
 set(SOURCES_COMMON)
 set(SOURCES_COMMON_ERROR)
 set(SOURCES_COMMON_LOG)
@@ -113,6 +115,7 @@ set(SOURCES_STRATUM)
 
 add_subdirectory(algo)
 add_subdirectory(api)
+add_subdirectory(benchmark)
 add_subdirectory(common)
 add_subdirectory(device)
 add_subdirectory(network)
@@ -130,6 +133,7 @@ set(SOURCES_ALGO_ETHASH_TESTS ${SOURCES_ALGO_ETHASH_TESTS} PARENT_SCOPE)
 set(SOURCES_ALGO_PROGPOW ${SOURCES_ALGO_PROGPOW} PARENT_SCOPE)
 set(SOURCES_ALGO_TESTS ${SOURCES_ALGO_TESTS} PARENT_SCOPE)
 set(SOURCES_API ${SOURCES_API} PARENT_SCOPE)
+set(SOURCES_BENCHMARK ${SOURCES_BENCHMARK} PARENT_SCOPE)
 set(SOURCES_COMMON ${SOURCES_COMMON} PARENT_SCOPE)
 set(SOURCES_COMMON_ERROR ${SOURCES_COMMON_ERROR} PARENT_SCOPE)
 set(SOURCES_COMMON_LOG ${SOURCES_COMMON_LOG} PARENT_SCOPE)
@@ -158,6 +162,7 @@ source_group("algo/ethash/tests" FILES ${SOURCES_ALGO_ETHASH_TESTS})
 source_group("algo/progpow" FILES ${SOURCES_ALGO_PROGPOW})
 source_group("algo/tests" FILES ${SOURCES_ALGO_TESTS})
 source_group("api" FILES ${SOURCES_API})
+source_group("benchmark" FILES ${SOURCES_BENCHMARK})
 source_group("common" FILES ${SOURCES_COMMON})
 source_group("common/error" FILES ${SOURCES_COMMON_ERROR})
 source_group("common/log" FILES ${SOURCES_COMMON_LOG})
