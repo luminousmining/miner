@@ -24,10 +24,10 @@ bool autolykosv2InitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(cudaMalloc((void**)&params.header, algo::LEN_HASH_256));
-    CUDA_ER(cudaMalloc((void**)&params.dag, params.hostDagItemCount * algo::LEN_HASH_256));
-    CUDA_ER(cudaMalloc((void**)&params.BHashes, algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256));
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::autolykos_v2::Result), 0));
+    CU_ALLOC(&params.header, algo::LEN_HASH_256);
+    CU_ALLOC(&params.dag, params.hostDagItemCount * algo::LEN_HASH_256);
+    CU_ALLOC(&params.BHashes, algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256);
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::autolykos_v2::Result));
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.header);

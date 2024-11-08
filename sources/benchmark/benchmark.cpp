@@ -1,3 +1,6 @@
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 #include <benchmark/benchmark.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/custom.hpp>
@@ -53,27 +56,39 @@ void benchmark::Benchmark::run()
 
 void benchmark::Benchmark::runNvidia()
 {
-    runNvidiaEthash();
+    if (false == runNvidiaEthash())
+    {
+        logErr() << "Nvidia ETHASH failled!";
+    }
 }
 
 
-void benchmark::Benchmark::runNvidiaEthash()
+bool benchmark::Benchmark::runNvidiaEthash()
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t* ethashDag{ nullptr };
     uint64_t const dagItems{ 45023203ull };
-    CU_ALLOC(&ethashDag, sizeof(uint32_t) * dagItems);
-    init_array(ethashDag, dagItems);
+    uint64_t const boundary{ 10695475200ull };
+    auto const headerHash{ algo::toHash<algo::hash256>("257cf0c2c67dd2c39842da75f97dc76d41c7cbaf31f71d5d387b16cbf3da730b") };
 
-    std::string const header{ "257cf0c2c67dd2c39842da75f97dc76d41c7cbaf31f71d5d387b16cbf3da730b" };
+    ////////////////////////////////////////////////////////////////////////////
+    algo::hash1024* dagHash{ nullptr };
+    CU_ALLOC(&dagHash, dagItems * algo::LEN_HASH_1024);
+    if (false == init_array(propertiesNvidia.cuStream, dagHash->word32, dagItems))
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     /* etherminer implementation */
-    init_ethash_v0(header);
-    ethash_v0(propertiesNvidia.cuStream, 8192u, 256u);
+    if (true == init_ethash_v0(dagHash, &headerHash, dagItems, boundary))
+    {
+        ethash_v0(propertiesNvidia.cuStream, 1u, 8u);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_SAFE_DELETE(ethashDag);
+    CU_SAFE_DELETE(dagHash);
+
+    return true;
 }
 
 

@@ -1,4 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
+#include <common/cast.hpp>
 #include <benchmark/cuda/kernels.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -14,9 +15,9 @@ __constant__ uint32_t d_dag_number_item;
 #include <benchmark/cuda/ethash/ethash_keccak_f1600.cuh>
 
 //////////////////////////////////////////////////j/////////////////////////////
-#define _PARALLEL_HASH 4
-#define ACCESSES 64
-#define THREADS_PER_HASH (128 / 16)
+constexpr uint32_t _PARALLEL_HASH{ 4u };
+constexpr uint32_t ACCESSES{ 64u };
+constexpr uint32_t THREADS_PER_HASH{ 8u }; // (128 / 16)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -109,7 +110,7 @@ void kernel_ethash_v0(
                         ((uint32_t*)&mix[p])[b]) % d_dag_number_item;
                     offset[p] = reg_load(offset[p], t, THREADS_PER_HASH);
                     uint32_t start_index = offset[p];
-                    fnv1(&mix[p], &d_dag[start_index * 8  + thread_id])
+                    fnv1(&mix[p], &d_dag[start_index * 8  + thread_id]);
                 }
             }
         }
@@ -142,9 +143,12 @@ void kernel_ethash_v0(
  
     if (cuda_swab64(final_state) > d_boundary)
     {
-        uint32_t index = atomicAdd((uint32_t*)&result->index, 1);
+        uint32_t const index = atomicAdd((uint32_t*)&result->index, 1);
         if (index >= 4)
+        {
             return;
+        }
+
         result->found = true;
         result->nonce[index] = gid;
         result->mix[index][0] = 0;
@@ -157,39 +161,18 @@ void kernel_ethash_v0(
 
 __host__
 bool init_ethash_v0(
-    std::string const header)
+    algo::hash1024 const* dagHash,
+    algo::hash256 const* headerHash,
+    uint64_t const dagNumberItem,
+    uint64_t const boundary)
 {
-    // cudaError_t error{ cudaSuccess };
+    uint4 const* header{ (uint4*)&headerHash };
+    uint4 const* dag{ (uint4*)dagHash };
 
-    // uint4 const* header{ (uint4 const*)&kp.header_local };
-    // error = cudaMemcpyToSymbol(d_header, header, sizeof(uint4) * 2);
-    // if (error != cudaSuccess)
-    // {
-    //     printf("d_header: %s\n", cudaGetErrorString(error));
-    //     return false;
-    // }
-
-    // error = cudaMemcpyToSymbol(d_boundary, (void*)&kp.boundary, sizeof(uint64_t));
-    // if (error != cudaSuccess)
-    // {
-    //     printf("d_boundary: %s\n", cudaGetErrorString(error));
-    //     return false;
-    // }
-
-    // error = cudaMemcpyToSymbol(d_dag_number_item, (void*)&kp.dagNumberItem, sizeof(uint32_t));
-    // if (error != cudaSuccess)
-    // {
-    //     printf("d_dag_number_item: %s\n", cudaGetErrorString(error));
-    //     return false;
-    // }
-
-    // uint4 const* dag{ (uint4 const*)kp.dagHash };
-    // error = cudaMemcpyToSymbol(d_dag, &dag, sizeof(uint4*));
-    // if (error != cudaSuccess)
-    // {
-    //     printf("d_dag: %s\n", cudaGetErrorString(error));
-    //     return false;
-    // }
+    CUDA_ER(cudaMemcpyToSymbol(d_header, header, sizeof(uint4) * 2));
+    CUDA_ER(cudaMemcpyToSymbol(d_boundary, (void*)&boundary, sizeof(uint64_t)));
+    CUDA_ER(cudaMemcpyToSymbol(d_dag_number_item, (void*)&dagNumberItem, sizeof(uint32_t)));
+    CUDA_ER(cudaMemcpyToSymbol(d_dag, &dag, sizeof(uint4*)));
 
     return true;
 }
@@ -202,9 +185,11 @@ bool ethash_v0(
 {
     t_result_64 result{};
 
-    kernel_ethash_v0<<<blocks, threads, 0, stream>>>(
+    kernel_ethash_v0<<<blocks, threads, 0, stream>>>
+    (
         &result,
-        0x3835000000000000ull);
+        0x3835000000000000ull
+    );
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());
 

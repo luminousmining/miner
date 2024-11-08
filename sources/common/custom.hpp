@@ -34,7 +34,7 @@
     }
 
 #define CU_ALLOC(src, size)\
-    CUDA_ER(cudaMalloc((void*)src, size));
+    CUDA_ER(cudaMalloc((void**)src, size));
 
 #define CU_ALLOC_HOST(src, size)\
     CUDA_ER(cudaMallocHost((void**)src, size, 0));

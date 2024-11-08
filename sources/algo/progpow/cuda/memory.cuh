@@ -30,10 +30,10 @@ bool progpowInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(cudaMalloc((void**)&params.lightCache, context.lightCache.size));
-    CUDA_ER(cudaMalloc((void**)&params.dagCache, context.dagCache.size));
-    CUDA_ER(cudaMalloc((void**)&params.headerCache, sizeof(uint32_t) * algo::LEN_HASH_256_WORD_32));
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::progpow::Result), 0));
+    CU_ALLOC(&params.lightCache, context.lightCache.size);
+    CU_ALLOC(&params.dagCache, context.dagCache.size);
+    CU_ALLOC(&params.headerCache, sizeof(uint32_t) * algo::LEN_HASH_256_WORD_32);
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::progpow::Result));
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);

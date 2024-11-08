@@ -22,7 +22,7 @@ namespace benchmark
 
     private:
         void runNvidia();
-        void runNvidiaEthash();
+        bool runNvidiaEthash();
 
         void runAmd();
     };

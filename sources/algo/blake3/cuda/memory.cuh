@@ -22,9 +22,9 @@ bool blake3InitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(cudaMalloc((void**)&params.header, algo::LEN_HASH_3072));
-    CUDA_ER(cudaMalloc((void**)&params.target, algo::LEN_HASH_256));
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::blake3::Result), 0));
+    CU_ALLOC(&params.header, algo::LEN_HASH_3072);
+    CU_ALLOC(&params.target, algo::LEN_HASH_256);
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::blake3::Result));
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
