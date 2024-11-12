@@ -26,12 +26,13 @@ namespace statistical
         uint64_t getBatchNonce() const;
         void updateHashrate();
         void resetHashrate();
-        double getHahrate() const;
+        double getHashrate() const;
         ShareInfo& getShares();
 
     private:
         common::CHRONO_UNIT chronoUnit{ common::CHRONO_UNIT::US };
         common::Chrono      chrono;
+        double              chronoTime{ common::SEC_TO_US };
         ShareInfo           shares{};
         uint64_t            batchNonce{ 0ull };
         double              hashrates{ 0.0 };

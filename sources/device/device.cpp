@@ -426,7 +426,7 @@ double device::Device::getHashrate()
         miningStats.reset();
     }
 
-    return miningStats.getHahrate();
+    return miningStats.getHashrate();
 }
 
 

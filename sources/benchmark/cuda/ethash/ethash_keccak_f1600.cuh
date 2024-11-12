@@ -31,39 +31,6 @@ uint2 KECCAK_ROUND[24]
 };
 
 
-__device__ __forceinline__
-uint2 operator^(
-    uint2 const a,
-    uint32_t const  b)
-{
-    return make_uint2(a.x ^ b, a.y);
-}
-
-
-__device__ __forceinline__
-uint2 operator^(
-    uint2 const a,
-    uint2 const b)
-{
-    return make_uint2(a.x ^ b.x, a.y ^ b.y);
-}
-
-
-__device__ __forceinline__
-uint2 operator~(uint2 const a)
-{
-    return make_uint2(~a.x, ~a.y);
-}
-
-
-__device__ __forceinline__
-void operator^=(
-    uint2& a,
-    uint2 const b)
-{
-    a = a ^ b;
-}
-
 
 __device__ __forceinline__
 uint2 xor5(
@@ -178,7 +145,6 @@ void ethash_keccak_f1600_init(uint2* state)
     uint2 t[5], u, v;
     const uint2 u2zero = make_uint2(0, 0);
 
-
     devectorize<uint4, uint2>(d_header[0], s[0], s[1]);
     devectorize<uint4, uint2>(d_header[1], s[2], s[3]);
     s[4] = state[4];
@@ -202,9 +168,6 @@ void ethash_keccak_f1600_init(uint2* state)
 
     /* theta: d[i] = c[i+4] ^ rotl(c[i+1],1) */
     /* theta: a[0,i], a[1,i], .. a[4,i] ^= d[i] */
-
-    uint2 a1;
-    uint2 a2;
 
     u = t[4] ^ ROL2(t[1], 1);
     s[0] ^= u;

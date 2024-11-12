@@ -2,6 +2,7 @@
 
 #include <benchmark/amd.hpp>
 #include <benchmark/nvidia.hpp>
+#include <statistical/statistical.hpp>
 
 
 namespace benchmark
@@ -21,6 +22,14 @@ namespace benchmark
         void run();
 
     private:
+        std::string currentBenchName{};
+        uint32_t blocks{ 1u };
+        uint32_t threads{ 32u };
+        statistical::Statistical stats{};
+
+        void startChrono(std::string const& benchName);
+        void stopChrono();
+
         void runNvidia();
         bool runNvidiaEthash();
 

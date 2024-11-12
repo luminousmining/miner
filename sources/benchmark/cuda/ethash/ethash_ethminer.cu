@@ -30,7 +30,7 @@ union
 
 
 __device__ __forceinline__
-uint64_t cuda_swab64(const uint64_t x)
+uint64_t cuda_swab64(uint64_t const x)
 {
     uint64_t result;
     uint2 t;
@@ -48,16 +48,15 @@ uint64_t cuda_swab64(const uint64_t x)
 
 
 __global__
-void kernel_ethash_v0(
+void kernel_ethash_ethminer(
     volatile t_result_64* result,
     uint64_t const startNonce)
 {
     uint2 state[12];
-    uint2 mix_hash[4];
 
     uint32_t const gid{ (blockIdx.x * blockDim.x) + threadIdx.x };
-    int const thread_id = threadIdx.x & (THREADS_PER_HASH - 1);
-    int const mix_idx = thread_id & 3;
+    uint32_t const thread_id = threadIdx.x & (THREADS_PER_HASH - 1u);
+    uint32_t const mix_idx = thread_id & 3;
     uint64_t const nonce = startNonce + gid;
 
     state[4] = vectorize(nonce);
@@ -80,30 +79,30 @@ void kernel_ethash_v0(
 
             switch (mix_idx)
             {
-            case 0:
-                mix[p] = vectorize_u2(shuffle[0], shuffle[1]);
-                break;
-            case 1:
-                mix[p] = vectorize_u2(shuffle[2], shuffle[3]);
-                break;
-            case 2:
-                mix[p] = vectorize_u2(shuffle[4], shuffle[5]);
-                break;
-            case 3:
-                mix[p] = vectorize_u2(shuffle[6], shuffle[7]);
-                break;
+                case 0u:
+                    mix[p] = vectorize_u2(shuffle[0], shuffle[1]);
+                    break;
+                case 1u:
+                    mix[p] = vectorize_u2(shuffle[2], shuffle[3]);
+                    break;
+                case 2u:
+                    mix[p] = vectorize_u2(shuffle[4], shuffle[5]);
+                    break;
+                case 3u:
+                    mix[p] = vectorize_u2(shuffle[6], shuffle[7]);
+                    break;
             }
 
             init0[p] = reg_load(shuffle[0].x, 0, THREADS_PER_HASH);
         }
 
-        for (uint32_t a = 0; a < ACCESSES; a += 4)
+        for (uint32_t a = 0u; a < ACCESSES; a += 4u)
         {
             int t = bfe(a, 2u, 3u);
 
-            for (uint32_t b = 0; b < 4; b++)
+            for (uint32_t b = 0u; b < 4u; b++)
             {
-                for (int p = 0; p < _PARALLEL_HASH; p++)
+                for (int p = 0u; p < _PARALLEL_HASH; p++)
                 {
                     offset[p] = fnv1(
                         init0[p] ^ (a + b),
@@ -115,7 +114,7 @@ void kernel_ethash_v0(
             }
         }
 
-        for (int p = 0; p < _PARALLEL_HASH; p++)
+        for (uint32_t p = 0u; p < _PARALLEL_HASH; p++)
         {
             uint2 shuffle[4];
             uint32_t thread_mix = fnv1_reduce(mix[p]);
@@ -139,28 +138,32 @@ void kernel_ethash_v0(
         }
     }
 
-    uint64_t final_state = ethash_keccak_f1600_final(state);
- 
+    uint64_t const final_state = ethash_keccak_f1600_final(state);
+
     if (cuda_swab64(final_state) > d_boundary)
     {
         uint32_t const index = atomicAdd((uint32_t*)&result->index, 1);
-        if (index >= 4)
+        if (index >= MAX_RESULT_INDEX)
         {
             return;
         }
 
         result->found = true;
         result->nonce[index] = gid;
-        result->mix[index][0] = 0;
-        result->mix[index][1] = 1;
-        result->mix[index][2] = 2;
-        result->mix[index][3] = 3;
+        result->mix[index][0] = state[8].x;
+        result->mix[index][1] = state[8].y;
+        result->mix[index][2] = state[9].x;
+        result->mix[index][3] = state[9].y;
+        result->mix[index][4] = state[10].x;
+        result->mix[index][5] = state[10].y;
+        result->mix[index][6] = state[11].x;
+        result->mix[index][7] = state[11].y;
     }
 }
 
 
 __host__
-bool init_ethash_v0(
+bool init_ethash_ethminer(
     algo::hash1024 const* dagHash,
     algo::hash256 const* headerHash,
     uint64_t const dagNumberItem,
@@ -178,16 +181,15 @@ bool init_ethash_v0(
 }
 
 __host__
-bool ethash_v0(
+bool ethash_ethminer(
         cudaStream_t stream,
+        t_result_64* result,
         uint32_t const blocks,
         uint32_t const threads)
 {
-    t_result_64 result{};
-
-    kernel_ethash_v0<<<blocks, threads, 0, stream>>>
+    kernel_ethash_ethminer<<<blocks, threads, 0, stream>>>
     (
-        &result,
+        result,
         0x3835000000000000ull
     );
     CUDA_ER(cudaStreamSynchronize(stream));

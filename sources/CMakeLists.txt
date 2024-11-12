@@ -22,7 +22,7 @@ endif()
 if (BUILD_NVIDIA)
     cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
         benchmark/cuda/common/array.cu
-        benchmark/cuda/ethash/ethash_v0.cu
+        benchmark/cuda/ethash/ethash_ethminer.cu
     )
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE CUDA_ENABLE)
