@@ -17,11 +17,37 @@ if (BUILD_NVIDIA)
 endif()
 
 ################################################################################
+###  LIB CUDA BENCH                                                        ####
+################################################################################
+if (BUILD_NVIDIA)
+    cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
+        benchmark/cuda/common/array.cu
+        benchmark/cuda/ethash/ethash_ethminer.cu
+    )
+
+    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE CUDA_ENABLE)
+
+    include_directories(${LIB_BENCH_NVIDIA} PUBLIC
+        ${CUDA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endif()
+
+
+################################################################################
 ### HEADERS AND SOURCES FILES MINER                                         ####
 ################################################################################
 set(MINER_HEADERS)
 set(MINER_SOURCES
 miner.cpp
+)
+
+################################################################################
+### HEADERS AND SOURCES FILES BENCHMARK                                     ####
+################################################################################
+set(BENCH_HEADERS)
+set(BENCH_SOURCES
+benchmark.cpp
 )
 
 ################################################################################
@@ -50,9 +76,14 @@ add_executable(${UNIT_TEST_EXE})
 #gtest_discover_tests(${UNIT_TEST_EXE})
 
 ################################################################################
-###  LINK MINER                                                             ####
+###  APP MINER                                                              ####
 ################################################################################
 add_executable(${MINER_EXE})
+
+################################################################################
+###  APP BENCHMARK                                                          ####
+################################################################################
+add_executable(${BENCH_EXE})
 
 ################################################################################
 ###  SOURCES                                                                ####
@@ -67,6 +98,7 @@ set(SOURCES_ALGO_ETHASH_TESTS)
 set(SOURCES_ALGO_PROGPOW)
 set(SOURCES_ALGO_TESTS)
 set(SOURCES_API)
+set(SOURCES_BENCHMARK)
 set(SOURCES_COMMON)
 set(SOURCES_COMMON_ERROR)
 set(SOURCES_COMMON_LOG)
@@ -83,6 +115,7 @@ set(SOURCES_STRATUM)
 
 add_subdirectory(algo)
 add_subdirectory(api)
+add_subdirectory(benchmark)
 add_subdirectory(common)
 add_subdirectory(device)
 add_subdirectory(network)
@@ -100,6 +133,7 @@ set(SOURCES_ALGO_ETHASH_TESTS ${SOURCES_ALGO_ETHASH_TESTS} PARENT_SCOPE)
 set(SOURCES_ALGO_PROGPOW ${SOURCES_ALGO_PROGPOW} PARENT_SCOPE)
 set(SOURCES_ALGO_TESTS ${SOURCES_ALGO_TESTS} PARENT_SCOPE)
 set(SOURCES_API ${SOURCES_API} PARENT_SCOPE)
+set(SOURCES_BENCHMARK ${SOURCES_BENCHMARK} PARENT_SCOPE)
 set(SOURCES_COMMON ${SOURCES_COMMON} PARENT_SCOPE)
 set(SOURCES_COMMON_ERROR ${SOURCES_COMMON_ERROR} PARENT_SCOPE)
 set(SOURCES_COMMON_LOG ${SOURCES_COMMON_LOG} PARENT_SCOPE)
@@ -117,7 +151,7 @@ set(SOURCES_STRATUM ${SOURCES_STRATUM} PARENT_SCOPE)
 ################################################################################
 ### FILTER SOLUTION VISUAL STUDIO                                            ###
 ################################################################################
-source_group("" FILES miner.cpp unit_test.cpp)
+source_group("" FILES benchmark.cpp miner.cpp unit_test.cpp)
 source_group("algo" FILES ${SOURCES_ALGO})
 source_group("algo/autolykos" FILES ${SOURCES_ALGO_AUTOLYOS})
 source_group("algo/blake3" FILES ${SOURCES_ALGO_BLAKE3})
@@ -128,6 +162,7 @@ source_group("algo/ethash/tests" FILES ${SOURCES_ALGO_ETHASH_TESTS})
 source_group("algo/progpow" FILES ${SOURCES_ALGO_PROGPOW})
 source_group("algo/tests" FILES ${SOURCES_ALGO_TESTS})
 source_group("api" FILES ${SOURCES_API})
+source_group("benchmark" FILES ${SOURCES_BENCHMARK})
 source_group("common" FILES ${SOURCES_COMMON})
 source_group("common/error" FILES ${SOURCES_COMMON_ERROR})
 source_group("common/log" FILES ${SOURCES_COMMON_LOG})
@@ -147,12 +182,18 @@ source_group("statistical" FILES ${SOURCES_STRATISTICAL})
 ################################################################################
 if (NOT WIN32)
     target_link_options(${MINER_EXE} PUBLIC -static-libstdc++ -static-libgcc)
+    target_link_options(${BENCH_EXE} PUBLIC -static-libstdc++ -static-libgcc)
     target_link_options(${UNIT_TEST_EXE} PUBLIC -static-libstdc++ -static-libgcc)
 endif()
 
 target_sources(${MINER_EXE} PUBLIC
     ${MINER_HEADERS}
     ${MINER_SOURCES}
+)
+
+target_sources(${BENCH_EXE} PUBLIC
+    ${BENCH_HEADERS}
+    ${BENCH_SOURCES}
 )
 
 target_sources(${UNIT_TEST_EXE} PUBLIC
@@ -163,6 +204,13 @@ target_sources(${UNIT_TEST_EXE} PUBLIC
 include_directories(${MINER_EXE} PUBLIC
     ${Boost_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
+    ${OpenCL_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+include_directories(${BENCH_EXE} PUBLIC
+    ${Boost_INCLUDE_DIR}
     ${OpenCL_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -188,6 +236,17 @@ target_link_libraries(${MINER_EXE}
     ${LIB_CRYPTO_NVIDIA}
 )
 
+target_link_libraries(${BENCH_EXE}
+    ${Boost_LIBRARIES}
+    ${OpenCL_LIBRARIES}
+    ${CUDA_LIBRARY}
+    ${CUDA_LIBRARIES}
+    ${CUDA_NVRTC_LIBRARY}
+    ${CUDA_NVPTX_LIBRARY}
+    ${CUDA_NVRTC_BUILTINS_LIBRARY}
+    ${LIB_BENCH_NVIDIA}
+)
+
 target_link_libraries(${UNIT_TEST_EXE}
     gtest_main
     ${Boost_LIBRARIES}
@@ -204,6 +263,10 @@ target_link_libraries(${UNIT_TEST_EXE}
 
 if (UNIX)
     target_link_libraries(${MINER_EXE}
+        ${GNUTLS_LIBRARIES}
+        "stdc++fs"
+    )
+    target_link_libraries(${BENCH_EXE}
         ${GNUTLS_LIBRARIES}
         "stdc++fs"
     )

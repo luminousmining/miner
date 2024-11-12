@@ -6,6 +6,10 @@
 
 namespace common
 {
+    constexpr uint32_t SEC_TO_MS{ 1000u };
+    constexpr uint32_t SEC_TO_US{ 1000000u };
+    constexpr uint32_t SEC_TO_NS{ 1000000000u };
+
     enum class CHRONO_UNIT : uint8_t
     {
         SEC,

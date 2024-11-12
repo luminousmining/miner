@@ -62,6 +62,7 @@ void common::Chrono::stop()
     tmEnd = std::chrono::system_clock::now();
 }
 
+
 uint64_t common::Chrono::elapsed(
     common::CHRONO_UNIT unit) const
 {
@@ -85,6 +86,5 @@ uint64_t common::Chrono::elapsed(
         }
     }
 
-    printf("Hoooooooooo\n");
     return castMs(tmEnd - tmStart).count();
 }

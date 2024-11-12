@@ -1,0 +1,9 @@
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
+
+target_sources(${BENCH_EXE} PUBLIC
+${HEADERS}
+${SOURCES}
+)
+
+set(SOURCES_BENCHMARK ${HEADERS} ${SOURCES} PARENT_SCOPE)

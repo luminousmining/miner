@@ -1,8 +1,8 @@
 #pragma once
 
 
-#define FNV1_OFFSET 0x811c9dc5
-#define FNV1_PRIME 0x01000193u
+constexpr uint32_t FNV1_OFFSET{ 0x811c9dc5 };
+constexpr uint32_t FNV1_PRIME{ 0x01000193u };
 
 
 __device__ __forceinline__
@@ -53,3 +53,4 @@ uint32_t fnv1a(
 {
     return (u ^ v) * FNV1_PRIME;
 }
+

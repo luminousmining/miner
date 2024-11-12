@@ -26,9 +26,9 @@ bool ethashInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(cudaMalloc((void**)&params.lightCache, context.lightCache.size));
-    CUDA_ER(cudaMalloc((void**)&params.dagCache, context.dagCache.size));
-    CUDA_ER(cudaMallocHost((void**)&params.resultCache, sizeof(algo::ethash::Result), 0));
+    CU_ALLOC(&params.lightCache, context.lightCache.size);
+    CU_ALLOC(&params.dagCache, context.dagCache.size);
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::ethash::Result));
 
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMemcpy((void*)params.lightCache,
