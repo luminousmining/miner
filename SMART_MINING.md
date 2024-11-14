@@ -23,16 +23,22 @@ miner                               pool
     "method": "mining.subscribe",
     "params":
     [
+        "WORKERNAME",
+        "PASSWORD",
         [
-            "COIN_TAG",
-            "POOL_HOST",
-            POOL_PORT,
-            "YOUR_WALLET"
+            [
+                "COIN_TAG",
+                "POOL_HOST",
+                POOL_PORT,
+                "YOUR_WALLET"
+            ]
         ],
         ...
     ]
 }
 ```
+**WORKERNAME** -> `string`: name or loging of the worker  
+**PASSWORD** -> `string`: password  
 **COIN_TAG** -> `string`: name of coin, examples CLORE, FIRO,...  
 **POOL_HOST** -> `string`: pool host, examples "clore.2miners.com", "pool.eu.woolypooly.com",...  
 **POOL_PORT** -> `integer`: pool port, examples 2020,3126,...  

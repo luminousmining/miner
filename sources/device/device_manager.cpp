@@ -147,8 +147,8 @@ bool device::DeviceManager::initializeStratumSmartMining()
 {
     common::Config const& config { common::Config::instance() };
 
-    stratumSmartMining.host.assign("192.168.1.25");
-    stratumSmartMining.port = 8080;
+    stratumSmartMining.host.assign(config.mining.host);
+    stratumSmartMining.port = config.mining.port;
     stratumSmartMining.workerName.assign(config.mining.workerName);
     stratumSmartMining.password.assign(config.mining.password);
 
