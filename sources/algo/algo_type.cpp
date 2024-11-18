@@ -13,6 +13,7 @@ std::string algo::toString(algo::ALGORITHM const algorithm)
         case algo::ALGORITHM::MEOWPOW:      { return "meowpow";     }
         case algo::ALGORITHM::FIROPOW:      { return "firopow";     }
         case algo::ALGORITHM::EVRPROGPOW:   { return "evrprogpow";  }
+        case algo::ALGORITHM::QUAIPOW:      { return "quaipow";     }
         case algo::ALGORITHM::AUTOLYKOS_V2: { return "autolykosv2"; }
         case algo::ALGORITHM::BLAKE3:       { return "blake3";      }
         case algo::ALGORITHM::UNKNOW:       { return "unknow";      }
@@ -34,6 +35,7 @@ algo::ALGORITHM algo::toEnum(
     else if (algo == "meowpow")     { return algo::ALGORITHM::MEOWPOW;      }
     else if (algo == "firopow")     { return algo::ALGORITHM::FIROPOW;      }
     else if (algo == "evrprogpow")  { return algo::ALGORITHM::EVRPROGPOW;   }
+    else if (algo == "quaipow")     { return algo::ALGORITHM::QUAIPOW;      }
     else if (algo == "autolykosv2") { return algo::ALGORITHM::AUTOLYKOS_V2; }
     else if (algo == "blake3")      { return algo::ALGORITHM::BLAKE3;       }
 

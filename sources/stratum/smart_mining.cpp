@@ -129,6 +129,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         case algo::ALGORITHM::MEOWPOW:
         case algo::ALGORITHM::FIROPOW:
         case algo::ALGORITHM::EVRPROGPOW:
+        case algo::ALGORITHM::QUAIPOW:
         {
             std::string extraNonceStr { root.at("params").as_string().c_str() };
             stratumPool->setExtraNonce(extraNonceStr);

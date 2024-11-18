@@ -241,6 +241,11 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
             kernelGenerator.declareDefine("__KERNEL_EVRPROGPOW");
             break;
         }
+        case algo::progpow::VERSION::QUAIPOW:
+        {
+            kernelGenerator.declareDefine("__KERNEL_QUAIPOW");
+            break;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -285,6 +290,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
         case algo::progpow::VERSION::MEOWPOW:    kernelDerived.assign("meowpow_functions.cl"); break;
         case algo::progpow::VERSION::FIROPOW:    kernelDerived.assign("firopow_functions.cl"); break;
         case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
+        case algo::progpow::VERSION::QUAIPOW:    kernelDerived.assign("quaipow_functions.cl"); break;
     }
 
     ////////////////////////////////////////////////////////////////////////////
