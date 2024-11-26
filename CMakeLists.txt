@@ -96,7 +96,7 @@ endif()
 ################################################################################
 if (WIN32)
     set(Boost_ROOT       "C:\\Boost")
-    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_85")
+    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_86")
     set(Boost_COMPILER   -vc${VISUAL_STUDIO_VERSION})
     set(Boost_THREADAPI  win32)
 else()
@@ -168,7 +168,7 @@ endif()
 ################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
-find_package(Boost 1.85.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+find_package(Boost 1.86.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
 find_package(OpenCL 2.2 REQUIRED COMPONENTS OpenCL)
 if (BUILD_NVIDIA)
     find_package(CUDA COMPONENTS cudart)
