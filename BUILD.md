@@ -17,10 +17,10 @@ cmake :
 https://github.com/Kitware/CMake/releases/tag/v3.22.4  
   
 cuda :  
-https://developer.nvidia.com/cuda-12-5-0-download-archive  
+https://developer.nvidia.com/cuda-12-6-2-download-archive  
   
 boost :  
-https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_86_0.zip  
+https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.zip  
 ```bat
 bootstrap.bat
 b2.exe release
