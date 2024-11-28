@@ -63,7 +63,7 @@ void stratum::StratumBlake3::onMiningNotify(
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
-    boost::json::array params { root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     size_t const length { params.size() };
     boost::json::object jobParam { params[length - 1].as_object() };
 
@@ -128,7 +128,7 @@ void stratum::StratumBlake3::onMiningSetTarget(
 void stratum::StratumBlake3::onMiningSetExtraNonce(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     std::string const extraNonceStr{ params.at(0).as_string().c_str() };
     setExtraNonce(extraNonceStr);
 

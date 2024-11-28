@@ -99,7 +99,7 @@ void stratum::Stratum::onMethod(
     }
     else if ("client.show_message" == method)
     {
-        auto params{ root.at("params").as_array() };
+        boost::json::array const& params(root.at("params").as_array());
         std::stringstream ss;
         for (auto msg : params)
         {

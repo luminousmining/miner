@@ -27,7 +27,7 @@ void stratum::StratumProgPOW::onResponse(
         {
             if (true == root.at("error").is_null())
             {
-                auto result{ root.at("result").as_array() };
+                boost::json::array const& result(root.at("result").as_array());
                 if (false == result.empty())
                 {
                     std::string extraNonceStr{ result.at(1).as_string().c_str() };
@@ -101,7 +101,7 @@ void stratum::StratumProgPOW::onMiningNotify(
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
 
     ////////////////////////////////////////////////////////////////////////////
     std::string const jobID{ params.at(0).as_string().c_str() };
@@ -147,7 +147,7 @@ void stratum::StratumProgPOW::onMiningNotify(
 void stratum::StratumProgPOW::onMiningSetDifficulty(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     jobInfo.boundary = algo::toHash256(difficulty);
@@ -167,7 +167,7 @@ void stratum::StratumProgPOW::onMiningSetDifficulty(
 void stratum::StratumProgPOW::onMiningSetTarget(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     auto boundary{ params.at(0).as_string().c_str() };
     
     jobInfo.boundary = algo::toHash256(boundary);
@@ -184,7 +184,7 @@ void stratum::StratumProgPOW::onMiningSetTarget(
 void stratum::StratumProgPOW::onMiningSetExtraNonce(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     std::string const extraNonceStr{ params.at(0).as_string().c_str() };
     setExtraNonce(extraNonceStr);
 }

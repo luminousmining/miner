@@ -78,7 +78,7 @@ void stratum::StratumEthash::onMiningNotify(
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
 
     ////////////////////////////////////////////////////////////////////////////
     std::string const jobID{ params.at(0).as_string().c_str() };
@@ -105,7 +105,7 @@ void stratum::StratumEthash::onMiningNotify(
 void stratum::StratumEthash::onMiningSetDifficulty(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     double const currentDifficulty { common::boostJsonGetNumber<double>(params.at(0)) };
 
     double difficulty
@@ -135,7 +135,7 @@ void stratum::StratumEthash::onMiningSetDifficulty(
 void stratum::StratumEthash::onMiningSetTarget(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     std::string const boundary{ params.at(0).as_string().c_str() };
 
     jobInfo.boundary = algo::toHash256(boundary);
@@ -152,7 +152,7 @@ void stratum::StratumEthash::onMiningSetTarget(
 void stratum::StratumEthash::onMiningSetExtraNonce(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     std::string const extraNonceStr{ params.at(0).as_string().c_str() };
     setExtraNonce(extraNonceStr);
 }

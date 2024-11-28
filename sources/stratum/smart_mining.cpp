@@ -136,7 +136,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
         {
-            auto params { root.at("params").as_array() };
+            boost::json::array const& params(root.at("params").as_array());
             std::string extraNonceStr { params.at(0).as_string().c_str() };
             uint32_t const extraNonce2Size { common::boostJsonGetNumber<uint32_t const>(params.at(1)) };
             stratumPool->setExtraNonce(extraNonceStr, extraNonce2Size);

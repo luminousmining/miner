@@ -22,7 +22,7 @@ void stratum::StratumSha256::onResponse(
         {
             if (true == root.at("error").is_null())
             {
-                auto result{ root.at("result").as_array() };
+                boost::json::array const& result(root.at("result").as_array());
                 if (false == result.empty())
                 {
                     for (auto const& methods : result.at(0).as_array())
@@ -83,13 +83,13 @@ void stratum::StratumSha256::onMiningNotify(
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
 
     std::string jobId { params.at(0).as_string().c_str() };
     jobInfo.headerHash = algo::toHash<algo::hash256>(params.at(1).as_string().c_str());
     jobInfo.coinb1 = algo::toHash<algo::hash1024>(params.at(2).as_string().c_str());
     jobInfo.coinb2 = algo::toHash<algo::hash2048>(params.at(3).as_string().c_str());
-    auto const merkletree { params.at(4).as_array() };
+    boost::json::array merkletree(params.at(4).as_array());
     jobInfo.epoch = common::boostJsonGetNumber<int32_t>(params.at(5));
     jobInfo.targetBits = std::strtoul(params.at(6).as_string().c_str(), nullptr, 16);
     jobInfo.blockNumber = common::boostJsonGetNumber<uint64_t>(params.at(7));
@@ -111,7 +111,7 @@ void stratum::StratumSha256::onMiningNotify(
 void stratum::StratumSha256::onMiningSetDifficulty(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
 
     // TODO : SHA256
     //double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };

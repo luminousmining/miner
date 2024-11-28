@@ -22,7 +22,7 @@ void stratum::StratumAutolykosV2::onResponse(
         {
             if (true == root.at("error").is_null())
             {
-                auto result{ root.at("result").as_array() };
+                boost::json::array const& result(root.at("result").as_array());
                 if (false == result.empty())
                 {
                     std::string extraNonceStr{ result.at(1).as_string().c_str() };
@@ -73,7 +73,7 @@ void stratum::StratumAutolykosV2::onMiningNotify(
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const params(root.at("params").as_array());
 
     jobInfo.jobIDStr.assign(params.at(0).as_string().c_str());
     jobInfo.blockNumber = common::boostJsonGetNumber<uint64_t>(params.at(1));
@@ -99,7 +99,7 @@ void stratum::StratumAutolykosV2::onMiningNotify(
 void stratum::StratumAutolykosV2::onMiningSetDifficulty(
     boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    boost::json::array const& params(root.at("params").as_array());
     double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     jobInfo.boundary = algo::toHash256(difficulty);
@@ -143,7 +143,7 @@ void stratum::StratumAutolykosV2::miningSubmit(
     root["method"] = "mining.submit";
     root["params"] = boost::json::array{ wallet + "." + workerName };
 
-    boost::json::array& arr{ root["params"].as_array() };
+    boost::json::array& arr(root["params"].as_array());
     arr.push_back(params.at(0)); // Job ID
     arr.push_back(params.at(1)); // Nonce without extraNonce
     arr.push_back("");           // empty
