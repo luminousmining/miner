@@ -23,8 +23,7 @@ boost :
 https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.zip  
 ```bat
 bootstrap.bat
-b2.exe release
-b2.exe debug
+b2.exe debug release
 b2.exe install --prefix=C:\\Boost
 ```
   
