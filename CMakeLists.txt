@@ -4,7 +4,9 @@ project(luminousminer VERSION 0.4)
 enable_language(C)
 enable_language(CXX)
 
-cmake_policy(SET CMP0135 NEW)
+if (NOT WIN32)
+    cmake_policy(SET CMP0135 NEW)
+endif()
 
 ################################################################################
 ### OPTION MACROS                                                           ####
