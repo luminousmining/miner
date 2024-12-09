@@ -50,7 +50,7 @@
 --amd_algo arg          [MANDATORY] <ethash>
                         If defined, the parameters amd_host and amd_port must
                         be defined.
-                        --amd_algo="ethash"
+                    --amd_algo="ethash"
 ```
 
 ## Nvidia Settings
@@ -86,6 +86,24 @@
                     --device_pool=0:WALLET
 --device_workername     [OPTIONAL] Define workername for custom device.
                     --device_workername=0:MyWorkerName
+```
+
+## RavenMiner
+```
+--rm_rvn_btc arg        [OPTIONAL] Mining on ravenminer RVN with BTC wallet
+                    --rm_rvn_btc=WALLET
+--rm_rvn_eth arg        [OPTIONAL] Mining on ravenminer RVN with ETH wallet
+                    --rm_rvn_eth=WALLET
+--rm_rvn_ltc arg        [OPTIONAL] Mining on ravenminer RVN with LTC wallet
+                    --rm_rvn_ltc=WALLET
+--rm_rvn_bch arg        [OPTIONAL] Mining on ravenminer RVN with BCH wallet
+                    --rm_rvn_bch=WALLET
+--rm_rvn_ada arg        [OPTIONAL] Mining on ravenminer RVN with ADA wallet
+                    --rm_rvn_ada=WALLET
+--rm_rvn_dodge arg      [OPTIONAL] Mining on ravenminer RVN with DODGE wallet
+                    --rm_rvn_dodge=WALLET
+--rm_rvn_matic arg      [OPTIONAL] Mining on ravenminer RVN with MATIC wallet
+                    --rm_rvn_matic=WALLET
 ```
 
 ## Smart Mining
