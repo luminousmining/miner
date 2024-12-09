@@ -126,7 +126,6 @@ sudo ./b2 install
 # Platforms
   
 ## Windows
-
 ```sh
 mkdir build
 cd build
