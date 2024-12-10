@@ -27,6 +27,7 @@ void stratum::StratumSmartMining::setCallbackShareStatus(callbackShareStatus cal
 void stratum::StratumSmartMining::onConnect()
 {
     subscribe();
+    setProfile();
 }
 
 
@@ -247,6 +248,22 @@ void stratum::StratumSmartMining::subscribe()
         workerName,
         password,
         listCoin
+    };
+
+    send(root);
+}
+
+
+void stratum::StratumSmartMining::setProfile()
+{
+    auto const& config { common::Config::instance() };
+
+    boost::json::object root;
+    root["id"] = stratum::StratumSmartMining::ID_SMART_MINING_SET_PROFILE;
+    root["method"] = "smart_mining.set_profile";
+    root["params"] = boost::json::array
+    {
+        "usd_sec"
     };
 
     send(root);

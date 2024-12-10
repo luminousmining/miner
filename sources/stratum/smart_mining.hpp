@@ -16,6 +16,7 @@ namespace stratum
     struct StratumSmartMining : network::NetworkTCPClient
     {
         static constexpr uint32_t ID_MINING_SUBSCRIBE { 1u };
+        static constexpr uint32_t ID_SMART_MINING_SET_PROFILE { 2u };
 
         using callbackUpdateJob = std::function<void(stratum::StratumJobInfo const&)>;
         using callbackSetAlgorithm = std::function<void(algo::ALGORITHM const)>;
@@ -56,5 +57,6 @@ namespace stratum
         stratum::Stratum* stratumPool{ nullptr };
 
         void subscribe();
+        void setProfile();
     };
 }
