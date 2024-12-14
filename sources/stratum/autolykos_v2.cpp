@@ -141,13 +141,14 @@ void stratum::StratumAutolykosV2::miningSubmit(
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array{ wallet + "." + workerName };
-
-    boost::json::array& arr(root["params"].as_array());
-    arr.push_back(params.at(0)); // Job ID
-    arr.push_back(params.at(1)); // Nonce without extraNonce
-    arr.push_back("");           // empty
-    arr.push_back(params.at(2)); // Nonce
+    root["params"] = boost::json::array
+    { 
+        wallet + "." + workerName, // Wallet.WorkerName
+        params.at(0),              // Job ID
+        params.at(1),              // Nonce without extraNonce
+        "undefined",               // Empty
+        params.at(2)               // Nonce
+    };
 
     send(root);
 }

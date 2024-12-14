@@ -2,6 +2,7 @@
 
 #include <benchmark/amd.hpp>
 #include <benchmark/nvidia.hpp>
+#include <benchmark/result.hpp>
 #include <statistical/statistical.hpp>
 
 
@@ -30,8 +31,11 @@ namespace benchmark
         void startChrono(std::string const& benchName);
         void stopChrono();
 
+        bool getCleanResult64(t_result_64** result);
+
         void runNvidia();
         bool runNvidiaEthash();
+        bool runNvidiaAutolykosv2();
 
         void runAmd();
     };

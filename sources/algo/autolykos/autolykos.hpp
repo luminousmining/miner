@@ -8,7 +8,6 @@ namespace algo
 {
     namespace autolykos_v2
     {
-
         constexpr uint32_t BLOCK_BEGIN { 0x96000  }; // 614400
         constexpr uint32_t BLOCK_END   { 0x401000 }; // 4198400
 

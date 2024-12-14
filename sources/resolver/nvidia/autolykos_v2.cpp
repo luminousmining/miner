@@ -1,5 +1,6 @@
 #include <algo/hash_utils.hpp>
 #include <algo/bitwise.hpp>
+#include <algo/autolykos/autolykos.hpp>
 #include <algo/autolykos/cuda/autolykos.cuh>
 #include <common/cast.hpp>
 #include <common/error/cuda_error.hpp>
@@ -42,7 +43,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
 {
     ////////////////////////////////////////////////////////////////////////////
     setThreads(64u);
-    setBlocks(131072u);
+    setBlocks(algo::autolykos_v2::NONCES_PER_ITER / 64u);
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;

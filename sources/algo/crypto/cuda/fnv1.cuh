@@ -1,7 +1,6 @@
 #pragma once
 
-
-constexpr uint32_t FNV1_OFFSET{ 0x811c9dc5 };
+constexpr uint32_t FNV1_OFFSET{ 0x811c9dc5u };
 constexpr uint32_t FNV1_PRIME{ 0x01000193u };
 
 

@@ -1,6 +1,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <algo/autolykos/autolykos.hpp>
+#include <algo/hash_utils.hpp>
 #include <benchmark/benchmark.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/formater_hashrate.hpp>
@@ -76,11 +78,39 @@ void benchmark::Benchmark::stopChrono()
 }
 
 
+bool benchmark::Benchmark::getCleanResult64(t_result_64** result)
+{
+    CU_ALLOC_HOST(result, sizeof(t_result_64));
+
+    (*result)->error = false;
+    (*result)->found = false;
+
+    for (uint32_t i{ 0u }; i < MAX_RESULT_INDEX; ++i)
+    {
+        (*result)->nonce[i] = 0ull;
+    }
+
+    for (uint32_t x{ 0u }; x < MAX_RESULT_INDEX; ++x)
+    {
+        for (uint32_t y{ 0u }; y < MAX_RESULT_INDEX; ++y)
+        {
+            (*result)->mix[x][y] = 0ull;
+        }
+    }
+
+    return true;
+}
+
+
 void benchmark::Benchmark::runNvidia()
 {
     if (false == runNvidiaEthash())
     {
         logErr() << "Nvidia ETHASH failled!";
+    }
+    if (false == runNvidiaAutolykosv2())
+    {
+        logErr() << "Nvidia AutolykosV2 failled!";
     }
 }
 
@@ -105,19 +135,9 @@ bool benchmark::Benchmark::runNvidiaEthash()
 
     ////////////////////////////////////////////////////////////////////////////
     t_result_64* result{ nullptr };
-    CU_ALLOC_HOST(&result, sizeof(t_result_64));
-    result->error = false;
-    result->found = false;
-    for (uint32_t i{ 0u }; i < MAX_RESULT_INDEX; ++i)
+    if (false == getCleanResult64(&result))
     {
-        result->nonce[i] = 0ull;
-    }
-    for (uint32_t x{ 0u }; x < MAX_RESULT_INDEX; ++x)
-    {
-        for (uint32_t y{ 0u }; y < MAX_RESULT_INDEX; ++y)
-        {
-            result->mix[x][y] = 0ull;
-        }
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -134,6 +154,83 @@ bool benchmark::Benchmark::runNvidiaEthash()
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
+
+    return true;
+}
+
+
+bool benchmark::Benchmark::runNvidiaAutolykosv2()
+{
+    ////////////////////////////////////////////////////////////////////////////
+    using namespace std::string_literals;
+
+    ////////////////////////////////////////////////////////////////////////////
+    t_result_64* result{ nullptr };
+    if (false == getCleanResult64(&result))
+    {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    uint32_t const height{ 1u };
+    uint32_t const period{ 1u };
+    uint32_t const dagItemCount{ 1u };
+    algo::hash256 const header{ algo::toHash<algo::hash256>("6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
+    algo::hash256 const boundary
+    {
+        algo::toHash2<algo::hash256, algo::hash512>(
+            algo::toLittleEndian<algo::hash512>(
+                algo::decimalToHash<algo::hash512>(
+                    "28948022309329048855892746252171976963209391069768726095651290785380")))
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    algo::hash256* headerHash{ nullptr };
+    algo::hash256* dagHash{ nullptr };
+    algo::hash256* BHashes{ nullptr };
+
+    CU_ALLOC(&headerHash, algo::LEN_HASH_256);
+    CU_ALLOC(&dagHash, dagItemCount * algo::LEN_HASH_256);
+    CU_ALLOC(&BHashes, algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256);
+
+    IS_NULL(headerHash);
+    IS_NULL(dagHash);
+    IS_NULL(BHashes);
+
+    ////////////////////////////////////////////////////////////////////////////
+    threads = 64u;
+    blocks = algo::autolykos_v2::NONCES_PER_ITER;
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (true == autolykos_v2_mhssamadi_init(boundary.word32))
+    {
+        if (true == autolykos_v2_mhssamadi_prehash(propertiesNvidia.cuStream,
+                                                    result,
+                                                    dagHash->word32,
+                                                    blocks,
+                                                    threads,
+                                                    period,
+                                                    height))
+        {
+            startChrono("autolykos_v2_mhssamadi"s);
+            autolykos_v2_mhssamadi(
+                propertiesNvidia.cuStream,
+                result,
+                dagHash->word32,
+                BHashes->word32,
+                headerHash->word32,
+                blocks,
+                threads,
+                period,
+                height);
+            stopChrono();
+            return false;
+        }
+    }
+
+    CU_SAFE_DELETE(headerHash);
+    CU_SAFE_DELETE(dagHash);
+    CU_SAFE_DELETE(BHashes);
 
     return true;
 }
