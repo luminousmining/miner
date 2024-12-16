@@ -195,9 +195,9 @@ __global__ void BlockMiningStep1(
     uint32_t r[9] = { 0 };
 
     uint64_t aux[32];
+    uint32_t non[algo::autolykos_v2::NONCE_SIZE_32];
 
     uint32_t j;
-    uint32_t non[algo::autolykos_v2::NONCE_SIZE_32];
     uint64_t tmp;
     uint64_t hsh;
     uint64_t h2;
@@ -332,6 +332,9 @@ __global__ void BlockMiningStep2(
     uint64_t const base     // nonce
 )
 {
+    __shared__ uint32_t shared_index[64];
+    __shared__ uint32_t shared_data[512];
+
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t const thread_id = threadIdx.x & 7;
     uint32_t const thrdblck_id = threadIdx.x;
@@ -345,9 +348,6 @@ __global__ void BlockMiningStep2(
     uint4 v2 = { 0, 0, 0, 0 };
     uint4 v3 = { 0, 0, 0, 0 };
     uint4 v4 = { 0, 0, 0, 0 };
-
-    __shared__ uint32_t shared_index[64];
-    __shared__ uint32_t shared_data[512];
 
     uint8_t j = 0;
 
@@ -546,9 +546,9 @@ __global__ void BlockMiningStep2(
 
 
 __host__
-bool autolykos_v2_mhssamadi_init(uint32_t* boundary)
+bool autolykos_v2_mhssamadi_init(algo::hash256 const& boundary)
 {
-    CUDA_ER(cudaMemcpyToSymbol(bound_, (void*)boundary, algo::LEN_HASH_256));
+    CUDA_ER(cudaMemcpyToSymbol(bound_, (void*)&boundary, algo::LEN_HASH_256));
 
     return true;
 }
@@ -566,7 +566,7 @@ bool autolykos_v2_mhssamadi(
         uint32_t const period,
         uint32_t const height)
 {
-    uint64_t const nonce{ 0x111 };
+    uint64_t const nonce{ 11055774138563218679ull };
     BlockMiningStep1<<<blocks / 4u, threads, 0, stream>>>
     (
         header,

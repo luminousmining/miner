@@ -71,7 +71,7 @@ void stratum::StratumBlake3::onMiningNotify(
     jobInfo.jobIDStr.assign(jobParam.at("jobId").as_string().c_str());
     jobInfo.fromGroup = common::boostJsonGetNumber<uint32_t>(jobParam.at("fromGroup"));
     jobInfo.toGroup = common::boostJsonGetNumber<uint32_t>(jobParam.at("toGroup"));
-    jobInfo.targetBlob = algo::toHash<algo::hash256>(common::boostGetString(jobParam, "targetBlob"));
+    jobInfo.targetBlob = algo::toHash256(common::boostGetString(jobParam, "targetBlob"));
     jobInfo.headerBlob = algo::toHash<algo::hash3072>(
         common::boostGetString(jobParam, "headerBlob"),
         algo::HASH_SHIFT::RIGHT);

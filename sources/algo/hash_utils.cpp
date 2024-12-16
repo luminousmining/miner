@@ -5,6 +5,7 @@
 
 #include <algo/hash_utils.hpp>
 
+#include <common/log/log.hpp>
 
 uint64_t algo::toUINT64(
     algo::hash256 const& hash)

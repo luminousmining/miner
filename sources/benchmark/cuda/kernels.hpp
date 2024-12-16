@@ -24,7 +24,7 @@ bool ethash_ethminer(cudaStream_t stream,
                      uint32_t const threads);
 
 ///////////////////////////////////////////////////////////////////////////////
-bool autolykos_v2_mhssamadi_init(uint32_t* boundary);
+bool autolykos_v2_mhssamadi_init(algo::hash256 const& boundary);
 bool autolykos_v2_mhssamadi_prehash(cudaStream_t stream,
                                     t_result_64* result,
                                     uint32_t* hashes,

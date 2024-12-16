@@ -104,10 +104,10 @@ bool benchmark::Benchmark::getCleanResult64(t_result_64** result)
 
 void benchmark::Benchmark::runNvidia()
 {
-    if (false == runNvidiaEthash())
-    {
-        logErr() << "Nvidia ETHASH failled!";
-    }
+    // if (false == runNvidiaEthash())
+    // {
+    //     logErr() << "Nvidia ETHASH failled!";
+    // }
     if (false == runNvidiaAutolykosv2())
     {
         logErr() << "Nvidia AutolykosV2 failled!";
@@ -123,7 +123,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
     ////////////////////////////////////////////////////////////////////////////
     uint64_t const dagItems{ 45023203ull };
     uint64_t const boundary{ 10695475200ull };
-    auto const headerHash{ algo::toHash<algo::hash256>("257cf0c2c67dd2c39842da75f97dc76d41c7cbaf31f71d5d387b16cbf3da730b") };
+    auto const headerHash{ algo::toHash256("257cf0c2c67dd2c39842da75f97dc76d41c7cbaf31f71d5d387b16cbf3da730b") };
 
     ////////////////////////////////////////////////////////////////////////////
     algo::hash1024* dagHash{ nullptr };
@@ -172,10 +172,13 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const height{ 1u };
-    uint32_t const period{ 1u };
-    uint32_t const dagItemCount{ 1u };
-    algo::hash256 const header{ algo::toHash<algo::hash256>("6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
+    uint32_t const height{ 3130463488u };
+    uint32_t const period{ 146488965u };
+    uint32_t const dagItemCount{ period * algo::autolykos_v2::NUM_SIZE_8 };
+
+
+    algo::hash256 const header{ algo::toHash256("6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
+
     algo::hash256 const boundary
     {
         algo::toHash2<algo::hash256, algo::hash512>(
@@ -197,12 +200,17 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     IS_NULL(dagHash);
     IS_NULL(BHashes);
 
+    CUDA_ER(cudaMemcpy((void*)headerHash->bytes,
+                       (void const*)header.bytes,
+                       algo::LEN_HASH_256,
+                       cudaMemcpyHostToDevice));
+
     ////////////////////////////////////////////////////////////////////////////
     threads = 64u;
     blocks = algo::autolykos_v2::NONCES_PER_ITER;
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == autolykos_v2_mhssamadi_init(boundary.word32))
+    if (true == autolykos_v2_mhssamadi_init(boundary))
     {
         if (true == autolykos_v2_mhssamadi_prehash(propertiesNvidia.cuStream,
                                                     result,
@@ -224,7 +232,6 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
                 period,
                 height);
             stopChrono();
-            return false;
         }
     }
 
