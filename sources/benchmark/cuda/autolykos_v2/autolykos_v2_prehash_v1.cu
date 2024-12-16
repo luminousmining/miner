@@ -1,8 +1,16 @@
+///////////////////////////////////////////////////////////////////////////////
+#include <benchmark/cuda/kernels.hpp>
+
+///////////////////////////////////////////////////////////////////////////////
+#include <benchmark/cuda/common/common.cuh>
+#include <algo/crypto/cuda/blake2b.cuh>
+
+
 __global__
-void autolykos_v2_fill_dag(
+void kernel_autolykos_v2_prehash_v1(
     uint32_t* const __restrict__ hashes,
-    uint32_t  const period,
-    uint32_t  const height)
+    uint32_t const period,
+    uint32_t const height)
 {
     ///////////////////////////////////////////////////////////////////////////
     uint32_t const tid{ threadIdx.x + (blockDim.x * blockIdx.x) };
@@ -81,15 +89,19 @@ void autolykos_v2_fill_dag(
 
 
 __host__
-bool autolykosv2BuildDag(
+bool autolykos_v2_prehash_v1(
     cudaStream_t stream,
-    resolver::nvidia::autolykos_v2::KernelParameters& params)
+    uint32_t* dag,
+    uint32_t const blocks,
+    uint32_t const threads,
+    uint32_t const period,
+    uint32_t const height)
 {
-    autolykos_v2_fill_dag<<<params.hostDagItemCount / 64, 64, 0, stream>>>
+    kernel_autolykos_v2_prehash_v1<<<blocks, threads, 0, stream>>>
     (
-        (uint32_t*)params.dag,
-        params.hostPeriod,
-        params.hostHeight
+        dag,
+        period,
+        height
     );
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());

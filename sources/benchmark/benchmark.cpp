@@ -213,14 +213,13 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     if (true == autolykos_v2_mhssamadi_init(boundary))
     {
         if (true == autolykos_v2_mhssamadi_prehash(propertiesNvidia.cuStream,
-                                                    result,
-                                                    dagHash->word32,
-                                                    blocks,
-                                                    threads,
-                                                    period,
-                                                    height))
+                                                   dagHash->word32,
+                                                   blocks,
+                                                   threads,
+                                                   period,
+                                                   height))
         {
-            startChrono("autolykos_v2_mhssamadi"s);
+            startChrono("autolykos_v2: mhssamadi"s);
             autolykos_v2_mhssamadi(
                 propertiesNvidia.cuStream,
                 result,
@@ -234,6 +233,30 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
             stopChrono();
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (true == autolykos_v2_v1_init(boundary))
+    {
+        if (true == autolykos_v2_prehash_v1(propertiesNvidia.cuStream,
+                                            dagHash->word32,
+                                            blocks,
+                                            threads,
+                                            period,
+                                            height))
+        {
+            startChrono("autolykos_v2: v1"s);
+            autolykos_v2_v1(propertiesNvidia.cuStream,
+                            result,
+                            dagHash->word32,
+                            headerHash->word32,
+                            BHashes->word32,
+                            blocks,
+                            threads,
+                            period);
+            stopChrono();
+        }
+    }
+
 
     CU_SAFE_DELETE(headerHash);
     CU_SAFE_DELETE(dagHash);

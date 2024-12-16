@@ -1,5 +1,4 @@
 ///////////////////////////////////////////////////////////////////////////////
-#include <common/cast.hpp>
 #include <benchmark/cuda/kernels.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -217,7 +216,6 @@ void autolykos_v2_mhssamadi_init_prehash(
 __host__
 bool autolykos_v2_mhssamadi_prehash(
         cudaStream_t stream,
-        t_result_64* result,
         uint32_t* hashes,
         uint32_t const blocks,
         uint32_t const threads,

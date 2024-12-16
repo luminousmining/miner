@@ -567,6 +567,7 @@ bool autolykos_v2_mhssamadi(
         uint32_t const height)
 {
     uint64_t const nonce{ 11055774138563218679ull };
+
     BlockMiningStep1<<<blocks / 4u, threads, 0, stream>>>
     (
         header,
