@@ -539,7 +539,11 @@ __global__ void BlockMiningStep2(
         if (j)
         {
             uint32_t const index = atomicAdd((uint32_t*)&result->index, 1);
-            printf("nonce[%lu] tid[%u] result[%lu]\n", base, tid, base + tid);
+            if (index < MAX_RESULT_INDEX)
+            {
+                result->found = true;
+                result->nonce[index] = tid + base;
+            }
         }
     }
 }

@@ -677,7 +677,6 @@ kernel_autolykos_v2_step_2_v1(
         {
             result->found = true;
             result->nonce[index] = tid + nonce;
-            printf("nonce[%lu] tid[%u] result[%lu]\n", nonce, tid, nonce + tid);
         }
     }
 }
