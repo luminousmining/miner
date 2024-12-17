@@ -35,10 +35,13 @@ struct ResolverAutolykosv2NvidiaTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber = 1415098;
+        jobInfo.blockNumber = 1415098u;
         jobInfo.headerHash = algo::toHash256("6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80");
-        jobInfo.boundary = algo::toHash256("28948022309329048855892746252171976963209391069768726095651290785380");
-        jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
+        jobInfo.boundary =
+        algo::toHash2<algo::hash256, algo::hash512>(
+            algo::toLittleEndian<algo::hash512>(
+                algo::decimalToHash<algo::hash512>(
+                    "28948022309329048855892746252171976963209391069768726095651290785380")));
         jobInfo.period = castU64(algo::autolykos_v2::computePeriod(castU32(jobInfo.blockNumber)));
     }
 };
@@ -72,5 +75,5 @@ TEST_F(ResolverAutolykosv2NvidiaTest, findNonce)
     ASSERT_TRUE(resolver.execute(jobInfo));
     resolver.submit(&stratum);
 
-    EXPECT_TRUE(stratum.paramSubmit.empty());
+    EXPECT_FALSE(stratum.paramSubmit.empty());
 }

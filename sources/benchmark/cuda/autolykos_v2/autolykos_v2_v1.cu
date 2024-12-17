@@ -158,7 +158,7 @@ void devB2B_MIX(
 
 __global__
 void __launch_bounds__(64, 64)
-kernel_autolykos_v2_step1_v1(
+kernel_autolykos_v2_step1_lm1(
     uint32_t* __restrict__              hashes,
     uint64_t const* __restrict__ const  header,
     uint32_t* __restrict__ const        BHashes,
@@ -407,18 +407,9 @@ void update_mix(
 }
 
 
-__host__
-bool autolykos_v2_v1_init(algo::hash256 const& boundary)
-{
-    CUDA_ER(cudaMemcpyToSymbol(d_bound, (void*)&boundary, algo::LEN_HASH_256));
-
-    return true;
-}
-
-
 __global__
 void __launch_bounds__(64, 64)
-kernel_autolykos_v2_step_2_v1(
+kernel_autolykos_v2_step_2_lm1(
     uint32_t const* const __restrict__ hashes,
     uint32_t* const __restrict__       BHashes,
     volatile t_result_64* __restrict__ result,
@@ -670,7 +661,7 @@ kernel_autolykos_v2_step_2_v1(
         || ((r2 < b2) && (r3 == b3))
         || (r3 < b3);
 
-    if (j)
+    if (true == j)
     {
         uint32_t const index = atomicAdd((uint32_t*)&result->index, 1);
         if (index < MAX_RESULT_INDEX)
@@ -683,7 +674,7 @@ kernel_autolykos_v2_step_2_v1(
 
 
 __host__
-bool autolykos_v2_v1(
+bool autolykos_v2_lm1(
     cudaStream_t stream,
     t_result_64* result,
     uint32_t* dag,
@@ -695,7 +686,7 @@ bool autolykos_v2_v1(
 {
     uint64_t const nonce{ 11055774138563218679ull };
 
-    kernel_autolykos_v2_step1_v1<<<blocks / 4u, threads, 0, stream>>>
+    kernel_autolykos_v2_step1_lm1<<<blocks / 4u, threads, 0, stream>>>
     (
         dag,
         (uint64_t*)header,
@@ -706,7 +697,7 @@ bool autolykos_v2_v1(
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());
 
-    kernel_autolykos_v2_step_2_v1<<<blocks, threads, 0, stream>>>
+    kernel_autolykos_v2_step_2_lm1<<<blocks, threads, 0, stream>>>
     (
         dag,
         BHashes,
@@ -716,6 +707,15 @@ bool autolykos_v2_v1(
     );
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());
+
+    return true;
+}
+
+
+__host__
+bool autolykos_v2_init_lm1(algo::hash256 const& boundary)
+{
+    CUDA_ER(cudaMemcpyToSymbol(d_bound, (void*)&boundary, algo::LEN_HASH_256));
 
     return true;
 }

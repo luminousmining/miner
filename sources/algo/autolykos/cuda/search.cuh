@@ -632,7 +632,7 @@ kernel_autolykos_verify(
         || ((r2 < b2) && (r3 == b3))
         || (r3 < b3);
 
-    if (j)
+    if (true == j)
     {
         uint32_t const index = atomicAdd((uint32_t*)&result->count, 1);
         if (index < algo::autolykos_v2::MAX_RESULT)

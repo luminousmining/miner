@@ -42,18 +42,18 @@ bool autolykos_v2_mhssamadi(cudaStream_t stream,
                             uint32_t const height);
 
 ///////////////////////////////////////////////////////////////////////////////
-bool autolykos_v2_v1_init(algo::hash256 const& boundary);
-bool autolykos_v2_prehash_v1(cudaStream_t stream,
-                             uint32_t* dag,
-                             uint32_t const blocks,
-                             uint32_t const threads,
-                             uint32_t const period,
-                             uint32_t const height);
-bool autolykos_v2_v1(cudaStream_t stream,
-                     t_result_64* result,
-                     uint32_t* dag,
-                     uint32_t* header,
-                     uint32_t* BHashes,
-                     uint32_t const blocks,
-                     uint32_t const threads,
-                     uint32_t const period);
+bool autolykos_v2_init_lm1(algo::hash256 const& boundary);
+bool autolykos_v2_prehash_lm1(cudaStream_t stream,
+                              uint32_t* dag,
+                              uint32_t const blocks,
+                              uint32_t const threads,
+                              uint32_t const period,
+                              uint32_t const height);
+bool autolykos_v2_lm1(cudaStream_t stream,
+                      t_result_64* result,
+                      uint32_t* dag,
+                      uint32_t* header,
+                      uint32_t* BHashes,
+                      uint32_t const blocks,
+                      uint32_t const threads,
+                      uint32_t const period);

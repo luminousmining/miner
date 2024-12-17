@@ -123,12 +123,11 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
-    }
 
-    resultShare.count = 0u;
-    resultShare.found = false;
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
 }
 
 
@@ -155,10 +154,9 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
-    }
 
-    resultShare.count = 0u;
-    resultShare.found = false;
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
 }

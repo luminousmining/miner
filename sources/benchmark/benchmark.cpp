@@ -104,10 +104,10 @@ bool benchmark::Benchmark::getCleanResult64(t_result_64** result)
 
 void benchmark::Benchmark::runNvidia()
 {
-    // if (false == runNvidiaEthash())
-    // {
-    //     logErr() << "Nvidia ETHASH failled!";
-    // }
+    if (false == runNvidiaEthash())
+    {
+        logErr() << "Nvidia ETHASH failled!";
+    }
     if (false == runNvidiaAutolykosv2())
     {
         logErr() << "Nvidia AutolykosV2 failled!";
@@ -235,17 +235,17 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == autolykos_v2_v1_init(boundary))
+    if (true == autolykos_v2_init_lm1(boundary))
     {
-        if (true == autolykos_v2_prehash_v1(propertiesNvidia.cuStream,
+        if (true == autolykos_v2_prehash_lm1(propertiesNvidia.cuStream,
                                             dagHash->word32,
                                             blocks,
                                             threads,
                                             period,
                                             height))
         {
-            startChrono("autolykos_v2: v1"s);
-            autolykos_v2_v1(propertiesNvidia.cuStream,
+            startChrono("autolykos_v2: lm1"s);
+            autolykos_v2_lm1(propertiesNvidia.cuStream,
                             result,
                             dagHash->word32,
                             headerHash->word32,

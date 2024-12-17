@@ -7,7 +7,7 @@
 
 
 __global__
-void kernel_autolykos_v2_prehash_v1(
+void kernel_autolykos_v2_prehash_lm1(
     uint32_t* const __restrict__ hashes,
     uint32_t const period,
     uint32_t const height)
@@ -89,7 +89,7 @@ void kernel_autolykos_v2_prehash_v1(
 
 
 __host__
-bool autolykos_v2_prehash_v1(
+bool autolykos_v2_prehash_lm1(
     cudaStream_t stream,
     uint32_t* dag,
     uint32_t const blocks,
@@ -97,7 +97,7 @@ bool autolykos_v2_prehash_v1(
     uint32_t const period,
     uint32_t const height)
 {
-    kernel_autolykos_v2_prehash_v1<<<blocks, threads, 0, stream>>>
+    kernel_autolykos_v2_prehash_lm1<<<blocks, threads, 0, stream>>>
     (
         dag,
         period,
