@@ -58,7 +58,7 @@ nmake install
 ```
   
 ### Linux
-- clang++ == 10
+- clang++ == 11
 - CMake >= 3.22
 
 ### Install
@@ -75,7 +75,7 @@ sudo ln -s /opt/cmake-3.26.4-linux-x86_64/bin/* /usr/local/bin
   
 compiler :
 ```sh
-sudo apt install -y build-essential libstdc++-10-dev gnutls-dev cppcheck checkinstall clang-10 libx11-dev
+sudo apt install -y build-essential libstdc++-11-dev libc++abi-11-dev gnutls-dev cppcheck checkinstall clang-11 libx11-dev
 ```
   
 openssl :
