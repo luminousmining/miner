@@ -104,7 +104,6 @@ if (WIN32)
 else()
     set(BOOST_INCLUDEDIR "/usr/local/include/boost")
     set(BOOST_LIBRARYDIR "/usr/local/lib")
-
 endif()
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(Boost_DEBUG             ON)
