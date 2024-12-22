@@ -39,8 +39,8 @@ void kernel_autolykos_v2_prehash_lm1(
 
     ///////////////////////////////////////////////////////////////////////////
     uint64_t ctr = 0;
-    ((uint32_t *)b)[0] = be_u32(tid);
-    ((uint32_t *)b)[1] = height;
+    ((uint32_t*)b)[0] = be_u32(tid);
+    ((uint32_t*)b)[1] = height;
     for (uint32_t x = 1u; x < 16u; ++x, ++ctr)
     {
         b[x] = be_u64(ctr);
@@ -51,7 +51,7 @@ void kernel_autolykos_v2_prehash_lm1(
     for (uint32_t z = 0; z < 63u; ++z)
     {
         t += 128ull;
-        blake2b((uint64_t *)h, (uint64_t *)b, t, 0UL);
+        blake2b((uint64_t*)h, (uint64_t *)b, t, 0UL);
 
         #pragma unroll
         for (uint32_t x = 0; x < 16u; ++x, ++ctr)
@@ -62,7 +62,7 @@ void kernel_autolykos_v2_prehash_lm1(
 
     ///////////////////////////////////////////////////////////////////////////
     t += 128ull;
-    blake2b((uint64_t *)h, (uint64_t *)b, t, 0UL);
+    blake2b((uint64_t*)h, (uint64_t*)b, t, 0UL);
     b[0] = be_u64(ctr);
     t += 8;
 
@@ -70,21 +70,21 @@ void kernel_autolykos_v2_prehash_lm1(
     #pragma unroll
     for (uint32_t i = 1u; i < 16u; ++i)
     {
-        ((uint64_t *)b)[i] = 0ull;
+        ((uint64_t*)b)[i] = 0ull;
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    blake2b((uint64_t *)h, (uint64_t *)b, t, 0xFFFFFFFFFFFFFFFFUL);
+    blake2b((uint64_t*)h, (uint64_t*)b, t, 0xFFFFFFFFFFFFFFFFUL);
 
     ///////////////////////////////////////////////////////////////////////////
     #pragma unroll
     for (uint32_t i = 0u; i < 4u; ++i)
     {
-        ((uint64_t *)hashes)[(tid + 1) * 4 - i - 1] = be_u64(h[i]);
+        ((uint64_t*)hashes)[(tid + 1) * 4 - i - 1] = be_u64(h[i]);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ((uint8_t *)hashes)[tid * 32 + 31] = 0;
+    ((uint8_t*)hashes)[tid * 32 + 31] = 0;
 }
 
 

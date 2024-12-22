@@ -36,6 +36,7 @@ namespace algo
         constexpr uint32_t AMD_NONCES_PER_THREAD { 1u };
         constexpr uint32_t AMD_THREADS_PER_ITER { (AMD_NONCES_PER_ITER / AMD_NONCES_PER_THREAD) };
 
+        bool isValidShare();
 #if !defined(__LIB_CUDA)
         uint32_t computePeriod(uint32_t const blockNumner);
 #endif //!__LIB_CUDA

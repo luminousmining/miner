@@ -75,5 +75,7 @@ TEST_F(ResolverAutolykosv2NvidiaTest, findNonce)
     ASSERT_TRUE(resolver.execute(jobInfo));
     resolver.submit(&stratum);
 
+    EXPECT_TRUE(algo::autolykos_v2::isValidShare());
+
     EXPECT_FALSE(stratum.paramSubmit.empty());
 }

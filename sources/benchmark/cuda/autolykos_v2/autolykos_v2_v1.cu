@@ -278,8 +278,8 @@ kernel_autolykos_v2_step1_lm1(
         ///////////////////////////////////////////////////////////////////////////
         B2B_INIT(aux);
         aux[0] = 0x6A09E667F2BDC928;
-        ((uint64_t *)(aux))[12] ^= 71; //31+32+8;
-        ((uint64_t *)(aux))[13] ^= 0;
+        ((uint64_t*)(aux))[12] ^= 71; //31+32+8;
+        ((uint64_t*)(aux))[13] ^= 0;
 
         aux[14] = ~aux[14];
 
@@ -296,7 +296,7 @@ kernel_autolykos_v2_step1_lm1(
         ((uint64_t*)&bb[47])[0] = header[2];
         ((uint64_t*)&bb[55])[0] = header[3];
 
-        ((uint64_t *)&bb[63])[0] = tmp;
+        ((uint64_t*)&bb[63])[0] = tmp;
 
         aux[25] = 0ull;
         aux[26] = 0ull;
@@ -452,10 +452,10 @@ kernel_autolykos_v2_step_2_lm1(
     r[6] = BHashes[50331648 + tid];
     r[7] = BHashes[58720256 + tid];
 
-    ((uint8_t* const)r)[32] = ((uint8_t const* const)r)[0];
-    ((uint8_t* const)r)[33] = ((uint8_t const* const)r)[1];
-    ((uint8_t* const)r)[34] = ((uint8_t const* const)r)[2];
-    ((uint8_t* const)r)[35] = ((uint8_t const* const)r)[3];
+    ((uint8_t*)r)[32] = ((uint8_t*)r)[0];
+    ((uint8_t*)r)[33] = ((uint8_t*)r)[1];
+    ((uint8_t*)r)[34] = ((uint8_t*)r)[2];
+    ((uint8_t*)r)[35] = ((uint8_t*)r)[3];
 
 
     ///////////////////////////////////////////////////////////////////////////

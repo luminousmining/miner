@@ -48,21 +48,21 @@ uint64_t devROTR64(uint64_t b, int offset)
 __device__ __forceinline__
 void devB2B_G(
     uint64_t* v,
-    int a,
-    int b,
-    int c,
-    int d,
-    uint64_t x,
-    uint64_t y)
+    int const a,
+    int const b,
+    int const c,
+    int const d,
+    uint64_t const x,
+    uint64_t const y)
 {
-    ((uint64_t *)(v))[a] += ((uint64_t *)(v))[b] + x;
-    ((uint64_t *)(v))[d] = devROTR64(((uint64_t *)(v))[d] ^ ((uint64_t *)(v))[a], 32);
-    ((uint64_t *)(v))[c] += ((uint64_t *)(v))[d];
-    ((uint64_t *)(v))[b] = devROTR64(((uint64_t *)(v))[b] ^ ((uint64_t *)(v))[c], 24);
-    ((uint64_t *)(v))[a] += ((uint64_t *)(v))[b] + y;
-    ((uint64_t *)(v))[d] = devROTR64(((uint64_t *)(v))[d] ^ ((uint64_t *)(v))[a], 16);
-    ((uint64_t *)(v))[c] += ((uint64_t *)(v))[d];
-    ((uint64_t *)(v))[b] = devROTR64(((uint64_t *)(v))[b] ^ ((uint64_t *)(v))[c], 63);
+    ((uint64_t*)(v))[a] += ((uint64_t*)(v))[b] + x;
+    ((uint64_t*)(v))[d] = devROTR64(((uint64_t*)(v))[d] ^ ((uint64_t*)(v))[a], 32);
+    ((uint64_t*)(v))[c] += ((uint64_t*)(v))[d];
+    ((uint64_t*)(v))[b] = devROTR64(((uint64_t*)(v))[b] ^ ((uint64_t*)(v))[c], 24);
+    ((uint64_t*)(v))[a] += ((uint64_t*)(v))[b] + y;
+    ((uint64_t*)(v))[d] = devROTR64(((uint64_t*)(v))[d] ^ ((uint64_t*)(v))[a], 16);
+    ((uint64_t*)(v))[c] += ((uint64_t*)(v))[d];
+    ((uint64_t*)(v))[b] = devROTR64(((uint64_t*)(v))[b] ^ ((uint64_t*)(v))[c], 63);
 }
 
 
@@ -71,113 +71,113 @@ void devB2B_MIX(
     uint64_t* v,
     uint64_t* m)
 {
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[0], ((uint64_t *)(m))[1]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[2], ((uint64_t *)(m))[3]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[4], ((uint64_t *)(m))[5]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[6], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[8], ((uint64_t *)(m))[9]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[10], ((uint64_t *)(m))[11]);
-    devB2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[12], ((uint64_t *)(m))[13]);
-    devB2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[14], ((uint64_t *)(m))[15]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[1]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[2], ((uint64_t*)(m))[3]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[4], ((uint64_t*)(m))[5]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[6], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[8], ((uint64_t*)(m))[9]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[10], ((uint64_t*)(m))[11]);
+    devB2B_G(v, 2, 7,  8, 13, ((uint64_t*)(m))[12], ((uint64_t*)(m))[13]);
+    devB2B_G(v, 3, 4,  9, 14, ((uint64_t*)(m))[14], ((uint64_t*)(m))[15]);
 
-    devB2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[14], ((uint64_t *)(m))[10]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[4], ((uint64_t *)(m))[8]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[9], ((uint64_t *)(m))[15]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[13], ((uint64_t *)(m))[6]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[1], ((uint64_t *)(m))[12]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[0], ((uint64_t *)(m))[2]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[11], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[5], ((uint64_t *)(m))[3]);
+    devB2B_G(v, 0, 4,  8, 12, ((uint64_t*)(m))[14], ((uint64_t*)(m))[10]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[4], ((uint64_t*)(m))[8]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[9], ((uint64_t*)(m))[15]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[13], ((uint64_t*)(m))[6]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[1], ((uint64_t*)(m))[12]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[2]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[11], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[5], ((uint64_t*)(m))[3]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[11], ((uint64_t *)(m))[8]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[12], ((uint64_t *)(m))[0]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[5], ((uint64_t *)(m))[2]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[15], ((uint64_t *)(m))[13]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[10], ((uint64_t *)(m))[14]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[3], ((uint64_t *)(m))[6]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[7], ((uint64_t *)(m))[1]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[9], ((uint64_t *)(m))[4]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[11], ((uint64_t*)(m))[8]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[12], ((uint64_t*)(m))[0]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[5], ((uint64_t*)(m))[2]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[15], ((uint64_t*)(m))[13]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[10], ((uint64_t*)(m))[14]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[3], ((uint64_t*)(m))[6]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[7], ((uint64_t*)(m))[1]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[9], ((uint64_t*)(m))[4]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[7], ((uint64_t *)(m))[9]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[3], ((uint64_t *)(m))[1]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[13], ((uint64_t *)(m))[12]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[11], ((uint64_t *)(m))[14]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[2], ((uint64_t *)(m))[6]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[5], ((uint64_t *)(m))[10]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[4], ((uint64_t *)(m))[0]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[15], ((uint64_t *)(m))[8]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[7], ((uint64_t*)(m))[9]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[3], ((uint64_t*)(m))[1]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[13], ((uint64_t*)(m))[12]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[11], ((uint64_t*)(m))[14]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[2], ((uint64_t*)(m))[6]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[5], ((uint64_t*)(m))[10]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[4], ((uint64_t*)(m))[0]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[15], ((uint64_t*)(m))[8]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[9], ((uint64_t *)(m))[0]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[5], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[2], ((uint64_t *)(m))[4]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[10], ((uint64_t *)(m))[15]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[14], ((uint64_t *)(m))[1]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[11], ((uint64_t *)(m))[12]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[6], ((uint64_t *)(m))[8]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[3], ((uint64_t *)(m))[13]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[9], ((uint64_t*)(m))[0]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[5], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[2], ((uint64_t*)(m))[4]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[10], ((uint64_t*)(m))[15]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[14], ((uint64_t*)(m))[1]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[11], ((uint64_t*)(m))[12]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[6], ((uint64_t*)(m))[8]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[3], ((uint64_t*)(m))[13]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[2], ((uint64_t *)(m))[12]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[6], ((uint64_t *)(m))[10]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[0], ((uint64_t *)(m))[11]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[8], ((uint64_t *)(m))[3]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[4], ((uint64_t *)(m))[13]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[7], ((uint64_t *)(m))[5]);
-    devB2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[15], ((uint64_t *)(m))[14]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[1], ((uint64_t *)(m))[9]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[2], ((uint64_t*)(m))[12]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[6], ((uint64_t*)(m))[10]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[0], ((uint64_t*)(m))[11]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[8], ((uint64_t*)(m))[3]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[4], ((uint64_t*)(m))[13]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[7], ((uint64_t*)(m))[5]);
+    devB2B_G(v, 2, 7,  8, 13, ((uint64_t*)(m))[15], ((uint64_t*)(m))[14]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[1], ((uint64_t*)(m))[9]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[12], ((uint64_t *)(m))[5]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[1], ((uint64_t *)(m))[15]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[14], ((uint64_t *)(m))[13]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[4], ((uint64_t *)(m))[10]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[0], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[6], ((uint64_t *)(m))[3]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[9], ((uint64_t *)(m))[2]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[8], ((uint64_t *)(m))[11]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[12], ((uint64_t*)(m))[5]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[1], ((uint64_t*)(m))[15]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[14], ((uint64_t*)(m))[13]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[4], ((uint64_t*)(m))[10]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[0], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[6], ((uint64_t*)(m))[3]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[9], ((uint64_t*)(m))[2]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[8], ((uint64_t*)(m))[11]);
 
-    devB2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[13], ((uint64_t *)(m))[11]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[7], ((uint64_t *)(m))[14]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[12], ((uint64_t *)(m))[1]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[3], ((uint64_t *)(m))[9]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[5], ((uint64_t *)(m))[0]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[15], ((uint64_t *)(m))[4]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[8], ((uint64_t *)(m))[6]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[2], ((uint64_t *)(m))[10]);
+    devB2B_G(v, 0, 4,  8, 12, ((uint64_t*)(m))[13], ((uint64_t*)(m))[11]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[7], ((uint64_t*)(m))[14]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[12], ((uint64_t*)(m))[1]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[3], ((uint64_t*)(m))[9]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[5], ((uint64_t*)(m))[0]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[15], ((uint64_t*)(m))[4]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[8], ((uint64_t*)(m))[6]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[2], ((uint64_t*)(m))[10]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[6], ((uint64_t *)(m))[15]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[14], ((uint64_t *)(m))[9]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[11], ((uint64_t *)(m))[3]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[0], ((uint64_t *)(m))[8]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[12], ((uint64_t *)(m))[2]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[13], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[1], ((uint64_t *)(m))[4]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[10], ((uint64_t *)(m))[5]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[6], ((uint64_t*)(m))[15]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[14], ((uint64_t*)(m))[9]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[11], ((uint64_t*)(m))[3]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[0], ((uint64_t*)(m))[8]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[12], ((uint64_t*)(m))[2]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[13], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[1], ((uint64_t*)(m))[4]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[10], ((uint64_t*)(m))[5]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[10], ((uint64_t *)(m))[2]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[8], ((uint64_t *)(m))[4]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[7], ((uint64_t *)(m))[6]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[1], ((uint64_t *)(m))[5]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[15], ((uint64_t *)(m))[11]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[9], ((uint64_t *)(m))[14]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[3], ((uint64_t *)(m))[12]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[13], ((uint64_t *)(m))[0]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[10], ((uint64_t*)(m))[2]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[8], ((uint64_t*)(m))[4]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[7], ((uint64_t*)(m))[6]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[1], ((uint64_t*)(m))[5]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[15], ((uint64_t*)(m))[11]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[9], ((uint64_t*)(m))[14]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[3], ((uint64_t*)(m))[12]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[13], ((uint64_t*)(m))[0]);
 
-    devB2B_G(v, 0, 4, 8, 12, ((uint64_t *)(m))[0], ((uint64_t *)(m))[1]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[2], ((uint64_t *)(m))[3]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[4], ((uint64_t *)(m))[5]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[6], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[8], ((uint64_t *)(m))[9]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[10], ((uint64_t *)(m))[11]);
-    devB2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[12], ((uint64_t *)(m))[13]);
-    devB2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[14], ((uint64_t *)(m))[15]);
+    devB2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[1]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[2], ((uint64_t*)(m))[3]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[4], ((uint64_t*)(m))[5]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[6], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[8], ((uint64_t*)(m))[9]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[10], ((uint64_t*)(m))[11]);
+    devB2B_G(v, 2, 7,  8, 13, ((uint64_t*)(m))[12], ((uint64_t*)(m))[13]);
+    devB2B_G(v, 3, 4,  9, 14, ((uint64_t*)(m))[14], ((uint64_t*)(m))[15]);
 
-    devB2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[14], ((uint64_t *)(m))[10]);
-    devB2B_G(v, 1, 5, 9, 13, ((uint64_t *)(m))[4], ((uint64_t *)(m))[8]);
-    devB2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[9], ((uint64_t *)(m))[15]);
-    devB2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[13], ((uint64_t *)(m))[6]);
-    devB2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[1], ((uint64_t *)(m))[12]);
-    devB2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[0], ((uint64_t *)(m))[2]);
-    devB2B_G(v, 2, 7, 8, 13, ((uint64_t *)(m))[11], ((uint64_t *)(m))[7]);
-    devB2B_G(v, 3, 4, 9, 14, ((uint64_t *)(m))[5], ((uint64_t *)(m))[3]);
+    devB2B_G(v, 0, 4,  8, 12, ((uint64_t*)(m))[14], ((uint64_t*)(m))[10]);
+    devB2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[4], ((uint64_t*)(m))[8]);
+    devB2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[9], ((uint64_t*)(m))[15]);
+    devB2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[13], ((uint64_t*)(m))[6]);
+    devB2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[1], ((uint64_t*)(m))[12]);
+    devB2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[2]);
+    devB2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[11], ((uint64_t*)(m))[7]);
+    devB2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[5], ((uint64_t*)(m))[3]);
 }
 
 
@@ -192,7 +192,7 @@ __global__ void BlockMiningStep1(
 {
 
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    uint32_t r[9] = { 0 };
+    uint32_t r[9] = { 0u };
 
     uint64_t aux[32];
     uint32_t non[algo::autolykos_v2::NONCE_SIZE_32];
@@ -250,7 +250,7 @@ __global__ void BlockMiningStep1(
             for (j = 0; j < algo::autolykos_v2::NUM_SIZE_32; j += 2)
             {
                 hsh = ivals[j >> 1];
-                hsh ^= ((uint64_t *)(aux))[j >> 1] ^ ((uint64_t *)(aux))[8 + (j >> 1)];
+                hsh ^= ((uint64_t*)(aux))[j >> 1] ^ ((uint64_t*)(aux))[8 + (j >> 1)];
 
                 r[j] =  ((uint32_t*)(&hsh))[0];
                 r[j + 1] = ((uint32_t*)(&hsh))[1];
@@ -280,31 +280,31 @@ __global__ void BlockMiningStep1(
 
             aux[0] = ivals[0];
 
-            ((uint64_t *)(aux))[12] ^= 71; //31+32+8;
-            ((uint64_t *)(aux))[13] ^= 0;
+            ((uint64_t*)(aux))[12] ^= 71; //31+32+8;
+            ((uint64_t*)(aux))[13] ^= 0;
 
-            ((uint64_t *)(aux))[14] = ~((uint64_t *)(aux))[14];
+            ((uint64_t*)(aux))[14] = ~((uint64_t*)(aux))[14];
 
-            uint8_t *bb = (uint8_t *)(&(((uint64_t *)(aux))[16]));
-            ((uint64_t *)bb)[0] = ((uint64_t *)(&((uint8_t *)r)[1]))[0];
-            ((uint64_t *)bb)[1] = ((uint64_t *)(&((uint8_t *)r)[1]))[1];
-            ((uint64_t *)bb)[2] = ((uint64_t *)(&((uint8_t *)r)[1]))[2];
-            ((uint64_t *)bb)[3] = ((uint64_t *)(&((uint8_t *)r)[1]))[3];
+            uint8_t* bb = (uint8_t*)(&(((uint64_t*)(aux))[16]));
+            ((uint64_t*)bb)[0] = ((uint64_t*)(&((uint8_t*)r)[1]))[0];
+            ((uint64_t*)bb)[1] = ((uint64_t*)(&((uint8_t*)r)[1]))[1];
+            ((uint64_t*)bb)[2] = ((uint64_t*)(&((uint8_t*)r)[1]))[2];
+            ((uint64_t*)bb)[3] = ((uint64_t*)(&((uint8_t*)r)[1]))[3];
 
-            ((uint64_t *)&bb[31])[0] = ((uint64_t *)data)[0];
-            ((uint64_t *)&bb[39])[0] = ((uint64_t *)data)[1];
-            ((uint64_t *)&bb[47])[0] = ((uint64_t *)data)[2];
-            ((uint64_t *)&bb[55])[0] = ((uint64_t *)data)[3];
+            ((uint64_t*)&bb[31])[0] = ((uint64_t*)data)[0];
+            ((uint64_t*)&bb[39])[0] = ((uint64_t*)data)[1];
+            ((uint64_t*)&bb[47])[0] = ((uint64_t*)data)[2];
+            ((uint64_t*)&bb[55])[0] = ((uint64_t*)data)[3];
 
-            ((uint64_t *)&bb[63])[0] = tmp;
+            ((uint64_t*)&bb[63])[0] = tmp;
 
-            ((uint64_t *)(aux))[25] = 0;
-            ((uint64_t *)(aux))[26] = 0;
-            ((uint64_t *)(aux))[27] = 0;
-            ((uint64_t *)(aux))[28] = 0;
-            ((uint64_t *)(aux))[29] = 0;
-            ((uint64_t *)(aux))[30] = 0;
-            ((uint64_t *)(aux))[31] = 0;
+            ((uint64_t*)(aux))[25] = 0;
+            ((uint64_t*)(aux))[26] = 0;
+            ((uint64_t*)(aux))[27] = 0;
+            ((uint64_t*)(aux))[28] = 0;
+            ((uint64_t*)(aux))[29] = 0;
+            ((uint64_t*)(aux))[30] = 0;
+            ((uint64_t*)(aux))[31] = 0;
 
             devB2B_MIX(aux, aux + 16);
 
@@ -312,7 +312,7 @@ __global__ void BlockMiningStep1(
             for (j = 0; j < algo::autolykos_v2::NUM_SIZE_32; j += 2)
             {
                 hsh = ivals[j >> 1];
-                hsh ^= ((uint64_t *)(aux))[j >> 1] ^ ((uint64_t *)(aux))[8 + (j >> 1)];
+                hsh ^= ((uint64_t*)(aux))[j >> 1] ^ ((uint64_t*)(aux))[8 + (j >> 1)];
                 BHashes[algo::autolykos_v2::THREADS_PER_ITER * j + tid] = __byte_perm(((uint32_t*)(&hsh))[0], 0, 0x0123);
                 BHashes[algo::autolykos_v2::THREADS_PER_ITER * (j + 1) + tid] = __byte_perm(((uint32_t*)(&hsh))[1], 0, 0x0123);
             }
@@ -340,9 +340,9 @@ __global__ void BlockMiningStep2(
     uint32_t const thrdblck_id = threadIdx.x;
     uint32_t const hash_id = threadIdx.x >> 3;
 
-    uint64_t aux[32] = { 0 };
-    uint32_t ind[32] = { 0 };
-    uint32_t r[9] = { 0 };
+    uint64_t aux[32] = { 0ull };
+    uint32_t ind[32] = { 0u };
+    uint32_t r[9] = { 0u };
 
     uint4 v1 = { 0, 0, 0, 0 };
     uint4 v2 = { 0, 0, 0, 0 };
@@ -362,15 +362,15 @@ __global__ void BlockMiningStep2(
         //================================================================//
         //  Generate indices
         //================================================================//
-        ((uint8_t *)r)[32] = ((uint8_t *)r)[0];
-        ((uint8_t *)r)[33] = ((uint8_t *)r)[1];
-        ((uint8_t *)r)[34] = ((uint8_t *)r)[2];
-        ((uint8_t *)r)[35] = ((uint8_t *)r)[3];
+        ((uint8_t*)r)[32] = ((uint8_t*)r)[0];
+        ((uint8_t*)r)[33] = ((uint8_t*)r)[1];
+        ((uint8_t*)r)[34] = ((uint8_t*)r)[2];
+        ((uint8_t*)r)[35] = ((uint8_t*)r)[3];
 
         #pragma unroll
         for (int k = 0; k < algo::autolykos_v2::K_LEN; k += 4)
         {
-            ind[k] = r[k >> 2] % n_len;
+            ind[k]     = r[k >> 2] % n_len;
             ind[k + 1] = ((r[k >> 2] << 8) | (r[(k >> 2) + 1] >> 24)) % n_len;
             ind[k + 2] = ((r[k >> 2] << 16) | (r[(k >> 2) + 1] >> 16)) % n_len;
             ind[k + 3] = ((r[k >> 2] << 24) | (r[(k >> 2) + 1] >> 8)) % n_len;
@@ -382,8 +382,8 @@ __global__ void BlockMiningStep2(
         shared_index[thrdblck_id] = ind[0];
         __syncthreads();
 
-        shared_data[(hash_id << 3) + thread_id] = (hashes[(shared_index[hash_id] << 3) + thread_id]);
-        shared_data[(hash_id << 3) + thread_id + 64] = (hashes[(shared_index[hash_id + 8] << 3) + thread_id]);
+        shared_data[(hash_id << 3) + thread_id]       = (hashes[(shared_index[hash_id] << 3) + thread_id]);
+        shared_data[(hash_id << 3) + thread_id + 64]  = (hashes[(shared_index[hash_id + 8] << 3) + thread_id]);
         shared_data[(hash_id << 3) + thread_id + 128] = (hashes[(shared_index[hash_id + 16] << 3) + thread_id]);
         shared_data[(hash_id << 3) + thread_id + 192] = (hashes[(shared_index[hash_id + 24] << 3) + thread_id]);
         shared_data[(hash_id << 3) + thread_id + 256] = (hashes[(shared_index[hash_id + 32] << 3) + thread_id]);
@@ -404,8 +404,8 @@ __global__ void BlockMiningStep2(
         shared_index[thrdblck_id] = ind[1];
         __syncthreads();
 
-        shared_data[(hash_id << 3) + thread_id] = (hashes[(shared_index[hash_id] << 3) + thread_id]);
-        shared_data[(hash_id << 3) + thread_id + 64] = (hashes[(shared_index[hash_id + 8] << 3) + thread_id]);
+        shared_data[(hash_id << 3) + thread_id]       = (hashes[(shared_index[hash_id] << 3) + thread_id]);
+        shared_data[(hash_id << 3) + thread_id + 64]  = (hashes[(shared_index[hash_id + 8] << 3) + thread_id]);
         shared_data[(hash_id << 3) + thread_id + 128] = (hashes[(shared_index[hash_id + 16] << 3) + thread_id]);
         shared_data[(hash_id << 3) + thread_id + 192] = (hashes[(shared_index[hash_id + 24] << 3) + thread_id]);
         shared_data[(hash_id << 3) + thread_id + 256] = (hashes[(shared_index[hash_id + 32] << 3) + thread_id]);
@@ -441,8 +441,8 @@ __global__ void BlockMiningStep2(
             shared_index[thrdblck_id] = ind[k];
             __syncthreads();
 
-            shared_data[(hash_id << 3) + thread_id] = (hashes[(shared_index[hash_id] << 3) + thread_id]);
-            shared_data[(hash_id << 3) + thread_id + 64] = (hashes[(shared_index[hash_id + 8] << 3) + thread_id]);
+            shared_data[(hash_id << 3) + thread_id]       = (hashes[(shared_index[hash_id] << 3) + thread_id]);
+            shared_data[(hash_id << 3) + thread_id + 64]  = (hashes[(shared_index[hash_id + 8] << 3) + thread_id]);
             shared_data[(hash_id << 3) + thread_id + 128] = (hashes[(shared_index[hash_id + 16] << 3) + thread_id]);
             shared_data[(hash_id << 3) + thread_id + 192] = (hashes[(shared_index[hash_id + 24] << 3) + thread_id]);
             shared_data[(hash_id << 3) + thread_id + 256] = (hashes[(shared_index[hash_id + 32] << 3) + thread_id]);
@@ -482,21 +482,21 @@ __global__ void BlockMiningStep2(
         uint8_t* bb = (uint8_t*)(&(((uint64_t*)(aux))[16]));
         for (j = 0; j < algo::autolykos_v2::NUM_SIZE_8; ++j)
         {
-            bb[j] = ((const uint8_t *)r)[algo::autolykos_v2::NUM_SIZE_8 - j - 1];
+            bb[j] = ((const uint8_t*)r)[algo::autolykos_v2::NUM_SIZE_8 - j - 1];
         }
 
-        ((uint64_t *)(aux))[20] = 0;
-        ((uint64_t *)(aux))[21] = 0;
-        ((uint64_t *)(aux))[22] = 0;
-        ((uint64_t *)(aux))[23] = 0;
-        ((uint64_t *)(aux))[24] = 0;
-        ((uint64_t *)(aux))[25] = 0;
-        ((uint64_t *)(aux))[26] = 0;
-        ((uint64_t *)(aux))[27] = 0;
-        ((uint64_t *)(aux))[28] = 0;
-        ((uint64_t *)(aux))[29] = 0;
-        ((uint64_t *)(aux))[30] = 0;
-        ((uint64_t *)(aux))[31] = 0;
+        ((uint64_t*)(aux))[20] = 0;
+        ((uint64_t*)(aux))[21] = 0;
+        ((uint64_t*)(aux))[22] = 0;
+        ((uint64_t*)(aux))[23] = 0;
+        ((uint64_t*)(aux))[24] = 0;
+        ((uint64_t*)(aux))[25] = 0;
+        ((uint64_t*)(aux))[26] = 0;
+        ((uint64_t*)(aux))[27] = 0;
+        ((uint64_t*)(aux))[28] = 0;
+        ((uint64_t*)(aux))[29] = 0;
+        ((uint64_t*)(aux))[30] = 0;
+        ((uint64_t*)(aux))[31] = 0;
 
         devB2B_MIX(aux, aux + 16);
 
@@ -506,7 +506,7 @@ __global__ void BlockMiningStep2(
         for (j = 0; j < algo::autolykos_v2::NUM_SIZE_32; j += 2)
         {
             hsh = ivals[j >> 1];
-            hsh ^= ((uint64_t *)(aux))[j >> 1] ^ ((uint64_t *)(aux))[8 + (j >> 1)];
+            hsh ^= ((uint64_t*)(aux))[j >> 1] ^ ((uint64_t*)(aux))[8 + (j >> 1)];
             r_l[j] = ((uint32_t*)&hsh)[0];
             r_l[j+1] = ((uint32_t*)&hsh)[1];
 
@@ -515,24 +515,24 @@ __global__ void BlockMiningStep2(
         #pragma unroll 32
         for (j = 0; j < algo::autolykos_v2::NUM_SIZE_8; j ++)
         {
-            ((uint8_t *)r)[j] = ((uint8_t *)r_l)[algo::autolykos_v2::NUM_SIZE_8 - j - 1];
+            ((uint8_t*)r)[j] = ((uint8_t*)r_l)[algo::autolykos_v2::NUM_SIZE_8 - j - 1];
         }
 
 
         //================================================================//
         //  Dump result to global memory -- LITTLE ENDIAN
         //================================================================//
-        j =    ((uint64_t *)r)[3] < ((uint64_t *)bound_)[3]
-            || ((uint64_t *)r)[3] == ((uint64_t *)bound_)[3]
+        j =    ((uint64_t*)r)[3] < ((uint64_t*)bound_)[3]
+            || ((uint64_t*)r)[3] == ((uint64_t*)bound_)[3]
             &&
             (
-                   ((uint64_t *)r)[2] < ((uint64_t *)bound_)[2]
-                || ((uint64_t *)r)[2] == ((uint64_t *)bound_)[2]
+                   ((uint64_t*)r)[2] < ((uint64_t*)bound_)[2]
+                || ((uint64_t*)r)[2] == ((uint64_t*)bound_)[2]
                 &&
                 (
-                       ((uint64_t *)r)[1] < ((uint64_t *)bound_)[1]
-                    || ((uint64_t *)r)[1] == ((uint64_t *)bound_)[1]
-                    && ((uint64_t *)r)[0] < ((uint64_t *)bound_)[0]
+                       ((uint64_t*)r)[1] < ((uint64_t*)bound_)[1]
+                    || ((uint64_t*)r)[1] == ((uint64_t*)bound_)[1]
+                    && ((uint64_t*)r)[0] < ((uint64_t*)bound_)[0]
                 )
             );
 

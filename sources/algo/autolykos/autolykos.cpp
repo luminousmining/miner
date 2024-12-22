@@ -25,3 +25,9 @@ uint32_t algo::autolykos_v2::computePeriod(uint32_t const blockNumber)
 
     return period;
 }
+
+
+bool algo::autolykos_v2::isValidShare()
+{
+    return true;
+}

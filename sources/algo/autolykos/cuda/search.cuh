@@ -434,18 +434,18 @@ kernel_autolykos_verify(
     }
 
     r[0] = BHashes[tid           ];
-    r[1] = BHashes[8388608  + tid];
-    r[2] = BHashes[16777216 + tid];
-    r[3] = BHashes[25165824 + tid];
-    r[4] = BHashes[33554432 + tid];
-    r[5] = BHashes[41943040 + tid];
-    r[6] = BHashes[50331648 + tid];
-    r[7] = BHashes[58720256 + tid];
+    r[1] = BHashes[8388608u  + tid];
+    r[2] = BHashes[16777216u + tid];
+    r[3] = BHashes[25165824u + tid];
+    r[4] = BHashes[33554432u + tid];
+    r[5] = BHashes[41943040u + tid];
+    r[6] = BHashes[50331648u + tid];
+    r[7] = BHashes[58720256u + tid];
 
-    ((uint8_t* const)r)[32] = ((uint8_t const* const)r)[0];
-    ((uint8_t* const)r)[33] = ((uint8_t const* const)r)[1];
-    ((uint8_t* const)r)[34] = ((uint8_t const* const)r)[2];
-    ((uint8_t* const)r)[35] = ((uint8_t const* const)r)[3];
+    ((uint8_t*)r)[32] = ((uint8_t*)r)[0];
+    ((uint8_t*)r)[33] = ((uint8_t*)r)[1];
+    ((uint8_t*)r)[34] = ((uint8_t*)r)[2];
+    ((uint8_t*)r)[35] = ((uint8_t*)r)[3];
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -501,15 +501,27 @@ kernel_autolykos_verify(
     ///////////////////////////////////////////////////////////////////////////
     shared_index[thrdblck_id] = ind[0];
     __syncthreads();
-    update_mix(shared_data, shared_index, hashes,
-               i_tmp, hash_id, thread_id, thrdblck_id_by_byte,
-               v1, v3);
+    update_mix(shared_data,
+               shared_index,
+               hashes,
+               i_tmp,
+               hash_id,
+               thread_id,
+               thrdblck_id_by_byte,
+               v1,
+               v3);
 
     shared_index[thrdblck_id] = ind[1];
     __syncthreads();
-    update_mix(shared_data, shared_index, hashes,
-               i_tmp, hash_id, thread_id, thrdblck_id_by_byte,
-               v2, v4);
+    update_mix(shared_data,
+               shared_index,
+               hashes,
+               i_tmp,
+               hash_id,
+               thread_id,
+               thrdblck_id_by_byte,
+               v2,
+               v4);
 
     asm volatile ("add.cc.u32 %0, %1, %2;"  :"=r"(r[0]) : "r"(v1.x), "r"(v2.x));
     asm volatile ("addc.cc.u32 %0, %1, %2;" :"=r"(r[1]) : "r"(v1.y), "r"(v2.y));
@@ -528,9 +540,15 @@ kernel_autolykos_verify(
     {
         shared_index[thrdblck_id] = ind[k];
         __syncthreads();
-        update_mix(shared_data, shared_index, hashes,
-                   i_tmp, hash_id, thread_id, thrdblck_id_by_byte,
-                   v1, v2);
+        update_mix(shared_data,
+                   shared_index,
+                   hashes,
+                   i_tmp,
+                   hash_id,
+                   thread_id,
+                   thrdblck_id_by_byte,
+                   v1,
+                   v2);
 
         asm volatile ("add.cc.u32 %0, %0, %1;"  :"+r"(r[0]) : "r"(v1.x));
         asm volatile ("addc.cc.u32 %0, %0, %1;" :"+r"(r[1]) : "r"(v1.y));
@@ -546,31 +564,31 @@ kernel_autolykos_verify(
 
     ////////////////////////////////////////////////////////////////////////////
     B2B_INIT(aux);
-    aux[0] = 0x6A09E667F2BDC928;
-    aux[12] ^= 32;
-    aux[13] ^= 0;
+    aux[0] = 0x6A09E667F2BDC928ull;
+    aux[12] ^= 32ull;
+    aux[13] ^= 0ull;
     aux[14] = ~aux[14];
 
-    uint8_t* bb = (uint8_t*)(&aux[16]);
     i_tmp = algo::autolykos_v2::NUM_SIZE_8 - 1;
+    uint8_t* aux_u8 = (uint8_t*)(&aux[16]);
     #pragma unroll
     for (j = 0; j < algo::autolykos_v2::NUM_SIZE_8; ++j)
     {
-        bb[j] = ((uint8_t const*)r)[i_tmp - j];
+        aux_u8[j] = ((uint8_t*)r)[i_tmp - j];
     }
 
-    aux[20] = 0;
-    aux[21] = 0;
-    aux[22] = 0;
-    aux[23] = 0;
-    aux[24] = 0;
-    aux[25] = 0;
-    aux[26] = 0;
-    aux[27] = 0;
-    aux[28] = 0;
-    aux[29] = 0;
-    aux[30] = 0;
-    aux[31] = 0;
+    aux[20] = 0ull;
+    aux[21] = 0ull;
+    aux[22] = 0ull;
+    aux[23] = 0ull;
+    aux[24] = 0ull;
+    aux[25] = 0ull;
+    aux[26] = 0ull;
+    aux[27] = 0ull;
+    aux[28] = 0ull;
+    aux[29] = 0ull;
+    aux[30] = 0ull;
+    aux[31] = 0ull;
 
     ///////////////////////////////////////////////////////////////////////////
     devB2B_MIX(aux, aux + 16);
@@ -578,25 +596,25 @@ kernel_autolykos_verify(
     uint64_t hsh;
     uint32_t lsb_msb[32];
     {
-        hsh = 0x6A09E667F2BDC928;
+        hsh = 0x6A09E667F2BDC928ull;
         hsh ^= aux[0] ^ aux[8];
         lsb_msb[0] = (uint32_t)hsh;
         lsb_msb[1] = (uint32_t)(hsh >> 32);
     }
     {
-        hsh = 0xBB67AE8584CAA73B;
+        hsh = 0xBB67AE8584CAA73Bull;
         hsh ^= aux[1] ^ aux[9];
         lsb_msb[2] = (uint32_t)hsh;
         lsb_msb[3] = (uint32_t)(hsh >> 32);
     }
     {
-        hsh = 0x3C6EF372FE94F82B;
+        hsh = 0x3C6EF372FE94F82Bull;
         hsh ^= aux[2] ^ aux[10];
         lsb_msb[4] = (uint32_t)hsh;
         lsb_msb[5] = (uint32_t)(hsh >> 32);
     }
     {
-        hsh = 0xA54FF53A5F1D36F1;
+        hsh = 0xA54FF53A5F1D36F1ull;
         hsh ^= aux[3] ^ aux[11];
         lsb_msb[6] = (uint32_t)hsh;
         lsb_msb[7] = (uint32_t)(hsh >> 32);
@@ -613,9 +631,8 @@ kernel_autolykos_verify(
 
 
     ///////////////////////////////////////////////////////////////////////////
-    uint64_t const* const r64 = (uint64_t const* const)r;
-    uint64_t const* const bound64 = (uint64_t const* const)d_bound;
-
+    uint64_t const* const r64 = (uint64_t*)r;
+    uint64_t const* const bound64 = (uint64_t*)d_bound;
 
     uint64_t const r3 = r64[3];
     uint64_t const r2 = r64[2];
@@ -653,9 +670,9 @@ bool autolykosv2Search(
 {
     kernel_autolykos_search<<<blocks / 4u, threads, 0, stream>>>
     (
-        (uint32_t* const)params.dag,
-        (uint64_t* const)params.header,
-        (uint32_t* const)params.BHashes,
+        (uint32_t*)params.dag,
+        (uint64_t*)params.header,
+        (uint32_t*)params.BHashes,
         params.hostNonce,
         params.hostPeriod
     );
@@ -666,8 +683,8 @@ bool autolykosv2Search(
     (
         params.hostPeriod,
         params.hostNonce,
-        (uint32_t* const)params.dag,
-        (uint32_t* const)params.BHashes,
+        (uint32_t*)params.dag,
+        (uint32_t*)params.BHashes,
         params.resultCache
     );
     CUDA_ER(cudaStreamSynchronize(stream));

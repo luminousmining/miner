@@ -6,7 +6,9 @@
 
 
 __device__ __forceinline__
-uint64_t devROTR64(uint64_t b, int offset)
+uint64_t devROTR64(
+    uint64_t const b,
+    int const offset)
 {
     uint2 a;
     uint2 result;
@@ -156,12 +158,12 @@ void autolykos_v2_mhssamadi_init_prehash(
         //====================================================================//
         //  Hash tid
         //====================================================================//
-        ((uint32_t *)b)[0] = __byte_perm(tid, tid, 0x0123);
+        ((uint32_t*)b)[0] = __byte_perm(tid, tid, 0x0123);
 
         //====================================================================//
         //  Hash height
         //====================================================================//
-        ((uint32_t *)b)[1] = height;
+        ((uint32_t*)b)[1] = height;
 
         //====================================================================//
         //  Hash constant message
