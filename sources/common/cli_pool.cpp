@@ -118,6 +118,7 @@ std::optional<std::string> common::Cli::getPassword() const
     return std::nullopt;
 }
 
+
 uint32_t common::Cli::getApiPort() const
 {
     if (true == contains("api_port"))
