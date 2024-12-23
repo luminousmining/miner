@@ -104,5 +104,8 @@ namespace common
         bool isSmartMining() const;
         customTupleStrStr getSmartMiningWallet() const;
         customTupleStrStrU32 getSmartMiningPool() const;
+
+        // Api
+        uint32_t   getApiPort() const;
     };
 }
