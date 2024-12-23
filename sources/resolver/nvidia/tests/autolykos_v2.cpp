@@ -75,7 +75,12 @@ TEST_F(ResolverAutolykosv2NvidiaTest, findNonce)
     ASSERT_TRUE(resolver.execute(jobInfo));
     resolver.submit(&stratum);
 
-    EXPECT_TRUE(algo::autolykos_v2::isValidShare());
+    EXPECT_TRUE(
+        algo::autolykos_v2::mhssamadani::isValidShare(
+            jobInfo.headerHash,
+            jobInfo.boundary,
+            11055774138563218679ull,
+            3130463488u));
 
     EXPECT_FALSE(stratum.paramSubmit.empty());
 }

@@ -36,7 +36,14 @@ namespace algo
         constexpr uint32_t AMD_NONCES_PER_THREAD { 1u };
         constexpr uint32_t AMD_THREADS_PER_ITER { (AMD_NONCES_PER_ITER / AMD_NONCES_PER_THREAD) };
 
-        bool isValidShare();
+        namespace mhssamadani
+        {
+            bool isValidShare(algo::hash256& header,
+                            algo::hash256& boundary,
+                            uint64_t const nonce,
+                            uint32_t const height);
+        }
+
 #if !defined(__LIB_CUDA)
         uint32_t computePeriod(uint32_t const blockNumner);
 #endif //!__LIB_CUDA
