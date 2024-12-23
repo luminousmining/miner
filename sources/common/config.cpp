@@ -351,6 +351,13 @@ bool common::Config::loadCli(int argc, char** argv)
                 poolConfig.password = mining.password;
             }
         }
+        
+        ////////////////////////////////////////////////////////////////////////
+        auto const ApiPort { cli.getApiPort() };
+        if (true == algo::inRange(1u, 65535u, ApiPort))
+        {
+            api.port = ApiPort;
+        }
     }
     catch(std::exception const& e)
     {

@@ -39,7 +39,7 @@ int main(
         }
 
         ////////////////////////////////////////////////////////////////////////
-        serverAPI.setPort(8080);
+        serverAPI.setPort(config.api.port);
         if (false == serverAPI.bind())
         {
             return 1;

@@ -277,6 +277,14 @@ common::Cli::Cli()
             "[OPTIONAL] assign a pool with a coin.\n"
             "--sm_pool=COIN@POOL_URL:POOL_PORT"
         )
+
+        // api setting
+        (
+            "api_port",
+            value<uint32_t>(),
+            "[OPTIONAL] Set port of the api.\n"
+            "--api_port=8080"
+        )
         ;
 }
 

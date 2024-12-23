@@ -39,7 +39,7 @@ void api::ServerAPI::loopAccept()
     namespace boost_http = boost::beast::http;
 
     boost_io_context ioContext{};
-    boost_acceptor acceptor{ ioContext, { boost_tcp::v4(), 8080 } };
+    boost_acceptor acceptor{ ioContext, { boost_tcp::v4(), castU16(port) } };
 
     while (true == alive.load(boost::memory_order::relaxed))
     {

@@ -34,6 +34,9 @@
 --cpu              [OPTIONAL] Enable or disable device cpu.
                Default value is false.
                --cpu=<true|false>
+--api_port         [OPTIONAL] miner API port.
+               Default value is 8080.
+               --api_port=8080
 ```
 
 ## AMD Settings

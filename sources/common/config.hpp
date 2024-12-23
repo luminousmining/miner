@@ -59,6 +59,11 @@ namespace common
             std::string file{};
         };
 
+        struct ApiConfig
+        {
+            uint32_t port{ 8080u };
+        };
+
         common::PROFILE                profile { common::PROFILE::STANDARD };
         common::Cli                    cli{};
         LogConfig                      log{};
@@ -70,6 +75,7 @@ namespace common
         std::map<uint32_t, PoolConfig> deviceSettings{};
         PoolConfig                     amdSetting{};
         PoolConfig                     nvidiaSetting{};
+        ApiConfig                      api{}; 
 
         static Config& instance();
         bool load(int argc, char** argv);
