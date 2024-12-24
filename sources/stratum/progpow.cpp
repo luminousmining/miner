@@ -19,7 +19,6 @@ stratum::StratumProgPOW::StratumProgPOW()
 void stratum::StratumProgPOW::onResponse(
     boost::json::object const& root)
 {
-    __TRACE();
     auto const miningRequestID{ common::boostJsonGetNumber<uint32_t>(root.at("id")) };
 
     switch(miningRequestID)
