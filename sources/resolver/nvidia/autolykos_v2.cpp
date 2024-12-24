@@ -80,15 +80,34 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
             MAX_LIMIT(parameters.resultCache->count, algo::autolykos_v2::MAX_RESULT)
         };
 
-        resultShare.found = true;
-        resultShare.count = count;
-        resultShare.jobId = jobInfo.jobIDStr;
-        resultShare.extraNonceSize = jobInfo.extraNonceSize;
-        resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
-
+        uint32_t indexValidNonce{ 0u };
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            auto const nonce{ parameters.resultCache->nonces[i] };
+            auto const isValid
+            {
+                algo::autolykos_v2::mhssamadani::isValidShare
+                (
+                    parameters.hostHeader,
+                    parameters.hostBoundary,
+                    nonce,
+                    parameters.hostHeight
+                )
+            };
+            if (true == isValid)
+            {
+                resultShare.found = true;
+                resultShare.nonces[indexValidNonce] = nonce;
+                ++indexValidNonce;
+            }
+        }
+
+        if (true == resultShare.found)
+        {
+            resultShare.count = indexValidNonce;
+            resultShare.jobId = jobInfo.jobIDStr;
+            resultShare.extraNonceSize = jobInfo.extraNonceSize;
+            resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
         }
 
         parameters.resultCache->found = false;
