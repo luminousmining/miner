@@ -257,7 +257,6 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
         }
     }
 
-
     CU_SAFE_DELETE(headerHash);
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(BHashes);

@@ -94,6 +94,7 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
                     parameters.hostHeight
                 )
             };
+            resolverDebug() << "test nonce[" << std::hex << nonce << "] is " << std::boolalpha << isValid;
             if (true == isValid)
             {
                 resultShare.found = true;
