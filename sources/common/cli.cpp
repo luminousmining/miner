@@ -92,6 +92,19 @@ common::Cli::Cli()
             "Default value is false.\n"
             "--stale=<true|false>"
         )
+        (
+            "socks5",
+            value<bool>(),
+            "[OPTIONAL] Enable SOCKS5 proxy.\n"
+            "Default value is false.\n"
+            "--socks5=<true|false>."
+        )
+        (
+            "socks_port",
+            value<uint32_t>(),
+            "[OPTIONAL] Port of the SOCKS proxy.\n"
+            "--socks_port=9050"
+        )
 
         // Pool Custom
         (

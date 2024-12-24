@@ -139,7 +139,15 @@ bool common::Config::loadCli(int argc, char** argv)
 
         mining.secrureConnect = cli.isSSL();
         mining.stale = cli.isStale();
-
+        mining.socks5 = cli.isSocks5();
+        if (true == mining.socks5)
+        {
+            auto const SocksPort { cli.getSocksPort() };
+            if (true == algo::inRange(1u, 65535u, SocksPort))
+            {
+                mining.socksPort = SocksPort;
+            }
+        }
         ////////////////////////////////////////////////////////////////////////
         auto const ravenMinerBTCWallet{ cli.getRavenMinerBTCWallet() };
         if (std::nullopt != ravenMinerBTCWallet)
