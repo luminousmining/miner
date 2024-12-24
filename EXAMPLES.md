@@ -60,6 +60,21 @@ miner.exe^
  --ssl=false
 ```
 
+## [Optional] Connection via a socks5 proxy
+Requires a socks5 proxy server running on localhost. For example, the Linux [tor](https://www.torproject.org/) client runs a socks5 server on the port 9050 by default.
+```bat
+miner.exe^
+ --host="fr.vipor.net"^
+ --port=5030^
+ --wallet="YOUR_WALLET"^
+ --algo="kawpow"^
+ --workername="luminousminer"^
+ --password="x"^
+ --ssl=false^
+ --socks5=true^
+ --socks_port=9050
+```
+
 # SPLIT MINING
 In these examples the RIG contains more than 2 GPUs !
 

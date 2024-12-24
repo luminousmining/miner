@@ -59,5 +59,9 @@ https://www.mdpi.com/2410-387X/7/4/60
 https://www.researchgate.net/publication/255971534_Parallel_Cloud_Computing_Exploiting_Parallelism_on_Keccak_FPGA_and_GPU_Comparison  
 https://ieeexplore.ieee.org/document/8391706  
 
+## References - Librairies
+[asio-socks45-client
+](https://github.com/sehe/asio-socks45-client) - We recognize [Seth Heeren](https://github.com/sehe) for providing the SOCKS5 client implementation.
+
 ## SAST Tools
 [PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.

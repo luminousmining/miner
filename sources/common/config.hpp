@@ -22,12 +22,14 @@ namespace common
             std::string   host{ "" };
             uint32_t      port{ 0u };
             uint32_t      retryConnectionCount{ 10 };
+            uint32_t      socksPort{ 0u };
             std::string   algo{ "" };
             std::string   workerName{ "" };
             std::string   wallet{ "" };
             std::string   password{ "x" };
             bool          secrureConnect{ false };
             bool          stale { false };
+            bool          socks5 { false };
         };
 
         struct SmartMiningConfig

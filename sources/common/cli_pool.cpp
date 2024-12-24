@@ -59,6 +59,16 @@ bool common::Cli::isSSL() const
 }
 
 
+bool common::Cli::isSocks5() const
+{
+    if (true == contains("socks5"))
+    {
+        return params["socks5"].as<bool>();
+    }
+    return false;
+}
+
+
 bool common::Cli::isStale() const
 {
     if (true == contains("stale"))
@@ -126,4 +136,14 @@ uint32_t common::Cli::getApiPort() const
         return params["api_port"].as<uint32_t>();
     }
     return 8080u;
+}
+
+
+uint32_t common::Cli::getSocksPort() const
+{
+    if (true == contains("socks_port"))
+    {
+        return params["socks_port"].as<uint32_t>();
+    }
+    return 9050u;
 }

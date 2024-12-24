@@ -8,6 +8,7 @@
 #include <common/log/log.hpp>
 #include <common/system.hpp>
 #include <network/network.hpp>
+#include <network/socks5.hpp>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/bind/bind.hpp>
@@ -48,34 +49,51 @@ bool network::NetworkTCPClient::connect()
         SAFE_DELETE(socketTCP);
         socketTCP = NEW(boost_socket(ioService, context));
 
-        auto const address{ boost::asio::ip::address::from_string(host, ec) };
-        if (boost_error::success != ec)
+        if (true == config.mining.socks5)
         {
-            boost_resolver resolver{ ioService };
-            boost_query    query{ host, std::to_string(port) };
-            auto           endpoints{ resolver.resolve(query, ec) };
+            boost_query       query( host, std::to_string(port) );
+            boost_endpoint    socksEndpoint{ {}, static_cast<boost::asio::ip::port_type>(config.mining.socksPort) };
 
-            if (boost_error::success != ec)
-            {
-                logErr() << "Cannot resolve " << host << ":" << port;
-                return false;
-            }
+            // DNS resolve is automatically done by the proxy_connect function
+            socks5::proxy_connect(socketTCP->next_layer(), query, socksEndpoint, ec);
 
-            boost::asio::connect(socketTCP->next_layer(), endpoints, ec);
-            if (boost_error::success != ec)
+            if (socks5::result_code::ok != ec)
             {
-                logErr() << "Cannot connect to DNS " << host << ":" << port;
+                logErr() << "Cannot connect to " << host << ":" << port << " with SOCKS5 proxy on localhost:" << config.mining.socksPort;
                 return false;
             }
         }
         else
         {
-            boost_endpoint endpoint{ address, static_cast<boost::asio::ip::port_type>(port) };
-            socketTCP->next_layer().connect(endpoint, ec);
+            auto const address{ boost::asio::ip::address::from_string(host, ec) };
             if (boost_error::success != ec)
             {
-                logErr() << "Cannot connect to host " << host << ":" << port;
-                return false;
+                boost_resolver resolver{ ioService };
+                boost_query    query{ host, std::to_string(port) };
+                auto           endpoints{ resolver.resolve(query, ec) };
+
+                if (boost_error::success != ec)
+                {
+                    logErr() << "Cannot resolve " << host << ":" << port;
+                    return false;
+                }
+
+                boost::asio::connect(socketTCP->next_layer(), endpoints, ec);
+                if (boost_error::success != ec)
+                {
+                    logErr() << "Cannot connect to DNS " << host << ":" << port;
+                    return false;
+                }
+            }
+            else
+            {
+                boost_endpoint endpoint{ address, static_cast<boost::asio::ip::port_type>(port) };
+                socketTCP->next_layer().connect(endpoint, ec);
+                if (boost_error::success != ec)
+                {
+                    logErr() << "Cannot connect to host " << host << ":" << port;
+                    return false;
+                }
             }
         }
 

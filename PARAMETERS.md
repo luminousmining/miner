@@ -34,7 +34,13 @@
 --cpu              [OPTIONAL] Enable or disable device cpu.
                Default value is false.
                --cpu=<true|false>
---api_port         [OPTIONAL] miner API port.
+--socks5          [OPTIONAL] Enable pool connection through a SOCKS5 proxy server on localhost.
+               Default value is false.
+               --socks5=<true|false>
+--socks_port      [OPTIONAL] The port of the SOCKS5 proxy server on localhost. Be careful not to confuse this with the `port' parameter for the pool address.
+               Default value is 9050.
+               --socks_port=9050
+--api_port        [OPTIONAL] miner API port.
                Default value is 8080.
                --api_port=8080
 ```

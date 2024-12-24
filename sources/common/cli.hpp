@@ -53,6 +53,7 @@ namespace common
         std::optional<std::string>   getHost() const;
         bool                         isSSL() const;
         bool                         isStale() const;
+        bool                         isSocks5() const;
         uint32_t                     getPort() const;
         std::optional<std::string>   getAlgo() const;
         std::optional<std::string>   getWallet() const;
@@ -107,5 +108,8 @@ namespace common
 
         // Api
         uint32_t   getApiPort() const;
+
+        // Socks proxy settings
+        uint32_t   getSocksPort() const;
     };
 }
