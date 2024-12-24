@@ -25,7 +25,8 @@ void stratum::StratumProgPOW::onResponse(
     {
         case stratum::Stratum::ID_MINING_SUBSCRIBE:
         {
-            if (true == root.at("error").is_null())
+            if (   false == root.contains("error")
+                || true == root.at("error").is_null())
             {
                 boost::json::array const& result(root.at("result").as_array());
                 if (false == result.empty())
@@ -43,7 +44,8 @@ void stratum::StratumProgPOW::onResponse(
         }
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
-            if (true == root.at("error").is_null())
+            if (   false == root.contains("error")
+                || true == root.at("error").is_null())
             {
                 authenticated = root.at("result").as_bool();
                 if (true == authenticated)

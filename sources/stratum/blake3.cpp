@@ -25,7 +25,8 @@ void stratum::StratumBlake3::onResponse(
     {
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
-            if (true == root.at("params").as_bool())
+            if (   false == root.contains("error")
+                || true == root.at("params").as_bool())
             {
                 authenticated = true;
             }
