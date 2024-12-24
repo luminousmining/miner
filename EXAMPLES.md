@@ -70,8 +70,8 @@ miner.exe^
  --algo="kawpow"^
  --workername="luminousminer"^
  --password="x"^
- --ssl=false
- --socks5=true
+ --ssl=false^
+ --socks5=true^
  --socks_port=9050
 ```
 
