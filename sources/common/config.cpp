@@ -148,6 +148,7 @@ bool common::Config::loadCli(int argc, char** argv)
                 mining.socksPort = SocksPort;
             }
         }
+        
         ////////////////////////////////////////////////////////////////////////
         auto const ravenMinerBTCWallet{ cli.getRavenMinerBTCWallet() };
         if (std::nullopt != ravenMinerBTCWallet)

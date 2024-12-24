@@ -88,6 +88,7 @@ uint32_t common::Cli::getPort() const
     return 0u;
 }
 
+
 std::optional<std::string> common::Cli::getAlgo() const
 {
     if (true == contains("algo"))
