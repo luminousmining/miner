@@ -4,7 +4,7 @@
 - cuda 12.6.2 => Windows
 - cuda 12.4 => Ubuntu
 - OpenSSL 1.1.1
-- boost 1.86.0
+- boost 1.87.0
 - OpenCL 3.0.15
   
 ### Windows
@@ -20,7 +20,7 @@ cuda :
 https://developer.nvidia.com/cuda-12-6-2-download-archive  
   
 boost :  
-https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.zip  
+https://boostorg.jfrog.io/artifactory/main/release/1.87.0/source/boost_1_87_0.zip  
 ```bat
 bootstrap.bat
 b2.exe debug release
@@ -114,9 +114,9 @@ sudo apt-get -y install cuda-toolkit-12-4
   
 boost :
 ```sh
-wget --no-check-certificate https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
-tar -xvf boost_1_86_0.tar.gz
-cd boost_1_86_0
+wget --no-check-certificate https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz
+tar -xvf boost_1_87_0.tar.gz
+cd boost_1_87_0
 ./bootstrap.sh --prefix=/usr/local
 ./b2 debug release
 sudo ./b2 install
