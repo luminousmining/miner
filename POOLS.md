@@ -20,5 +20,8 @@ etchash `miner --host=pool.eu.woolypooly.com --port=35000 --algo="etchash" --wal
 ergo `miner --host=pool.eu.woolypooly.com --port=3100 --algo="autolykosv2" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 alephium `miner --host=pool.eu.woolypooly.com --port=3106 --algo="blake3" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
   
+## Vipor
+cloreai `miner --host=fr.vipor.net --port=5030 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+  
 ## evrpool
 evrprogpow `miner --host=eu.evrpool.com --port=1111 --algo="evrprogpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
