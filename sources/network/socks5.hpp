@@ -1,3 +1,5 @@
+// Borrowed from https://github.com/sehe/asio-socks45-client/blob/efeae8933348908768f1764f04fbe3839248bfa8/socks5.hpp
+
 #include <boost/asio.hpp>
 #include <boost/endian/arithmetic.hpp>
 
