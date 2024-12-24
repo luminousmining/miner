@@ -1,5 +1,6 @@
 #include <algo/hash_utils.hpp>
 #include <algo/bitwise.hpp>
+#include <algo/autolykos/autolykos.hpp>
 #include <algo/autolykos/cuda/autolykos.cuh>
 #include <common/cast.hpp>
 #include <common/error/cuda_error.hpp>
@@ -42,7 +43,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
 {
     ////////////////////////////////////////////////////////////////////////////
     setThreads(64u);
-    setBlocks(131072u);
+    setBlocks(algo::autolykos_v2::NONCES_PER_ITER / 64u);
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
@@ -79,15 +80,35 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
             MAX_LIMIT(parameters.resultCache->count, algo::autolykos_v2::MAX_RESULT)
         };
 
-        resultShare.found = true;
-        resultShare.count = count;
-        resultShare.jobId = jobInfo.jobIDStr;
-        resultShare.extraNonceSize = jobInfo.extraNonceSize;
-        resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
-
+        uint32_t indexValidNonce{ 0u };
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            auto const nonce{ parameters.resultCache->nonces[i] };
+            auto const isValid
+            {
+                algo::autolykos_v2::mhssamadani::isValidShare
+                (
+                    parameters.hostHeader,
+                    parameters.hostBoundary,
+                    nonce,
+                    parameters.hostHeight
+                )
+            };
+            resolverDebug() << "test nonce[" << std::hex << nonce << "] is " << std::boolalpha << isValid;
+            if (true == isValid)
+            {
+                resultShare.found = true;
+                resultShare.nonces[indexValidNonce] = nonce;
+                ++indexValidNonce;
+            }
+        }
+
+        if (true == resultShare.found)
+        {
+            resultShare.count = indexValidNonce;
+            resultShare.jobId = jobInfo.jobIDStr;
+            resultShare.extraNonceSize = jobInfo.extraNonceSize;
+            resultShare.extraNonce2Size = jobInfo.extraNonce2Size;
         }
 
         parameters.resultCache->found = false;
@@ -122,12 +143,11 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
-    }
 
-    resultShare.count = 0u;
-    resultShare.found = false;
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
 }
 
 
@@ -154,10 +174,9 @@ void resolver::ResolverNvidiaAutolykosV2::submit(
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
-    }
 
-    resultShare.count = 0u;
-    resultShare.found = false;
+        resultShare.count = 0u;
+        resultShare.found = false;
+    }
 }

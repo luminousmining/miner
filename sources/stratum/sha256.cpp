@@ -86,8 +86,8 @@ void stratum::StratumSha256::onMiningNotify(
     boost::json::array const& params(root.at("params").as_array());
 
     std::string jobId { params.at(0).as_string().c_str() };
-    jobInfo.headerHash = algo::toHash<algo::hash256>(params.at(1).as_string().c_str());
-    jobInfo.coinb1 = algo::toHash<algo::hash1024>(params.at(2).as_string().c_str());
+    jobInfo.headerHash = algo::toHash256(params.at(1).as_string().c_str());
+    jobInfo.coinb1 = algo::toHash1024(params.at(2).as_string().c_str());
     jobInfo.coinb2 = algo::toHash<algo::hash2048>(params.at(3).as_string().c_str());
     boost::json::array merkletree(params.at(4).as_array());
     jobInfo.epoch = common::boostJsonGetNumber<int32_t>(params.at(5));
@@ -100,7 +100,7 @@ void stratum::StratumSha256::onMiningNotify(
     for (size_t i { 0u }; i < merkletree.size(); ++i)
     {
         auto const& hash { merkletree.at(i) };
-        jobInfo.merkletree[i] = algo::toHash<algo::hash256>(hash.as_string().c_str());
+        jobInfo.merkletree[i] = algo::toHash256(hash.as_string().c_str());
     }
 
     ////////////////////////////////////////////////////////////////////////////

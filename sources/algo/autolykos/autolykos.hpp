@@ -8,7 +8,6 @@ namespace algo
 {
     namespace autolykos_v2
     {
-
         constexpr uint32_t BLOCK_BEGIN { 0x96000  }; // 614400
         constexpr uint32_t BLOCK_END   { 0x401000 }; // 4198400
 
@@ -36,6 +35,14 @@ namespace algo
         constexpr uint32_t AMD_NONCES_PER_ITER { 0x400000 }; // 4194304
         constexpr uint32_t AMD_NONCES_PER_THREAD { 1u };
         constexpr uint32_t AMD_THREADS_PER_ITER { (AMD_NONCES_PER_ITER / AMD_NONCES_PER_THREAD) };
+
+        namespace mhssamadani
+        {
+            bool isValidShare(algo::hash256& header,
+                            algo::hash256& boundary,
+                            uint64_t const nonce,
+                            uint32_t const height);
+        }
 
 #if !defined(__LIB_CUDA)
         uint32_t computePeriod(uint32_t const blockNumner);

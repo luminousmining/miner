@@ -1,4 +1,13 @@
-#pragma once
+///////////////////////////////////////////////////////////////////////////////
+#include <algo/autolykos/autolykos.hpp>
+#include <common/cast.hpp>
+#include <benchmark/cuda/kernels.hpp>
+
+///////////////////////////////////////////////////////////////////////////////
+#include <benchmark/cuda/common/common.cuh>
+
+
+__constant__ uint32_t d_bound[8];
 
 
 #define B2B_INIT(m)                                                            \
@@ -30,6 +39,7 @@
     v[d] = ror_64(v[d] ^ v[a], 16);                                            \
     v[c] += v[d];                                                              \
     v[b] = ror_64(v[b] ^ v[c], 63);
+
 
 __device__ __forceinline__
 void devB2B_MIX(
@@ -148,7 +158,7 @@ void devB2B_MIX(
 
 __global__
 void __launch_bounds__(64, 64)
-kernel_autolykos_search(
+kernel_autolykos_v2_step1_lm1(
     uint32_t* __restrict__              hashes,
     uint64_t const* __restrict__ const  header,
     uint32_t* __restrict__ const        BHashes,
@@ -268,8 +278,8 @@ kernel_autolykos_search(
         ///////////////////////////////////////////////////////////////////////////
         B2B_INIT(aux);
         aux[0] = 0x6A09E667F2BDC928;
-        ((uint64_t *)(aux))[12] ^= 71; //31+32+8;
-        ((uint64_t *)(aux))[13] ^= 0;
+        ((uint64_t*)(aux))[12] ^= 71; //31+32+8;
+        ((uint64_t*)(aux))[13] ^= 0;
 
         aux[14] = ~aux[14];
 
@@ -286,7 +296,7 @@ kernel_autolykos_search(
         ((uint64_t*)&bb[47])[0] = header[2];
         ((uint64_t*)&bb[55])[0] = header[3];
 
-        ((uint64_t *)&bb[63])[0] = tmp;
+        ((uint64_t*)&bb[63])[0] = tmp;
 
         aux[25] = 0ull;
         aux[26] = 0ull;
@@ -399,12 +409,12 @@ void update_mix(
 
 __global__
 void __launch_bounds__(64, 64)
-kernel_autolykos_verify(
-    uint32_t const                               period,
-    uint64_t const                               nonce,
-    uint32_t const* const __restrict__           hashes,
-    uint32_t* const __restrict__                 BHashes,
-    volatile algo::autolykos_v2::Result* __restrict__ result)
+kernel_autolykos_v2_step_2_lm1(
+    uint32_t const* const __restrict__ hashes,
+    uint32_t* const __restrict__       BHashes,
+    volatile t_result_64* __restrict__ result,
+    uint32_t const                     period,
+    uint64_t const                     nonce)
 {
     __shared__ uint32_t shared_index[64];
     __shared__ uint32_t shared_data[512];
@@ -434,13 +444,13 @@ kernel_autolykos_verify(
     }
 
     r[0] = BHashes[tid           ];
-    r[1] = BHashes[8388608u  + tid];
-    r[2] = BHashes[16777216u + tid];
-    r[3] = BHashes[25165824u + tid];
-    r[4] = BHashes[33554432u + tid];
-    r[5] = BHashes[41943040u + tid];
-    r[6] = BHashes[50331648u + tid];
-    r[7] = BHashes[58720256u + tid];
+    r[1] = BHashes[8388608  + tid];
+    r[2] = BHashes[16777216 + tid];
+    r[3] = BHashes[25165824 + tid];
+    r[4] = BHashes[33554432 + tid];
+    r[5] = BHashes[41943040 + tid];
+    r[6] = BHashes[50331648 + tid];
+    r[7] = BHashes[58720256 + tid];
 
     ((uint8_t*)r)[32] = ((uint8_t*)r)[0];
     ((uint8_t*)r)[33] = ((uint8_t*)r)[1];
@@ -564,31 +574,32 @@ kernel_autolykos_verify(
 
     ////////////////////////////////////////////////////////////////////////////
     B2B_INIT(aux);
-    aux[0] = 0x6A09E667F2BDC928ull;
-    aux[12] ^= 32ull;
-    aux[13] ^= 0ull;
+    aux[0] = 0x6A09E667F2BDC928;
+    aux[12] ^= 32;
+    aux[13] ^= 0;
     aux[14] = ~aux[14];
 
+    uint8_t* bb = (uint8_t*)(&aux[16]);
     i_tmp = algo::autolykos_v2::NUM_SIZE_8 - 1;
-    uint8_t* aux_u8 = (uint8_t*)(&aux[16]);
+
     #pragma unroll
     for (j = 0; j < algo::autolykos_v2::NUM_SIZE_8; ++j)
     {
-        aux_u8[j] = ((uint8_t*)r)[i_tmp - j];
+        bb[j] = ((uint8_t const*)r)[i_tmp - j];
     }
 
-    aux[20] = 0ull;
-    aux[21] = 0ull;
-    aux[22] = 0ull;
-    aux[23] = 0ull;
-    aux[24] = 0ull;
-    aux[25] = 0ull;
-    aux[26] = 0ull;
-    aux[27] = 0ull;
-    aux[28] = 0ull;
-    aux[29] = 0ull;
-    aux[30] = 0ull;
-    aux[31] = 0ull;
+    aux[20] = 0;
+    aux[21] = 0;
+    aux[22] = 0;
+    aux[23] = 0;
+    aux[24] = 0;
+    aux[25] = 0;
+    aux[26] = 0;
+    aux[27] = 0;
+    aux[28] = 0;
+    aux[29] = 0;
+    aux[30] = 0;
+    aux[31] = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     devB2B_MIX(aux, aux + 16);
@@ -596,25 +607,25 @@ kernel_autolykos_verify(
     uint64_t hsh;
     uint32_t lsb_msb[32];
     {
-        hsh = 0x6A09E667F2BDC928ull;
+        hsh = 0x6A09E667F2BDC928;
         hsh ^= aux[0] ^ aux[8];
         lsb_msb[0] = (uint32_t)hsh;
         lsb_msb[1] = (uint32_t)(hsh >> 32);
     }
     {
-        hsh = 0xBB67AE8584CAA73Bull;
+        hsh = 0xBB67AE8584CAA73B;
         hsh ^= aux[1] ^ aux[9];
         lsb_msb[2] = (uint32_t)hsh;
         lsb_msb[3] = (uint32_t)(hsh >> 32);
     }
     {
-        hsh = 0x3C6EF372FE94F82Bull;
+        hsh = 0x3C6EF372FE94F82B;
         hsh ^= aux[2] ^ aux[10];
         lsb_msb[4] = (uint32_t)hsh;
         lsb_msb[5] = (uint32_t)(hsh >> 32);
     }
     {
-        hsh = 0xA54FF53A5F1D36F1ull;
+        hsh = 0xA54FF53A5F1D36F1;
         hsh ^= aux[3] ^ aux[11];
         lsb_msb[6] = (uint32_t)hsh;
         lsb_msb[7] = (uint32_t)(hsh >> 32);
@@ -631,8 +642,9 @@ kernel_autolykos_verify(
 
 
     ///////////////////////////////////////////////////////////////////////////
-    uint64_t const* const r64 = (uint64_t*)r;
-    uint64_t const* const bound64 = (uint64_t*)d_bound;
+    uint64_t const* const r64 = (uint64_t const* const)r;
+    uint64_t const* const bound64 = (uint64_t const* const)d_bound;
+
 
     uint64_t const r3 = r64[3];
     uint64_t const r2 = r64[2];
@@ -651,44 +663,59 @@ kernel_autolykos_verify(
 
     if (true == j)
     {
-        uint32_t const index = atomicAdd((uint32_t*)&result->count, 1);
-        if (index < algo::autolykos_v2::MAX_RESULT)
+        uint32_t const index = atomicAdd((uint32_t*)&result->index, 1);
+        if (index < MAX_RESULT_INDEX)
         {
             result->found = true;
-            result->nonces[index] = tid + nonce;
+            result->nonce[index] = tid + nonce;
         }
     }
 }
 
 
 __host__
-bool autolykosv2Search(
+bool autolykos_v2_lm1(
     cudaStream_t stream,
+    t_result_64* result,
+    uint32_t* dag,
+    uint32_t* header,
+    uint32_t* BHashes,
     uint32_t const blocks,
     uint32_t const threads,
-    resolver::nvidia::autolykos_v2::KernelParameters& params)
+    uint32_t const period)
 {
-    kernel_autolykos_search<<<blocks / 4u, threads, 0, stream>>>
+    uint64_t const nonce{ 11055774138563218679ull };
+
+    kernel_autolykos_v2_step1_lm1<<<blocks / 4u, threads, 0, stream>>>
     (
-        (uint32_t*)params.dag,
-        (uint64_t*)params.header,
-        (uint32_t*)params.BHashes,
-        params.hostNonce,
-        params.hostPeriod
+        dag,
+        (uint64_t*)header,
+        BHashes,
+        nonce,
+        period
     );
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());
 
-    kernel_autolykos_verify<<<blocks, threads, 0, stream>>>
+    kernel_autolykos_v2_step_2_lm1<<<blocks, threads, 0, stream>>>
     (
-        params.hostPeriod,
-        params.hostNonce,
-        (uint32_t*)params.dag,
-        (uint32_t*)params.BHashes,
-        params.resultCache
+        dag,
+        BHashes,
+        result,
+        period,
+        nonce
     );
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());
+
+    return true;
+}
+
+
+__host__
+bool autolykos_v2_init_lm1(algo::hash256 const& boundary)
+{
+    CUDA_ER(cudaMemcpyToSymbol(d_bound, (void*)&boundary, algo::LEN_HASH_256));
 
     return true;
 }

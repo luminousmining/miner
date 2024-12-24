@@ -77,7 +77,7 @@ void stratum::StratumAutolykosV2::onMiningNotify(
 
     jobInfo.jobIDStr.assign(params.at(0).as_string().c_str());
     jobInfo.blockNumber = common::boostJsonGetNumber<uint64_t>(params.at(1));
-    jobInfo.headerHash = algo::toHash<algo::hash256>(params.at(2).as_string().c_str());
+    jobInfo.headerHash = algo::toHash256(params.at(2).as_string().c_str());
     jobInfo.boundary =
         algo::toHash2<algo::hash256, algo::hash512>(
             algo::toLittleEndian<algo::hash512>(
@@ -87,7 +87,7 @@ void stratum::StratumAutolykosV2::onMiningNotify(
     jobInfo.cleanJob = params.at(8).as_bool();
 
     ////////////////////////////////////////////////////////////////////////////
-    jobInfo.jobID = algo::toHash<algo::hash256>(jobInfo.jobIDStr);
+    jobInfo.jobID = algo::toHash256(jobInfo.jobIDStr);
     jobInfo.epoch = castU32(jobInfo.blockNumber);
     jobInfo.period = algo::autolykos_v2::computePeriod(jobInfo.epoch);
 
@@ -141,13 +141,14 @@ void stratum::StratumAutolykosV2::miningSubmit(
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array{ wallet + "." + workerName };
-
-    boost::json::array& arr(root["params"].as_array());
-    arr.push_back(params.at(0)); // Job ID
-    arr.push_back(params.at(1)); // Nonce without extraNonce
-    arr.push_back("");           // empty
-    arr.push_back(params.at(2)); // Nonce
+    root["params"] = boost::json::array
+    { 
+        wallet + "." + workerName, // Wallet.WorkerName
+        params.at(0),              // Job ID
+        params.at(1),              // Nonce without extraNonce
+        "undefined",               // Empty
+        params.at(2)               // Nonce
+    };
 
     send(root);
 }

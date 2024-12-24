@@ -307,9 +307,16 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     uint32_t const extraNonce2Size)
 {
     algo::autolykos_v2::Result data{};
+    algo::hash256 boundary{};
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == parameters.resultCache.getBufferHost(clQueue, &data))
+    {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == parameters.boundaryCache.getBufferHost(clQueue, boundary.word32))
     {
         return false;
     }
@@ -322,15 +329,35 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
             MAX_LIMIT(data.count, algo::autolykos_v2::MAX_RESULT)
         };
 
-        resultShare.found = true;
-        resultShare.count = count;
-        resultShare.extraNonceSize = extraNonceSize;
-        resultShare.extraNonce2Size = extraNonce2Size;
-        resultShare.jobId.assign(_jobId);
-
+        uint32_t indexValidNonce{ 0u };
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = data.nonces[i];
+            auto const nonce{ data.nonces[i] };
+            auto const isValid
+            {
+                algo::autolykos_v2::mhssamadani::isValidShare
+                (
+                    parameters.hostHeader,
+                    boundary,
+                    nonce,
+                    parameters.hostHeight
+                )
+            };
+            resolverDebug() << "test nonce[" << std::hex << nonce << "] is " << std::boolalpha << isValid;
+            if (true == isValid)
+            {
+                resultShare.found = true;
+                resultShare.nonces[indexValidNonce] = nonce;
+                ++indexValidNonce;
+            }
+        }
+
+        if (true == resultShare.found)
+        {
+            resultShare.count = indexValidNonce;
+            resultShare.extraNonceSize = extraNonceSize;
+            resultShare.extraNonce2Size = extraNonce2Size;
+            resultShare.jobId.assign(_jobId);
         }
 
         if (false == parameters.resultCache.resetBufferHost(clQueue))

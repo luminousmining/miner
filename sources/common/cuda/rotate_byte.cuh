@@ -58,9 +58,12 @@ uint64_t ror_64(
     {
         asm volatile(
             "shf.r.wrap.b32 %0, %1, %2, %3;"
-            : "=r"(result.x) : "r"(a.y), "r"(a.x), "r"(offset));
-        asm volatile("shf.r.wrap.b32 %0, %1, %2, %3;"
-        : "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(offset));
+            : "=r"(result.x)
+            : "r"(a.y), "r"(a.x), "r"(offset));
+        asm volatile(
+            "shf.r.wrap.b32 %0, %1, %2, %3;"
+            : "=r"(result.y)
+            : "r"(a.x), "r"(a.y), "r"(offset));
     }
 
     return devectorize(result);

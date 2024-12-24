@@ -151,13 +151,13 @@ namespace algo
         return hash;
     }
 
-    template<typename T, typename U>
+    template<typename HashTo, typename HashFrom>
     inline
-    T toHash2(U const& src)
+    HashTo toHash2(HashFrom const& src)
     {
-        T dst{};
+        HashTo dst{};
 
-        uint32_t const len { (sizeof(T) < sizeof(U) ? sizeof(T) : sizeof(U)) };
+        uint32_t const len { (sizeof(HashTo) < sizeof(HashFrom) ? sizeof(HashTo) : sizeof(HashFrom)) };
 
         for (uint32_t i { 0u }; i < len; ++i)
         {
@@ -278,6 +278,31 @@ namespace algo
                 & 0xF
             )
             << (((i & 1)) << 2);
+        }
+
+        return hash;
+    }
+
+    template<typename T>
+    inline
+    T toBigEndian(T const& input)
+    {
+        T hash{};
+
+        uint32_t const lenght{ sizeof(T) / sizeof(uint8_t) };
+        for (uint32_t i{ 0u }; i < lenght; ++i)
+        {
+            uint32_t const index { lenght - i };
+            hash.ubytes[i >> 1] |=
+            (
+                (
+                    (input.ubytes[index - 1] >= 'A')
+                        ? input.ubytes[index - 1] - 'A' + 0xA
+                        : input.ubytes[index - 1] - '0'
+                )
+                & 0xF
+            )
+            << ((!(i & 1)) << 2);
         }
 
         return hash;

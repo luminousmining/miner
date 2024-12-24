@@ -180,6 +180,7 @@ bool init_ethash_ethminer(
     return true;
 }
 
+
 __host__
 bool ethash_ethminer(
         cudaStream_t stream,
