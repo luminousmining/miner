@@ -32,7 +32,7 @@ opencl :
 git clone  https://github.com/KhronosGroup/OpenCL-SDK.git
 cd OpenCL-SDK
 git fetch --all
-git checkout tags/v2023.04.17
+git checkout tags/v2024.10.24
 git submodule init
 git submodule update
 if not exist build_opencl mkdir build_opencl
