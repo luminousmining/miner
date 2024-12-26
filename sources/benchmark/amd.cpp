@@ -56,7 +56,7 @@ cl::Device benchmark::getDevice(uint32_t const index)
         if (index < totalIndex)
         {
             size_t const indexBuffer{ totalIndex - index - 1u };
-            auto const& clDevice{ cldevices.at(indexBuffer) };
+            auto const& clDevice{ cldevices[indexBuffer] };
             logInfo()
                 << "Device ["
                 << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>()
