@@ -197,7 +197,7 @@ common::Logger& common::Logger::operator<<(
 
 
 common::Logger& common::Logger::operator<<(
-    std::string_view const& str)
+    std::string_view const str)
 {
     if (typeLog > LOGGER_LEVEL)
     {
