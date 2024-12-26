@@ -5,7 +5,7 @@
 - cuda 12.4 => Ubuntu
 - OpenSSL 1.1.1
 - boost 1.86.0
-- OpenCL 3.0.15
+- OpenCL 3.0.17
   
 ### Windows
 - Visual Studio 2022
