@@ -19,7 +19,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostPeriod = castU32(jobInfo.period);
-    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostHeight = algo::be::uint32(castU32(jobInfo.blockNumber));
     parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
     parameters.hostPeriod = castU32(jobInfo.period);
-    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostHeight = algo::be::uint32(castU32(jobInfo.blockNumber));
     parameters.hostDagItemCount = castU32(jobInfo.period);
     algo::copyHash(parameters.hostBoundary, jobInfo.boundary);
     algo::copyHash(parameters.hostHeader, jobInfo.headerHash);
