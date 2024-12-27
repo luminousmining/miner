@@ -79,14 +79,14 @@ uint64_t statistical::Statistical::getBatchNonce() const
 void statistical::Statistical::updateHashrate()
 {
     uint64_t const elapsed{ chrono.elapsed(chronoUnit) };
-    double const diffInSecond{ chronoTime / elapsed };
+    double const diffTime{ chronoTime / elapsed };
     uint64_t const totalNonce{ batchNonce * kernelExecuted };
-    double const values{ totalNonce * diffInSecond };
+    double const values{ totalNonce * diffTime };
+
     if (values > 0.0)
     {
         hashrates = values;
     }
-
 }
 
 

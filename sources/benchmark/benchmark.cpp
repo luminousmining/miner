@@ -62,9 +62,8 @@ void benchmark::Benchmark::startChrono(std::string const& benchName)
 {
     currentBenchName = benchName;
     stats.setChronoUnit(common::CHRONO_UNIT::MS);
-    stats.setBatchNonce(blocks * threads);
+    stats.setBatchNonce(nonceComputed);
     stats.reset();
-    stats.start();
 }
 
 
@@ -143,6 +142,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
     ////////////////////////////////////////////////////////////////////////////
     blocks = 8192u;
     threads = 256u;
+    nonceComputed = blocks * threads;
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == init_ethash_ethminer(dagHash, &headerHash, dagItems, boundary))
@@ -208,6 +208,7 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     ////////////////////////////////////////////////////////////////////////////
     threads = 64u;
     blocks = algo::autolykos_v2::NONCES_PER_ITER;
+    nonceComputed = algo::autolykos_v2::NONCES_PER_ITER;
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == autolykos_v2_mhssamadi_init(boundary))

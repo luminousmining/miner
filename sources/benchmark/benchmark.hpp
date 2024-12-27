@@ -26,6 +26,7 @@ namespace benchmark
         std::string currentBenchName{};
         uint32_t blocks{ 1u };
         uint32_t threads{ 32u };
+        uint64_t nonceComputed{ 1ull };
         statistical::Statistical stats{};
 
         void startChrono(std::string const& benchName);
