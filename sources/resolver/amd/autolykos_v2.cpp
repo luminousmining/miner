@@ -32,7 +32,7 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostPeriod = castU32(jobInfo.period);
-    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostHeight = algo::be::uint32(castU32(jobInfo.blockNumber));
     parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ bool resolver::ResolverAmdAutolykosV2::updateConstants(
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
     parameters.hostPeriod = castU32(jobInfo.period);
-    parameters.hostHeight = algo::be::U32(castU32(jobInfo.blockNumber));
+    parameters.hostHeight = algo::be::uint32(castU32(jobInfo.blockNumber));
     parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////

@@ -39,9 +39,9 @@ namespace algo
         namespace mhssamadani
         {
             bool isValidShare(algo::hash256& header,
-                            algo::hash256& boundary,
-                            uint64_t const nonce,
-                            uint32_t const height);
+                              algo::hash256& boundary,
+                              uint64_t const nonce,
+                              uint32_t const height);
         }
 
 #if !defined(__LIB_CUDA)

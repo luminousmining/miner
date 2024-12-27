@@ -5,7 +5,7 @@
 - cuda 12.4 => Ubuntu
 - OpenSSL 1.1.1
 - boost 1.86.0
-- OpenCL 3.0.15
+- OpenCL 3.0.17
   
 ### Windows
 - Visual Studio 2022
@@ -32,7 +32,7 @@ opencl :
 git clone  https://github.com/KhronosGroup/OpenCL-SDK.git
 cd OpenCL-SDK
 git fetch --all
-git checkout tags/v2023.04.17
+git checkout tags/v2024.10.24
 git submodule init
 git submodule update
 if not exist build_opencl mkdir build_opencl

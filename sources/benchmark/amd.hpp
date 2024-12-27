@@ -1,6 +1,7 @@
 #pragma once
 
 #include <CL/opencl.hpp>
+
 #include <common/log/log.hpp>
 #include <common/cast.hpp>
 

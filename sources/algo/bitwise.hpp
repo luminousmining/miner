@@ -1,5 +1,7 @@
 #pragma once
 
+#if !defined(__LIB_CUDA)
+
 #if defined(_MSC_VER)
 #include <stdlib.h>
 #elif defined(__linux__) || defined(__GNUC__)
@@ -16,8 +18,6 @@ constexpr std::int32_t __ORDER_BIG_ENDIAN__    { 4321 };
 constexpr std::int32_t __BYTE_ORDER__          { __ORDER_LITTLE_ENDIAN__ };
 #elif (defined(__linux__) || defined(__GNUC__)) && !defined(__BYTE_ORDER__)
 #error "__GNUC__ should define __BYTE_ORDER__"
-#elif !defined(__BYTE_ORDER__)
-#error "Unknow endianness"
 #endif
 
 #if defined(__GNUC__)
@@ -52,12 +52,10 @@ namespace algo
 
     namespace be
     {
-        inline uint32_t U32(uint32_t const x) { return bswap32(x); }
-        inline uint64_t U64(uint64_t const x) { return bswap64(x); }
+        inline uint32_t uint32(uint32_t const x) { return bswap32(x); }
+        inline uint64_t uint64(uint64_t const x) { return bswap64(x); }
     };
-
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#error "Big Endian unsupported!"
 #endif
 
     template<typename T>
@@ -73,3 +71,5 @@ namespace algo
         return hash;
     }
 }
+
+#endif // !__LIB_CUDA

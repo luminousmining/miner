@@ -285,7 +285,7 @@ while (0)
 
 static uint32_t calcN(uint32_t const Hblock)
 {
-    uint32_t const headerHeight{ algo::be::U32(Hblock) };
+    uint32_t const headerHeight{ algo::be::uint32(Hblock) };
     uint32_t newN{ algo::autolykos_v2::EPOCH_MIN };
     if (headerHeight < IncreaseStart)
     {
