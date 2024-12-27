@@ -239,21 +239,21 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     if (true == autolykos_v2_init_lm1(boundary))
     {
         if (true == autolykos_v2_prehash_lm1(propertiesNvidia.cuStream,
-                                            dagHash->word32,
-                                            blocks,
-                                            threads,
-                                            period,
-                                            height))
+                                             dagHash->word32,
+                                             blocks,
+                                             threads,
+                                             period,
+                                             height))
         {
             startChrono("autolykos_v2: lm1"s);
             autolykos_v2_lm1(propertiesNvidia.cuStream,
-                            result,
-                            dagHash->word32,
-                            headerHash->word32,
-                            BHashes->word32,
-                            blocks,
-                            threads,
-                            period);
+                             result,
+                             dagHash->word32,
+                             headerHash->word32,
+                             BHashes->word32,
+                             blocks,
+                             threads,
+                             period);
             stopChrono();
         }
     }
