@@ -207,7 +207,7 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
 
     ////////////////////////////////////////////////////////////////////////////
     threads = 64u;
-    blocks = algo::autolykos_v2::NONCES_PER_ITER;
+    blocks = algo::autolykos_v2::NONCES_PER_ITER / 64u;
     nonceComputed = algo::autolykos_v2::NONCES_PER_ITER;
 
     ////////////////////////////////////////////////////////////////////////////
