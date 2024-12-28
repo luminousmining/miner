@@ -8,6 +8,7 @@ Use suffixes 64_t, 32_t, 16_t, 8_t instead of basic declarations int, long, char
 Added pointer symbol on type: `char** var;`.  
 Did not add `const` on left of the: `char const* const var;`.  
 Assign default variable with `{}` instead of `=`.  
+Add 2 lines between function.
 ```cpp
 int foo()
 {
