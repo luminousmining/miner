@@ -17,8 +17,7 @@ Different profiles are available:
 * SMART MINING
   
 `STANDAR` you must set your mining session (host/algo/...) and get 0% fees.  
-`SMART MINING` define the list coin coins need and let the system mine for you. 1% fees will be applied.  
-  
+`SMART MINING` define the list coin coins need and let the system mine for you.  
 ## Algorithms
 - ethash
 - etchash

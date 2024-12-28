@@ -1,6 +1,6 @@
 # Roadmap
   
-current version `v0.4`  
+current version `v0.5`  
   
 + step 1
 - [x] GPU mining Nvidia
@@ -8,7 +8,7 @@ current version `v0.4`
 - [x] os Windows
 - [x] os Linux
 - [x] os Hiveos
-- [ ] algo autolykos v2
+- [x] algo autolykos v2
 - [x] algo ethash
 - [x] algo etchash
 - [x] algo progpow
