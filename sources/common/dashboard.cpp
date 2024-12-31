@@ -184,6 +184,5 @@ void common::Dashboard::show()
             ss << "=";
         }
     }
-    ss << "\n";
     logCustom() << ss.str();
 }

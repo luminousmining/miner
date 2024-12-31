@@ -9,6 +9,7 @@
 #include <algo/algo_type.hpp>
 #include <device/type.hpp>
 #include <network/network.hpp>
+#include <profiler/nvidia.hpp>
 #include <statistical/statistical.hpp>
 #include <stratum/smart_mining.hpp>
 #include <stratum/stratum.hpp>
@@ -36,6 +37,9 @@ namespace device
         algo::ALGORITHM     algorithm { algo::ALGORITHM::UNKNOW };
         uint32_t            stratumUUID { 0u };
         uint64_t            memoryAvailable{ 0ull };
+#if defined(CUDA_ENABLE)
+        nvmlDevice_t        deviceNvml{ nullptr };
+#endif
 
         Device() = default;
         virtual ~Device() = default;

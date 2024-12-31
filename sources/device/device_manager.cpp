@@ -1,3 +1,4 @@
+#include <sstream>
 #include <string>
 
 #include <CL/opencl.hpp>
@@ -10,6 +11,7 @@
 #include <common/custom.hpp>
 #include <common/date.hpp>
 #include <common/formater_hashrate.hpp>
+#include <common/number_to_string.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/error/opencl_error.hpp>
 #include <device/device_manager.hpp>
@@ -47,6 +49,7 @@ bool device::DeviceManager::initialize()
 #if defined(CUDA_ENABLE)
     if (true == config.deviceEnable.nvidiaEnable)
     {
+        profilerNvidia.load();
         if (false == initializeNvidia())
         {
             logErr() << "Cannot initialize device Nvidia";
@@ -288,6 +291,9 @@ bool device::DeviceManager::initializeNvidia()
         device->pciBus = device->properties.pciBusID;
 
         ////////////////////////////////////////////////////////////////////////////
+        profilerNvidia.init(device->id, &device->deviceNvml);
+
+        ////////////////////////////////////////////////////////////////////////////
         logInfo() << "GPU[" << devices.size() << "] " << device->properties.name;
         devices.push_back(device);
     }
@@ -429,10 +435,12 @@ void device::DeviceManager::loopStatistical()
 {
     std::string host{};
     common::Dashboard board{};
+    common::Dashboard boardUsage{};
     stratum::Stratum* stratum { nullptr };
     common::Config const& config { common::Config::instance() };
     boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_HASH_STATS };
 
+    ////////////////////////////////////////////////////////////////////////
     board.setTitle("HASHRATE");
     board.addColumn("Type");
     board.addColumn("ID");
@@ -443,6 +451,14 @@ void device::DeviceManager::loopStatistical()
     board.addColumn("Valid");
     board.addColumn("Reject");
 
+    ////////////////////////////////////////////////////////////////////////
+    boardUsage.setTitle("USAGE");
+    boardUsage.addColumn("Type");
+    boardUsage.addColumn("ID");
+    boardUsage.addColumn("Pci");
+    boardUsage.addColumn("Power");
+    boardUsage.addColumn("H/W");
+
     while (true)
     {
         ////////////////////////////////////////////////////////////////////////
@@ -451,6 +467,10 @@ void device::DeviceManager::loopStatistical()
         ////////////////////////////////////////////////////////////////////////
         board.resetLines();
         board.setDate(common::getDate());
+
+        ////////////////////////////////////////////////////////////////////////
+        boardUsage.resetLines();
+        boardUsage.setDate(common::getDate());
 
         ////////////////////////////////////////////////////////////////////////
         bool displayable{ false };
@@ -485,7 +505,7 @@ void device::DeviceManager::loopStatistical()
                 host.assign("smart_mining");
             }
 
-            double const hashrate { device->getHashrate() };
+            auto const hashrate { device->getHashrate() };
             statistical::Statistical::ShareInfo shares { device->getShare() };
 
             std::string deviceType{ "UNKNOW" };
@@ -517,6 +537,26 @@ void device::DeviceManager::loopStatistical()
                 }
             );
 
+#if defined(CUDA_ENABLE)
+            if (   device->deviceType == device::DEVICE_TYPE::NVIDIA
+                && nullptr != device->deviceNvml)
+            {
+                auto const power{ profilerNvidia.getPowerUsage(device->deviceNvml) };
+                auto const hashByPower{ hashrate / power };
+
+                boardUsage.addLine
+                (
+                    {
+                        deviceType,
+                        std::to_string(device->id),
+                        std::to_string(device->pciBus),
+                        common::doubleToString(power),
+                        common::hashrateToString(hashByPower)
+                    }
+                );
+            }
+#endif
+
             if (hashrate > 0.0)
             {
                 displayable = true;
@@ -527,6 +567,7 @@ void device::DeviceManager::loopStatistical()
         if (true == displayable)
         {
             board.show();
+            boardUsage.show();
         }
     }
 }

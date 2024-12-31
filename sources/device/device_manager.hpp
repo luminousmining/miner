@@ -8,6 +8,7 @@
 #include <algo/algo_type.hpp>
 #include <device/amd.hpp>
 #include <device/nvidia.hpp>
+#include <profiler/nvidia.hpp>
 #include <stratum/job_info.hpp>
 #include <stratum/stratum.hpp>
 #include <stratum/smart_mining.hpp>
@@ -50,6 +51,10 @@ namespace device
 
         stratum::StratumSmartMining                        stratumSmartMining{};
         std::map<uint32_t/*DEVICE ID*/, stratum::Stratum*> stratums{};
+
+#if defined(CUDA_ENABLE)
+        profiler::Nvidia         profilerNvidia{};
+#endif
 
         bool initializeStratum(uint32_t const deviceId,
                                algo::ALGORITHM const algorithm);
