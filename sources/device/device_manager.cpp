@@ -1,3 +1,4 @@
+#include <sstream>
 #include <string>
 
 #include <CL/opencl.hpp>
@@ -289,7 +290,7 @@ bool device::DeviceManager::initializeNvidia()
         device->pciBus = device->properties.pciBusID;
 
         ////////////////////////////////////////////////////////////////////////////
-        profilerNvidia.init(device->id, device->deviceNvml);
+        profilerNvidia.init(device->id, &device->deviceNvml);
 
         ////////////////////////////////////////////////////////////////////////////
         logInfo() << "GPU[" << devices.size() << "] " << device->properties.name;
@@ -535,15 +536,18 @@ void device::DeviceManager::loopStatistical()
             );
 
 #if defined(CUDA_ENABLE)
-            if (device->deviceType == device::DEVICE_TYPE::NVIDIA)
+            if (   device->deviceType == device::DEVICE_TYPE::NVIDIA
+                && nullptr != device->deviceNvml)
             {
+                std::ostringstream os;
+                os << std::fixed << std::setprecision(2) << profilerNvidia.getPowerUsage(device->deviceNvml);
                 boardUsage.addLine
                 (
                     {
                         deviceType,
                         std::to_string(device->id),
                         std::to_string(device->pciBus),
-                        std::to_string(profilerNvidia.getPowerUsage(device->deviceNvml))
+                        os.str()
                     }
                 );
             }

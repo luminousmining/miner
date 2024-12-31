@@ -12,7 +12,7 @@ namespace profiler
     public:
         bool load();
         void unload();
-        bool init(uint32_t const id, nvmlDevice_t device);
+        bool init(uint32_t const id, nvmlDevice_t* device);
         double getPowerUsage(nvmlDevice_t device);
 
     private:

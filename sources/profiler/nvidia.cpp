@@ -5,6 +5,7 @@
 #else
 #include <dlfcn.h>
 #endif
+#include <cmath>
 
 #include <common/cast.hpp>
 #include <common/error/nvml_error.hpp>
@@ -20,7 +21,7 @@ bool profiler::Nvidia::load()
     libModule = dlopen("libnvidia-ml.so", RTLD_LAZY);
 #endif
 
-    if (nullptr != libModule)
+    if (nullptr == libModule)
     {
         logErr() << "Cannot load nvml library!";
         return false;
@@ -53,7 +54,7 @@ void profiler::Nvidia::unload()
 
 bool profiler::Nvidia::init(
     uint32_t const id,
-    nvmlDevice_t device)
+    nvmlDevice_t* device)
 {
     if (nullptr == nvmlInit)
     {
@@ -62,7 +63,7 @@ bool profiler::Nvidia::init(
     }
 
     NVML_ER(nvmlInit());
-    NVML_ER(nvmlDeviceGetHandleByIndex(id, &device));
+    NVML_ER(nvmlDeviceGetHandleByIndex(id, device));
 
     return true;
 }
@@ -78,7 +79,7 @@ double profiler::Nvidia::getPowerUsage(nvmlDevice_t device)
     }
 
     NVML_CALL(nvmlDeviceGetPowerUsage(device, &power));
-    return castDouble(power) / 1000.0;
+    return  castDouble(power) / 1000.0;
 }
 
 
