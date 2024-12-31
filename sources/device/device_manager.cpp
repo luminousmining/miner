@@ -11,6 +11,7 @@
 #include <common/custom.hpp>
 #include <common/date.hpp>
 #include <common/formater_hashrate.hpp>
+#include <common/number_to_string.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/error/opencl_error.hpp>
 #include <device/device_manager.hpp>
@@ -456,6 +457,7 @@ void device::DeviceManager::loopStatistical()
     boardUsage.addColumn("ID");
     boardUsage.addColumn("Pci");
     boardUsage.addColumn("Power");
+    boardUsage.addColumn("H/W");
 
     while (true)
     {
@@ -503,7 +505,7 @@ void device::DeviceManager::loopStatistical()
                 host.assign("smart_mining");
             }
 
-            double const hashrate { device->getHashrate() };
+            auto const hashrate { device->getHashrate() };
             statistical::Statistical::ShareInfo shares { device->getShare() };
 
             std::string deviceType{ "UNKNOW" };
@@ -539,15 +541,17 @@ void device::DeviceManager::loopStatistical()
             if (   device->deviceType == device::DEVICE_TYPE::NVIDIA
                 && nullptr != device->deviceNvml)
             {
-                std::ostringstream os;
-                os << std::fixed << std::setprecision(2) << profilerNvidia.getPowerUsage(device->deviceNvml);
+                auto const power{ profilerNvidia.getPowerUsage(device->deviceNvml) };
+                auto const hashByPower{ hashrate / power };
+
                 boardUsage.addLine
                 (
                     {
                         deviceType,
                         std::to_string(device->id),
                         std::to_string(device->pciBus),
-                        os.str()
+                        common::doubleToString(power),
+                        common::hashrateToString(hashByPower)
                     }
                 );
             }

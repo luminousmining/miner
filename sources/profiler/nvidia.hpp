@@ -12,7 +12,7 @@ namespace profiler
     public:
         bool load();
         void unload();
-        bool init(uint32_t const id, nvmlDevice_t* device);
+    bool init(uint32_t const id, nvmlDevice_t* device);
         double getPowerUsage(nvmlDevice_t device);
 
     private:
@@ -28,9 +28,9 @@ namespace profiler
         using NVMLDeviceGetPowerUsageFunc = nvmlReturn_t(*)(nvmlDevice_t, unsigned int*);
 
         NVMLInitFunc                   nvmlInit{ nullptr };
-        NVMLShutdownFunc               nvmlShutdown{  nullptr };
-        NVMLDeviceGetHandleByIndexFunc nvmlDeviceGetHandleByIndex{  nullptr };
-        NVMLDeviceGetPowerUsageFunc    nvmlDeviceGetPowerUsage{  nullptr };
+        NVMLShutdownFunc               nvmlShutdown{ nullptr };
+        NVMLDeviceGetHandleByIndexFunc nvmlDeviceGetHandleByIndex{ nullptr };
+        NVMLDeviceGetPowerUsageFunc    nvmlDeviceGetPowerUsage{ nullptr };
 
         void* loadFunction(char const* name);
     };
