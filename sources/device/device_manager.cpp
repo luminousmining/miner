@@ -37,6 +37,10 @@ bool device::DeviceManager::initialize()
     ////////////////////////////////////////////////////////////////////////////
     if (true == config.deviceEnable.amdEnable)
     {
+        if (true == profilerAmd.load())
+        {
+            profilerAmd.init();
+        }
         if (false == initializeAmd())
         {
             logErr() << "Cannot initialize device Amd";
@@ -510,18 +514,27 @@ void device::DeviceManager::loopStatistical()
 
             std::string deviceType{ "UNKNOW" };
 
-#if defined(CUDA_ENABLE)
-            if (device->deviceType == device::DEVICE_TYPE::NVIDIA)
+            switch(device->deviceType)
             {
-                deviceType = "NVIDIA";
-            }
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    deviceType = "NVIDIA";
+                    break;
+                }
 #endif
 #if defined(AMD_ENABLE)
-            if (device->deviceType == device::DEVICE_TYPE::AMD)
-            {
-                deviceType = "AMD";
-            }
+                case device::DEVICE_TYPE::AMD:
+                {
+                    deviceType = "AMD";
+                }
 #endif
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    deviceType = "UNKNOW";
+                    break;
+                }
+            }
 
             board.addLine
             (
@@ -537,25 +550,44 @@ void device::DeviceManager::loopStatistical()
                 }
             );
 
-#if defined(CUDA_ENABLE)
-            if (   device->deviceType == device::DEVICE_TYPE::NVIDIA
-                && nullptr != device->deviceNvml)
+            auto power{ 0.0 };
+            auto hashByPower{ 0.0 };
+            switch(device->deviceType)
             {
-                auto const power{ profilerNvidia.getPowerUsage(device->deviceNvml) };
-                auto const hashByPower{ hashrate / power };
-
-                boardUsage.addLine
-                (
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    if (nullptr != device->deviceNvml)
                     {
-                        deviceType,
-                        std::to_string(device->id),
-                        std::to_string(device->pciBus),
-                        common::doubleToString(power),
-                        common::hashrateToString(hashByPower)
+                        power = profilerNvidia.getPowerUsage(device->deviceNvml);
                     }
-                );
-            }
+                    break;
+                }
 #endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    power = profilerAmd.getPowerUsage(device->id);
+                    break;
+                }
+#endif
+            }
+
+            if (0.0 < power)
+            {
+                hashByPower = hashrate / power;
+            }
+
+            boardUsage.addLine
+            (
+                {
+                    deviceType,
+                    std::to_string(device->id),
+                    std::to_string(device->pciBus),
+                    common::doubleToString(power),
+                    common::hashrateToString(hashByPower)
+                }
+            );
 
             if (hashrate > 0.0)
             {

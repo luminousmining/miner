@@ -8,6 +8,7 @@
 #include <algo/algo_type.hpp>
 #include <device/amd.hpp>
 #include <device/nvidia.hpp>
+#include <profiler/amd.hpp>
 #include <profiler/nvidia.hpp>
 #include <stratum/job_info.hpp>
 #include <stratum/stratum.hpp>
@@ -53,6 +54,7 @@ namespace device
         std::map<uint32_t/*DEVICE ID*/, stratum::Stratum*> stratums{};
 
 #if defined(CUDA_ENABLE)
+        profiler::Amd            profilerAmd{};
         profiler::Nvidia         profilerNvidia{};
 #endif
 
