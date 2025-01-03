@@ -13,6 +13,26 @@
 #include <profiler/nvidia.hpp>
 
 
+void* profiler::Nvidia::loadFunction(char const* name)
+{
+#ifdef _WIN32
+    void* ptr{ castVOIDP(GetProcAddress(libModule, name)) };
+    if (nullptr == ptr)
+    {
+        logErr() << "Cannot load function: " << name << " (" << GetLastError() << ")";
+    }
+#else
+    void* ptr{ castVOIDP(dlsym(libModule, name)) };
+    if (nullptr == ptr)
+    {
+        logErr() << "Cannot load function: " << name << " (" << dlerror() << ")";
+    }
+#endif
+
+    return ptr;
+}
+
+
 bool profiler::Nvidia::load()
 {
 #ifdef _WIN32
@@ -31,6 +51,8 @@ bool profiler::Nvidia::load()
     nvmlShutdown = reinterpret_cast<NVMLShutdownFunc>(loadFunction("nvmlShutdown"));
     nvmlDeviceGetHandleByIndex = reinterpret_cast<NVMLDeviceGetHandleByIndexFunc>(loadFunction("nvmlDeviceGetHandleByIndex"));
     nvmlDeviceGetPowerUsage = reinterpret_cast<NVMLDeviceGetPowerUsageFunc>(loadFunction("nvmlDeviceGetPowerUsage"));
+    nvmlDeviceGetClockInfo = reinterpret_cast<NVMLDeviceGetClockInfo>(loadFunction("nvmlDeviceGetClockInfo"));
+    nvmlDeviceGetUtilizationRates = reinterpret_cast<NVMLDeviceGetUtilizationRates>(loadFunction("nvmlDeviceGetUtilizationRates"));
 
     return true;
 }
@@ -38,17 +60,18 @@ bool profiler::Nvidia::load()
 
 void profiler::Nvidia::unload()
 {
+    if (nullptr != nvmlShutdown)
+    {
+        nvmlShutdown();
+    }
+    if (nullptr != libModule)
+    {
 #ifdef _WIN32
-    if (nullptr != libModule)
-    {
         FreeLibrary(libModule);
-    }
 #else
-    if (nullptr != libModule)
-    {
         dlclose(libModule);
-    }
 #endif
+    }
 }
 
 
@@ -72,34 +95,32 @@ bool profiler::Nvidia::init(
 double profiler::Nvidia::getPowerUsage(nvmlDevice_t device)
 {
     uint32_t power{ 0u };
-    if (nullptr == device)
-    {
-        logErr() << "nvml device is nullptr";
-        return 0.0;
-    }
-
     NVML_CALL(nvmlDeviceGetPowerUsage(device, &power));
-    return  castDouble(power) / 1000.0;
+    return castDouble(power) / 1000.0;
 }
 
 
-void* profiler::Nvidia::loadFunction(char const* name)
+uint32_t profiler::Nvidia::getCoreClock(nvmlDevice_t device)
 {
-#ifdef _WIN32
-    void* ptr{ castVOIDP(GetProcAddress(libModule, name)) };
-    if (nullptr == ptr)
-    {
-        logErr() << "Cannot load function: " << name << " (" << GetLastError() << ")";
-    }
-#else
-    void* ptr{ castVOIDP(dlsym(libModule, name)) };
-    if (nullptr == ptr)
-    {
-        logErr() << "Cannot load function: " << name << " (" << dlerror() << ")";
-    }
-#endif
-
-    return ptr;
+    uint32_t clock{ 0u };
+    NVML_CALL(nvmlDeviceGetClockInfo(device, nvmlClockType_t::NVML_CLOCK_MEM, &clock));
+    return clock;
 }
 
-#endif //!CUDA_ENABLE
+
+uint32_t profiler::Nvidia::getMemoryClock(nvmlDevice_t device)
+{
+    uint32_t clock{ 0u };
+    NVML_CALL(nvmlDeviceGetClockInfo(device, nvmlClockType_t::NVML_CLOCK_GRAPHICS, &clock));
+    return clock;
+}
+
+
+uint32_t profiler::Nvidia::getUtilizationRate(nvmlDevice_t device)
+{
+    nvmlUtilization_t utilization{};
+    NVML_CALL(nvmlDeviceGetUtilizationRates(device, &utilization));
+    return utilization.gpu;
+}
+
+#endif

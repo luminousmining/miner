@@ -12,6 +12,26 @@
 #include <profiler/amd.hpp>
 
 
+void* profiler::Amd::loadFunction(char const* name)
+{
+#ifdef _WIN32
+    void* ptr{ castVOIDP(GetProcAddress(libModule, name)) };
+    if (nullptr == ptr)
+    {
+        logErr() << "Cannot load function: " << name << " (" << GetLastError() << ")";
+    }
+#else
+    void* ptr{ castVOIDP(dlsym(libModule, name)) };
+    if (nullptr == ptr)
+    {
+        logErr() << "Cannot load function: " << name << " (" << dlerror() << ")";
+    }
+#endif
+
+    return ptr;
+}
+
+
 bool profiler::Amd::load()
 {
     return true;
@@ -24,17 +44,14 @@ void profiler::Amd::unload()
     {
         adlMainControlDestroy();
     }
+    if (nullptr != libModule)
+    {
 #ifdef _WIN32
-    if (nullptr != libModule)
-    {
         FreeLibrary(libModule);
-    }
 #else
-    if (nullptr != libModule)
-    {
         dlclose(libModule);
-    }
 #endif
+    }
 }
 
 
@@ -59,7 +76,6 @@ bool profiler::Amd::init()
     adlMainControlCreate = reinterpret_cast<ADL_MAIN_CONTROL_CREATE>(loadFunction("ADL_Main_Control_Create"));
     adlMainControlDestroy = reinterpret_cast<ADL_MAIN_CONTROL_DESTROY>(loadFunction("ADL_Main_Control_Destroy"));
     adlOverdrive5CurrentActivityGet = reinterpret_cast<ADL_PM_ACTIVITY_GET>(loadFunction("ADL_Overdrive5_CurrentActivity_Get"));
-    adl2OverdrivenPerformanceStatusGet = reinterpret_cast<ADL_PM_ACTIVITY_GET>(loadFunction("ADL2_OverdriveN_PerformanceStatus_Get"));
 
     auto cbAdlControlCreate{ [](int) -> void* { return malloc(1); } };
     if (ADL_OK != adlMainControlCreate(cbAdlControlCreate, 1))
@@ -71,34 +87,17 @@ bool profiler::Amd::init()
 }
 
 
-double profiler::Amd::getPowerUsage(uint32_t const id)
+ADLPMActivity profiler::Amd::getCurrentActivity(uint32_t const id)
 {
-    ADLODNPerformanceStatus status{};
-    if (ADL_OK != adl2OverdrivenPerformanceStatusGet(context, id, &status))
-    {
-        logErr() << "ADL cannot get performance status";
-    }
-    return activity.iPower / 1000.0;
-}
+    ADLPMActivity activity{};
+    activity.iSize = sizeof(ADLPMActivity);
 
-
-void* profiler::Amd::loadFunction(char const* name)
-{
-#ifdef _WIN32
-    void* ptr{ castVOIDP(GetProcAddress(libModule, name)) };
-    if (nullptr == ptr)
+    if (ADL_OK != adlOverdrive5CurrentActivityGet(id, &activity))
     {
-        logErr() << "Cannot load function: " << name << " (" << GetLastError() << ")";
+        logErr() << "ADL cannot get activity";
     }
-#else
-    void* ptr{ castVOIDP(dlsym(libModule, name)) };
-    if (nullptr == ptr)
-    {
-        logErr() << "Cannot load function: " << name << " (" << dlerror() << ")";
-    }
-#endif
 
-    return ptr;
+    return activity;
 }
 
 #endif

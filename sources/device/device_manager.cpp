@@ -461,6 +461,9 @@ void device::DeviceManager::loopStatistical()
     boardUsage.addColumn("ID");
     boardUsage.addColumn("Pci");
     boardUsage.addColumn("Power");
+    boardUsage.addColumn("CoreClock");
+    boardUsage.addColumn("MemoryClock");
+    boardUsage.addColumn("Utilization");
     boardUsage.addColumn("H/W");
 
     while (true)
@@ -480,12 +483,14 @@ void device::DeviceManager::loopStatistical()
         bool displayable{ false };
         for (device::Device* const device : devices)
         {
+            ///////////////////////////////////////////////////////////////////
             if (   nullptr == device
                 || false == device->isAlive())
             {
                 continue;
             }
  
+            ///////////////////////////////////////////////////////////////////
             if (common::PROFILE::STANDARD == config.profile)
             {
                 auto const& itStratum { stratums.find(device->id) };
@@ -509,11 +514,12 @@ void device::DeviceManager::loopStatistical()
                 host.assign("smart_mining");
             }
 
+            ///////////////////////////////////////////////////////////////////
             auto const hashrate { device->getHashrate() };
             statistical::Statistical::ShareInfo shares { device->getShare() };
 
+            ///////////////////////////////////////////////////////////////////
             std::string deviceType{ "UNKNOW" };
-
             switch(device->deviceType)
             {
 #if defined(CUDA_ENABLE)
@@ -536,6 +542,7 @@ void device::DeviceManager::loopStatistical()
                 }
             }
 
+            ///////////////////////////////////////////////////////////////////
             board.addLine
             (
                 {
@@ -550,8 +557,13 @@ void device::DeviceManager::loopStatistical()
                 }
             );
 
+            ///////////////////////////////////////////////////////////////////
             auto power{ 0.0 };
             auto hashByPower{ 0.0 };
+            auto coreClock{ 0u };
+            auto memoryClock{ 0u };
+            auto utilizationPercent{ 0u };
+
             switch(device->deviceType)
             {
 #if defined(CUDA_ENABLE)
@@ -560,6 +572,9 @@ void device::DeviceManager::loopStatistical()
                     if (nullptr != device->deviceNvml)
                     {
                         power = profilerNvidia.getPowerUsage(device->deviceNvml);
+                        coreClock = profilerNvidia.getCoreClock(device->deviceNvml);
+                        memoryClock = profilerNvidia.getMemoryClock(device->deviceNvml);
+                        utilizationPercent = profilerNvidia.getUtilizationRate(device->deviceNvml);
                     }
                     break;
                 }
@@ -567,7 +582,10 @@ void device::DeviceManager::loopStatistical()
 #if defined(AMD_ENABLE)
                 case device::DEVICE_TYPE::AMD:
                 {
-                    power = profilerAmd.getPowerUsage(device->id);
+                    auto const activity{ profilerAmd.getCurrentActivity(device->id) };
+                    coreClock = activity.iEngineClock;
+                    memoryClock = activity.iMemoryClock;
+                    utilizationPercent = activity.iActivityPercent;
                     break;
                 }
 #endif
@@ -585,10 +603,14 @@ void device::DeviceManager::loopStatistical()
                     std::to_string(device->id),
                     std::to_string(device->pciBus),
                     common::doubleToString(power),
+                    std::to_string(coreClock),
+                    std::to_string(memoryClock),
+                    std::to_string(utilizationPercent),
                     common::hashrateToString(hashByPower)
                 }
             );
 
+            ///////////////////////////////////////////////////////////////////
             if (hashrate > 0.0)
             {
                 displayable = true;
