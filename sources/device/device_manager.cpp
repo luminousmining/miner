@@ -37,6 +37,10 @@ bool device::DeviceManager::initialize()
     ////////////////////////////////////////////////////////////////////////////
     if (true == config.deviceEnable.amdEnable)
     {
+        if (false == profilerAmd.load())
+        {
+            profilerAmd.valid = false;
+        }
         if (false == initializeAmd())
         {
             logErr() << "Cannot initialize device Amd";
@@ -291,7 +295,10 @@ bool device::DeviceManager::initializeNvidia()
         device->pciBus = device->properties.pciBusID;
 
         ////////////////////////////////////////////////////////////////////////////
-        profilerNvidia.init(device->id, &device->deviceNvml);
+        if (false == profilerNvidia.init(device->id, &device->deviceNvml))
+        {
+            profilerNvidia.valid = false;
+        }
 
         ////////////////////////////////////////////////////////////////////////////
         logInfo() << "GPU[" << devices.size() << "] " << device->properties.name;
@@ -457,6 +464,9 @@ void device::DeviceManager::loopStatistical()
     boardUsage.addColumn("ID");
     boardUsage.addColumn("Pci");
     boardUsage.addColumn("Power");
+    boardUsage.addColumn("CoreClock");
+    boardUsage.addColumn("MemoryClock");
+    boardUsage.addColumn("Utilization");
     boardUsage.addColumn("H/W");
 
     while (true)
@@ -476,12 +486,14 @@ void device::DeviceManager::loopStatistical()
         bool displayable{ false };
         for (device::Device* const device : devices)
         {
+            ///////////////////////////////////////////////////////////////////
             if (   nullptr == device
                 || false == device->isAlive())
             {
                 continue;
             }
  
+            ///////////////////////////////////////////////////////////////////
             if (common::PROFILE::STANDARD == config.profile)
             {
                 auto const& itStratum { stratums.find(device->id) };
@@ -505,24 +517,35 @@ void device::DeviceManager::loopStatistical()
                 host.assign("smart_mining");
             }
 
+            ///////////////////////////////////////////////////////////////////
             auto const hashrate { device->getHashrate() };
             statistical::Statistical::ShareInfo shares { device->getShare() };
 
+            ///////////////////////////////////////////////////////////////////
             std::string deviceType{ "UNKNOW" };
-
-#if defined(CUDA_ENABLE)
-            if (device->deviceType == device::DEVICE_TYPE::NVIDIA)
+            switch(device->deviceType)
             {
-                deviceType = "NVIDIA";
-            }
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    deviceType = "NVIDIA";
+                    break;
+                }
 #endif
 #if defined(AMD_ENABLE)
-            if (device->deviceType == device::DEVICE_TYPE::AMD)
-            {
-                deviceType = "AMD";
-            }
+                case device::DEVICE_TYPE::AMD:
+                {
+                    deviceType = "AMD";
+                }
 #endif
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    deviceType = "UNKNOW";
+                    break;
+                }
+            }
 
+            ///////////////////////////////////////////////////////////////////
             board.addLine
             (
                 {
@@ -537,26 +560,64 @@ void device::DeviceManager::loopStatistical()
                 }
             );
 
-#if defined(CUDA_ENABLE)
-            if (   device->deviceType == device::DEVICE_TYPE::NVIDIA
-                && nullptr != device->deviceNvml)
+            ///////////////////////////////////////////////////////////////////
+            auto power{ 0.0 };
+            auto hashByPower{ 0.0 };
+            auto coreClock{ 0u };
+            auto memoryClock{ 0u };
+            auto utilizationPercent{ 0u };
+
+            switch(device->deviceType)
             {
-                auto const power{ profilerNvidia.getPowerUsage(device->deviceNvml) };
-                auto const hashByPower{ hashrate / power };
-
-                boardUsage.addLine
-                (
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    if (   nullptr != device->deviceNvml
+                        && true == profilerNvidia.valid)
                     {
-                        deviceType,
-                        std::to_string(device->id),
-                        std::to_string(device->pciBus),
-                        common::doubleToString(power),
-                        common::hashrateToString(hashByPower)
+                        power = profilerNvidia.getPowerUsage(device->deviceNvml);
+                        coreClock = profilerNvidia.getCoreClock(device->deviceNvml);
+                        memoryClock = profilerNvidia.getMemoryClock(device->deviceNvml);
+                        utilizationPercent = profilerNvidia.getUtilizationRate(device->deviceNvml);
                     }
-                );
-            }
+                    break;
+                }
 #endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    if (true == profilerAmd.valid)
+                    {
+                        auto const activity{ profilerAmd.getCurrentActivity(device->id) };
+                        coreClock = activity.iEngineClock;
+                        memoryClock = activity.iMemoryClock;
+                        utilizationPercent = activity.iActivityPercent;
+                    }
+                    break;
+                }
+#endif
+            }
 
+            if (0.0 < power)
+            {
+                hashByPower = hashrate / power;
+            }
+
+            boardUsage.addLine
+            (
+                {
+                    deviceType,
+                    std::to_string(device->id),
+                    std::to_string(device->pciBus),
+                    common::doubleToString(power),
+                    std::to_string(coreClock),
+                    std::to_string(memoryClock),
+                    std::to_string(utilizationPercent),
+                    common::hashrateToString(hashByPower)
+                }
+            );
+
+            ///////////////////////////////////////////////////////////////////
             if (hashrate > 0.0)
             {
                 displayable = true;
