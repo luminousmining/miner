@@ -10,6 +10,8 @@ namespace profiler
     struct Nvidia
     {
     public:
+        bool valid{ false };
+
         bool load();
         void unload();
         bool init(uint32_t const id, nvmlDevice_t* device);

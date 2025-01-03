@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <common/cast.hpp>
+#include <common/custom.hpp>
 #include <common/error/nvml_error.hpp>
 #include <common/log/log.hpp>
 #include <profiler/nvidia.hpp>
@@ -54,6 +55,15 @@ bool profiler::Nvidia::load()
     nvmlDeviceGetClockInfo = reinterpret_cast<NVMLDeviceGetClockInfo>(loadFunction("nvmlDeviceGetClockInfo"));
     nvmlDeviceGetUtilizationRates = reinterpret_cast<NVMLDeviceGetUtilizationRates>(loadFunction("nvmlDeviceGetUtilizationRates"));
 
+    IS_NULL(nvmlInit);
+    IS_NULL(nvmlShutdown);
+    IS_NULL(nvmlDeviceGetHandleByIndex);
+    IS_NULL(nvmlDeviceGetPowerUsage);
+    IS_NULL(nvmlDeviceGetClockInfo);
+    IS_NULL(nvmlDeviceGetUtilizationRates);
+
+    valid = true;
+
     return true;
 }
 
@@ -79,15 +89,8 @@ bool profiler::Nvidia::init(
     uint32_t const id,
     nvmlDevice_t* device)
 {
-    if (nullptr == nvmlInit)
-    {
-        logErr() << "nvmlInit is nullptr!";
-        return false;
-    }
-
     NVML_ER(nvmlInit());
     NVML_ER(nvmlDeviceGetHandleByIndex(id, device));
-
     return true;
 }
 

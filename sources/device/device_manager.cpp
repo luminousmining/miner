@@ -37,9 +37,9 @@ bool device::DeviceManager::initialize()
     ////////////////////////////////////////////////////////////////////////////
     if (true == config.deviceEnable.amdEnable)
     {
-        if (true == profilerAmd.load())
+        if (false == profilerAmd.load())
         {
-            profilerAmd.init();
+            profilerAmd.valid = false;
         }
         if (false == initializeAmd())
         {
@@ -295,7 +295,10 @@ bool device::DeviceManager::initializeNvidia()
         device->pciBus = device->properties.pciBusID;
 
         ////////////////////////////////////////////////////////////////////////////
-        profilerNvidia.init(device->id, &device->deviceNvml);
+        if (false == profilerNvidia.init(device->id, &device->deviceNvml))
+        {
+            profilerNvidia.valid = false;
+        }
 
         ////////////////////////////////////////////////////////////////////////////
         logInfo() << "GPU[" << devices.size() << "] " << device->properties.name;
@@ -569,7 +572,8 @@ void device::DeviceManager::loopStatistical()
 #if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
-                    if (nullptr != device->deviceNvml)
+                    if (   nullptr != device->deviceNvml
+                        && true == profilerNvidia.valid)
                     {
                         power = profilerNvidia.getPowerUsage(device->deviceNvml);
                         coreClock = profilerNvidia.getCoreClock(device->deviceNvml);
@@ -582,10 +586,13 @@ void device::DeviceManager::loopStatistical()
 #if defined(AMD_ENABLE)
                 case device::DEVICE_TYPE::AMD:
                 {
-                    auto const activity{ profilerAmd.getCurrentActivity(device->id) };
-                    coreClock = activity.iEngineClock;
-                    memoryClock = activity.iMemoryClock;
-                    utilizationPercent = activity.iActivityPercent;
+                    if (true == profilerAmd.valid)
+                    {
+                        auto const activity{ profilerAmd.getCurrentActivity(device->id) };
+                        coreClock = activity.iEngineClock;
+                        memoryClock = activity.iMemoryClock;
+                        utilizationPercent = activity.iActivityPercent;
+                    }
                     break;
                 }
 #endif

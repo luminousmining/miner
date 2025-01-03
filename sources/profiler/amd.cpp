@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <common/cast.hpp>
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <profiler/amd.hpp>
 
@@ -34,29 +35,6 @@ void* profiler::Amd::loadFunction(char const* name)
 
 bool profiler::Amd::load()
 {
-    return true;
-}
-
-
-void profiler::Amd::unload()
-{
-    if (nullptr != adlMainControlDestroy)
-    {
-        adlMainControlDestroy();
-    }
-    if (nullptr != libModule)
-    {
-#ifdef _WIN32
-        FreeLibrary(libModule);
-#else
-        dlclose(libModule);
-#endif
-    }
-}
-
-
-bool profiler::Amd::init()
-{
 #ifdef _WIN32
     libModule = LoadLibrary("atiadlxx.dll"); // 64-bits
     if (nullptr == libModule)
@@ -77,13 +55,36 @@ bool profiler::Amd::init()
     adlMainControlDestroy = reinterpret_cast<ADL_MAIN_CONTROL_DESTROY>(loadFunction("ADL_Main_Control_Destroy"));
     adlOverdrive5CurrentActivityGet = reinterpret_cast<ADL_PM_ACTIVITY_GET>(loadFunction("ADL_Overdrive5_CurrentActivity_Get"));
 
+    IS_NULL(adlMainControlCreate);
+    IS_NULL(adlMainControlDestroy);
+    IS_NULL(adlOverdrive5CurrentActivityGet);
+
     auto cbAdlControlCreate{ [](int) -> void* { return malloc(1); } };
     if (ADL_OK != adlMainControlCreate(cbAdlControlCreate, 1))
     {
         return false;
     }
 
+    valid = true;
+
     return true;
+}
+
+
+void profiler::Amd::unload()
+{
+    if (nullptr != adlMainControlDestroy)
+    {
+        adlMainControlDestroy();
+    }
+    if (nullptr != libModule)
+    {
+#ifdef _WIN32
+        FreeLibrary(libModule);
+#else
+        dlclose(libModule);
+#endif
+    }
 }
 
 

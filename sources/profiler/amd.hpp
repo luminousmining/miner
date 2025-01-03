@@ -10,9 +10,10 @@ namespace profiler
     struct Amd
     {
     public:
+        bool valid{ false };
+
         bool load();
         void unload();
-        bool init();
         ADLPMActivity getCurrentActivity(uint32_t const id);
 
     private:
