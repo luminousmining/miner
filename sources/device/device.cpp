@@ -444,7 +444,7 @@ stratum::StratumSmartMining* device::Device::getStratumSmartMining()
 
 statistical::Statistical::ShareInfo device::Device::getShare()
 {
-    statistical::Statistical::ShareInfo info { miningStats.getShares() };
+    statistical::Statistical::ShareInfo info{ miningStats.getShares() };
     return info;
 }
 
@@ -475,8 +475,8 @@ void device::Device::cleanJob()
 bool device::Device::updateJob()
 {
     common::Chrono chrono{};
-    bool expectedMemory { true };
-    bool expectedConstants { true };
+    bool expectedMemory{ true };
+    bool expectedConstants{ true };
 
     ////////////////////////////////////////////////////////////////////////////
     {

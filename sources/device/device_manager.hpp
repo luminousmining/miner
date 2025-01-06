@@ -6,6 +6,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include <algo/algo_type.hpp>
+#include <common/dashboard.hpp>
 #include <device/amd.hpp>
 #include <device/nvidia.hpp>
 #include <profiler/amd.hpp>
@@ -74,5 +75,13 @@ namespace device
         stratum::Stratum* getOrCreateStratum(algo::ALGORITHM const algorithm,
                                              uint32_t const deviceId);
         void loopStatistical();
+        void showMiningStats(common::Dashboard& board,
+                             device::Device* const device,
+                             double const hashrate,
+                             std::string const& host,
+                             statistical::Statistical::ShareInfo const& shareInfo);
+        void showDeviceStats(common::Dashboard& board,
+                             device::Device* const device,
+                             double const hashrate);
     };
 }

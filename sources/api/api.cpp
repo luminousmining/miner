@@ -144,7 +144,7 @@ void api::ServerAPI::onHiveOSGetStats(
             hs.push_back(castU64(device->getHashrate()));
             root["algo"] = algo::toString(device->algorithm);
 
-            statistical::Statistical::ShareInfo shareInfo { device->getShare() };
+            statistical::Statistical::ShareInfo shareInfo{ device->getShare() };
             sharesInvalid += shareInfo.invalid;
             sharesValid += shareInfo.valid;
         }

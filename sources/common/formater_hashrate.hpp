@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <common/cast.hpp>
+
 
 namespace common
 {

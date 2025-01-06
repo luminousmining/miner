@@ -63,6 +63,7 @@ uint32_t statistical::Statistical::getKernelExecutedCount() const
     return kernelExecuted;
 }
 
+
 void statistical::Statistical::setBatchNonce(
     uint64_t const newBatchNonce)
 {
@@ -104,6 +105,12 @@ double statistical::Statistical::getHashrate() const
 
 
 statistical::Statistical::ShareInfo& statistical::Statistical::getShares()
+{
+    return shares;
+}
+
+
+statistical::Statistical::ShareInfo statistical::Statistical::getShares() const
 {
     return shares;
 }

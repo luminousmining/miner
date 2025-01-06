@@ -28,6 +28,7 @@ namespace statistical
         void resetHashrate();
         double getHashrate() const;
         ShareInfo& getShares();
+        ShareInfo getShares() const;
 
     private:
         common::CHRONO_UNIT chronoUnit{ common::CHRONO_UNIT::US };

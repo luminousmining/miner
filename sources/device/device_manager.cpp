@@ -11,7 +11,6 @@
 #include <common/custom.hpp>
 #include <common/date.hpp>
 #include <common/formater_hashrate.hpp>
-#include <common/number_to_string.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/error/opencl_error.hpp>
 #include <device/device_manager.hpp>
@@ -149,6 +148,7 @@ bool device::DeviceManager::initialize()
 
     return true;
 }
+
 
 bool device::DeviceManager::initializeStratumSmartMining()
 {
@@ -438,202 +438,6 @@ std::vector<device::Device*>& device::DeviceManager::getDevices()
 }
 
 
-void device::DeviceManager::loopStatistical()
-{
-    std::string host{};
-    common::Dashboard board{};
-    common::Dashboard boardUsage{};
-    stratum::Stratum* stratum { nullptr };
-    common::Config const& config { common::Config::instance() };
-    boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_HASH_STATS };
-
-    ////////////////////////////////////////////////////////////////////////
-    board.setTitle("HASHRATE");
-    board.addColumn("Type");
-    board.addColumn("ID");
-    board.addColumn("Pci");
-    board.addColumn("Algorithm");
-    board.addColumn("Pool");
-    board.addColumn("Hashrate");
-    board.addColumn("Valid");
-    board.addColumn("Reject");
-
-    ////////////////////////////////////////////////////////////////////////
-    boardUsage.setTitle("USAGE");
-    boardUsage.addColumn("Type");
-    boardUsage.addColumn("ID");
-    boardUsage.addColumn("Pci");
-    boardUsage.addColumn("Power");
-    boardUsage.addColumn("CoreClock");
-    boardUsage.addColumn("MemoryClock");
-    boardUsage.addColumn("Utilization");
-    boardUsage.addColumn("H/W");
-
-    while (true)
-    {
-        ////////////////////////////////////////////////////////////////////////
-        boost::this_thread::sleep_for(ms);
-
-        ////////////////////////////////////////////////////////////////////////
-        board.resetLines();
-        board.setDate(common::getDate());
-
-        ////////////////////////////////////////////////////////////////////////
-        boardUsage.resetLines();
-        boardUsage.setDate(common::getDate());
-
-        ////////////////////////////////////////////////////////////////////////
-        bool displayable{ false };
-        for (device::Device* const device : devices)
-        {
-            ///////////////////////////////////////////////////////////////////
-            if (   nullptr == device
-                || false == device->isAlive())
-            {
-                continue;
-            }
- 
-            ///////////////////////////////////////////////////////////////////
-            if (common::PROFILE::STANDARD == config.profile)
-            {
-                auto const& itStratum { stratums.find(device->id) };
-                if (itStratum != stratums.end())
-                {
-                    stratum = itStratum->second;
-                }
-                else
-                {
-                    stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID);
-                }
-
-                if (nullptr == stratum)
-                {
-                    continue;
-                }
-                host.assign(stratum->host);
-            }
-            else
-            {
-                host.assign("smart_mining");
-            }
-
-            ///////////////////////////////////////////////////////////////////
-            auto const hashrate { device->getHashrate() };
-            statistical::Statistical::ShareInfo shares { device->getShare() };
-
-            ///////////////////////////////////////////////////////////////////
-            std::string deviceType{ "UNKNOW" };
-            switch(device->deviceType)
-            {
-#if defined(CUDA_ENABLE)
-                case device::DEVICE_TYPE::NVIDIA:
-                {
-                    deviceType = "NVIDIA";
-                    break;
-                }
-#endif
-#if defined(AMD_ENABLE)
-                case device::DEVICE_TYPE::AMD:
-                {
-                    deviceType = "AMD";
-                }
-#endif
-                case device::DEVICE_TYPE::UNKNOW:
-                {
-                    deviceType = "UNKNOW";
-                    break;
-                }
-            }
-
-            ///////////////////////////////////////////////////////////////////
-            board.addLine
-            (
-                {
-                    deviceType,
-                    std::to_string(device->id),
-                    std::to_string(device->pciBus),
-                    algo::toString(device->algorithm),
-                    host,
-                    common::hashrateToString(hashrate),
-                    std::to_string(shares.valid),
-                    std::to_string(shares.invalid)
-                }
-            );
-
-            ///////////////////////////////////////////////////////////////////
-            auto power{ 0.0 };
-            auto hashByPower{ 0.0 };
-            auto coreClock{ 0u };
-            auto memoryClock{ 0u };
-            auto utilizationPercent{ 0u };
-
-            switch(device->deviceType)
-            {
-#if defined(CUDA_ENABLE)
-                case device::DEVICE_TYPE::NVIDIA:
-                {
-                    if (   nullptr != device->deviceNvml
-                        && true == profilerNvidia.valid)
-                    {
-                        power = profilerNvidia.getPowerUsage(device->deviceNvml);
-                        coreClock = profilerNvidia.getCoreClock(device->deviceNvml);
-                        memoryClock = profilerNvidia.getMemoryClock(device->deviceNvml);
-                        utilizationPercent = profilerNvidia.getUtilizationRate(device->deviceNvml);
-                    }
-                    break;
-                }
-#endif
-#if defined(AMD_ENABLE)
-                case device::DEVICE_TYPE::AMD:
-                {
-                    if (true == profilerAmd.valid)
-                    {
-                        auto const activity{ profilerAmd.getCurrentActivity(device->id) };
-                        coreClock = activity.iEngineClock;
-                        memoryClock = activity.iMemoryClock;
-                        utilizationPercent = activity.iActivityPercent;
-                    }
-                    break;
-                }
-#endif
-            }
-
-            if (0.0 < power)
-            {
-                hashByPower = hashrate / power;
-            }
-
-            boardUsage.addLine
-            (
-                {
-                    deviceType,
-                    std::to_string(device->id),
-                    std::to_string(device->pciBus),
-                    common::doubleToString(power),
-                    std::to_string(coreClock),
-                    std::to_string(memoryClock),
-                    std::to_string(utilizationPercent),
-                    common::hashrateToString(hashByPower)
-                }
-            );
-
-            ///////////////////////////////////////////////////////////////////
-            if (hashrate > 0.0)
-            {
-                displayable = true;
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        if (true == displayable)
-        {
-            board.show();
-            boardUsage.show();
-        }
-    }
-}
-
-
 void device::DeviceManager::onUpdateJob(
     uint32_t const stratumUUID,
     stratum::StratumJobInfo const& newJobInfo)
@@ -804,7 +608,7 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
     algo::ALGORITHM const algorithm,
     uint32_t const deviceId)
 {
-    stratum::Stratum* stratum { nullptr };
+    stratum::Stratum* stratum{ nullptr };
 
     auto it { stratums.find(deviceId) };
     if (it != stratums.end())
