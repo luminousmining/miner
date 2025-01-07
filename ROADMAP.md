@@ -35,6 +35,7 @@ current version `v0.5`
 - [ ] optimize autolykosv2
 
 + step3
+- [ ] Use libraries dynamic instead of static
 - [ ] algo kHeavyHash
 - [ ] algo blake3/alephium
 - [ ] algo blake3/decred
