@@ -21,19 +21,25 @@ current version `v0.5`
 - [x] terminal display stats mining
 - [x] http server (API)
 - [x] write log in file
+- [x] profile ravenminer
+- [x] algo meowcoin
   
 + step 2
+- [ ] algo progpow_quai
 - [ ] algo ethashb3
-- [x] algo meowcoin
+- [ ] profile smart mining
+- [ ] benchmark
+- [ ] optimize progpow
+- [ ] optimize kawpow
+- [ ] optimize ethash
+- [ ] optimize autolykosv2
+
++ step3
 - [ ] algo kHeavyHash
 - [ ] algo blake3/alephium
 - [ ] algo blake3/decred
 - [ ] algo blake3/karlsen
-- [ ] profile smart mining
-- [x] profile ravenminer
 - [ ] os RaveOS
 - [ ] os Easy-Mining
-  
-+ step 3
 - [ ] profile traiding
   
