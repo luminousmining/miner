@@ -6,6 +6,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 #include <algo/crypto/cuda/fnv1.cuh>
+#include <algo/crypto/cuda/keccak_f800.cuh>
+#include <algo/crypto/cuda/kiss99.cuh>
 #include <common/cuda/be_u32.cuh>
 #include <common/cuda/be_u64.cuh>
 #include <common/cuda/bfe.cuh>

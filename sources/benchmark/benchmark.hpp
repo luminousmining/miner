@@ -37,6 +37,7 @@ namespace benchmark
         void runNvidia();
         bool runNvidiaEthash();
         bool runNvidiaAutolykosv2();
+        bool runNvidiaKawpow();
 
         void runAmd();
     };
