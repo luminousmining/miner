@@ -57,3 +57,10 @@ bool autolykos_v2_lm1(cudaStream_t stream,
                       uint32_t const blocks,
                       uint32_t const threads,
                       uint32_t const period);
+
+///////////////////////////////////////////////////////////////////////////////
+bool kawpow_lm1(cudaStream_t stream,
+                uint32_t* const header,
+                uint32_t* const dag,
+                uint32_t const blocks,
+                uint32_t const threads);

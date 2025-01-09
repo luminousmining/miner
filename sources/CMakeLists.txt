@@ -21,12 +21,13 @@ endif()
 ################################################################################
 if (BUILD_NVIDIA)
     cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
-        benchmark/cuda/common/array.cu
-        benchmark/cuda/ethash/ethash_ethminer.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_mhssamadani_prehash.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_mhssamadani.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_prehash_v1.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_v1.cu
+        benchmark/cuda/common/array.cu
+        benchmark/cuda/ethash/ethash_ethminer.cu
+        benchmark/cuda/kawpow/kawpow_lm1.cu
     )
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE CUDA_ENABLE)

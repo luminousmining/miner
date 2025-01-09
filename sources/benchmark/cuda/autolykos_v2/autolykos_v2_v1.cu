@@ -642,8 +642,8 @@ kernel_autolykos_v2_step_2_lm1(
 
 
     ///////////////////////////////////////////////////////////////////////////
-    uint64_t const* const r64 = (uint64_t const* const)r;
-    uint64_t const* const bound64 = (uint64_t const* const)d_bound;
+    uint64_t const* const r64 = (uint64_t*)r;
+    uint64_t const* const bound64 = (uint64_t*)d_bound;
 
 
     uint64_t const r3 = r64[3];
