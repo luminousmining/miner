@@ -45,6 +45,7 @@ Different profiles are available:
 [progpowz](https://github.com/hyle-team/progminer)  
 [firominer](https://github.com/firoorg/firominer)  
 [meowpowminer](https://github.com/Meowcoin-Foundation/meowpowminer)  
+[quai-gpu-miner](https://github.com/dominant-strategies/quai-gpu-miner)  
 
 ## References - Algos
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)  
@@ -59,8 +60,7 @@ https://www.researchgate.net/publication/255971534_Parallel_Cloud_Computing_Expl
 https://ieeexplore.ieee.org/document/8391706  
 
 ## References - Librairies
-[asio-socks45-client
-](https://github.com/sehe/asio-socks45-client) - We recognize [Seth Heeren](https://github.com/sehe) for providing the SOCKS5 client implementation.
+[asio-socks45-client](https://github.com/sehe/asio-socks45-client) - We recognize [Seth Heeren](https://github.com/sehe) for providing the SOCKS5 client implementation.
 
 ## SAST Tools
 [PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
