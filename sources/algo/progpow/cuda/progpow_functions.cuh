@@ -46,7 +46,7 @@ void create_seed(
 __device__ __forceinline__
 uint64_t sha3(
     uint4 const* const __restrict__ header,
-    uint32_t const* const __restrict__ digest
+    uint32_t const* const __restrict__ digest,
     uint64_t const seed)
 {
     uint32_t state[STATE_LEN];
@@ -81,7 +81,7 @@ uint64_t sha3(
     state[23] = 0u;
     state[24] = 0u;
 
-    keccak_f800(state_result);
+    keccak_f800(state);
 
     return ((uint64_t)(be_u32(state[0]))) << 32 | be_u32(state[1]);
 }
@@ -89,7 +89,7 @@ uint64_t sha3(
 
 __device__ __forceinline__
 uint64_t is_valid(
-    uint32_t const* __restrict__ const header,
+    uint4 const* const __restrict__ header,
     uint32_t const* __restrict__ const digest,
     uint64_t const seed)
 {

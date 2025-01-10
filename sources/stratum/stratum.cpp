@@ -192,7 +192,7 @@ void stratum::Stratum::miningHello()
 
     boost::json::object root;
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
-    root["method"] = "mining.subscribe";
+    root["method"] = "mining.hello";
     root["params"] =
     {
         { "agent", softwareName },
@@ -321,11 +321,6 @@ bool stratum::Stratum::isValidJob() const
     if (0ull == jobInfo.boundaryU64)
     {
         logDebug() << "Boundary U64 == 0ull";
-        ret = false;
-    }
-    if (0 >= jobInfo.epoch)
-    {
-        logDebug() << "epoch == 0";
         ret = false;
     }
     if (0ull >= jobInfo.nonce)

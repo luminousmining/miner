@@ -11,6 +11,9 @@ stratum::StratumProgpowQuai::StratumProgpowQuai() :
 {
     stratumType = stratum::STRATUM_TYPE::ETHEREUM_V2;
     stratumName = "EthereumStratum/2.0.0";
+
+    maxPeriod = algo::progpow_quai::MAX_PERIOD;
+    maxEpochLength = algo::progpow_quai::EPOCH_LENGTH;
 }
 
 
@@ -115,12 +118,17 @@ void stratum::StratumProgpowQuai::onMiningNotify(
     boost::json::array const& params(root.at("params").as_array());
 
     ////////////////////////////////////////////////////////////////////////////
-    std::string jobID{ params.at(0).as_string().c_str() };
-    std::string blockHeight{ params.at(1).as_string().c_str() };
-    std::string header{ params.at(2).as_string().c_str() };
+    std::string const jobID{ params.at(0).as_string().c_str() };
+    std::string const blockHeight{ params.at(1).as_string().c_str() };
+    std::string const header{ params.at(2).as_string().c_str() };
 
     ////////////////////////////////////////////////////////////////////////////
     jobInfo.headerHash = algo::toHash256(header);
     jobInfo.jobID = algo::toHash256(jobID);
     jobInfo.jobIDStr.assign(jobID);
+    jobInfo.blockNumber = std::strtoul(blockHeight.c_str(), nullptr, 16);
+    jobInfo.period = jobInfo.blockNumber / maxPeriod;
+
+    ////////////////////////////////////////////////////////////////////////////
+    updateJob();
 }

@@ -269,6 +269,7 @@ bool resolver::ResolverNvidiaProgPOW::execute(
         for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            logInfo() << "Nonce: " << resultShare.nonces[i];
         }
 
         for (uint32_t i { 0u }; i < count; ++i)

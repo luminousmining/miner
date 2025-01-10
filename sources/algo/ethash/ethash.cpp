@@ -62,21 +62,20 @@ void algo::ethash::initializeDagContext(
 {
     ////////////////////////////////////////////////////////////////////////////
     context.epoch = castU32(currentEpoch);
-    if (   (context.epoch <= 0
-        || castU32(context.epoch) > maxEpoch)
-        && maxEpoch != algo::ethash::EIP1057_MAX_EPOCH_NUMER)
+    if (   castU32(context.epoch) > maxEpoch
+        && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
     {
         logErr() << "context.epoch: " << context.epoch << " | maxEpoch: " << maxEpoch;
         return;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t epochEIP { currentEpoch };
-    if (maxEpoch == algo::ethash::EIP1099_MAX_EPOCH_NUMBER)
+    uint64_t epochEIP{ currentEpoch };
+    if (algo::ethash::EIP1099_MAX_EPOCH_NUMBER == maxEpoch)
     {
         epochEIP /= 2ull;
     }
-    else if (maxEpoch == algo::ethash::EIP1057_MAX_EPOCH_NUMER)
+    else if (algo::ethash::EIP1057_MAX_EPOCH_NUMER == maxEpoch)
     {
         epochEIP *= 4ull;
     }

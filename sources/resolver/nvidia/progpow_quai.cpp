@@ -5,8 +5,10 @@
 resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     resolver::ResolverNvidiaProgPOW()
 {
-    // ProgpowQuai
+    //Ethash
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
+
+    // ProgpowQuai
     countCache = algo::progpow_quai::COUNT_CACHE;
     countMath = algo::progpow_quai::COUNT_MATH;
 }
