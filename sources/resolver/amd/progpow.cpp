@@ -278,13 +278,13 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     std::string kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_4:    kernelDerived.assign("progpow_functions.cl"); break;
-        case algo::progpow::VERSION::KAWPOW:     kernelDerived.assign("kawpow_functions.cl"); break;
-        case algo::progpow::VERSION::MEOWPOW:    kernelDerived.assign("meowpow_functions.cl"); break;
-        case algo::progpow::VERSION::FIROPOW:    kernelDerived.assign("firopow_functions.cl"); break;
-        case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_4:     kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::KAWPOW:      kernelDerived.assign("kawpow_functions.cl"); break;
+        case algo::progpow::VERSION::MEOWPOW:     kernelDerived.assign("meowpow_functions.cl"); break;
+        case algo::progpow::VERSION::FIROPOW:     kernelDerived.assign("firopow_functions.cl"); break;
+        case algo::progpow::VERSION::EVRPROGPOW:  kernelDerived.assign("evrprogpow_functions.cl"); break;
     }
 
     ////////////////////////////////////////////////////////////////////////////

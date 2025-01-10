@@ -15,8 +15,8 @@ namespace stratum
         StratumProgPOW();
         virtual ~StratumProgPOW() = default;
 
-        void onResponse(boost::json::object const& root) final;
-        void onMiningNotify(boost::json::object const& root) final;
+        void onResponse(boost::json::object const& root) override;
+        void onMiningNotify(boost::json::object const& root) override;
         void onMiningSetDifficulty(boost::json::object const& root) final;
         void onMiningSetTarget(boost::json::object const& root) final;
         void onMiningSetExtraNonce(boost::json::object const& root) final;

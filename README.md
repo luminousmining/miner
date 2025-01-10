@@ -27,6 +27,7 @@ Different profiles are available:
 - firopow
 - meowpow
 - evrprogpow
+- progpow_quai
 
 ## Internal Documentation
 [Build](https://github.com/luminousmining/miner/tree/main/BUILD.md)  
@@ -52,6 +53,7 @@ https://en.wikipedia.org/wiki/BLAKE_(hash_function)
 https://en.wikipedia.org/wiki/Equihash  
 https://ergoplatform.org/en/blog/Ergo-and-the-Autolykos-Consensus-Mechanism-Part-I/  
 https://ergoplatform.org/en/blog/Ergo-and-The-Autolykos-Consensus-Mechanism-Part-II/  
+https://docs.qu.ai/learn/introduction  
 
 ## References - Papers
 https://pure.manchester.ac.uk/ws/files/85753741/paper.pdf  

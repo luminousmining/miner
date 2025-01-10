@@ -111,26 +111,12 @@ void stratum::StratumSha256::onMiningNotify(
 void stratum::StratumSha256::onMiningSetDifficulty(
     boost::json::object const& root)
 {
-    boost::json::array const& params(root.at("params").as_array());
+    // boost::json::array const& params(root.at("params").as_array());
 
     // TODO : SHA256
     //double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     logInfo() << "Target: " << std::hex << jobInfo.boundaryU64;
-}
-
-
-void stratum::StratumSha256::onMiningSetTarget(
-    [[maybe_unused]] boost::json::object const& root)
-{
-    logErr() << "mining.set_target does not implement";
-}
-
-
-void stratum::StratumSha256::onMiningSetExtraNonce(
-    [[maybe_unused]] boost::json::object const& root)
-{
-    logErr() << "mining.set_target does not implement";
 }
 
 

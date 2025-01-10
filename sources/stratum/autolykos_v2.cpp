@@ -118,22 +118,6 @@ void stratum::StratumAutolykosV2::onMiningSetDifficulty(
 }
 
 
-void stratum::StratumAutolykosV2::onMiningSetTarget(
-    [[maybe_unused]] boost::json::object const& root)
-{
-    // https://github.com/mhssamadani/ErgoStratumServer
-    logErr() << "mining.set_target unimplemented!";
-}
-
-
-void stratum::StratumAutolykosV2::onMiningSetExtraNonce(
-    [[maybe_unused]] boost::json::object const& root)
-{
-    // https://github.com/mhssamadani/ErgoStratumServer
-    logErr() << "mining.set_extranonce unimplemented!";
-}
-
-
 void stratum::StratumAutolykosV2::miningSubmit(
     uint32_t const deviceId,
     boost::json::array const& params)

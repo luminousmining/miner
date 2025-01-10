@@ -120,12 +120,6 @@ void stratum::StratumBlake3::onMiningSetDifficulty(
 }
 
 
-void stratum::StratumBlake3::onMiningSetTarget(
-    [[maybe_unused]] boost::json::object const& root)
-{
-}
-
-
 void stratum::StratumBlake3::onMiningSetExtraNonce(
     boost::json::object const& root)
 {
