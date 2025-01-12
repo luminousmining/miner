@@ -20,7 +20,7 @@ namespace stratum
         uint64_t       extraNonce{ 0ull };
         uint64_t       gapNonce{ 0x1ull };
         uint64_t       blockNumber{ 0ull };
-        uint64_t       period{ 0ull };
+        uint64_t       period{ 0xFFFFFFFFFFFFFFFFull };
         uint64_t       boundaryU64{ 0ull };
         uint32_t       targetBits{ 0u };
         bool           cleanJob{ false };

@@ -28,7 +28,7 @@ namespace resolver
 
     protected:
         algo::progpow::VERSION progpowVersion{ algo::progpow::VERSION::V_0_9_2 };
-        uint64_t currentPeriod{ 0ull };
+        uint64_t currentPeriod{ 11111 };
         uint32_t maxEpoch{ algo::ethash::MAX_EPOCH_NUMBER };
         uint32_t regs{ algo::progpow::REGS };
         uint32_t moduleSource{ algo::progpow::MODULE_SOURCE };

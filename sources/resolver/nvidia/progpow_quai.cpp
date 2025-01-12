@@ -9,6 +9,7 @@ resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
 
     // ProgpowQuai
+    progpowVersion = algo::progpow::VERSION::PROGPOWQUAI;
     countCache = algo::progpow_quai::COUNT_CACHE;
     countMath = algo::progpow_quai::COUNT_MATH;
 }

@@ -21,7 +21,8 @@ namespace algo
             KAWPOW,
             MEOWPOW,
             FIROPOW,
-            EVRPROGPOW
+            EVRPROGPOW,
+            PROGPOWQUAI
         };
 
         constexpr uint32_t LANES{ 16u };

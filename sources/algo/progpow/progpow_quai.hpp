@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <sstream>
 
+#if !defined(__LIB_CUDA)
+#include <algo/crypto/kiss99.hpp>
+#endif
+
 
 namespace algo
 {
@@ -13,7 +17,7 @@ namespace algo
         constexpr uint32_t EPOCH_LENGTH{ 2147483647u };
 
         // Override ProgPOW
-        constexpr uint32_t MAX_PERIOD{ 3u };
+        constexpr uint32_t MAX_PERIOD{ 2147483647u };
         constexpr uint32_t COUNT_CACHE{ 11u };
         constexpr uint32_t COUNT_MATH{ 18u };
 

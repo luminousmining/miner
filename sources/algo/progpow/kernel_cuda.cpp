@@ -154,7 +154,7 @@ void algo::progpow::writeMathRandomKernelCuda(
     ////////////////////////////////////////////////////////////////////////////
     int32_t* dst{ NEW(int[regs]) };
     int32_t* src{ NEW(int[regs]) };
-    algo::Kiss99Properties round { algo::progpow::initializeRound(period, dst, src, regs) };
+    algo::Kiss99Properties round{ algo::progpow::initializeRound(period, dst, src, regs) };
 
     ////////////////////////////////////////////////////////////////////////////
     std::stringstream ss;
@@ -187,13 +187,14 @@ void algo::progpow::writeMathRandomKernelCuda(
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
-                case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */;
-                case algo::progpow::VERSION::V_0_9_4:     nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::KAWPOW:      kawpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::MEOWPOW:     meowpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::FIROPOW:     firopow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::EVRPROGPOW:  evrprogpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::V_0_9_2:      /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_3:      /* algo::progpow::VERSION::V_0_9_4 */;
+                case algo::progpow::VERSION::V_0_9_4:      nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::KAWPOW:       kawpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::MEOWPOW:      meowpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::FIROPOW:      firopow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::EVRPROGPOW:   evrprogpow::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::PROGPOWQUAI:  progpow_quai::nvidia::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
             }
         }
 
@@ -214,13 +215,14 @@ void algo::progpow::writeMathRandomKernelCuda(
             ++dstCnt;
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4*/
-                case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4*/
-                case algo::progpow::VERSION::V_0_9_4:     nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::KAWPOW:      kawpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::MEOWPOW:     meowpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::FIROPOW:     firopow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::EVRPROGPOW:  evrprogpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::V_0_9_2:      /* algo::progpow::VERSION::V_0_9_4*/
+                case algo::progpow::VERSION::V_0_9_3:      /* algo::progpow::VERSION::V_0_9_4*/
+                case algo::progpow::VERSION::V_0_9_4:      nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::KAWPOW:       kawpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::MEOWPOW:      meowpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::FIROPOW:      firopow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::EVRPROGPOW:   evrprogpow::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::PROGPOWQUAI:  progpow_quai::nvidia::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
             }
         }
     }

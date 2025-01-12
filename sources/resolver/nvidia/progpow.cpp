@@ -124,6 +124,11 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
             kernelGenerator.declareDefine("__KERNEL_EVRPROGPOW");
             break;
         }
+        case algo::progpow::VERSION::PROGPOWQUAI:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -154,13 +159,14 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     std::string kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2: /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_3: /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_4: kernelDerived.assign("progpow_functions.cuh"); break;
-        case algo::progpow::VERSION::KAWPOW: kernelDerived.assign("kawpow_functions.cuh"); break;
-        case algo::progpow::VERSION::MEOWPOW: kernelDerived.assign("meowpow_functions.cuh"); break;
-        case algo::progpow::VERSION::FIROPOW: kernelDerived.assign("firopow_functions.cuh"); break;
-        case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cuh"); break;
+        case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_4:     kernelDerived.assign("progpow_functions.cuh"); break;
+        case algo::progpow::VERSION::KAWPOW:      kernelDerived.assign("kawpow_functions.cuh"); break;
+        case algo::progpow::VERSION::MEOWPOW:     kernelDerived.assign("meowpow_functions.cuh"); break;
+        case algo::progpow::VERSION::FIROPOW:     kernelDerived.assign("firopow_functions.cuh"); break;
+        case algo::progpow::VERSION::EVRPROGPOW:  kernelDerived.assign("evrprogpow_functions.cuh"); break;
+        case algo::progpow::VERSION::PROGPOWQUAI: kernelDerived.assign("progpow_functions.cuh"); break;
     }
     if (   false == kernelGenerator.appendFile("kernel/common/be_u32.cuh")
         || false == kernelGenerator.appendFile("kernel/common/be_u64.cuh")
@@ -202,7 +208,9 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    if (currentPeriod != jobInfo.period)
+    logInfo() << "currentPeriod: " << currentPeriod;
+    logInfo() << "jobInfo.period: " << jobInfo.period;
+    if (currentPeriod != jobInfo.period || true)
     {
         currentPeriod = jobInfo.period;
         resolverInfo() << "Build period " << currentPeriod;

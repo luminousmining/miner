@@ -12,6 +12,7 @@ namespace __fs = std::filesystem;
 #include <algo/progpow/firopow.hpp>
 #include <algo/progpow/kawpow.hpp>
 #include <algo/progpow/meowpow.hpp>
+#include <algo/progpow/progpow_quai.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
@@ -184,13 +185,14 @@ void algo::progpow::writeMathRandomKernelOpenCL(
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
-                case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
-                case algo::progpow::VERSION::V_0_9_4:    amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::KAWPOW:     kawpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::MEOWPOW:    meowpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::FIROPOW:    firopow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
-                case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_4:     amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::KAWPOW:      kawpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::MEOWPOW:     meowpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::FIROPOW:     firopow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::EVRPROGPOW:  evrprogpow::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
+                case algo::progpow::VERSION::PROGPOWQUAI: progpow_quai::amd::writeSequenceMergeCache(ss, i, srcValue, dstValue, sel); break;
             }
         }
 
@@ -212,13 +214,14 @@ void algo::progpow::writeMathRandomKernelOpenCL(
 
             switch (progpowVersion)
             {
-                case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
-                case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
-                case algo::progpow::VERSION::V_0_9_4:    amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::KAWPOW:     kawpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::MEOWPOW:    meowpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::FIROPOW:    firopow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
-                case algo::progpow::VERSION::EVRPROGPOW: evrprogpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
+                case algo::progpow::VERSION::V_0_9_4:     amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::KAWPOW:      kawpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::MEOWPOW:     meowpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::FIROPOW:     firopow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::EVRPROGPOW:  evrprogpow::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
+                case algo::progpow::VERSION::PROGPOWQUAI: progpow_quai::amd::writeSequenceMathMerge(ss, i, castU32(dstValue), src1, src2, sel1, sel2); break;
             }
         }
     }

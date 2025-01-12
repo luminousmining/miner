@@ -129,6 +129,8 @@ void stratum::StratumProgpowQuai::onMiningNotify(
     jobInfo.blockNumber = std::strtoul(blockHeight.c_str(), nullptr, 16);
     jobInfo.period = jobInfo.blockNumber / maxPeriod;
 
+    logInfo() << jobInfo;
+
     ////////////////////////////////////////////////////////////////////////////
     updateJob();
 }

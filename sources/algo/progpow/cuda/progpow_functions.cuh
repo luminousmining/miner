@@ -90,8 +90,18 @@ uint64_t sha3(
 __device__ __forceinline__
 uint64_t is_valid(
     uint4 const* const __restrict__ header,
-    uint32_t const* __restrict__ const digest,
+    uint32_t * __restrict__ const digest,
     uint64_t const seed)
 {
+
+    digest[0] = fnv1a(fnv1a(FNV1_OFFSET, digest[0]), digest[8]);
+    digest[1] = fnv1a(fnv1a(FNV1_OFFSET, digest[1]), digest[9]);
+    digest[2] = fnv1a(fnv1a(FNV1_OFFSET, digest[2]), digest[10]);
+    digest[3] = fnv1a(fnv1a(FNV1_OFFSET, digest[3]), digest[11]);
+    digest[4] = fnv1a(fnv1a(FNV1_OFFSET, digest[4]), digest[12]);
+    digest[5] = fnv1a(fnv1a(FNV1_OFFSET, digest[5]), digest[13]);
+    digest[6] = fnv1a(fnv1a(FNV1_OFFSET, digest[6]), digest[14]);
+    digest[7] = fnv1a(fnv1a(FNV1_OFFSET, digest[7]), digest[15]);
+
     return sha3(header, digest, seed);
 }
