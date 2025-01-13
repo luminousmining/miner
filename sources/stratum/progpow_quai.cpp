@@ -46,7 +46,7 @@ void stratum::StratumProgpowQuai::onResponse(
                     && false == proto.empty()
                     && 0u < maxerrors)
                 {
-                    miningSubscribe();
+                    miningAuthorize();
                 }
             }
             else
@@ -55,22 +55,19 @@ void stratum::StratumProgpowQuai::onResponse(
             }
             break;
         }
-        case stratum::ETHEREUM_V2_ID::MINING_SUBSCRIBE:
+        case stratum::ETHEREUM_V2_ID::MINING_AUTHORIZE:
         {
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
             {
-                miningAuthorize();
+                workerID = common::boostGetString(root, "result");
+                authenticated = true;
             }
             else
             {
-                logErr() << "Subscribe failed: " << root;
+                authenticated = false;
+                logErr() << "Authorize failed: " << root;
             }
-
-            break;
-        }
-        case stratum::ETHEREUM_V2_ID::MINING_AUTHORIZE:
-        {
             break;
         }
         default:
@@ -130,8 +127,6 @@ void stratum::StratumProgpowQuai::onMiningNotify(
     jobInfo.blockNumber = std::strtoul(blockHeight.c_str(), nullptr, 16);
     jobInfo.period = jobInfo.blockNumber / maxPeriod;
 
-    logInfo() << jobInfo;
-
     ////////////////////////////////////////////////////////////////////////////
     updateJob();
 }
@@ -152,7 +147,7 @@ void stratum::StratumProgpowQuai::miningSubmit(
     {
         params.at(0), // JobID
         params.at(1), // nonce
-        "s-12345"
+        params.at(2)  // workerID
     };
 
     send(root);

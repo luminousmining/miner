@@ -208,7 +208,7 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    if (currentPeriod != jobInfo.period || true)
+    if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
 
@@ -332,7 +332,8 @@ void resolver::ResolverNvidiaProgPOW::submit(
                         boost::json::array params
                         {
                             resultShare.jobId,
-                            nonceHexa.str().substr(resultShare.extraNonceSize)
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->workerID
                         };
 
                         stratum->miningSubmit(deviceId, params);
@@ -365,7 +366,7 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                switch(stratum->getStratumType())
+                switch(stratum->stratumPool->stratumType)
                 {
                     case stratum::STRATUM_TYPE::STRATUM:
                     {
@@ -388,7 +389,8 @@ void resolver::ResolverNvidiaProgPOW::submit(
                         boost::json::array params
                         {
                             resultShare.jobId,
-                            nonceHexa.str().substr(resultShare.extraNonceSize)
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->stratumPool->workerID
                         };
 
                         stratum->miningSubmit(deviceId, params);

@@ -37,6 +37,9 @@ namespace stratum
         std::string           password{};
         std::string           stratumName{};
 
+        // Stratum EthereumV2
+        std::string workerID{};
+
         virtual ~Stratum();
         virtual void onResponse(boost::json::object const& root) = 0;
         virtual void miningSubmit(uint32_t const deviceId,

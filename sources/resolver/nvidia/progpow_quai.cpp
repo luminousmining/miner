@@ -6,7 +6,6 @@
 resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     resolver::ResolverNvidiaProgPOW()
 {
-    logInfo() << "Init currentPeriod = " << currentPeriod;
     //Ethash
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
 

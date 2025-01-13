@@ -11,8 +11,7 @@ namespace stratum
 
     enum ETHEREUM_V2_ID : uint32_t
     {
-        MINING_HELLO,
-        MINING_SUBSCRIBE,
+        MINING_HELLO = 1,
         MINING_AUTHORIZE
     };
 }

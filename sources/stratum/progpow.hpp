@@ -28,6 +28,7 @@ namespace stratum
         uint32_t maxPeriod { algo::progpow::v_0_9_2::MAX_PERIOD };
         uint32_t maxEthashEpoch { algo::ethash::EPOCH_LENGTH };
         uint32_t maxEpochLength { algo::progpow::EPOCH_LENGTH };
+
     };
 }
 
