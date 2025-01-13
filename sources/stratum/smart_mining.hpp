@@ -31,6 +31,8 @@ namespace stratum
         void setCallbackUpdateJob(callbackUpdateJob callback);
         void setCallbackShareStatus(callbackShareStatus callback);
 
+        stratum::STRATUM_TYPE getStratumType() const;
+
         void onConnect() final;
         void onReceive(std::string const& message) final;
 

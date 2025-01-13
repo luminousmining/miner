@@ -113,7 +113,6 @@ bool resolver::ResolverAmdProgPOW::updateConstants(
     if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
-        resolverInfo() << "Build period " << currentPeriod;
 
         ////////////////////////////////////////////////////////////////////////////
         if (false == buildSearch())

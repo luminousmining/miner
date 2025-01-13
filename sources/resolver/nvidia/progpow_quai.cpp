@@ -1,10 +1,12 @@
 #include <algo/progpow/progpow_quai.hpp>
 #include <resolver/nvidia/progpow_quai.hpp>
 
+#include <common/log/log.hpp>
 
 resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     resolver::ResolverNvidiaProgPOW()
 {
+    logInfo() << "Init currentPeriod = " << currentPeriod;
     //Ethash
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
 
@@ -13,3 +15,4 @@ resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     countCache = algo::progpow_quai::COUNT_CACHE;
     countMath = algo::progpow_quai::COUNT_MATH;
 }
+

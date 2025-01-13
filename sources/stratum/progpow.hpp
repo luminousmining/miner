@@ -22,7 +22,7 @@ namespace stratum
         void onMiningSetExtraNonce(boost::json::object const& root) final;
 
         void miningSubmit(uint32_t const deviceId,
-                          boost::json::array const& params) final;
+                          boost::json::array const& params) override;
 
     protected:
         uint32_t maxPeriod { algo::progpow::v_0_9_2::MAX_PERIOD };

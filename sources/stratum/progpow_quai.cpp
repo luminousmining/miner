@@ -75,6 +75,7 @@ void stratum::StratumProgpowQuai::onResponse(
         }
         default:
         {
+            onShare(root, miningRequestID);
             break;
         }
     }
@@ -133,4 +134,26 @@ void stratum::StratumProgpowQuai::onMiningNotify(
 
     ////////////////////////////////////////////////////////////////////////////
     updateJob();
+}
+
+
+void stratum::StratumProgpowQuai::miningSubmit(
+    uint32_t const deviceId,
+    boost::json::array const& params)
+{
+    using namespace std::string_literals;
+
+    UNIQUE_LOCK(mtxSubmit);
+
+    boost::json::object root;
+    root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
+    root["method"] = "mining.submit";
+    root["params"] = boost::json::array
+    {
+        params.at(0), // JobID
+        params.at(1), // nonce
+        "s-12345"
+    };
+
+    send(root);
 }

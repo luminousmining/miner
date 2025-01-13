@@ -24,6 +24,12 @@ void stratum::StratumSmartMining::setCallbackShareStatus(callbackShareStatus cal
 }
 
 
+stratum::STRATUM_TYPE stratum::StratumSmartMining::getStratumType() const
+{
+    return stratumPool->stratumType;
+}
+
+
 void stratum::StratumSmartMining::onConnect()
 {
     subscribe();

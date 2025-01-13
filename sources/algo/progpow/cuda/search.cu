@@ -6,7 +6,7 @@ void fill_hash(
     uint32_t lane_id,
     uint32_t lsb,
     uint32_t msb,
-    uint32_t* __restrict__ const hash, bool show)
+    uint32_t* __restrict__ const hash)
 {
     uint4 data;
 
@@ -137,7 +137,7 @@ void progpowSearch(
     {
         uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
         uint32_t const lane_msb = reg_load(msb, l_id, LANES);
-        fill_hash(lane_id, lane_lsb, lane_msb, hash, l_id == 0 && nonce == 11500223123467272192);
+        fill_hash(lane_id, lane_lsb, lane_msb, hash);
         loop_math(lane_id, dag, hash, header_dag);
         reduce_hash(l_id == lane_id, hash, digest);
     }

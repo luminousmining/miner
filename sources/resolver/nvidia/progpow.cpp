@@ -208,12 +208,9 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    logInfo() << "currentPeriod: " << currentPeriod;
-    logInfo() << "jobInfo.period: " << jobInfo.period;
     if (currentPeriod != jobInfo.period || true)
     {
         currentPeriod = jobInfo.period;
-        resolverInfo() << "Build period " << currentPeriod;
 
         ////////////////////////////////////////////////////////////////////////////
         overrideOccupancy(256u, 4096u);
@@ -273,11 +270,11 @@ bool resolver::ResolverNvidiaProgPOW::execute(
         resultShare.found = true;
         resultShare.count = count;
         resultShare.jobId = jobInfo.jobIDStr;
+        resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = parameters.resultCache->nonces[i];
-            logInfo() << "Nonce: " << resultShare.nonces[i];
         }
 
         for (uint32_t i { 0u }; i < count; ++i)
@@ -306,23 +303,42 @@ void resolver::ResolverNvidiaProgPOW::submit(
         {
             for (uint32_t i { 0u }; i < resultShare.count; ++i)
             {
-                std::stringstream nonceHexa;
-                nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
                 for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                boost::json::array params
+                switch(stratum->stratumType)
                 {
-                    resultShare.jobId,
-                    nonceHexa.str(),
-                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                };
+                    case stratum::STRATUM_TYPE::STRATUM:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
-                stratum->miningSubmit(deviceId, params);
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHEREUM_V2:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << std::hex << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize)
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                }
 
                 resultShare.nonces[i] = 0ull;
             }
@@ -343,23 +359,42 @@ void resolver::ResolverNvidiaProgPOW::submit(
         {
             for (uint32_t i { 0u }; i < resultShare.count; ++i)
             {
-                std::stringstream nonceHexa;
-                nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
                 for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                boost::json::array params
+                switch(stratum->getStratumType())
                 {
-                    resultShare.jobId,
-                    nonceHexa.str(),
-                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                };
+                    case stratum::STRATUM_TYPE::STRATUM:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
-                stratum->miningSubmit(deviceId, params);
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHEREUM_V2:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << std::hex << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize)
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                }
 
                 resultShare.nonces[i] = 0ull;
             }
