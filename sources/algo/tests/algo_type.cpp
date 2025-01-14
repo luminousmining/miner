@@ -21,7 +21,7 @@ TEST_F(AlgoTypeTest, stringToEnumSuccess)
     EXPECT_EQ(algo::toEnum("meowpow"),      algo::ALGORITHM::MEOWPOW);
     EXPECT_EQ(algo::toEnum("firopow"),      algo::ALGORITHM::FIROPOW);
     EXPECT_EQ(algo::toEnum("evrprogpow"),   algo::ALGORITHM::EVRPROGPOW);
-    EXPECT_EQ(algo::toEnum("progpow_quai"), algo::ALGORITHM::PROGPOWQUAI);
+    EXPECT_EQ(algo::toEnum("progpow-quai"), algo::ALGORITHM::PROGPOWQUAI);
     EXPECT_EQ(algo::toEnum("autolykosv2"),  algo::ALGORITHM::AUTOLYKOS_V2);
     EXPECT_EQ(algo::toEnum("blake3"),       algo::ALGORITHM::BLAKE3);
 
@@ -41,7 +41,7 @@ TEST_F(AlgoTypeTest, stringToEnumFail)
     EXPECT_NE(algo::toEnum("firopow"),      algo::ALGORITHM::KAWPOW);
     EXPECT_NE(algo::toEnum("firopow"),      algo::ALGORITHM::MEOWPOW);
     EXPECT_NE(algo::toEnum("evrprogpow"),   algo::ALGORITHM::FIROPOW);
-    EXPECT_NE(algo::toEnum("progpow_quai"), algo::ALGORITHM::EVRPROGPOW);
+    EXPECT_NE(algo::toEnum("progpow-quai"), algo::ALGORITHM::EVRPROGPOW);
     EXPECT_NE(algo::toEnum("autolykosv2"),  algo::ALGORITHM::EVRPROGPOW);
     EXPECT_NE(algo::toEnum("sha256"),       algo::ALGORITHM::AUTOLYKOS_V2);
     EXPECT_NE(algo::toEnum("autolykosv2"),  algo::ALGORITHM::BLAKE3);

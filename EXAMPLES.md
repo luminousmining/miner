@@ -12,6 +12,18 @@ miner.exe^
  --ssl=false
 ```
 
+## PROGPOW QUAI
+```bat
+miner.exe^
+ --host="quai.luckypool.io"^
+ --port=3333^
+ --wallet="YOUR_WALLET"^
+ --algo="progpow-quai"^
+ --workername="luminousminer"^
+ --password="x"^
+ --ssl=false
+```
+
 ## FIROPOW
 ```bat
 miner.exe^

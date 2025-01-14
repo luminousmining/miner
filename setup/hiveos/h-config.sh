@@ -6,6 +6,7 @@
 # Check if algo is supported
 [[ ${CUSTOM_ALGO} != "progpow" ]] &&
     [[ ${CUSTOM_ALGO} != "progpowz" ]] &&
+    [[ ${CUSTOM_ALGO} != "progpow-quai" ]] &&
     [[ ${CUSTOM_ALGO} != "evrprogpow" ]] &&
     [[ ${CUSTOM_ALGO} != "kawpow" ]] &&
     [[ ${CUSTOM_ALGO} != "firopow" ]] &&
