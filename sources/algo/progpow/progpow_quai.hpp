@@ -13,7 +13,7 @@ namespace algo
     namespace progpow_quai
     {
         // Override Ethash
-        constexpr uint32_t DAG_ITEM_PARENTS { 512u };
+        constexpr uint32_t DAG_ITEM_PARENTS{ 512u };
         constexpr uint32_t EPOCH_LENGTH{ 2147483647u };
 
         // Override ProgPOW

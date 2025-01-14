@@ -37,14 +37,14 @@ void stratum::StratumProgpowQuai::onResponse(
                 std::string const encoding{ common::boostGetString(result, "encoding"s) };
                 std::string const node{ common::boostGetString(result, "node"s) };
                 std::string const proto{ common::boostGetString(result, "proto"s) };
-                uint32_t const maxerrors{ common::boostJsonGetNumber<uint32_t>(result, "maxerrors"s) };
-                uint32_t const resume{ common::boostJsonGetNumber<uint32_t>(result, "resume"s) };
-                uint32_t const timeout{ common::boostJsonGetNumber<uint32_t>(result, "timeout"s) };
+                maxErrors = common::boostJsonGetNumber<uint32_t>(result, "maxerrors"s);
+                resume = common::boostJsonGetNumber<uint32_t>(result, "resume"s);
+                timeout = common::boostJsonGetNumber<uint32_t>(result, "timeout"s);
 
                 if (   "plain"s == encoding
                     && false == node.empty()
                     && false == proto.empty()
-                    && 0u < maxerrors)
+                    && 0u < maxErrors)
                 {
                     miningAuthorize();
                 }
@@ -62,6 +62,7 @@ void stratum::StratumProgpowQuai::onResponse(
             {
                 workerID = common::boostGetString(root, "result");
                 authenticated = true;
+                doLoopTimeout();
             }
             else
             {

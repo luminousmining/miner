@@ -35,12 +35,12 @@ struct ResolverProgpowQuaiNvidiaTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber = 965398ull;
-        jobInfo.headerHash = algo::toHash256("71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb");
-        jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
-        jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
+        jobInfo.blockNumber = 48263ull;
+        jobInfo.headerHash = algo::toHash256("ff4fae1e1d8ae09e787b6841cf31db63be783346db3ce6dab388090d7b37f4a2");
+        jobInfo.seedHash = algo::toHash256("0000000000000000000000000000000000000000000000000000000000000000");
+        jobInfo.boundary = algo::toHash256("0000000394427b08175efa9a9eb59b9123e2969bf19bf272b20787ed022fbe6c");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow_quai::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::progpow_quai::MAX_PERIOD;
     }
 };
@@ -48,7 +48,7 @@ struct ResolverProgpowQuaiNvidiaTest : public testing::Test
 
 TEST_F(ResolverProgpowQuaiNvidiaTest, findNonce)
 {
-    initializeJob(0x0000004cb6fa);
+    initializeJob(0x9f990000004cb6fa);
 
     ASSERT_NE(nullptr, resolver.cuStream);
 
@@ -62,13 +62,13 @@ TEST_F(ResolverProgpowQuaiNvidiaTest, findNonce)
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+    EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
 }
 
 
 TEST_F(ResolverProgpowQuaiNvidiaTest, aroundFindNonce)
 {
-    initializeJob(0x0000004cb6fa - 1024u);
+    initializeJob(0x9f990000004cb6fa - 1024u);
 
     ASSERT_NE(nullptr, resolver.cuStream);
 
@@ -79,16 +79,16 @@ TEST_F(ResolverProgpowQuaiNvidiaTest, aroundFindNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0x0000004cb6fa"s, nonceStr);
+    EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
 }
 
 
 TEST_F(ResolverProgpowQuaiNvidiaTest, notFindNonce)
 {
-    initializeJob(0x0000000cb6fa);
+    initializeJob(0x00000000004cb6fa);
 
     ASSERT_NE(nullptr, resolver.cuStream);
 

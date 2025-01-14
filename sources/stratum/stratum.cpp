@@ -123,6 +123,7 @@ void stratum::Stratum::onConnect()
     logInfo() << "Stratum connected!";
     common::Config const& config{ common::Config::instance() };
 
+
     if (   true == config.mining.wallet.empty()
         || true == config.mining.password.empty())
     {
@@ -144,6 +145,23 @@ void stratum::Stratum::onConnect()
             miningHello();
             break;
         }
+    }
+}
+
+
+void stratum::Stratum::loopTimeout()
+{
+    boost::chrono::seconds const sec{ timeout - 5 };
+    while (true == authenticated)
+    {
+        boost::this_thread::sleep_for(sec);
+
+        boost::json::object root;
+        root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
+        root["method"] = "mining.noop";
+        root["params"] = {};
+
+        send(root);
     }
 }
 
@@ -179,6 +197,12 @@ void stratum::Stratum::onMiningSetExtraNonce(
     logErr() << "mining.set_extranonce unimplemented!";
 }
 
+
+void stratum::Stratum::doLoopTimeout()
+{
+    threadTimeout.interrupt();
+    threadTimeout = boost_thread{ boost::bind(&stratum::Stratum::loopTimeout, this) };
+}
 
 void stratum::Stratum::miningHello()
 {

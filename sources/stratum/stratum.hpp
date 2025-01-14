@@ -3,6 +3,7 @@
 #include <functional>
 
 #include <boost/thread/mutex.hpp>
+#include <boost/thread.hpp>
 #include <boost/json.hpp>
 
 #include <algo/algo_type.hpp>
@@ -38,7 +39,11 @@ namespace stratum
         std::string           stratumName{};
 
         // Stratum EthereumV2
+
         std::string workerID{};
+        uint32_t maxErrors{ 0u };
+        uint32_t resume{ 0u };
+        uint32_t timeout{ 0u };
 
         virtual ~Stratum();
         virtual void onResponse(boost::json::object const& root) = 0;
@@ -68,16 +73,19 @@ namespace stratum
         void setExtraNonce(std::string const& paramExtraNonce);
         void setExtraNonce(std::string const& paramExtraNonce,
                            uint32_t const paramExtraNonce2Size);
+        void doLoopTimeout();
         bool isValidJob() const;
 
     protected:
         bool                authenticated{ false };
         boost::mutex        mtxSubmit;
         boost::mutex        mtxDispatchJob{};
+        boost::thread       threadTimeout{};
         callbackUpdateJob   dispatchJob{ nullptr };
         callbackShareStatus shareStatus{ nullptr };
 
         void onShare(boost::json::object const& root,
                      uint32_t const miningRequestID);
+        void loopTimeout();
     };
 }

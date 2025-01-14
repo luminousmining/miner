@@ -259,7 +259,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
     kernelGenerator.addDefine("DAG_SIZE", castU32(context.dagCache.numberItem / 2ull));
     kernelGenerator.addDefine("BATCH_GROUP_LANE", batchGroupLane);
-    kernelGenerator.addDefine("SHARE_MSB_LSB_SIZE", 2 * batchGroupLane);
+    kernelGenerator.addDefine("SHARE_SEED_SIZE", batchGroupLane);
     kernelGenerator.addDefine("SHARE_HASH0_SIZE", batchGroupLane);
     kernelGenerator.addDefine("SHARE_FNV1A_SIZE", maxThreadByGroup);
     kernelGenerator.addDefine("MODULE_CACHE_GROUP", maxThreadByGroup * 4u);
@@ -404,14 +404,37 @@ void resolver::ResolverAmdProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                boost::json::array params
+                switch(stratum->stratumType)
                 {
-                    resultShare.jobId,
-                    nonceHexa.str(),
-                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                };
+                    case stratum::STRATUM_TYPE::STRATUM:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
-                stratum->miningSubmit(deviceId, params);
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHEREUM_V2:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << std::hex << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->workerID
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                }
 
                 resultShare.nonces[i] = 0ull;
             }
@@ -441,14 +464,37 @@ void resolver::ResolverAmdProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                boost::json::array params
+                switch(stratum->stratumPool->stratumType)
                 {
-                    resultShare.jobId,
-                    nonceHexa.str(),
-                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                };
+                    case stratum::STRATUM_TYPE::STRATUM:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
-                stratum->miningSubmit(deviceId, params);
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHEREUM_V2:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << std::hex << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->stratumPool->workerID
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                }
 
                 resultShare.nonces[i] = 0ull;
             }

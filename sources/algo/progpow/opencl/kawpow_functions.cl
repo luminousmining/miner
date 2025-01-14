@@ -1,65 +1,68 @@
 inline
-void initialize_seed(
+ulong initialize_seed(
     __constant uint4 const* const restrict header,
-    uint* const restrict seed,
+    uint* const restrict state_mix,
     ulong const nonce)
 {
-    seed[0] = header[0].x;
-    seed[1] = header[0].y;
-    seed[2] = header[0].z;
-    seed[3] = header[0].w;
+    state_mix[0] = header[0].x;
+    state_mix[1] = header[0].y;
+    state_mix[2] = header[0].z;
+    state_mix[3] = header[0].w;
 
-    seed[4] = header[1].x;
-    seed[5] = header[1].y;
-    seed[6] = header[1].z;
-    seed[7] = header[1].w;
+    state_mix[4] = header[1].x;
+    state_mix[5] = header[1].y;
+    state_mix[6] = header[1].z;
+    state_mix[7] = header[1].w;
 
-    seed[8] = nonce;
-    seed[9] = (nonce >> 32);
+    state_mix[8] = nonce;
+    state_mix[9] = (nonce >> 32);
 
-    seed[10] = 'r';
-    seed[11] = 'A';
-    seed[12] = 'V';
-    seed[13] = 'E';
-    seed[14] = 'N';
+    state_mix[10] = 'r';
+    state_mix[11] = 'A';
+    state_mix[12] = 'V';
+    state_mix[13] = 'E';
+    state_mix[14] = 'N';
 
-    seed[15] = 'C';
-    seed[16] = 'O';
-    seed[17] = 'I';
-    seed[18] = 'N';
+    state_mix[15] = 'C';
+    state_mix[16] = 'O';
+    state_mix[17] = 'I';
+    state_mix[18] = 'N';
 
-    seed[19] = 'K';
-    seed[20] = 'A';
-    seed[21] = 'W';
-    seed[22] = 'P';
-    seed[23] = 'O';
-    seed[24] = 'W';
+    state_mix[19] = 'K';
+    state_mix[20] = 'A';
+    state_mix[21] = 'W';
+    state_mix[22] = 'P';
+    state_mix[23] = 'O';
+    state_mix[24] = 'W';
 
-    keccak_f800(seed);
+    keccak_f800(state_mix);
+
+    ulong const bytes = ((ulong)state_mix[1]) << 32 | state_mix[0];
+    return bytes;
 }
 
 
 inline
 ulong sha3(
-    uint const* const restrict seed,
-    uint* const restrict digest)
+    uint const* const restrict digest_1,
+    uint* const restrict digest_2)
 {
     uint state[25];
 
     __attribute__((opencl_unroll_hint))
     for (uint i = 0u; i < 8u; ++i)
     {
-        state[i] = seed[i];
+        state[i] = digest_1[i];
     }
 
-    state[8] = digest[0];
-    state[9] = digest[1];
-    state[10] = digest[2];
-    state[11] = digest[3];
-    state[12] = digest[4];
-    state[13] = digest[5];
-    state[14] = digest[6];
-    state[15] = digest[7];
+    state[8] = digest_2[0];
+    state[9] = digest_2[1];
+    state[10] = digest_2[2];
+    state[11] = digest_2[3];
+    state[12] = digest_2[4];
+    state[13] = digest_2[5];
+    state[14] = digest_2[6];
+    state[15] = digest_2[7];
 
     state[16] = 'r';
     state[17] = 'A';
@@ -81,7 +84,7 @@ ulong sha3(
 
 inline
 ulong is_valid(
-    uint const* const restrict seed,
+    uint const* const restrict state_mix,
     uint* const restrict digest)
 {
     digest[0] = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, digest[0]), digest[8]);
@@ -93,5 +96,5 @@ ulong is_valid(
     digest[6] = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, digest[6]), digest[14]);
     digest[7] = fnv1a_u32(fnv1a_u32(FNV1_OFFSET, digest[7]), digest[15]);
 
-    return sha3(seed, digest);
+    return sha3(state_mix, digest);
 }

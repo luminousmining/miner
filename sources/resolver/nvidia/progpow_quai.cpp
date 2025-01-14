@@ -1,7 +1,6 @@
 #include <algo/progpow/progpow_quai.hpp>
 #include <resolver/nvidia/progpow_quai.hpp>
 
-#include <common/log/log.hpp>
 
 resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     resolver::ResolverNvidiaProgPOW()
