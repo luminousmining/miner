@@ -334,7 +334,7 @@ bool resolver::ResolverAmdProgPOW::execute(
             cl::NDRange(blocks, 1,       1)));
     OPENCL_ER(clQueue->finish());
 
-    if (false == getResultCache(jobInfo.jobIDStr))
+    if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
     {
         return false;
     }
@@ -344,7 +344,8 @@ bool resolver::ResolverAmdProgPOW::execute(
 
 
 bool resolver::ResolverAmdProgPOW::getResultCache(
-    std::string const& _jobId)
+    std::string const& _jobId,
+    uint32_t const extraNonceSize)
 {
     algo::progpow::Result data{};
 
@@ -363,6 +364,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
         resultShare.found = true;
         resultShare.count = count;
         resultShare.jobId.assign(_jobId);
+        resultShare.extraNonceSize = extraNonceSize;
 
         for (uint32_t i { 0u }; i < count; ++i)
         {

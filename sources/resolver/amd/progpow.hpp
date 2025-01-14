@@ -47,7 +47,8 @@ namespace resolver
 
         bool buildDAG();
         bool buildSearch();
-        bool getResultCache(std::string const& jobId);
+        bool getResultCache(std::string const& jobId,
+                            uint32_t const extraNonceSize);
     };
 }
 
