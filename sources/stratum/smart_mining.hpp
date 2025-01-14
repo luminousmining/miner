@@ -26,6 +26,7 @@ namespace stratum
         std::string             workerName{};
         std::string             password{};
         stratum::StratumJobInfo jobInfo{};
+        stratum::Stratum*       stratumPool{ nullptr };
 
         void setCallbackSetAlgorithm(callbackSetAlgorithm callback);
         void setCallbackUpdateJob(callbackUpdateJob callback);
@@ -54,7 +55,6 @@ namespace stratum
         callbackShareStatus  doShareStatus{ nullptr };
 
         algo::ALGORITHM   currentAlgorithm { algo::ALGORITHM::UNKNOW };
-        stratum::Stratum* stratumPool{ nullptr };
 
         void subscribe();
         void setProfile();

@@ -136,6 +136,7 @@ void device::DeviceManager::showMiningStats(
         case device::DEVICE_TYPE::AMD:
         {
             deviceType = "AMD";
+            break;
         }
 #endif
         case device::DEVICE_TYPE::UNKNOW:
@@ -189,6 +190,7 @@ void device::DeviceManager::showDeviceStats(
         case device::DEVICE_TYPE::AMD:
         {
             deviceType = "AMD";
+            break;
         }
 #endif
         case device::DEVICE_TYPE::UNKNOW:

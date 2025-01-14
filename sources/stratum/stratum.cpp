@@ -24,7 +24,7 @@ void stratum::Stratum::miningSubmit(
     [[maybe_unused]] uint32_t const deviceId,
     [[maybe_unused]] boost::json::object const& params)
 {
-    logErr() << "mining.submit params[array] was not implemented!";
+    logErr() << "mining.submit params[object] was not implemented!";
 }
 
 
@@ -81,7 +81,11 @@ void stratum::Stratum::onMethod(
 {
     std::string const method{ root.at("method").as_string().c_str() };
 
-    if ("mining.notify" == method)
+    if ("mining.set" == method)
+    {
+        onMiningSet(root);
+    }
+    else if ("mining.notify" == method)
     {
         onMiningNotify(root);
     }
@@ -119,6 +123,7 @@ void stratum::Stratum::onConnect()
     logInfo() << "Stratum connected!";
     common::Config const& config{ common::Config::instance() };
 
+
     if (   true == config.mining.wallet.empty()
         || true == config.mining.password.empty())
     {
@@ -128,7 +133,36 @@ void stratum::Stratum::onConnect()
         return;
     }
 
-    miningSubscribe();
+    switch(stratumType)
+    {
+        case stratum::STRATUM_TYPE::STRATUM:
+        {
+            miningSubscribe();
+            break;
+        }
+        case stratum::STRATUM_TYPE::ETHEREUM_V2:
+        {
+            miningHello();
+            break;
+        }
+    }
+}
+
+
+void stratum::Stratum::loopTimeout()
+{
+    boost::chrono::seconds const sec{ timeout - 5 };
+    while (true == authenticated)
+    {
+        boost::this_thread::sleep_for(sec);
+
+        boost::json::object root;
+        root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
+        root["method"] = "mining.noop";
+        root["params"] = {};
+
+        send(root);
+    }
 }
 
 
@@ -141,6 +175,59 @@ void stratum::Stratum::onUnknowMethod(
         << "Unknow[" << method << "]"
         << " " << root;
 }
+
+
+void stratum::Stratum::onMiningSet(
+    [[maybe_unused]] boost::json::object const& root)
+{
+    logErr() << "mining.set unimplemented!";
+}
+
+
+void stratum::Stratum::onMiningSetTarget(
+    [[maybe_unused]] boost::json::object const& root)
+{
+    logErr() << "mining.set_target unimplemented!";
+}
+
+
+void stratum::Stratum::onMiningSetExtraNonce(
+    [[maybe_unused]] boost::json::object const& root)
+{
+    logErr() << "mining.set_extranonce unimplemented!";
+}
+
+
+void stratum::Stratum::doLoopTimeout()
+{
+    threadTimeout.interrupt();
+    threadTimeout = boost_thread{ boost::bind(&stratum::Stratum::loopTimeout, this) };
+}
+
+void stratum::Stratum::miningHello()
+{
+    auto const softwareName
+    {
+        "luminousminer/"
+        + std::to_string(common::VERSION_MAJOR)
+        + "."
+        + std::to_string(common::VERSION_MINOR)
+    };
+
+    boost::json::object root;
+    root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
+    root["method"] = "mining.hello";
+    root["params"] =
+    {
+        { "agent", softwareName },
+        { "host", host },
+        { "port", port },
+        { "proto", stratumName }
+    };
+
+    send(root);
+}
+
 
 void stratum::Stratum::miningSubscribe()
 {
@@ -155,11 +242,14 @@ void stratum::Stratum::miningSubscribe()
     boost::json::object root;
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
     root["method"] = "mining.subscribe";
-    root["params"] = boost::json::array{ softwareName, stratumName };
+
+    if (stratumType == stratum::STRATUM_TYPE::STRATUM)
+    {
+        root["params"] = boost::json::array{ softwareName, stratumName };
+    }
 
     send(root);
 }
-
 
 
 void stratum::Stratum::miningAuthorize()
@@ -255,11 +345,6 @@ bool stratum::Stratum::isValidJob() const
     if (0ull == jobInfo.boundaryU64)
     {
         logDebug() << "Boundary U64 == 0ull";
-        ret = false;
-    }
-    if (0 >= jobInfo.epoch)
-    {
-        logDebug() << "epoch == 0";
         ret = false;
     }
     if (0ull >= jobInfo.nonce)

@@ -61,12 +61,11 @@ inline
 void fill_hash(
     uint* const hash,
     uint const lane_id,
-    uint const lsb,
-    uint const msb)
+    ulong const seed)
 {
     uint4 data;
-    data.x = fnv1a_u32(FNV1_OFFSET, lsb);
-    data.y = fnv1a_u32(data.x, msb);
+    data.x = fnv1a_u32(FNV1_OFFSET, (uint)seed);
+    data.y = fnv1a_u32(data.x, (uint)(seed >> 32));
     data.z = fnv1a_u32(data.y, lane_id);
     data.w = fnv1a_u32(data.z, lane_id);
 
@@ -112,11 +111,11 @@ void progpow_search(
     __global t_result* const restrict result)
 {
     __local uint header_dag[MODULE_CACHE];
-    __local uint share_msb_lsb[SHARE_MSB_LSB_SIZE];
+    __local ulong share_msb_lsb[SHARE_SEED_SIZE];
     __local uint share_hash0[SHARE_HASH0_SIZE];
     __local uint share_fnv1a[SHARE_FNV1A_SIZE];
 
-    uint seed[25];
+    uint state_mix[25];
     uint hash[REGS];
     uint digest[LANES];
 
@@ -124,11 +123,11 @@ void progpow_search(
     uint const lane_id = thread_id % LANES;
     uint const worker_group = get_global_id(0) / LANES;
     ulong const nonce = start_nonce + thread_id;
-    uint const index_share_msb_lsb = get_global_id(0) / BATCH_GROUP_LANE;
+    uint const index_share_seed = get_global_id(0) / BATCH_GROUP_LANE;
 
     ////////////////////////////////////////////////////////////////////////
     initialize_header(dag, header_dag, (thread_id % GROUP_SIZE));
-    initialize_seed(header, seed, nonce);
+    ulong const seed = initialize_seed(header, state_mix, nonce);
 
     __attribute__((opencl_unroll_hint(1)))
     for (uint l_id = 0u; l_id < LANES; ++l_id)
@@ -136,15 +135,15 @@ void progpow_search(
         ////////////////////////////////////////////////////////////////////////
         if (l_id == lane_id)
         {
-            share_msb_lsb[index_share_msb_lsb] = seed[0];
-            share_msb_lsb[index_share_msb_lsb + BATCH_GROUP_LANE] = seed[1];
+            share_msb_lsb[index_share_seed] = seed;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
-        uint const lsb = share_msb_lsb[index_share_msb_lsb];
-        uint const msb = share_msb_lsb[index_share_msb_lsb + BATCH_GROUP_LANE];
 
         ////////////////////////////////////////////////////////////////////////
-        fill_hash(hash, lane_id, lsb, msb);
+        ulong const seedShare = share_msb_lsb[index_share_seed];
+
+        ////////////////////////////////////////////////////////////////////////
+        fill_hash(hash, lane_id, seedShare);
         loop_math(dag, share_hash0, header_dag, hash, lane_id, worker_group);
         reduce_hash(
             share_fnv1a,
@@ -156,9 +155,9 @@ void progpow_search(
 
     ////////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)
-    ulong const bytes_result = is_valid(header, seed, digest);
+    ulong const bytes_result = is_valid(header, digest, seed);
 #else
-    ulong const bytes_result = is_valid(seed, digest);
+    ulong const bytes_result = is_valid(state_mix, digest);
 #endif
 
     if (bytes_result <= boundary)

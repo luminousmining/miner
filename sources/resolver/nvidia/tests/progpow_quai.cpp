@@ -1,4 +1,3 @@
-#include <CL/opencl.hpp>
 #include <gtest/gtest.h>
 
 #include <algo/hash.hpp>
@@ -6,39 +5,31 @@
 #include <algo/progpow/progpow_quai.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
-#include <resolver/amd/progpow_quai.hpp>
-#include <resolver/tests/amd.hpp>
+#include <resolver/nvidia/progpow_quai.hpp>
+#include <resolver/tests/nvidia.hpp>
 
 
-struct ResolverProgpowQuaiAmdTest : public testing::Test
+struct ResolverProgpowQuaiNvidiaTest : public testing::Test
 {
-    stratum::StratumJobInfo          jobInfo{};
-    resolver::tests::Properties      properties{};
-    resolver::ResolverAmdProgpowQuai resolver{};
-    common::mocker::MockerStratum    stratum{};
+    stratum::StratumJobInfo             jobInfo{};
+    common::mocker::MockerStratum       stratum{};
+    resolver::tests::Properties         properties{};
+    resolver::ResolverNvidiaProgpowQuai resolver{};
 
-    ResolverProgpowQuaiAmdTest()
+    ResolverProgpowQuaiNvidiaTest()
     {
         common::setLogLevel(common::TYPELOG::__DEBUG);
-    }
-
-    ~ResolverProgpowQuaiAmdTest()
-    {
-        properties.clDevice = nullptr;
-        properties.clContext = nullptr;
-        properties.clQueue = nullptr;
-    }
-
-    void initializeDevice(uint32_t const index)
-    {
-        if (false == resolver::tests::initializeOpenCL(properties, index))
+        if (false == resolver::tests::initializeCuda(properties))
         {
-            logErr() << "fail init opencl";
+            logErr() << "Fail init cuda";
         }
+        resolver.cuStream = properties.cuStream;
+        resolver.cuProperties = &properties.cuProperties;
+    }
 
-        resolver.setDevice(&properties.clDevice);
-        resolver.setQueue(&properties.clQueue);
-        resolver.setContext(&properties.clContext);
+    ~ResolverProgpowQuaiNvidiaTest()
+    {
+        resolver::tests::cleanUpCuda();
     }
 
     void initializeJob(uint64_t const nonce)
@@ -55,11 +46,12 @@ struct ResolverProgpowQuaiAmdTest : public testing::Test
 };
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, findNonce)
+TEST_F(ResolverProgpowQuaiNvidiaTest, findNonce)
 {
-    initializeDevice(0u);
     initializeJob(0x9f990000004cb6fa);
 
+    ASSERT_NE(nullptr, resolver.cuStream);
+
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.execute(jobInfo));
@@ -67,18 +59,19 @@ TEST_F(ResolverProgpowQuaiAmdTest, findNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
 }
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, aroundFindNonce)
+TEST_F(ResolverProgpowQuaiNvidiaTest, aroundFindNonce)
 {
-    initializeDevice(0u);
     initializeJob(0x9f990000004cb6fa - 1024u);
 
+    ASSERT_NE(nullptr, resolver.cuStream);
+
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.execute(jobInfo));
@@ -93,10 +86,11 @@ TEST_F(ResolverProgpowQuaiAmdTest, aroundFindNonce)
 }
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, notFindNonce)
+TEST_F(ResolverProgpowQuaiNvidiaTest, notFindNonce)
 {
-    initializeDevice(0u);
     initializeJob(0x00000000004cb6fa);
+
+    ASSERT_NE(nullptr, resolver.cuStream);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -104,27 +98,4 @@ TEST_F(ResolverProgpowQuaiAmdTest, notFindNonce)
     resolver.submit(&stratum);
 
     EXPECT_TRUE(stratum.paramSubmit.empty());
-}
-
-
-TEST_F(ResolverProgpowQuaiAmdTest, allDeviceFindNonce)
-{
-    uint32_t const countDevice{ resolver::tests::getDeviceCount() };
-    for (uint32_t index{ 0u }; index < countDevice; ++index)
-    {
-        initializeDevice(index);
-        initializeJob(0x9f990000004cb6fa);
-
-        ASSERT_TRUE(resolver.updateMemory(jobInfo));
-        ASSERT_TRUE(resolver.updateConstants(jobInfo));
-        ASSERT_TRUE(resolver.execute(jobInfo));
-        resolver.submit(&stratum);
-
-        ASSERT_FALSE(stratum.paramSubmit.empty());
-
-        std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
-
-        using namespace std::string_literals;
-        EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
-    }
 }

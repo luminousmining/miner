@@ -2,24 +2,22 @@
 
 
 #include <network/network.hpp>
-#include <stratum/stratum.hpp>
+#include <stratum/progpow.hpp>
 
 
 namespace stratum
 {
-    struct StratumSha256 : public stratum::Stratum
+    struct StratumProgpowQuai : public stratum::StratumProgPOW
     {
     public:
-        void onResponse(boost::json::object const& root) final;
-        void onMiningNotify(boost::json::object const& root) final;
-        void onMiningSetDifficulty(boost::json::object const& root) final;
+        StratumProgpowQuai();
+        ~StratumProgpowQuai() = default;
 
-        void miningSubscribe() final;
+        void onResponse(boost::json::object const& root) final;
+        void onMiningSet(boost::json::object const& root) final;
+        void onMiningNotify(boost::json::object const& root) final;
+
         void miningSubmit(uint32_t const deviceId,
                           boost::json::array const& params) final;
-
-    private:
-        std::string sessionId{};
-        uint32_t extraNonce2Size{ 0u };
     };
 }

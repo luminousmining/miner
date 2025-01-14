@@ -11,6 +11,7 @@
 #include <resolver/amd/firopow.hpp>
 #include <resolver/amd/kawpow.hpp>
 #include <resolver/amd/meowpow.hpp>
+#include <resolver/amd/progpow_quai.hpp>
 #include <resolver/amd/progpow.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/blake3.hpp>
@@ -20,6 +21,7 @@
 #include <resolver/nvidia/firopow.hpp>
 #include <resolver/nvidia/kawpow.hpp>
 #include <resolver/nvidia/meowpow.hpp>
+#include <resolver/nvidia/progpow_quai.hpp>
 #include <resolver/nvidia/progpow.hpp>
 
 
@@ -216,6 +218,33 @@ void device::Device::setAlgorithm(
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverAmdEvrprogPOW);
+                    break;
+                }
+#endif
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+        case algo::ALGORITHM::PROGPOWQUAI:
+        {
+            switch (deviceType)
+            {
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaProgpowQuai);
+                    break;
+                }
+#endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverAmdProgpowQuai);
                     break;
                 }
 #endif

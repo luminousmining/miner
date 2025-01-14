@@ -1,8 +1,11 @@
-#include <algo/progpow/kawpow.hpp>
+#include <algo/crypto/fnv1.hpp>
+#include <algo/progpow/progpow_quai.hpp>
 #include <algo/progpow/progpow.hpp>
+#include <common/cast.hpp>
+#include <common/custom.hpp>
 
 
-void algo::kawpow::nvidia::writeSequenceMathMerge(
+void algo::progpow_quai::nvidia::writeSequenceMathMerge(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const dst,
@@ -50,7 +53,7 @@ void algo::kawpow::nvidia::writeSequenceMathMerge(
 }
 
 
-void algo::kawpow::nvidia::writeSequenceMergeCache(
+void algo::progpow_quai::nvidia::writeSequenceMergeCache(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const src,
@@ -77,7 +80,7 @@ void algo::kawpow::nvidia::writeSequenceMergeCache(
 }
 
 
-void algo::kawpow::amd::writeSequenceMathMerge(
+void algo::progpow_quai::amd::writeSequenceMathMerge(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const dst,
@@ -125,7 +128,7 @@ void algo::kawpow::amd::writeSequenceMathMerge(
 }
 
 
-void algo::kawpow::amd::writeSequenceMergeCache(
+void algo::progpow_quai::amd::writeSequenceMergeCache(
     std::stringstream& ss,
     uint32_t const i,
     uint32_t const src,

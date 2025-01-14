@@ -42,6 +42,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(
         return false;
     }
 
+
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
     if (   0ull < deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
@@ -112,7 +113,6 @@ bool resolver::ResolverAmdProgPOW::updateConstants(
     if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
-        resolverInfo() << "Build period " << currentPeriod;
 
         ////////////////////////////////////////////////////////////////////////////
         if (false == buildSearch())
@@ -241,6 +241,11 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
             kernelGenerator.declareDefine("__KERNEL_EVRPROGPOW");
             break;
         }
+        case algo::progpow::VERSION::PROGPOWQUAI:
+        {
+            kernelGenerator.declareDefine("__KERNEL_PROGPOW");
+            break;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -254,7 +259,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
     kernelGenerator.addDefine("DAG_SIZE", castU32(context.dagCache.numberItem / 2ull));
     kernelGenerator.addDefine("BATCH_GROUP_LANE", batchGroupLane);
-    kernelGenerator.addDefine("SHARE_MSB_LSB_SIZE", 2 * batchGroupLane);
+    kernelGenerator.addDefine("SHARE_SEED_SIZE", batchGroupLane);
     kernelGenerator.addDefine("SHARE_HASH0_SIZE", batchGroupLane);
     kernelGenerator.addDefine("SHARE_FNV1A_SIZE", maxThreadByGroup);
     kernelGenerator.addDefine("MODULE_CACHE_GROUP", maxThreadByGroup * 4u);
@@ -278,13 +283,14 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     std::string kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2:    /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_3:    /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_4:    kernelDerived.assign("progpow_functions.cl"); break;
-        case algo::progpow::VERSION::KAWPOW:     kernelDerived.assign("kawpow_functions.cl"); break;
-        case algo::progpow::VERSION::MEOWPOW:    kernelDerived.assign("meowpow_functions.cl"); break;
-        case algo::progpow::VERSION::FIROPOW:    kernelDerived.assign("firopow_functions.cl"); break;
-        case algo::progpow::VERSION::EVRPROGPOW: kernelDerived.assign("evrprogpow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_4:     kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::KAWPOW:      kernelDerived.assign("kawpow_functions.cl"); break;
+        case algo::progpow::VERSION::MEOWPOW:     kernelDerived.assign("meowpow_functions.cl"); break;
+        case algo::progpow::VERSION::FIROPOW:     kernelDerived.assign("firopow_functions.cl"); break;
+        case algo::progpow::VERSION::EVRPROGPOW:  kernelDerived.assign("evrprogpow_functions.cl"); break;
+        case algo::progpow::VERSION::PROGPOWQUAI: kernelDerived.assign("progpow_functions.cl"); break;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -328,7 +334,7 @@ bool resolver::ResolverAmdProgPOW::execute(
             cl::NDRange(blocks, 1,       1)));
     OPENCL_ER(clQueue->finish());
 
-    if (false == getResultCache(jobInfo.jobIDStr))
+    if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
     {
         return false;
     }
@@ -338,7 +344,8 @@ bool resolver::ResolverAmdProgPOW::execute(
 
 
 bool resolver::ResolverAmdProgPOW::getResultCache(
-    std::string const& _jobId)
+    std::string const& _jobId,
+    uint32_t const extraNonceSize)
 {
     algo::progpow::Result data{};
 
@@ -357,6 +364,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
         resultShare.found = true;
         resultShare.count = count;
         resultShare.jobId.assign(_jobId);
+        resultShare.extraNonceSize = extraNonceSize;
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
@@ -398,14 +406,37 @@ void resolver::ResolverAmdProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                boost::json::array params
+                switch(stratum->stratumType)
                 {
-                    resultShare.jobId,
-                    nonceHexa.str(),
-                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                };
+                    case stratum::STRATUM_TYPE::STRATUM:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
-                stratum->miningSubmit(deviceId, params);
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHEREUM_V2:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << std::hex << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->workerID
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                }
 
                 resultShare.nonces[i] = 0ull;
             }
@@ -435,14 +466,37 @@ void resolver::ResolverAmdProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                boost::json::array params
+                switch(stratum->stratumPool->stratumType)
                 {
-                    resultShare.jobId,
-                    nonceHexa.str(),
-                    "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                };
+                    case stratum::STRATUM_TYPE::STRATUM:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
-                stratum->miningSubmit(deviceId, params);
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHEREUM_V2:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa << std::hex << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->stratumPool->workerID
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                }
 
                 resultShare.nonces[i] = 0ull;
             }

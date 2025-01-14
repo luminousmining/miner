@@ -9,6 +9,7 @@
 #include <stratum/firopow.hpp>
 #include <stratum/kawpow.hpp>
 #include <stratum/meowpow.hpp>
+#include <stratum/progpow_quai.hpp>
 #include <stratum/progpow.hpp>
 #include <stratum/sha256.hpp>
 #include <stratum/smart_mining.hpp>

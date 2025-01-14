@@ -130,6 +130,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         case algo::ALGORITHM::MEOWPOW:
         case algo::ALGORITHM::FIROPOW:
         case algo::ALGORITHM::EVRPROGPOW:
+        case algo::ALGORITHM::PROGPOWQUAI:
         {
             std::string extraNonceStr { root.at("params").as_string().c_str() };
             stratumPool->setExtraNonce(extraNonceStr);
@@ -256,8 +257,6 @@ void stratum::StratumSmartMining::subscribe()
 
 void stratum::StratumSmartMining::setProfile()
 {
-    auto const& config { common::Config::instance() };
-
     boost::json::object root;
     root["id"] = stratum::StratumSmartMining::ID_SMART_MINING_SET_PROFILE;
     root["method"] = "smart_mining.set_profile";

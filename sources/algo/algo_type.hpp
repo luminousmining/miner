@@ -15,6 +15,7 @@ namespace algo
         MEOWPOW,
         FIROPOW,
         EVRPROGPOW,
+        PROGPOWQUAI,
         AUTOLYKOS_V2,
         BLAKE3,
         UNKNOW,

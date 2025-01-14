@@ -49,6 +49,11 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumEvrprogPOW);
             break;
         }
+        case algo::ALGORITHM::PROGPOWQUAI:
+        {
+            stratum = NEW(stratum::StratumProgpowQuai);
+            break;
+        }
         case algo::ALGORITHM::AUTOLYKOS_V2:
         {
             stratum = NEW(stratum::StratumAutolykosV2);

@@ -27,6 +27,7 @@ Different profiles are available:
 - firopow
 - meowpow
 - evrprogpow
+- progpow_quai
 
 ## Internal Documentation
 [Build](https://github.com/luminousmining/miner/tree/main/BUILD.md)  
@@ -45,12 +46,14 @@ Different profiles are available:
 [progpowz](https://github.com/hyle-team/progminer)  
 [firominer](https://github.com/firoorg/firominer)  
 [meowpowminer](https://github.com/Meowcoin-Foundation/meowpowminer)  
+[quai-gpu-miner](https://github.com/dominant-strategies/quai-gpu-miner)  
 
 ## References - Algos
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)  
 https://en.wikipedia.org/wiki/Equihash  
 https://ergoplatform.org/en/blog/Ergo-and-the-Autolykos-Consensus-Mechanism-Part-I/  
 https://ergoplatform.org/en/blog/Ergo-and-The-Autolykos-Consensus-Mechanism-Part-II/  
+https://docs.qu.ai/learn/introduction  
 
 ## References - Papers
 https://pure.manchester.ac.uk/ws/files/85753741/paper.pdf  
@@ -59,8 +62,7 @@ https://www.researchgate.net/publication/255971534_Parallel_Cloud_Computing_Expl
 https://ieeexplore.ieee.org/document/8391706  
 
 ## References - Librairies
-[asio-socks45-client
-](https://github.com/sehe/asio-socks45-client) - We recognize [Seth Heeren](https://github.com/sehe) for providing the SOCKS5 client implementation.
+[asio-socks45-client](https://github.com/sehe/asio-socks45-client) - We recognize [Seth Heeren](https://github.com/sehe) for providing the SOCKS5 client implementation.
 
 ## SAST Tools
 [PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
