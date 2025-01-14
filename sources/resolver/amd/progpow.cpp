@@ -397,9 +397,6 @@ void resolver::ResolverAmdProgPOW::submit(
         {
             for (uint32_t i { 0u }; i < resultShare.count; ++i)
             {
-                std::stringstream nonceHexa;
-                nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
                 for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
@@ -457,9 +454,6 @@ void resolver::ResolverAmdProgPOW::submit(
         {
             for (uint32_t i { 0u }; i < resultShare.count; ++i)
             {
-                std::stringstream nonceHexa;
-                nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
                 for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
