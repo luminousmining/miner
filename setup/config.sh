@@ -1,4 +1,4 @@
 # Global variables
-VERSION=0.5
+VERSION=0.6
 PROJECT=luminousminer
 EXE=miner

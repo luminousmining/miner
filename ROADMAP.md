@@ -1,6 +1,6 @@
 # Roadmap
   
-current version `v0.5`  
+current version `v0.6`  
   
 + step 1
 - [x] GPU mining Nvidia
@@ -25,7 +25,7 @@ current version `v0.5`
 - [x] algo meowcoin
   
 + step 2
-- [ ] algo progpow_quai
+- [x] algo progpow_quai
 - [ ] algo ethashb3
 - [ ] profile smart mining
 - [ ] benchmark
