@@ -49,6 +49,9 @@ namespace common
         std::optional<common::TYPELOG> getLevelLog() const;
         std::optional<std::string> getLogFilenaName() const;
 
+        // Common
+         std::optional<double> getPricekWH() const;
+
         // Pool Connection
         std::optional<std::string>   getHost() const;
         bool                         isSSL() const;
@@ -107,9 +110,9 @@ namespace common
         customTupleStrStrU32 getSmartMiningPool() const;
 
         // Api
-        uint32_t   getApiPort() const;
+        uint32_t getApiPort() const;
 
         // Socks proxy settings
-        uint32_t   getSocksPort() const;
+        uint32_t getSocksPort() const;
     };
 }

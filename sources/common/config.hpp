@@ -17,6 +17,11 @@ namespace common
     struct Config
     {
     public:
+        struct CommonConfig
+        {
+            double priceKWH{ 0.0 };
+        };
+
         struct PoolConfig
         {
             std::string   host{ "" };
@@ -28,8 +33,8 @@ namespace common
             std::string   wallet{ "" };
             std::string   password{ "x" };
             bool          secrureConnect{ false };
-            bool          stale { false };
-            bool          socks5 { false };
+            bool          stale{ false };
+            bool          socks5{ false };
         };
 
         struct SmartMiningConfig
@@ -77,7 +82,8 @@ namespace common
         std::map<uint32_t, PoolConfig> deviceSettings{};
         PoolConfig                     amdSetting{};
         PoolConfig                     nvidiaSetting{};
-        ApiConfig                      api{}; 
+        ApiConfig                      api{};
+        CommonConfig                   common{};
 
         static Config& instance();
         bool load(int argc, char** argv);

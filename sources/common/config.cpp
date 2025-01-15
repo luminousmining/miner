@@ -101,6 +101,13 @@ bool common::Config::loadCli(int argc, char** argv)
         }
 
         ////////////////////////////////////////////////////////////////////////
+        auto const priceKWH{ cli.getPricekWH() };
+        if (std::nullopt != priceKWH)
+        {
+            common.priceKWH = *priceKWH;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
         auto const host{ cli.getHost() };
         if (std::nullopt != host && false == host->empty())
         {

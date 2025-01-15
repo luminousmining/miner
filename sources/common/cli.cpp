@@ -41,6 +41,14 @@ common::Cli::Cli()
             "--log_file=PATH"
         )
 
+        // Common
+        (
+            "price_kwh",
+            value<double>(),
+            "[OPTIONAL] Set the price of elec (kWh).\n"
+            "--price_kwh=0.5"
+        )
+
         // Pool Connection
         (
             "host",

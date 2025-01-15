@@ -40,6 +40,7 @@ void device::DeviceManager::loopStatistical()
     boardDevice.addColumn("MemoryClock");
     boardDevice.addColumn("Utilization");
     boardDevice.addColumn("H/W");
+    boardDevice.addColumn("$/H");
 
     while (true)
     {
@@ -169,11 +170,15 @@ void device::DeviceManager::showDeviceStats(
     double const hashrate)
 {
     ///////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////
     double power{ 0.0 };
     double hashByPower{ 0.0 };
     uint32_t coreClock{ 0u };
     uint32_t memoryClock{ 0u };
     uint32_t utilizationPercent{ 0u };
+    double cost{ 0.0 };
 
     ///////////////////////////////////////////////////////////////////
     std::string deviceType{ "UNKNOW" };
@@ -239,6 +244,10 @@ void device::DeviceManager::showDeviceStats(
     if (0.0 < power)
     {
         hashByPower = hashrate / power;
+        if (0.0 < config.common.priceKWH)
+        {
+            cost = (config.common.priceKWH * power) / 1000;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -252,7 +261,8 @@ void device::DeviceManager::showDeviceStats(
             std::to_string(coreClock),
             std::to_string(memoryClock),
             std::to_string(utilizationPercent),
-            common::hashrateToString(hashByPower)
+            common::hashrateToString(hashByPower),
+            common::doubleToString(cost)
         }
     );
 }
