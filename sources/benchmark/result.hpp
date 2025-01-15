@@ -5,6 +5,13 @@
 
 constexpr uint32_t MAX_RESULT_INDEX{ 4u };
 
+struct t_result
+{
+    bool     found{ false };
+    uint32_t count{ 0u };
+    uint64_t nonce{ 0ull };
+};
+
 
 struct t_result_32
 {

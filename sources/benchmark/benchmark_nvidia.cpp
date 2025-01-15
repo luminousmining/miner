@@ -33,7 +33,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
 
     ////////////////////////////////////////////////////////////////////////////
     t_result_64* result{ nullptr };
-    if (false == getCleanResult64(&result))
+    if (false == initCleanResult64(&result))
     {
         return false;
     }
@@ -65,7 +65,7 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
 
     ////////////////////////////////////////////////////////////////////////////
     t_result_64* result{ nullptr };
-    if (false == getCleanResult64(&result))
+    if (false == initCleanResult64(&result))
     {
         return false;
     }
@@ -74,7 +74,6 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
     uint32_t const height{ 3130463488u };
     uint32_t const period{ 146488965u };
     uint32_t const dagItemCount{ period * algo::autolykos_v2::NUM_SIZE_8 };
-
 
     algo::hash256 const header
     {
@@ -174,6 +173,13 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
+    t_result* result{ nullptr };
+    if (false == initCleanResult(&result))
+    {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     uint64_t const dagItems{ 16777213ull };
     auto const header
     {
@@ -205,20 +211,56 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     threads = 256u;
     nonceComputed = blocks * threads;
 
-    {
-        startChrono("kawpow: lm1"s);
-        if (false == kawpow_lm1(propertiesNvidia.cuStream,
-                                headerHash->word32,
-                                dagHash->word32,
-                                blocks,
-                                threads))
-        {
-            return false;
-        }
-        stopChrono();
-    }
-
-
+    // Do not share 4096 first item of dag
+    RUN_BENCH
+    (
+        "kawpow: lm1"s,
+        10u,
+        kawpow_lm1(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    // share 4096 first item of dag
+    RUN_BENCH
+    (
+        "kawpow: lm2"s,
+        10u,
+        kawpow_lm2(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    // share 4096 first item of dag
+    // No unroll loop
+    RUN_BENCH
+    (
+        "kawpow: lm3"s,
+        10u,
+        kawpow_lm3(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    // share 4096 first item of dag
+    // 64 regs by kernel
+    RUN_BENCH
+    (
+        "kawpow: lm4"s,
+        10u,
+        kawpow_lm4(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(headerHash);

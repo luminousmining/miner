@@ -59,7 +59,7 @@ uint64_t sha3(
 {
     uint32_t state[STATE_LEN];
 
-    #pragma unroll
+    #pragma unroll 1
     for (uint32_t i = 0u; i < 8u; ++i)
     {
         state[i] = state_init[i];
@@ -123,18 +123,37 @@ void fill_hash(
     data.z = fnv1a(data.y, lane_id);
     data.w = fnv1a(data.z, lane_id);
 
-    #pragma unroll
+    #pragma unroll 1
     for (uint32_t i = 0u; i < REGS; ++i)
     {
         hash[i] = kiss99(data);
     }
 }
 
+
+__device__ __forceinline__
+void initialize_header_dag(
+    uint32_t const thread_id,
+    uint32_t* __restrict__ const header_dag,
+    uint32_t const* __restrict__ const dag)
+{
+    #pragma unroll 1
+    for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
+    {
+        uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
+        uint32_t const itemDag = dag[indexDAG];
+        header_dag[indexDAG] = itemDag;
+    }
+    __syncthreads();
+}
+
+
 __device__ __forceinline__
 void loop_math(
     uint32_t const lane_id,
     uint4 const* __restrict__ const dag,
-    uint32_t* __restrict__ const hash)
+    uint32_t* __restrict__ const hash,
+    uint32_t* __restrict__ const header_dag)
 {
     #pragma unroll 1
     for (uint32_t cnt = 0u; cnt < COUNT_DAG; ++cnt)
@@ -147,7 +166,6 @@ void loop_math(
         dagIndex += ((lane_id ^ cnt) % LANES);
 
         uint4 entries = dag[dagIndex];
-        uint32_t* header_dag = (uint32_t*)dag;
         sequence_math_random(header_dag, hash, &entries);
     }
 }
@@ -160,14 +178,14 @@ void reduce_hash(
     uint32_t* __restrict__ const digest)
 {
     uint32_t value = FNV1_OFFSET;
-    #pragma unroll
+    #pragma unroll 1
     for (uint32_t i = 0u; i < REGS; ++i)
     {
         value = fnv1a(value, hash[i]);
     }
 
     uint32_t tmp[LANES];
-    #pragma unroll
+    #pragma unroll 1
     for (uint32_t i = 0u; i < LANES; ++i)
     {
         tmp[i] = reg_load(value, i, LANES);
@@ -175,7 +193,7 @@ void reduce_hash(
 
     if (is_same_lane == true)
     {
-        #pragma unroll
+        #pragma unroll 1
         for (uint32_t i = 0u; i < LANES; ++i)
         {
             digest[i] = tmp[i];
@@ -190,7 +208,7 @@ void initialize_header_dag(
     uint32_t const* __restrict__ const dag,
     uint32_t const thread_id)
 {
-    #pragma unroll
+    #pragma unroll 1
     for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
     {
         uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
@@ -202,12 +220,15 @@ void initialize_header_dag(
 
 
 __global__
-void kernel_kawpow_lm1(
+void kernel_kawpow_lm3(
     t_result* const __restrict__ result,
     uint4 const* __restrict__ const header,
     uint4 const* __restrict__ const dag,
     uint64_t const startNonce)
 {
+    ////////////////////////////////////////////////////////////////////////
+    __shared__ uint32_t header_dag[MODULE_CACHE];
+
     ////////////////////////////////////////////////////////////////////////
     uint32_t hash[REGS];
     uint32_t digest[LANES];
@@ -221,6 +242,10 @@ void kernel_kawpow_lm1(
     uint64_t const nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
+    uint32_t const* const dag_u32 = (uint32_t*)dag;
+    initialize_header_dag(header_dag, dag_u32, threadIdx.x);
+
+    ////////////////////////////////////////////////////////////////////////
     create_seed(nonce, state_init, header, &lsb, &msb);
 
     ////////////////////////////////////////////////////////////////////////
@@ -230,7 +255,7 @@ void kernel_kawpow_lm1(
         uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
         uint32_t const lane_msb = reg_load(msb, l_id, LANES);
         fill_hash(lane_id, lane_lsb, lane_msb, hash);
-        loop_math(lane_id, dag, hash);
+        loop_math(lane_id, dag, hash, header_dag);
         reduce_hash(l_id == lane_id, hash, digest);
     }
 
@@ -248,7 +273,7 @@ void kernel_kawpow_lm1(
 
 
 __host__
-bool kawpow_lm1(
+bool kawpow_lm3(
     cudaStream_t stream,
     t_result* result,
     uint32_t* const header,
@@ -258,7 +283,7 @@ bool kawpow_lm1(
 {
     uint64_t const nonce{ 0ull };
 
-    kernel_kawpow_lm1<<<blocks, threads, 0, stream>>>
+    kernel_kawpow_lm3<<<blocks, threads, 0, stream>>>
     (
         result,
         (uint4*)header,

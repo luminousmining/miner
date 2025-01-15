@@ -74,7 +74,43 @@ void benchmark::Benchmark::stopChrono()
 }
 
 
-bool benchmark::Benchmark::getCleanResult64(t_result_64** result)
+bool benchmark::Benchmark::initCleanResult(t_result** result)
+{
+    CU_ALLOC_HOST(result, sizeof(t_result));
+
+    (*result)->found = false;
+    (*result)->count = 0u;
+    (*result)->nonce = 0ull;
+
+    return true;
+}
+
+
+bool benchmark::Benchmark::initCleanResult32(t_result_32** result)
+{
+    CU_ALLOC_HOST(result, sizeof(t_result_32));
+
+    (*result)->error = false;
+    (*result)->found = false;
+
+    for (uint32_t i{ 0u }; i < MAX_RESULT_INDEX; ++i)
+    {
+        (*result)->nonce[i] = 0ull;
+    }
+
+    for (uint32_t x{ 0u }; x < MAX_RESULT_INDEX; ++x)
+    {
+        for (uint32_t y{ 0u }; y < MAX_RESULT_INDEX; ++y)
+        {
+            (*result)->mix[x][y] = 0ull;
+        }
+    }
+
+    return true;
+}
+
+
+bool benchmark::Benchmark::initCleanResult64(t_result_64** result)
 {
     CU_ALLOC_HOST(result, sizeof(t_result_64));
 

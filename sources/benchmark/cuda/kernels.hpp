@@ -60,6 +60,25 @@ bool autolykos_v2_lm1(cudaStream_t stream,
 
 ///////////////////////////////////////////////////////////////////////////////
 bool kawpow_lm1(cudaStream_t stream,
+                t_result* result,
+                uint32_t* const header,
+                uint32_t* const dag,
+                uint32_t const blocks,
+                uint32_t const threads);
+bool kawpow_lm2(cudaStream_t stream,
+                t_result* result,
+                uint32_t* const header,
+                uint32_t* const dag,
+                uint32_t const blocks,
+                uint32_t const threads);
+bool kawpow_lm3(cudaStream_t stream,
+                t_result* result,
+                uint32_t* const header,
+                uint32_t* const dag,
+                uint32_t const blocks,
+                uint32_t const threads);
+bool kawpow_lm4(cudaStream_t stream,
+                t_result* result,
                 uint32_t* const header,
                 uint32_t* const dag,
                 uint32_t const blocks,

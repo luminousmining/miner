@@ -6,6 +6,20 @@
 #include <statistical/statistical.hpp>
 
 
+#define RUN_BENCH(name, loopCount, function)                                   \
+    logInfo() << "================================";                           \
+    for (uint32_t i{ 0u }; i < 10u; ++i)                                       \
+    {                                                                          \
+        startChrono(name);                                                     \
+        if (false == (function))                                               \
+        {                                                                      \
+            return false;                                                      \
+        }                                                                      \
+        stopChrono();                                                          \
+    }                                                                          \
+    logInfo() << "================================";
+
+
 namespace benchmark
 {
     struct Benchmark
@@ -32,7 +46,9 @@ namespace benchmark
         void startChrono(std::string const& benchName);
         void stopChrono();
 
-        bool getCleanResult64(t_result_64** result);
+        bool initCleanResult(t_result** result);
+        bool initCleanResult32(t_result_32** result);
+        bool initCleanResult64(t_result_64** result);
 
         void runNvidia();
         bool runNvidiaEthash();

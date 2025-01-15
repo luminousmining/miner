@@ -28,6 +28,9 @@ if (BUILD_NVIDIA)
         benchmark/cuda/common/array.cu
         benchmark/cuda/ethash/ethash_ethminer.cu
         benchmark/cuda/kawpow/kawpow_lm1.cu
+        benchmark/cuda/kawpow/kawpow_lm2.cu
+        benchmark/cuda/kawpow/kawpow_lm3.cu
+        benchmark/cuda/kawpow/kawpow_lm4.cu
     )
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE CUDA_ENABLE)
