@@ -16,9 +16,9 @@ void kernel_init_array(
 
 __host__
 bool init_array(
-        cudaStream_t stream,
-        uint32_t* const dest,
-        uint64_t const size)
+    cudaStream_t stream,
+    uint32_t* const dest,
+    uint64_t const size)
 {
     kernel_init_array<<<1, 1, 0, stream>>>(dest, size);
     CUDA_ER(cudaStreamSynchronize(stream));
