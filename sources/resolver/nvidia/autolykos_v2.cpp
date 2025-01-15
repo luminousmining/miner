@@ -23,6 +23,23 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
     parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
+    uint64_t const totalMemoryNeeded
+    {
+          algo::LEN_HASH_256
+        + parameters.hostDagItemCount * algo::LEN_HASH_256
+        + algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256
+        + sizeof(algo::autolykos_v2::Result)
+    };
+    if (   0ull < deviceMemoryAvailable
+        && totalMemoryNeeded >= deviceMemoryAvailable)
+    {
+        resolverErr()
+            << "Device have not memory size available."
+            << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     if (false == autolykosv2InitMemory(parameters))
     {
         return false;

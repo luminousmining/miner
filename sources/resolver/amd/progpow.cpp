@@ -30,7 +30,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(
         || 0ull == context.dagCache.numberItem
         || 0ull == context.dagCache.size)
     {
-        logErr()
+        resolverErr()
             << "\n"
             << "=========================================================================" << "\n"
             << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
@@ -42,13 +42,13 @@ bool resolver::ResolverAmdProgPOW::updateContext(
         return false;
     }
 
-
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
     if (   0ull < deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        logErr() << "Device have not memory size available."
-                 << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        resolverErr()
+            << "Device have not memory size available."
+                << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 

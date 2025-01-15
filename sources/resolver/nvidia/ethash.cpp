@@ -28,7 +28,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         || context.dagCache.numberItem == 0ull
         || context.dagCache.size == 0ull)
     {
-        logErr()
+        resolverErr()
             << "\n"
             << "=========================================================================" << "\n"
             << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
@@ -44,7 +44,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(
     if (   0ull < deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        logErr()
+        resolverErr()
             << "Device have not memory size available."
             << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
