@@ -26,7 +26,6 @@ current version `v0.6`
   
 + step 2
 - [x] algo progpow_quai
-- [ ] algo ethashb3
 - [ ] profile smart mining
 - [ ] benchmark
 - [ ] optimize progpow
