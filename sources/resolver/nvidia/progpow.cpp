@@ -308,13 +308,14 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
     swapIndexStrean();
     uint64_t nonce{ jobInfo.nonce };
     uint64_t boundary{ jobInfo.boundaryU64 };
+    algo::progpow::Result* result{ &parameters.resultCache[0] };
     void* arguments[]
     {
         &nonce,
         &boundary,
         &parameters.headerCache,
         &parameters.dagCache,
-        &parameters.resultCache[currentIndexStream]
+        &result
     };
     CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
                          blocks,  1u, 1u,

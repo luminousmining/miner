@@ -136,14 +136,14 @@ bool benchmark::Benchmark::initCleanResult64(t_result_64** result)
 
 void benchmark::Benchmark::runNvidia()
 {
-    if (false == runNvidiaEthash())
-    {
-        logErr() << "Nvidia ETHASH failled!";
-    }
-    if (false == runNvidiaAutolykosv2())
-    {
-        logErr() << "Nvidia AutolykosV2 failled!";
-    }
+    // if (false == runNvidiaEthash())
+    // {
+    //     logErr() << "Nvidia ETHASH failled!";
+    // }
+    // if (false == runNvidiaAutolykosv2())
+    // {
+    //     logErr() << "Nvidia AutolykosV2 failled!";
+    // }
     if (false == runNvidiaKawpow())
     {
         logErr() << "Nvidia Kawpow failled!";
