@@ -23,7 +23,7 @@ struct ResolverMeowpowNvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.cuStream[0] = properties.cuStream;
         resolver.cuProperties = &properties.cuProperties;
     }
 
@@ -50,11 +50,11 @@ TEST_F(ResolverMeowpowNvidiaTest, findNonce)
 {
     initializeJob(0x8071000061a58c77);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
@@ -70,11 +70,11 @@ TEST_F(ResolverMeowpowNvidiaTest, aroundFindNonce)
 {
     initializeJob(0x8071000061a58c77 - 1024u);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
@@ -90,11 +90,11 @@ TEST_F(ResolverMeowpowNvidiaTest, notFindNonce)
 {
     initializeJob(0x0071000061a58c77);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_TRUE(stratum.paramSubmit.empty());

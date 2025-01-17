@@ -51,12 +51,12 @@ bool resolver::ResolverNvidiaBlake3::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaBlake3::execute(
+bool resolver::ResolverNvidiaBlake3::executeSync(
     [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    if (false == blake3Search(cuStream,
+    if (false == blake3Search(cuStream[currentIndexStream],
                               parameters,
                               blocks,
                               threads))
@@ -89,6 +89,13 @@ bool resolver::ResolverNvidiaBlake3::execute(
     }
 
     return true;
+}
+
+
+bool resolver::ResolverNvidiaBlake3::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    return executeSync(jobInfo);
 }
 
 

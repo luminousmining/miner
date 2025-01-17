@@ -70,7 +70,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == ethashBuildDag(cuStream,
+    if (false == ethashBuildDag(cuStream[currentIndexStream],
                                 algo::ethash::DAG_ITEM_PARENTS,
                                 castU32(context.dagCache.numberItem)))
     {
@@ -99,10 +99,10 @@ bool resolver::ResolverNvidiaEthash::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaEthash::execute(
+bool resolver::ResolverNvidiaEthash::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
-    if (false == ethashSearch(cuStream,
+    if (false == ethashSearch(cuStream[currentIndexStream],
                               parameters.resultCache,
                               blocks,
                               threads,
@@ -133,6 +133,13 @@ bool resolver::ResolverNvidiaEthash::execute(
     }
 
     return true;
+}
+
+
+bool resolver::ResolverNvidiaEthash::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    return executeSync(jobInfo);
 }
 
 

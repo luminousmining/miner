@@ -16,12 +16,14 @@ bool device::DeviceNvidia::initialize()
     CU_ER(cuInit(0));
     CU_ER(cuDeviceGet(&cuDevice, cuIndex));
     CU_ER(cuCtxCreate(&cuContext, CU_CTX_SCHED_BLOCKING_SYNC, cuDevice));
-    CUDA_ER(cudaStreamCreateWithFlags(&cuStream, cudaStreamNonBlocking));
+    CUDA_ER(cudaStreamCreateWithFlags(&cuStream[0], cudaStreamNonBlocking));
+    CUDA_ER(cudaStreamCreateWithFlags(&cuStream[1], cudaStreamNonBlocking));
 
     resolver::ResolverNvidia* resolverNvidia{ dynamic_cast<resolver::ResolverNvidia*>(resolver) };
     if (nullptr != resolverNvidia)
     {
-        resolverNvidia->cuStream = cuStream;
+        resolverNvidia->cuStream[0] = cuStream[1];
+        resolverNvidia->cuStream[0] = cuStream[1];
         resolverNvidia->cuProperties = &properties;
     }
 

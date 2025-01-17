@@ -33,7 +33,7 @@ bool progpowInitMemory(
     CU_ALLOC(&params.lightCache, context.lightCache.size);
     CU_ALLOC(&params.dagCache, context.dagCache.size);
     CU_ALLOC(&params.headerCache, sizeof(uint32_t) * algo::LEN_HASH_256_WORD_32);
-    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::progpow::Result));
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::progpow::Result) * 2u);
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);

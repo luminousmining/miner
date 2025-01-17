@@ -10,6 +10,7 @@ namespace resolver
     class Resolver
     {
     public:
+        uint32_t    currentIndexStream{ 0u };
         uint32_t    deviceId{ 0u };
         std::string jobId{};
         uint64_t    deviceMemoryAvailable{ 0ull };
@@ -22,6 +23,7 @@ namespace resolver
         Resolver& operator=(Resolver const&) = delete;
         Resolver& operator=(Resolver&&) = delete;
 
+        void swapIndexStrean();
         void setBlocks(uint32_t const newBlocks);
         void setThreads(uint32_t const newThreads);
         uint32_t getBlocks() const;
@@ -30,7 +32,8 @@ namespace resolver
 
         virtual bool updateMemory(stratum::StratumJobInfo const& jobInfo) = 0;
         virtual bool updateConstants(stratum::StratumJobInfo const& jobInfo) = 0;
-        virtual bool execute(stratum::StratumJobInfo const& jobInfo) = 0;
+        virtual bool executeSync(stratum::StratumJobInfo const& jobInfo) = 0;
+        virtual bool executeAsync(stratum::StratumJobInfo const& jobInfo) = 0;
         virtual void submit(stratum::Stratum* const stratum) = 0;
         virtual void submit(stratum::StratumSmartMining* const stratum) = 0;
 

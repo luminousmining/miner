@@ -238,7 +238,7 @@ bool resolver::ResolverAmdEthash::buildSearch()
     return true;
 }
 
-bool resolver::ResolverAmdEthash::execute(
+bool resolver::ResolverAmdEthash::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
     auto& clKernel { kernelGenerator.clKernel };
@@ -262,6 +262,13 @@ bool resolver::ResolverAmdEthash::execute(
     }
 
     return true;
+}
+
+
+bool resolver::ResolverAmdEthash::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    return executeSync(jobInfo);
 }
 
 

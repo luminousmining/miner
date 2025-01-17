@@ -12,7 +12,7 @@ namespace resolver
     struct ResolverNvidia : public resolver::Resolver
     {
     public:
-        cudaStream_t    cuStream{ nullptr };
+        cudaStream_t    cuStream[2u]{ nullptr, nullptr };
         cudaDeviceProp* cuProperties{ nullptr };
 
         virtual ~ResolverNvidia() = default;

@@ -62,7 +62,7 @@ TEST_F(ResolverEthashAmdTest, findNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
@@ -80,7 +80,7 @@ TEST_F(ResolverEthashAmdTest, notFindNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_TRUE(stratum.paramSubmit.empty());

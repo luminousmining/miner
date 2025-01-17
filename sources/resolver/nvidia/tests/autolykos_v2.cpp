@@ -24,7 +24,8 @@ struct ResolverAutolykosv2NvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.cuStream[0] = properties.cuStream;
+        resolver.cuProperties = &properties.cuProperties;
     }
 
     ~ResolverAutolykosv2NvidiaTest()
@@ -59,7 +60,7 @@ TEST_F(ResolverAutolykosv2NvidiaTest, notFindNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_FALSE(stratum.paramSubmit.empty());
@@ -72,7 +73,7 @@ TEST_F(ResolverAutolykosv2NvidiaTest, findNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_TRUE(
