@@ -250,8 +250,6 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(cudaStreamSynchronize(cuStream[0]));
-    CUDA_ER(cudaGetLastError());
     CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
                          blocks,  1u, 1u,
                          threads, 1u, 1u,
@@ -259,6 +257,8 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
                          cuStream[0],
                          arguments,
                          nullptr));
+    CUDA_ER(cudaStreamSynchronize(cuStream[0]));
+    CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
     algo::progpow::Result* resultCache { &parameters.resultCache[0] };
