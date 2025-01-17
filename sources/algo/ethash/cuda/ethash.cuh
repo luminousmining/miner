@@ -15,7 +15,7 @@ bool ethashUpdateConstants(uint32_t const* const header,
 bool ethashBuildDag(cudaStream_t stream,
                     uint32_t const dagItemParents,
                     uint32_t const dagNumberItems);
-bool ethashSearch(cudaStream_t stream,
+void ethashSearch(cudaStream_t stream,
                   algo::ethash::Result* const result,
                   uint32_t const blocks,
                   uint32_t const threads,

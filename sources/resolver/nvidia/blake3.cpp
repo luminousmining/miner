@@ -56,13 +56,12 @@ bool resolver::ResolverNvidiaBlake3::executeSync(
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    if (false == blake3Search(cuStream[currentIndexStream],
-                              parameters,
-                              blocks,
-                              threads))
-    {
-        return false;
-    }
+    blake3Search(cuStream[currentIndexStream],
+                 parameters,
+                 blocks,
+                 threads);
+    CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
+    CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == parameters.resultCache->found)
@@ -95,7 +94,47 @@ bool resolver::ResolverNvidiaBlake3::executeSync(
 bool resolver::ResolverNvidiaBlake3::executeAsync(
     stratum::StratumJobInfo const& jobInfo)
 {
-    return executeSync(jobInfo);
+    ////////////////////////////////////////////////////////////////////////////
+    CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
+    CUDA_ER(cudaGetLastError());
+
+    ////////////////////////////////////////////////////////////////////////////
+    swapIndexStrean();
+     parameters.hostNonce = jobInfo.nonce;
+    blake3Search(cuStream[currentIndexStream],
+                 parameters,
+                 blocks,
+                 threads);
+
+    ////////////////////////////////////////////////////////////////////////////
+    swapIndexStrean();
+     if (true == parameters.resultCache->found)
+    {
+        uint32_t const count
+        {
+            MAX_LIMIT(parameters.resultCache->count, algo::blake3::MAX_RESULT)
+        };
+
+        resultShare.found = true;
+        resultShare.fromGroup = jobInfo.fromGroup;
+        resultShare.toGroup = jobInfo.toGroup;
+        resultShare.count = count;
+        resultShare.jobId = jobInfo.jobIDStr;
+        resultShare.extraNonceSize = jobInfo.extraNonceSize;
+
+        for (uint32_t i { 0u }; i < count; ++i)
+        {
+            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+        }
+
+        parameters.resultCache->found = false;
+        parameters.resultCache->count = 0u;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    swapIndexStrean();
+
+    return true;
 }
 
 
