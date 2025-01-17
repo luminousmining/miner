@@ -56,9 +56,6 @@ bool progpowInitMemory(
     {
         params.resultCache[0].nonces[i] = 0ull;
         params.resultCache[1].nonces[i] = 0ull;
-    }
-    for (uint32_t i{ 0u }; i < 4u; ++i)
-    {
         for (uint32_t x{ 0u }; x < 8u; ++x)
         {
             params.resultCache[0].hash[i][x] = 0u;
