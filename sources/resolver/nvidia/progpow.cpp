@@ -240,13 +240,14 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     ////////////////////////////////////////////////////////////////////////////
     uint64_t nonce{ jobInfo.nonce };
     uint64_t boundary{ jobInfo.boundaryU64 };
+    algo::progpow::Result* result{ &parameters.resultCache[0] };
     void* arguments[]
     {
         &nonce,
         &boundary,
         &parameters.headerCache,
         &parameters.dagCache,
-        &parameters.resultCache[0]
+        &result
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -261,7 +262,7 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::Result* resultCache { &parameters.resultCache[0] };
+    algo::progpow::Result* resultCache{ &parameters.resultCache[0] };
     if (true == resultCache->found)
     {
         uint32_t const count
