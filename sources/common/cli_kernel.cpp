@@ -19,3 +19,14 @@ uint32_t common::Cli::getOccupancyBlocks() const
     }
     return 0u;
 }
+
+
+bool common::Cli::isAutoOccupancy() const
+{
+    bool enable{ false };
+    if (true == contains("occupancy"))
+    {
+        enable = params["occupancy"].as<bool>();
+    }
+    return enable;
+}

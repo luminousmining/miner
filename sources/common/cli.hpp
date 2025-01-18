@@ -103,6 +103,7 @@ namespace common
         // Kernel
         uint32_t getOccupancyThreads() const;
         uint32_t getOccupancyBlocks() const;
+        bool     isAutoOccupancy() const;
 
         // Smart mining settings
         bool isSmartMining() const;

@@ -198,6 +198,7 @@ bool common::KernelGenerator::buildOpenCL(
 
 #if defined(CUDA_ENABLE)
 bool common::KernelGenerator::buildCuda(
+    CUdevice* const cuDevice,
     uint32_t const major,
     uint32_t const minor)
 {
@@ -268,11 +269,12 @@ bool common::KernelGenerator::buildCuda(
     CU_ER(cuModuleGetFunction(&cuFunction, moduleData, mangledName));
 
     ////////////////////////////////////////////////////////////////////////
-    int attributeRegisters{ 0 };
-    CU_ER(cuFuncGetAttribute(&attributeRegisters,
-                             CU_FUNC_ATTRIBUTE_NUM_REGS,
+    CU_ER(cuFuncGetAttribute(&maxThreads,
+                             CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK,
                              cuFunction));
-    logDebug() << "Kernel use " << attributeRegisters << " registers";
+    CU_ER(cuDeviceGetAttribute(&maxBlocks,
+                               CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,
+                               *cuDevice));
 
     ////////////////////////////////////////////////////////////////////////
     chrono.stop();

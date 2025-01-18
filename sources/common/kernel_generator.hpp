@@ -27,6 +27,8 @@ namespace common
         ////////////////////////////////////////////////////////////////////
         cl::Kernel clKernel{};
 #endif
+        int32_t maxThreads{ 1 };
+        int32_t maxBlocks{ 1 };
 
         void clear();
         void setKernelName(std::string const& kernelFunctionName);
@@ -39,8 +41,9 @@ namespace common
                         cl::Context* const clContext);
 #endif
 #if defined(CUDA_ENABLE)
-        bool buildCuda(uint32_t const major,
-                       uint32_t miner);
+        bool buildCuda(CUdevice* const cudevice,
+                       uint32_t const major,
+                       uint32_t const minor);
 #endif
         bool isBuilt() const;
 

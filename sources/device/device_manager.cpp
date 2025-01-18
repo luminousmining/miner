@@ -297,6 +297,7 @@ bool device::DeviceManager::initializeNvidia()
         ////////////////////////////////////////////////////////////////////////////
         if (false == profilerNvidia.init(device->id, &device->deviceNvml))
         {
+            device->deviceNvml = nullptr;
             profilerNvidia.valid = false;
         }
 

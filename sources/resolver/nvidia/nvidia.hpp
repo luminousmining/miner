@@ -14,6 +14,7 @@ namespace resolver
     public:
         cudaStream_t    cuStream[2u]{ nullptr, nullptr };
         cudaDeviceProp* cuProperties{ nullptr };
+        CUdevice*       cuDevice{ nullptr };
 
         virtual ~ResolverNvidia() = default;
 

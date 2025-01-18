@@ -25,6 +25,7 @@ bool device::DeviceNvidia::initialize()
         resolverNvidia->cuStream[0] = cuStream[1];
         resolverNvidia->cuStream[0] = cuStream[1];
         resolverNvidia->cuProperties = &properties;
+        resolverNvidia->cuDevice = &cuDevice;
     }
 
     return true;

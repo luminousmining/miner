@@ -10,8 +10,9 @@
         {                                                                      \
             logErr()                                                           \
                 << "[" << static_cast<int32_t>(nvmlError) << "]"               \
-                << "(" << __FUNCTION__ << ")"                                  \
-                << "(" << #function << ":" << __LINE__ << ")";                 \
+                << "(" << __FUNCTION__ << ":" << __LINE__ << ")"               \
+                << "(" << #function << ":"                                     \
+                << nvmlErrorString(nvmlError);                                 \
         }                                                                      \
     }
 
@@ -23,8 +24,9 @@
         {                                                                      \
             logErr()                                                           \
                 << "[" << static_cast<int32_t>(nvmlError) << "]"               \
-                << "(" << __FUNCTION__ << ")"                                  \
-                << "(" << #function << ":" << __LINE__ << ")";                 \
+                << "(" << __FUNCTION__ << ":" << __LINE__ << ")"               \
+                << "(" << #function << ":"                                     \
+                << nvmlErrorString(nvmlError);                                 \
                 return false;                                                  \
         }                                                                      \
     }

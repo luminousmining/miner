@@ -1,8 +1,9 @@
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
-#include <common/cast.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/log/log.hpp>
+#include <common/cast.hpp>
+#include <common/config.hpp>
 #include <resolver/nvidia/progpow.hpp>
 
 #include <algo/progpow/cuda/progpow.cuh>
@@ -195,7 +196,8 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     IS_NULL(cuProperties);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.buildCuda(castU32(cuProperties->major),
+    if (false == kernelGenerator.buildCuda(cuDevice,
+                                           castU32(cuProperties->major),
                                            castU32(cuProperties->minor)))
     {
         return false;
@@ -209,17 +211,30 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
     if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
 
         ////////////////////////////////////////////////////////////////////////////
-        overrideOccupancy(256u, 4096u);
-
-        ////////////////////////////////////////////////////////////////////////////
         if (false == buildSearch())
         {
             return false;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        if (true == config.occupancy.isAuto)
+        {
+            setThreads(kernelGenerator.maxThreads);
+            setThreads(kernelGenerator.maxBlocks);
+        }
+        else
+        {
+            setThreads(256u);
+            setBlocks(4096u);
+            overrideOccupancy(threads, blocks);
         }
     }
 

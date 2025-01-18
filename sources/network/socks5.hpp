@@ -343,7 +343,7 @@ namespace socks5 {
                 std::bind(Binder{std::move(self)}, GREETING_SENT{}, _1, _2));
         }
 
-        void operator()(Self& self, GREETING_SENT, error_code ec, size_t xfer) {
+        void operator()(Self& self, GREETING_SENT, error_code ec, [[maybe_unused]] size_t xfer) {
             if (ec) return _handler(ec);
             auto buf = _core.greeting_response_buffers();
             boost::asio::async_read(
@@ -351,7 +351,7 @@ namespace socks5 {
                 std::bind(Binder{std::move(self)}, ONGREETING_RESPONSE{}, _1, _2));
         }
 
-        void operator()(Self& self, ONGREETING_RESPONSE, error_code ec, size_t xfer) {
+        void operator()(Self& self, ONGREETING_RESPONSE, error_code ec, [[maybe_unused]] size_t xfer) {
             ec = _core.get_greeting_result(ec);
             if (ec) return _handler(ec);
 
@@ -360,7 +360,7 @@ namespace socks5 {
                 std::bind(Binder{std::move(self)}, REQUEST_SENT{}, _1, _2));
         }
 
-        void operator()(Self& self, REQUEST_SENT, error_code ec, size_t xfer) {
+        void operator()(Self& self, REQUEST_SENT, error_code ec, [[maybe_unused]] size_t xfer) {
             if (ec) return _handler(ec);
             auto buf = _core.response_head_buffers();
             boost::asio::async_read(
@@ -368,7 +368,7 @@ namespace socks5 {
                 std::bind(Binder{std::move(self)}, ON_RESPONSE_HEAD{}, _1, _2));
         }
 
-        void operator()(Self& self, ON_RESPONSE_HEAD, error_code ec, size_t xfer) {
+        void operator()(Self& self, ON_RESPONSE_HEAD, error_code ec, [[maybe_unused]] size_t xfer) {
             if (ec) return _handler(ec);
             auto buf = _core.response_tail_buffers();
             boost::asio::async_read(
@@ -376,7 +376,7 @@ namespace socks5 {
                 std::bind(Binder{std::move(self)}, ON_RESPONSE_TAIL{}, _1, _2));
         }
 
-        void operator()(Self& self, ON_RESPONSE_TAIL, error_code ec, size_t xfer) {
+        void operator()(Self& self, ON_RESPONSE_TAIL, error_code ec, [[maybe_unused]] size_t xfer) {
             _handler(_core.get_result(ec));
         }
     };

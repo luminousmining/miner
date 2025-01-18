@@ -208,7 +208,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    blocks = 4096u;
+    blocks = 1024u;
     threads = 256u;
     nonceComputed = blocks * threads;
 

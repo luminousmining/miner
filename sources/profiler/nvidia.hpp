@@ -27,19 +27,21 @@ namespace profiler
         void* libModule{ nullptr };
 #endif
 
-        using NVMLInitFunc = nvmlReturn_t(*)();
-        using NVMLShutdownFunc = nvmlReturn_t(*)();
-        using NVMLDeviceGetHandleByIndexFunc = nvmlReturn_t(*)(unsigned int, nvmlDevice_t*);
-        using NVMLDeviceGetPowerUsageFunc = nvmlReturn_t(*)(nvmlDevice_t, unsigned int*);
+        using NVMLInit = nvmlReturn_t(*)();
+        using NVMLShutdown = nvmlReturn_t(*)();
+        using NVMLDeviceGetHandleByIndex = nvmlReturn_t(*)(unsigned int, nvmlDevice_t*);
+        using NVMLDeviceGetPowerUsage = nvmlReturn_t(*)(nvmlDevice_t, unsigned int*);
         using NVMLDeviceGetClockInfo = nvmlReturn_t(*)(nvmlDevice_t, nvmlClockType_t, unsigned int*);
         using NVMLDeviceGetUtilizationRates = nvmlReturn_t(*)(void*, void*);
+        using NVMLErrorString = const char*(*)(nvmlReturn_t);
 
-        NVMLInitFunc                   nvmlInit{ nullptr };
-        NVMLShutdownFunc               nvmlShutdown{ nullptr };
-        NVMLDeviceGetHandleByIndexFunc nvmlDeviceGetHandleByIndex{ nullptr };
-        NVMLDeviceGetPowerUsageFunc    nvmlDeviceGetPowerUsage{ nullptr };
+        NVMLInit                       nvmlInit{ nullptr };
+        NVMLShutdown                   nvmlShutdown{ nullptr };
+        NVMLDeviceGetHandleByIndex     nvmlDeviceGetHandleByIndex{ nullptr };
+        NVMLDeviceGetPowerUsage        nvmlDeviceGetPowerUsage{ nullptr };
         NVMLDeviceGetClockInfo         nvmlDeviceGetClockInfo{ nullptr };
         NVMLDeviceGetUtilizationRates  nvmlDeviceGetUtilizationRates{ nullptr };
+        NVMLErrorString                nvmlErrorString{ nullptr };
 
         void* loadFunction(char const* name);
     };
