@@ -24,7 +24,8 @@ struct ResolverBlake3NvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.cuStream[0] = properties.cuStream;
+        resolver.cuProperties = &properties.cuProperties;
     }
 
     ~ResolverBlake3NvidiaTest()
@@ -56,7 +57,7 @@ TEST_F(ResolverBlake3NvidiaTest, test)
     resolver.setBlocks(128);
     resolver.setThreads(128);
 
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_FALSE(stratum.paramSubmit.empty());

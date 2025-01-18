@@ -267,7 +267,7 @@ bool resolver::ResolverAmdAutolykosV2::buildKernelVerify()
 }
 
 
-bool resolver::ResolverAmdAutolykosV2::execute(
+bool resolver::ResolverAmdAutolykosV2::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -315,6 +315,13 @@ bool resolver::ResolverAmdAutolykosV2::execute(
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
+}
+
+
+bool resolver::ResolverAmdAutolykosV2::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    return executeSync(jobInfo);
 }
 
 

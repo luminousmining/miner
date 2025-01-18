@@ -16,7 +16,7 @@ namespace device
         cudaDeviceProp properties;
         CUdevice       cuDevice;
         CUcontext      cuContext{ nullptr };
-        cudaStream_t   cuStream{ nullptr };
+        cudaStream_t   cuStream[2u]{ nullptr, nullptr };
 
     protected:
         bool initialize() final;

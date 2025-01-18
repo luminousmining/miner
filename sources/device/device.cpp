@@ -623,7 +623,7 @@ void device::Device::loopDoWork()
         }
 
         // Execute the kernel to compute nonces.
-        if (false == resolver->execute(currentJobInfo))
+        if (false == resolver->executeAsync(currentJobInfo))
         {
             kill(device::KILL_STATE::KERNEL_EXECUTE_FAIL);
             continue;

@@ -315,7 +315,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     return true;
 }
 
-bool resolver::ResolverAmdProgPOW::execute(
+bool resolver::ResolverAmdProgPOW::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
     auto& clKernel { kernelGenerator.clKernel };
@@ -340,6 +340,13 @@ bool resolver::ResolverAmdProgPOW::execute(
     }
 
     return true;
+}
+
+
+bool resolver::ResolverAmdProgPOW::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    return executeSync(jobInfo);
 }
 
 

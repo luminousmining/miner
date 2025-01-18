@@ -137,7 +137,7 @@ void kernel_blake3_search(
 
 
 __host__
-bool blake3Search(
+void blake3Search(
     cudaStream_t stream,
     resolver::nvidia::blake3::KernelParameters& params,
     uint32_t const blocks,
@@ -150,8 +150,4 @@ bool blake3Search(
         params.hostNonce,
         params.hostFromGroup,
         params.hostToGroup);
-
-    CUDA_ER(cudaStreamSynchronize(stream));
-    CUDA_ER(cudaGetLastError());
-    return true;
 }

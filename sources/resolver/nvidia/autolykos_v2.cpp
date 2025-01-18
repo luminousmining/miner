@@ -26,8 +26,8 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
     uint64_t const totalMemoryNeeded
     {
           algo::LEN_HASH_256
-        + parameters.hostDagItemCount * algo::LEN_HASH_256
-        + algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256
+        + (parameters.hostDagItemCount * algo::LEN_HASH_256)
+        + (algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256)
         + sizeof(algo::autolykos_v2::Result)
     };
     if (   0ull < deviceMemoryAvailable
@@ -45,7 +45,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
         return false;
     }
     ////////////////////////////////////////////////////////////////////////////
-    if (false == autolykosv2BuildDag(cuStream, parameters))
+    if (false == autolykosv2BuildDag(cuStream[currentIndexStream], parameters))
     {
         return false;
     }
@@ -79,12 +79,12 @@ bool resolver::ResolverNvidiaAutolykosV2::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaAutolykosV2::execute(
+bool resolver::ResolverNvidiaAutolykosV2::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    if (false == autolykosv2Search(cuStream, blocks, threads, parameters))
+    if (false == autolykosv2Search(cuStream[currentIndexStream], blocks, threads, parameters))
     {
         return false;
     }
@@ -134,6 +134,13 @@ bool resolver::ResolverNvidiaAutolykosV2::execute(
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
+}
+
+
+bool resolver::ResolverNvidiaAutolykosV2::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    return executeSync(jobInfo);
 }
 
 

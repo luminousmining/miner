@@ -63,7 +63,7 @@ TEST_F(ResolverAutolykosv2AmdTest, findNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_FALSE(stratum.paramSubmit.empty());

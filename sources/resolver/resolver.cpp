@@ -4,6 +4,19 @@
 #include <resolver/resolver.hpp>
 
 
+void resolver::Resolver::swapIndexStrean()
+{
+    if (0u == currentIndexStream)
+    {
+        currentIndexStream = 1u;
+    }
+    else
+    {
+        currentIndexStream = 0u;
+    }
+}
+
+
 void resolver::Resolver::setBlocks(uint32_t const newBlocks)
 {
     blocks = newBlocks;

@@ -23,7 +23,7 @@ struct ResolverFiropowNvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.cuStream[0] = properties.cuStream;
         resolver.cuProperties = &properties.cuProperties;
     }
 
@@ -50,11 +50,11 @@ TEST_F(ResolverFiropowNvidiaTest, findNonce)
 {
     initializeJob(0x0000315900f3f0b8);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
@@ -70,11 +70,11 @@ TEST_F(ResolverFiropowNvidiaTest, notFindNonce)
 {
     initializeJob(0x000100000704757f);
 
-    ASSERT_NE(nullptr, resolver.cuStream);
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_TRUE(stratum.paramSubmit.empty());

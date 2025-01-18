@@ -48,12 +48,13 @@ bool profiler::Nvidia::load()
         return false;
     }
 
-    nvmlInit = reinterpret_cast<NVMLInitFunc>(loadFunction("nvmlInit"));
-    nvmlShutdown = reinterpret_cast<NVMLShutdownFunc>(loadFunction("nvmlShutdown"));
-    nvmlDeviceGetHandleByIndex = reinterpret_cast<NVMLDeviceGetHandleByIndexFunc>(loadFunction("nvmlDeviceGetHandleByIndex"));
-    nvmlDeviceGetPowerUsage = reinterpret_cast<NVMLDeviceGetPowerUsageFunc>(loadFunction("nvmlDeviceGetPowerUsage"));
+    nvmlInit = reinterpret_cast<NVMLInit>(loadFunction("nvmlInit"));
+    nvmlShutdown = reinterpret_cast<NVMLShutdown>(loadFunction("nvmlShutdown"));
+    nvmlDeviceGetHandleByIndex = reinterpret_cast<NVMLDeviceGetHandleByIndex>(loadFunction("nvmlDeviceGetHandleByIndex"));
+    nvmlDeviceGetPowerUsage = reinterpret_cast<NVMLDeviceGetPowerUsage>(loadFunction("nvmlDeviceGetPowerUsage"));
     nvmlDeviceGetClockInfo = reinterpret_cast<NVMLDeviceGetClockInfo>(loadFunction("nvmlDeviceGetClockInfo"));
     nvmlDeviceGetUtilizationRates = reinterpret_cast<NVMLDeviceGetUtilizationRates>(loadFunction("nvmlDeviceGetUtilizationRates"));
+    nvmlErrorString = reinterpret_cast<NVMLErrorString>(loadFunction("nvmlErrorString"));
 
     IS_NULL(nvmlInit);
     IS_NULL(nvmlShutdown);
@@ -61,6 +62,7 @@ bool profiler::Nvidia::load()
     IS_NULL(nvmlDeviceGetPowerUsage);
     IS_NULL(nvmlDeviceGetClockInfo);
     IS_NULL(nvmlDeviceGetUtilizationRates);
+    IS_NULL(nvmlErrorString);
 
     valid = true;
 
@@ -90,7 +92,7 @@ bool profiler::Nvidia::init(
     nvmlDevice_t* device)
 {
     NVML_ER(nvmlInit());
-    NVML_ER(nvmlDeviceGetHandleByIndex(id, device));
+    NVML_ER(nvmlDeviceGetHandleByIndex((unsigned int)id, device));
     return true;
 }
 

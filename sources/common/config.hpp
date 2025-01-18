@@ -45,6 +45,7 @@ namespace common
 
         struct DeviceOccupancy
         {
+            bool                    isAuto{ false };
             std::optional<uint32_t> threads{};
             std::optional<uint32_t> blocks{};
         };

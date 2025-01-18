@@ -33,7 +33,7 @@ bool progpowInitMemory(
     CU_ALLOC(&params.lightCache, context.lightCache.size);
     CU_ALLOC(&params.dagCache, context.dagCache.size);
     CU_ALLOC(&params.headerCache, sizeof(uint32_t) * algo::LEN_HASH_256_WORD_32);
-    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::progpow::Result));
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::progpow::Result) * 2u);
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);
@@ -48,17 +48,18 @@ bool progpowInitMemory(
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    params.resultCache->count = 0u;
-    params.resultCache->found = false;
+    params.resultCache[0].count = 0u;
+    params.resultCache[0].found = false;
+    params.resultCache[1].count = 0u;
+    params.resultCache[1].found = false;
     for (uint32_t i{ 0u }; i < 4u; ++i)
     {
-        params.resultCache->nonces[i] = 0ull;
-    }
-    for (uint32_t i{ 0u }; i < 4u; ++i)
-    {
+        params.resultCache[0].nonces[i] = 0ull;
+        params.resultCache[1].nonces[i] = 0ull;
         for (uint32_t x{ 0u }; x < 8u; ++x)
         {
-            params.resultCache->hash[i][x] = 0u;
+            params.resultCache[0].hash[i][x] = 0u;
+            params.resultCache[1].hash[i][x] = 0u;
         }
     }
 

@@ -1,8 +1,9 @@
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
-#include <common/cast.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/log/log.hpp>
+#include <common/cast.hpp>
+#include <common/config.hpp>
 #include <resolver/nvidia/progpow.hpp>
 
 #include <algo/progpow/cuda/progpow.cuh>
@@ -47,7 +48,8 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
     {
         resolverErr()
             << "Device have not memory size available."
-            << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+            << " Needed " << totalMemoryNeeded
+            << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -71,7 +73,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == progpowBuildDag(cuStream,
+    if (false == progpowBuildDag(cuStream[currentIndexStream],
                                  dagItemParents,
                                  castU32(context.dagCache.numberItem)))
     {
@@ -194,7 +196,8 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     IS_NULL(cuProperties);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.buildCuda(castU32(cuProperties->major),
+    if (false == kernelGenerator.buildCuda(cuDevice,
+                                           castU32(cuProperties->major),
                                            castU32(cuProperties->minor)))
     {
         return false;
@@ -208,17 +211,30 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
     if (currentPeriod != jobInfo.period)
     {
         currentPeriod = jobInfo.period;
 
         ////////////////////////////////////////////////////////////////////////////
-        overrideOccupancy(256u, 4096u);
-
-        ////////////////////////////////////////////////////////////////////////////
         if (false == buildSearch())
         {
             return false;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        if (true == config.occupancy.isAuto)
+        {
+            setThreads(kernelGenerator.maxThreads);
+            setThreads(kernelGenerator.maxBlocks);
+        }
+        else
+        {
+            setThreads(256u);
+            setBlocks(4096u);
+            overrideOccupancy(threads, blocks);
         }
     }
 
@@ -233,19 +249,20 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::execute(
+bool resolver::ResolverNvidiaProgPOW::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     uint64_t nonce{ jobInfo.nonce };
     uint64_t boundary{ jobInfo.boundaryU64 };
+    algo::progpow::Result* result{ &parameters.resultCache[0] };
     void* arguments[]
     {
         &nonce,
         &boundary,
         &parameters.headerCache,
         &parameters.dagCache,
-        &parameters.resultCache
+        &result
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -253,18 +270,19 @@ bool resolver::ResolverNvidiaProgPOW::execute(
                          blocks,  1u, 1u,
                          threads, 1u, 1u,
                          0u,
-                         cuStream,
+                         cuStream[0],
                          arguments,
                          nullptr));
-    CUDA_ER(cudaStreamSynchronize(cuStream));
+    CUDA_ER(cudaStreamSynchronize(cuStream[0]));
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == parameters.resultCache->found)
+    algo::progpow::Result* resultCache{ &parameters.resultCache[0] };
+    if (true == resultCache->found)
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::progpow::MAX_RESULT)
+            MAX_LIMIT(resultCache->count, algo::progpow::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -274,25 +292,92 @@ bool resolver::ResolverNvidiaProgPOW::execute(
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            resultShare.nonces[i] = resultCache->nonces[i];
         }
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
             for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {
-                resultShare.hash[i][j] = parameters.resultCache->hash[i][j];
+                resultShare.hash[i][j] = resultCache->hash[i][j];
             }
         }
 
-        parameters.resultCache->found = false;
-        parameters.resultCache->count = 0u;
+        resultCache->found = false;
+        resultCache->count = 0u;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
+
+bool resolver::ResolverNvidiaProgPOW::executeAsync(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
+    CUDA_ER(cudaGetLastError());
+
+    ////////////////////////////////////////////////////////////////////////////
+    swapIndexStrean();
+    uint64_t nonce{ jobInfo.nonce };
+    uint64_t boundary{ jobInfo.boundaryU64 };
+    algo::progpow::Result* result{ &parameters.resultCache[0] };
+    void* arguments[]
+    {
+        &nonce,
+        &boundary,
+        &parameters.headerCache,
+        &parameters.dagCache,
+        &result
+    };
+    CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
+                         blocks,  1u, 1u,
+                         threads, 1u, 1u,
+                         0u,
+                         cuStream[currentIndexStream],
+                         arguments,
+                         nullptr));
+
+    ////////////////////////////////////////////////////////////////////////////
+    swapIndexStrean();
+    algo::progpow::Result* resultCache { &parameters.resultCache[currentIndexStream] };
+    if (true == resultCache->found)
+    {
+        uint32_t const count
+        {
+            MAX_LIMIT(resultCache->count, algo::progpow::MAX_RESULT)
+        };
+
+        resultShare.found = true;
+        resultShare.count = count;
+        resultShare.jobId = jobInfo.jobIDStr;
+        resultShare.extraNonceSize = jobInfo.extraNonceSize;
+
+        for (uint32_t i { 0u }; i < count; ++i)
+        {
+            resultShare.nonces[i] = resultCache->nonces[i];
+        }
+
+        for (uint32_t i { 0u }; i < count; ++i)
+        {
+            for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+            {
+                resultShare.hash[i][j] = resultCache->hash[i][j];
+            }
+        }
+
+        resultCache->found = false;
+        resultCache->count = 0u;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    swapIndexStrean();
+
+    ////////////////////////////////////////////////////////////////////////////
+    return true;
+}
 
 void resolver::ResolverNvidiaProgPOW::submit(
     stratum::Stratum* const stratum)
@@ -314,7 +399,12 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     case stratum::STRATUM_TYPE::STRATUM:
                     {
                         std::stringstream nonceHexa;
-                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        nonceHexa
+                            << "0x"
+                            << std::hex
+                            << std::setfill('0')
+                            << std::setw(16)
+                            << resultShare.nonces[i];
                         boost::json::array params
                         {
                             resultShare.jobId,

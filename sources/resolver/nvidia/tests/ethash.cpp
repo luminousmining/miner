@@ -25,7 +25,8 @@ struct ResolverEthashNvidiaTest : public testing::Test
         {
             logErr() << "Fail init cuda";
         }
-        resolver.cuStream = properties.cuStream;
+        resolver.cuStream[0] = properties.cuStream;
+        resolver.cuProperties = &properties.cuProperties;
     }
 
     ~ResolverEthashNvidiaTest()
@@ -57,7 +58,7 @@ TEST_F(ResolverEthashNvidiaTest, findNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
@@ -75,7 +76,7 @@ TEST_F(ResolverEthashNvidiaTest, notFindNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    ASSERT_TRUE(resolver.execute(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
     EXPECT_TRUE(stratum.paramSubmit.empty());
