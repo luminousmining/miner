@@ -22,8 +22,8 @@ bool device::DeviceNvidia::initialize()
     resolver::ResolverNvidia* resolverNvidia{ dynamic_cast<resolver::ResolverNvidia*>(resolver) };
     if (nullptr != resolverNvidia)
     {
-        resolverNvidia->cuStream[0] = cuStream[1];
-        resolverNvidia->cuStream[0] = cuStream[1];
+        resolverNvidia->cuStream[0] = cuStream[0];
+        resolverNvidia->cuStream[1] = cuStream[1];
         resolverNvidia->cuProperties = &properties;
         resolverNvidia->cuDevice = &cuDevice;
     }
