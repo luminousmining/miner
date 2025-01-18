@@ -284,6 +284,12 @@ common::Cli::Cli()
             "[OPTIONAL] Set occupancy blocks.\n"
             "--blocks=128"
         )
+        (
+            "occupancy",
+            value<uint32_t>(),
+            "[OPTIONAL] System will define the best occupancy for kernel.\n"
+            "--occupancy=true|false"
+        )
 
         // smart mining
         (
