@@ -115,6 +115,16 @@
                     --rm_rvn_matic=WALLET
 ```
 
+## Kernel Intensity
+```
+--threads arg           [OPTIONAL] Set occupancy threads.
+                    --threads=128
+--blocks arg            [OPTIONAL] Set occupancy blocks.
+                    --blocks=128
+--occupancy arg         [OPTIONAL] System will define the best occupancy for 
+                        kernel.
+```
+
 ## Smart Mining
 ```
 --sm_wallet arg         [OPTIONAL] assign a wallet with a coin.
