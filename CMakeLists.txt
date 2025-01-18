@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(luminousminer VERSION 0.6)
+project(luminousminer VERSION 0.7)
 
 enable_language(C)
 enable_language(CXX)

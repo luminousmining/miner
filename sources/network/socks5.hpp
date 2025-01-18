@@ -376,7 +376,7 @@ namespace socks5 {
                 std::bind(Binder{std::move(self)}, ON_RESPONSE_TAIL{}, _1, _2));
         }
 
-        void operator()(Self& self, ON_RESPONSE_TAIL, error_code ec, [[maybe_unused]] size_t xfer) {
+        void operator()( [[maybe_unused]] Self& self, ON_RESPONSE_TAIL, error_code ec, [[maybe_unused]] size_t xfer) {
             _handler(_core.get_result(ec));
         }
     };
