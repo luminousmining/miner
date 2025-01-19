@@ -55,6 +55,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE_HOST(result);
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -166,10 +167,12 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(headerHash);
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(BHashes);
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -277,5 +280,6 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     CU_SAFE_DELETE(headerHash);
     CU_SAFE_DELETE_HOST(result);
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }

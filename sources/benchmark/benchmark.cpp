@@ -1,3 +1,6 @@
+#include <boost/json.hpp>
+#include <fstream>
+
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/hash_utils.hpp>
 #include <benchmark/benchmark.hpp>
@@ -52,6 +55,7 @@ void benchmark::Benchmark::run()
     {
         runAmd();
     }
+    writeReport();
 }
 
 
@@ -74,11 +78,68 @@ void benchmark::Benchmark::startChrono(std::string const& benchName)
 
 void benchmark::Benchmark::stopChrono()
 {
+    ////////////////////////////////////////////////////////////////////////////
     stats.increaseKernelExecuted();
     stats.stop();
     stats.updateHashrate();
     double const hashrate{ stats.getHashrate() };
     logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
+
+    ////////////////////////////////////////////////////////////////////////////
+    benchmark::Snapshot snapshot{};
+    snapshot.deviceType = currentdeviceType;
+    snapshot.name = currentBenchName;
+    snapshot.threads = threads;
+    snapshot.blocks = blocks;
+    snapshot.perform = hashrate;
+
+    ////////////////////////////////////////////////////////////////////////////
+    snapshots.emplace_back(snapshot);
+}
+
+
+void benchmark::Benchmark::writeReport()
+{
+     boost::json::object root{};
+     boost::json::array nvidia{};
+     boost::json::array amd{};
+
+    for (auto const& snapshot : snapshots)
+    {
+        boost::json::object data{};
+        data["name"] = snapshot.name;
+        data["threads"] = snapshot.threads;
+        data["blocks"] = snapshot.blocks;
+        data["perform"] = snapshot.perform;
+        switch(snapshot.deviceType)
+        {
+            case device::DEVICE_TYPE::NVIDIA:
+            {
+                nvidia.push_back(data);
+                break;
+            }
+            case device::DEVICE_TYPE::AMD:
+            {
+                amd.push_back(data);
+                break;
+            }
+            case device::DEVICE_TYPE::UNKNOW:
+            {
+                break;
+            }
+        }
+    }
+
+    root["nvidia"] = nvidia;
+    root["amd"] = amd;
+    
+    std::ofstream output{ "benchmark.json" };
+    if (output.is_open())
+    {
+        output << boost::json::serialize(root);
+        output.close();
+        logInfo() << "Writen report benchmark.json";
+    }
 }
 
 
@@ -144,6 +205,7 @@ bool benchmark::Benchmark::initCleanResult64(t_result_64** result)
 
 void benchmark::Benchmark::runNvidia()
 {
+    currentdeviceType = device::DEVICE_TYPE::NVIDIA;
     if (false == runNvidiaEthash())
     {
         logErr() << "Nvidia ETHASH failled!";
@@ -161,4 +223,5 @@ void benchmark::Benchmark::runNvidia()
 
 void benchmark::Benchmark::runAmd()
 {
+    currentdeviceType = device::DEVICE_TYPE::AMD;
 }
