@@ -39,16 +39,16 @@ bool benchmark::Benchmark::runNvidiaEthash()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    blocks = 8192u;
-    threads = 256u;
-    nonceComputed = blocks * threads;
-
-    ////////////////////////////////////////////////////////////////////////////
     if (true == init_ethash_ethminer(dagHash, &headerHash, dagItems, boundary))
     {
-        startChrono("ethash_ethminer"s);
-        ethash_ethminer(propertiesNvidia.cuStream, result, blocks, threads);
-        stopChrono();
+        RUN_BENCH
+        (
+            "ethash_ethminer"s,
+            10u,
+            256u,
+            8192u,
+            ethash_ethminer(propertiesNvidia.cuStream, result, blocks, threads)
+        )
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -108,11 +108,6 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    threads = 64u;
-    blocks = algo::autolykos_v2::NONCES_PER_ITER / 64u;
-    nonceComputed = algo::autolykos_v2::NONCES_PER_ITER;
-
-    ////////////////////////////////////////////////////////////////////////////
     if (true == autolykos_v2_mhssamadi_init(boundary))
     {
         if (true == autolykos_v2_mhssamadi_prehash(propertiesNvidia.cuStream,
@@ -122,18 +117,23 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
                                                    period,
                                                    height))
         {
-            startChrono("autolykos_v2: mhssamadi"s);
-            autolykos_v2_mhssamadi(
-                propertiesNvidia.cuStream,
-                result,
-                dagHash->word32,
-                BHashes->word32,
-                headerHash->word32,
-                blocks,
-                threads,
-                period,
-                height);
-            stopChrono();
+            RUN_BENCH
+            (
+                "autolykos_v2: mhssamadi"s,
+                10u,
+                64u,
+                algo::autolykos_v2::NONCES_PER_ITER / 64u,
+                autolykos_v2_mhssamadi(
+                    propertiesNvidia.cuStream,
+                    result,
+                    dagHash->word32,
+                    BHashes->word32,
+                    headerHash->word32,
+                    blocks,
+                    threads,
+                    period,
+                    height)
+            );
         }
     }
 
@@ -147,16 +147,22 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
                                              period,
                                              height))
         {
-            startChrono("autolykos_v2: lm1"s);
-            autolykos_v2_lm1(propertiesNvidia.cuStream,
-                             result,
-                             dagHash->word32,
-                             headerHash->word32,
-                             BHashes->word32,
-                             blocks,
-                             threads,
-                             period);
-            stopChrono();
+            RUN_BENCH
+            (
+                "autolykos_v2: lm1"s,
+                10u,
+                64u,
+                algo::autolykos_v2::NONCES_PER_ITER / 64u,
+                autolykos_v2_lm1(
+                    propertiesNvidia.cuStream,
+                    result,
+                    dagHash->word32,
+                    headerHash->word32,
+                    BHashes->word32,
+                    blocks,
+                    threads,
+                    period)
+            );
         }
     }
 
@@ -208,15 +214,13 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    blocks = 1024u;
-    threads = 256u;
-    nonceComputed = blocks * threads;
-
     // Do not share 4096 first item of dag
     RUN_BENCH
     (
         "kawpow: lm1"s,
         10u,
+        256u,
+        1024u,
         kawpow_lm1(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -229,6 +233,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm2"s,
         10u,
+        256u,
+        1024u,
         kawpow_lm2(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -242,6 +248,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm3"s,
         10u,
+        256u,
+        1024u,
         kawpow_lm3(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -255,6 +263,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm4"s,
         10u,
+        256u,
+        1024u,
         kawpow_lm4(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,

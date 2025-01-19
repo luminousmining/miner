@@ -55,6 +55,14 @@ void benchmark::Benchmark::run()
 }
 
 
+void benchmark::Benchmark::setGrid(uint32_t const _threads, uint32_t _blocks)
+{
+    threads = _threads;
+    blocks = _blocks;
+    nonceComputed = blocks * threads;
+}
+
+
 void benchmark::Benchmark::startChrono(std::string const& benchName)
 {
     currentBenchName = benchName;

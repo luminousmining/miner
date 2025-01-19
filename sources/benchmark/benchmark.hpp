@@ -6,8 +6,9 @@
 #include <statistical/statistical.hpp>
 
 
-#define RUN_BENCH(name, loopCount, function)                                   \
+#define RUN_BENCH(name, loopCount, _threads, _blocks, function)                \
     logInfo() << "================================";                           \
+    setGrid(_threads, _blocks);                                                \
     for (uint32_t i{ 0u }; i < 10u; ++i)                                       \
     {                                                                          \
         startChrono(name);                                                     \
@@ -43,6 +44,7 @@ namespace benchmark
         uint64_t nonceComputed{ 1ull };
         statistical::Statistical stats{};
 
+        void setGrid(uint32_t const _threads, uint32_t _blocks);
         void startChrono(std::string const& benchName);
         void stopChrono();
 
