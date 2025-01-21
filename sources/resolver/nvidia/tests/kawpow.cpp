@@ -25,6 +25,7 @@ struct ResolverKawpowNvidiaTest : public testing::Test
         }
         resolver.cuStream[0] = properties.cuStream;
         resolver.cuProperties = &properties.cuProperties;
+        resolver.cuDevice = &properties.cuDevice;
     }
 
     ~ResolverKawpowNvidiaTest()
@@ -51,7 +52,6 @@ TEST_F(ResolverKawpowNvidiaTest, findNonce)
     initializeJob(0xce00000017f87f70);
 
     ASSERT_NE(nullptr, resolver.cuStream[0]);
-
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));

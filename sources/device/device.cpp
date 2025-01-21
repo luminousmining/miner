@@ -507,9 +507,10 @@ bool device::Device::updateJob()
     bool expectedMemory{ true };
     bool expectedConstants{ true };
 
+    UNIQUE_LOCK(mtxUpdate);
+
     ////////////////////////////////////////////////////////////////////////////
     {
-        UNIQUE_LOCK(mtxUpdate);
         needUpdateMemory.compare_exchange_weak(expectedMemory,
                                                false,
                                                boost::memory_order::seq_cst);
@@ -535,7 +536,7 @@ bool device::Device::updateJob()
         if (false == resolver->updateMemory(currentJobInfo))
         {
             kill(device::KILL_STATE::UPDATE_MEMORY_FAIL);
-            return false;
+            return true;
         }
         chrono.stop();
         deviceInfo() << "Update memory in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
@@ -613,13 +614,6 @@ void device::Device::loopDoWork()
         {
             miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads());
             continue;
-        }
-        else
-        {
-            if (false == isAlive())
-            {
-                return;
-            }
         }
 
         // Execute the kernel to compute nonces.

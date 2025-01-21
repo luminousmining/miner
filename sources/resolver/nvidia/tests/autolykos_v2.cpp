@@ -26,6 +26,7 @@ struct ResolverAutolykosv2NvidiaTest : public testing::Test
         }
         resolver.cuStream[0] = properties.cuStream;
         resolver.cuProperties = &properties.cuProperties;
+        resolver.cuDevice = &properties.cuDevice;
     }
 
     ~ResolverAutolykosv2NvidiaTest()
