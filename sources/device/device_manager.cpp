@@ -389,7 +389,7 @@ void device::DeviceManager::run()
     for (uint32_t i { 0u }; i < device::DeviceManager::MAX_STRATUMS; ++i)
     {
         stratum::StratumJobInfo& jobInfo { jobInfos[i] };
-        jobInfo = cleanJob;
+        jobInfo.copy(cleanJob);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -459,9 +459,9 @@ void device::DeviceManager::onUpdateJob(
     {
         logDebug()
             << "Skip Job"
-            << ", isSameEpoch " << std::boolalpha << isSameEpoch << std::dec
-            << ", isSameHeader " << std::boolalpha << isSameHeader << std::dec
-            << ", isSameHeaderBlob " << std::boolalpha << isSameHeaderBlob << std::dec
+            << ", isSameEpoch " << std::boolalpha << isSameEpoch
+            << ", isSameHeader " << std::boolalpha << isSameHeader
+            << ", isSameHeaderBlob " << std::boolalpha << isSameHeaderBlob
             << newJobInfo;
         return;
     }
@@ -480,7 +480,7 @@ void device::DeviceManager::onUpdateJob(
     if (   true == updateMemory
         || true == updateConstants)
     {
-        jobInfo = newJobInfo;
+        jobInfo.copy(newJobInfo);
         jobInfo.gapNonce /= devices.size();
 #if defined(_DEBUG)
         logInfo() << jobInfo;

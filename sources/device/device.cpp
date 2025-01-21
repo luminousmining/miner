@@ -418,13 +418,18 @@ void device::Device::update(
     bool const constants,
     stratum::StratumJobInfo const& newJobInfo)
 {
-    UNIQUE_LOCK(mtxUpdate);
-
     nextjobInfo = newJobInfo;
     nextjobInfo.nonce += (nextjobInfo.gapNonce * id);
 
-    needUpdateMemory.store(memory, boost::memory_order::seq_cst);
-    needUpdateConstants.store(constants, boost::memory_order::seq_cst);
+    if (true == constants)
+    {
+        synchronizer.constant.add(1ull);
+    }
+    if (true == memory)
+    {
+        synchronizer.memory.add(1ull);
+    }
+    synchronizer.job.add(1ull);
 }
 
 
@@ -487,7 +492,7 @@ void device::Device::run()
 
 void device::Device::waitJob()
 {
-    while (nextjobInfo.epoch == -1)
+    while (true == synchronizer.job.isEqual())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -497,40 +502,44 @@ void device::Device::waitJob()
 void device::Device::cleanJob()
 {
     stratum::StratumJobInfo clean{};
-    nextjobInfo = clean;
+    nextjobInfo.copy(clean);
 }
 
 
 bool device::Device::updateJob()
 {
     common::Chrono chrono{};
-    bool expectedMemory{ true };
-    bool expectedConstants{ true };
-
-    UNIQUE_LOCK(mtxUpdate);
+    bool const needUpdateJob{ synchronizer.job.isEqual() == false ? true : false };
+    bool const needUpdateConstant{ synchronizer.constant.isEqual() == false ? true : false };
+    bool const needUpdateMemory{ synchronizer.memory.isEqual() == false ? true : false };
 
     ////////////////////////////////////////////////////////////////////////////
+    if (false == needUpdateJob)
     {
-        needUpdateMemory.compare_exchange_weak(expectedMemory,
-                                               false,
-                                               boost::memory_order::seq_cst);
-        needUpdateConstants.compare_exchange_weak(expectedConstants,
-                                                  false,
-                                                  boost::memory_order::seq_cst);
-        if (   true == expectedMemory
-            || true == expectedConstants)
-        {
-            if (   nextjobInfo.epoch != currentJobInfo.epoch
-                || nextjobInfo.period != currentJobInfo.period)
-            {
-                miningStats.reset();
-            }
-            currentJobInfo = nextjobInfo;
-        }
+        return false;
+    }
+    if (   false == needUpdateConstant
+        && false == needUpdateMemory)
+    {
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == expectedMemory)
+    uint64_t const currentAtomicJob{ synchronizer.job.get() };
+    uint64_t const currentAtomicConstant{ synchronizer.constant.get() };
+    uint64_t const currentAtomicMemory{ synchronizer.memory.get() };
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (   nextjobInfo.epoch != currentJobInfo.epoch
+        || nextjobInfo.period != currentJobInfo.period)
+    {
+        miningStats.reset();
+    }
+    currentJobInfo.copy(nextjobInfo);
+    synchronizer.job.update(currentAtomicJob);
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (true == needUpdateMemory)
     {
         chrono.start();
         if (false == resolver->updateMemory(currentJobInfo))
@@ -543,7 +552,7 @@ bool device::Device::updateJob()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == expectedConstants)
+    if (true == needUpdateConstant)
     {
         chrono.start();
         resolver->updateJobId(currentJobInfo.jobIDStr);
@@ -554,16 +563,18 @@ bool device::Device::updateJob()
         }
         chrono.stop();
         deviceDebug() << "Update constants in " << chrono.elapsed(common::CHRONO_UNIT::US) << "us";
+        synchronizer.constant.update(currentAtomicConstant);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == expectedMemory)
+    if (true == needUpdateMemory)
     {
         // Reset the stats, the memory was rebuilt
         miningStats.reset();
+        synchronizer.memory.update(currentAtomicMemory);
     }
 
-    return (true == expectedMemory || true == expectedConstants);
+    return true;
 }
 
 

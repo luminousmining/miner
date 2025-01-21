@@ -286,7 +286,7 @@ common::Cli::Cli()
         )
         (
             "occupancy",
-            value<uint32_t>(),
+            value<bool>(),
             "[OPTIONAL] System will define the best occupancy for kernel.\n"
             "--occupancy=true|false"
         )

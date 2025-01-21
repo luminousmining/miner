@@ -7,6 +7,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include <algo/algo_type.hpp>
+#include <common/atomic_pair.hpp>
 #include <device/type.hpp>
 #include <network/network.hpp>
 #include <profiler/nvidia.hpp>
@@ -78,14 +79,19 @@ namespace device
         void loopDoWork();
 
     private:
-        uint32_t                     kernelMinimunExecuteNeeded { 500u };
-        boost::atomic_bool           alive { false };
-        boost::atomic_bool           computing { false };
+        struct AtomicSynchronizer
+        {
+            common::AtomicPair<uint64_t> job{ 0ull };
+            common::AtomicPair<uint64_t> constant{ 0ull };
+            common::AtomicPair<uint64_t> memory{ 0ull };
+        };
+        device::Device::AtomicSynchronizer synchronizer{};
+
+        uint32_t                     kernelMinimunExecuteNeeded{ 500u };
+        boost::atomic_bool           alive{ false };
+        boost::atomic_bool           computing{ false };
         boost::thread                threadDoWork{};
-        boost::mutex                 mtxUpdate{};
         boost::condition_variable    notifyNewWork{};
-        boost::atomic_bool           needUpdateMemory{ false };
-        boost::atomic_bool           needUpdateConstants{ false };
         stratum::Stratum*            stratum{ nullptr };
         stratum::StratumSmartMining* stratumSmartMining{ nullptr };
         stratum::StratumJobInfo      nextjobInfo{};
