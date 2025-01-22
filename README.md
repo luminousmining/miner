@@ -3,6 +3,7 @@
   
 [![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)  
 [![discord](https://discordapp.com/api/guilds/294405146300121088/widget.png)](https://discord.gg/F9y3rxBtGP)  
+![twitter](https://img.shields.io/twitter/follow/luminousmining)  
   
 Welcome on luminousminer, GPU mining open source and free usage!  
 Free GPU mining with 0% fees! Enjoy your mining time.  
