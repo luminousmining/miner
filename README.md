@@ -2,7 +2,7 @@
 <img src="https://raw.githubusercontent.com/isocpp/logos/master/cpp_logo.png" width="40" height="40"> <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Windows_logo_-_2012.png" width="40" height="40"> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/200px-Tux.svg.png" width="40" height="40"> <img src="https://yt3.googleusercontent.com/plecdTXoOOv1_6XxAKdV1Pj3CITx2Be8IR3Npub5Y95e3rFkOWC8eT9l9AXHSVA9gN7QwroA=s900-c-k-c0x00ffffff-no-rj" width="40" height="40">
   
 [![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)  
-[![discord](https://discordapp.com/api/guilds/294405146300121088/widget.png)](https://discord.gg/F9y3rxBtGP)  
+[![discord](https://img.shields.io/discord/919659746003410944?logo=discord&logoColor=white&label=Chat&color=7289da)](https://discord.gg/F9y3rxBtGP)  
 ![twitter](https://img.shields.io/twitter/follow/luminousmining)  
   
 Welcome on luminousminer, GPU mining open source and free usage!  
