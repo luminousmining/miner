@@ -149,11 +149,9 @@ void progpowSearch(
     uint64_t const bytes_result = is_valid(state_init, digest);
 #endif
 
+
     if (bytes_result < boundary)
     {
-        printf("ok\n");
-        printf("bytes_result: %llu\n", bytes_result);
-        printf("boundary: %llu\n", boundary);
         uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
         if (index < algo::progpow::MAX_RESULT)
         {
