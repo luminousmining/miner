@@ -24,6 +24,7 @@ struct ResolverKawpowNvidiaTest : public testing::Test
             logErr() << "Fail init cuda";
         }
         resolver.cuStream[0] = properties.cuStream;
+        resolver.cuStream[1] = properties.cuStream;
         resolver.cuProperties = &properties.cuProperties;
         resolver.cuDevice = &properties.cuDevice;
     }
