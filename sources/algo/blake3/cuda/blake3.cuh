@@ -11,5 +11,6 @@ bool blake3InitMemory(resolver::nvidia::blake3::KernelParameters& params);
 bool blake3UpateConstants(resolver::nvidia::blake3::KernelParameters& params);
 void blake3Search(cudaStream_t stream,
                   resolver::nvidia::blake3::KernelParameters& params,
+                  uint32_t const currentIndexStream,
                   uint32_t const blocks,
                   uint32_t const threads);

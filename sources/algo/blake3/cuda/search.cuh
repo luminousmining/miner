@@ -22,41 +22,32 @@ void chunk_header(
     uint32_t* __restrict__ header)
 {
     ////////////////////////////////////////////////////////////////////////////
-//    printf("=====================TURN[0]=======================\n");
     blake3_compress_pre(
         vector,
         header,
         algo::blake3::BLOCK_LENGTH,
         algo::blake3::FLAG_CHUNK_START);
-//    THD_PRINT_BUFFER("final vector", vector, algo::blake3::VECTOR_LENGTH);
     header += 16;
-//    printf("============================================\n");
 
     ////////////////////////////////////////////////////////////////////////////
     #pragma unroll
     for (uint32_t i{ 0u }; i < algo::blake3::CHUNK_LOOP_HEADER; ++i)
     {
-//        printf("=====================TURN[%u]=======================\n", i + 1u);
         blake3_compress_pre(
             vector,
             header,
             algo::blake3::BLOCK_LENGTH,
             algo::blake3::FLAG_EMPTY);
-//        THD_PRINT_BUFFER("final vector", vector, algo::blake3::VECTOR_LENGTH);
         header += 16;
-//        printf("============================================\n");
     }
 
     ////////////////////////////////////////////////////////////////////////////
-//    printf("=====================TURN[5]=======================\n");
     memset((uint8_t*)header + 6u, 0, 58);
     blake3_compress_pre(
         vector,
         header,
         6u,
         algo::blake3::FLAG_END_AND_ROOT);
-//    THD_PRINT_BUFFER("final vector", vector, algo::blake3::VECTOR_LENGTH);
-//    printf("============================================\n");
 }
 
 
@@ -83,15 +74,9 @@ void kernel_blake3_search(
     __syncthreads();
     ((uint64_t*)buffer)[0] = nonce;
 
-//    printf("*****************************************************\n");
-//    THD_PRINT_BUFFER("header", buffer, algo::LEN_HASH_3072_WORD_32);
-//    THD_PRINT_BUFFER("target", target, algo::LEN_HASH_256_WORD_32);
-//    printf("*****************************************************\n");
-
     ////////////////////////////////////////////////////////////////////////////
     initialize_vector(vector);
     chunk_header(vector, buffer);
-//    THD_PRINT_BUFFER("chunk_header", vector, algo::blake3::VECTOR_LENGTH);
     #pragma unroll
     for (uint32_t i{ 0u }; i < algo::blake3::VECTOR_LENGTH; ++i)
     {
@@ -113,21 +98,16 @@ void kernel_blake3_search(
         hash[i] = vector[i];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-//    THD_PRINT_BUFFER("final hash", hash,   algo::blake3::HASH_LENGTH);
 
     if (true == isLowerOrEqual((uint8_t*)hash, (uint8_t*)target, algo::LEN_HASH_256_WORD_8))
     {
-//        printf("check_target => true - tid[%llu]\n", nonce);
         uint32_t const bigIndex{ (hash[7] >> 24) % algo::blake3::CHAIN_NUMBER };
         if (   (bigIndex / algo::blake3::GROUP_NUMBER) == fromGroup
             && (bigIndex % algo::blake3::GROUP_NUMBER) == toGroup)
         {
-//            printf("check_index => true - tid[%llu]\n", nonce);
             uint32_t const index = atomicAdd((uint32_t*)&result->count, 1);
             if (index < algo::blake3::MAX_RESULT)
             {
-//                printf("====> [check_hash valid] <====\n");
                 result->found = true;
                 result->nonces[index] = nonce;
             }
@@ -140,11 +120,12 @@ __host__
 void blake3Search(
     cudaStream_t stream,
     resolver::nvidia::blake3::KernelParameters& params,
+    uint32_t const currentIndexStream,
     uint32_t const blocks,
     uint32_t const threads)
 {
     kernel_blake3_search<<<blocks, threads, 0, stream>>>(
-        params.resultCache,
+        &params.resultCache[currentIndexStream],
         params.header->word32,
         params.target->word32,
         params.hostNonce,

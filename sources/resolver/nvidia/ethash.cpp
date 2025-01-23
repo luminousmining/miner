@@ -103,18 +103,19 @@ bool resolver::ResolverNvidiaEthash::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
     ethashSearch(cuStream[currentIndexStream],
-                 parameters.resultCache,
+                 &parameters.resultCache[currentIndexStream],
                  blocks,
                  threads,
                  jobInfo.nonce);
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
-    if (true == parameters.resultCache->found)
+    algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
+    if (true == resultCache->found)
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::ethash::MAX_RESULT)
+            MAX_LIMIT(resultCache->count, algo::ethash::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -124,11 +125,11 @@ bool resolver::ResolverNvidiaEthash::executeSync(
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            resultShare.nonces[i] = resultCache->nonces[i];
         }
 
-        parameters.resultCache->found = false;
-        parameters.resultCache->count = 0u;
+        resultCache->found = false;
+        resultCache->count = 0u;
     }
 
     return true;
@@ -145,18 +146,19 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStrean();
     ethashSearch(cuStream[currentIndexStream],
-                 parameters.resultCache,
+                 &parameters.resultCache[currentIndexStream],
                  blocks,
                  threads,
                  jobInfo.nonce);
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStrean();
-    if (true == parameters.resultCache->found)
+    algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
+    if (true == resultCache->found)
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::ethash::MAX_RESULT)
+            MAX_LIMIT(resultCache->count, algo::ethash::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -166,11 +168,11 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            resultShare.nonces[i] = resultCache->nonces[i];
         }
 
-        parameters.resultCache->found = false;
-        parameters.resultCache->count = 0u;
+        resultCache->found = false;
+        resultCache->count = 0u;
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -85,6 +85,48 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
 }
 
 
+bool resolver::ResolverNvidiaProgPOW::updateConstants(
+    stratum::StratumJobInfo const& jobInfo)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (currentPeriod != jobInfo.period)
+    {
+        currentPeriod = jobInfo.period;
+
+        ////////////////////////////////////////////////////////////////////////
+        if (false == buildSearch())
+        {
+            return false;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        if (true == config.occupancy.isAuto)
+        {
+            setThreads(kernelGenerator.maxThreads);
+            setThreads(kernelGenerator.maxBlocks);
+        }
+        else
+        {
+            setThreads(256u);
+            setBlocks(4096u);
+            overrideOccupancy(threads, blocks);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == progpowUpdateConstants(jobInfo.headerHash.word32,
+                                        parameters.headerCache))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
 bool resolver::ResolverNvidiaProgPOW::buildSearch()
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -207,48 +249,6 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
-{
-    ////////////////////////////////////////////////////////////////////////////
-    auto const& config{ common::Config::instance() };
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (currentPeriod != jobInfo.period)
-    {
-        currentPeriod = jobInfo.period;
-
-        ////////////////////////////////////////////////////////////////////////
-        if (false == buildSearch())
-        {
-            return false;
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        if (true == config.occupancy.isAuto)
-        {
-            setThreads(kernelGenerator.maxThreads);
-            setThreads(kernelGenerator.maxBlocks);
-        }
-        else
-        {
-            setThreads(256u);
-            setBlocks(4096u);
-            overrideOccupancy(threads, blocks);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (false == progpowUpdateConstants(jobInfo.headerHash.word32,
-                                        parameters.headerCache))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-
 bool resolver::ResolverNvidiaProgPOW::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
@@ -277,12 +277,11 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::Result* resultCache{ &parameters.resultCache[0] };
-    if (true == resultCache->found)
+    if (true == result->found)
     {
         uint32_t const count
         {
-            MAX_LIMIT(resultCache->count, algo::progpow::MAX_RESULT)
+            MAX_LIMIT(result->count, algo::progpow::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -292,19 +291,19 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = resultCache->nonces[i];
+            resultShare.nonces[i] = result->nonces[i];
         }
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
             for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {
-                resultShare.hash[i][j] = resultCache->hash[i][j];
+                resultShare.hash[i][j] = result->hash[i][j];
             }
         }
 
-        resultCache->found = false;
-        resultCache->count = 0u;
+        result->found = false;
+        result->count = 0u;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -323,7 +322,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
     swapIndexStrean();
     uint64_t nonce{ jobInfo.nonce };
     uint64_t boundary{ jobInfo.boundaryU64 };
-    algo::progpow::Result* result{ &parameters.resultCache[0] };
+    algo::progpow::Result* result{ &parameters.resultCache[currentIndexStream] };
     void* arguments[]
     {
         &nonce,

@@ -16,7 +16,7 @@ bool ethashBuildDag(cudaStream_t stream,
                     uint32_t const dagItemParents,
                     uint32_t const dagNumberItems);
 void ethashSearch(cudaStream_t stream,
-                  algo::ethash::Result* const result,
+                  algo::ethash::Result* result,
                   uint32_t const blocks,
                   uint32_t const threads,
                   uint64_t const startNonce);

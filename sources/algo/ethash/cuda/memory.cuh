@@ -28,7 +28,7 @@ bool ethashInitMemory(
     ////////////////////////////////////////////////////////////////////////////
     CU_ALLOC(&params.lightCache, context.lightCache.size);
     CU_ALLOC(&params.dagCache, context.dagCache.size);
-    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::ethash::Result));
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::ethash::Result) * 2u);
 
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaMemcpy((void*)params.lightCache,
@@ -37,12 +37,15 @@ bool ethashInitMemory(
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    params.resultCache->found = false;
-    params.resultCache->count = 0u;
-    params.resultCache->nonces[0] = 0ull;
-    params.resultCache->nonces[1] = 0ull;
-    params.resultCache->nonces[2] = 0ull;
-    params.resultCache->nonces[3] = 0ull;
+    params.resultCache[0].found = false;
+    params.resultCache[0].count = 0u;
+    params.resultCache[1].found = false;
+    params.resultCache[1].count = 0u;
+    for (uint32_t i{ 0u }; i < algo::ethash::MAX_RESULT; ++i)
+    {
+        params.resultCache[0].nonces[i] = 0ull;
+        params.resultCache[1].nonces[i] = 0ull;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);

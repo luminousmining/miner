@@ -268,7 +268,7 @@ void check_nonce(
 
 __global__
 void search(
-    algo::ethash::Result* const result,
+    algo::ethash::Result* result,
     uint64_t const startNonce)
 {
     uint64_t state[25];
@@ -286,7 +286,7 @@ void search(
 __host__
 void ethashSearch(
     cudaStream_t stream,
-    algo::ethash::Result* const result,
+    algo::ethash::Result* result,
     uint32_t const blocks,
     uint32_t const threads,
     uint64_t const startNonce)

@@ -58,6 +58,7 @@ bool resolver::ResolverNvidiaBlake3::executeSync(
     parameters.hostNonce = jobInfo.nonce;
     blake3Search(cuStream[currentIndexStream],
                  parameters,
+                 currentIndexStream,
                  blocks,
                  threads);
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
@@ -100,19 +101,21 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStrean();
-     parameters.hostNonce = jobInfo.nonce;
+    parameters.hostNonce = jobInfo.nonce;
     blake3Search(cuStream[currentIndexStream],
                  parameters,
+                 currentIndexStream,
                  blocks,
                  threads);
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStrean();
-     if (true == parameters.resultCache->found)
+    algo::blake3::Result* resultCache { &parameters.resultCache[currentIndexStream] };
+    if (true == resultCache->found)
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::blake3::MAX_RESULT)
+            MAX_LIMIT(resultCache->count, algo::blake3::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -124,11 +127,11 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
 
         for (uint32_t i { 0u }; i < count; ++i)
         {
-            resultShare.nonces[i] = parameters.resultCache->nonces[i];
+            resultShare.nonces[i] = resultCache->nonces[i];
         }
 
-        parameters.resultCache->found = false;
-        parameters.resultCache->count = 0u;
+        resultCache->found = false;
+        resultCache->count = 0u;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -156,10 +159,6 @@ void resolver::ResolverNvidiaBlake3::submit(
                 {
                     nonceStr += "0";
                 }
-
-                logInfo() << "extraNonceSize: " << resultShare.extraNonceSize;
-                logInfo() << "nonceHexa: " << nonceStr;
-                logInfo() << "subNonce: " << nonceStr.substr(resultShare.extraNonceSize);
 
                 boost::json::object params{};
                 params["jobId"] = resultShare.jobId;

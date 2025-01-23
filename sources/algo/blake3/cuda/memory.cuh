@@ -24,7 +24,7 @@ bool blake3InitMemory(
     ////////////////////////////////////////////////////////////////////////////
     CU_ALLOC(&params.header, algo::LEN_HASH_3072);
     CU_ALLOC(&params.target, algo::LEN_HASH_256);
-    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::blake3::Result));
+    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::blake3::Result) * 2u);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
