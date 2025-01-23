@@ -255,7 +255,7 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     ////////////////////////////////////////////////////////////////////////////
     uint64_t nonce{ jobInfo.nonce };
     uint64_t boundary{ jobInfo.boundaryU64 };
-    algo::progpow::Result* result{ &parameters.resultCache[0] };
+    algo::progpow::Result* result{ &parameters.resultCache[currentIndexStream] };
     void* arguments[]
     {
         &nonce,
@@ -270,10 +270,10 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
                          blocks,  1u, 1u,
                          threads, 1u, 1u,
                          0u,
-                         cuStream[0],
+                         cuStream[currentIndexStream],
                          arguments,
                          nullptr));
-    CUDA_ER(cudaStreamSynchronize(cuStream[0]));
+    CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
