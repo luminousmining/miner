@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <benchmark/cuda/common/common.cuh>
 #include <benchmark/cuda/kawpow/sequence_math_random.cuh>
+#include <benchmark/cuda/kawpow/common.cuh>
 
 ///////////////////////////////////////////////////////////////////////////////
 #include <benchmark/result.hpp>
@@ -128,23 +129,6 @@ void fill_hash(
     {
         hash[i] = kiss99(data);
     }
-}
-
-
-__device__ __forceinline__
-void initialize_header_dag(
-    uint32_t const thread_id,
-    uint32_t* __restrict__ const header_dag,
-    uint32_t const* __restrict__ const dag)
-{
-    #pragma unroll
-    for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
-    {
-        uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
-        uint32_t const itemDag = dag[indexDAG];
-        header_dag[indexDAG] = itemDag;
-    }
-    __syncthreads();
 }
 
 

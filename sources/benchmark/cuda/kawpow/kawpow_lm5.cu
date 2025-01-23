@@ -60,7 +60,7 @@ uint64_t sha3(
 {
     uint32_t state[STATE_LEN];
 
-    #pragma unroll 1
+    #pragma unroll
     for (uint32_t i = 0u; i < 8u; ++i)
     {
         state[i] = state_init[i];
@@ -132,6 +132,7 @@ void fill_hash(
 }
 
 
+
 __device__ __forceinline__
 void loop_math(
     uint32_t const lane_id,
@@ -192,19 +193,20 @@ void initialize_header_dag(
     uint32_t const* __restrict__ const dag,
     uint32_t const thread_id)
 {
+    uint32_t const thread_gap = thread_id % THREAD_BY_BLOCK;
     #pragma unroll
-    for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
+    for (uint32_t i = 0u; i < HEADER_ITEM_BY_BLOCK_2; ++i)
     {
-        uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
+        uint32_t const indexDAG = i * THREAD_BY_BLOCK + thread_gap;
         uint32_t const itemDag = dag[indexDAG];
         header_dag[indexDAG] = itemDag;
     }
-    __syncthreads();
+    __threadfence_block();
 }
 
 
 __global__
-void kernel_kawpow_lm4(
+void kernel_kawpow_lm5(
     t_result* const __restrict__ result,
     uint4 const* __restrict__ const header,
     uint4 const* __restrict__ const dag,
@@ -257,7 +259,7 @@ void kernel_kawpow_lm4(
 
 
 __host__
-bool kawpow_lm4(
+bool kawpow_lm5(
     cudaStream_t stream,
     t_result* result,
     uint32_t* const header,
@@ -267,7 +269,7 @@ bool kawpow_lm4(
 {
     uint64_t const nonce{ 0ull };
 
-    kernel_kawpow_lm4<<<blocks, threads, 0, stream>>>
+    kernel_kawpow_lm5<<<blocks, threads, 0, stream>>>
     (
         result,
         (uint4*)header,

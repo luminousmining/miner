@@ -67,8 +67,14 @@ void benchmark::Benchmark::setGrid(uint32_t const _threads, uint32_t _blocks)
 }
 
 
-void benchmark::Benchmark::startChrono(std::string const& benchName)
+void benchmark::Benchmark::startChrono(
+    uint32_t const index,
+    std::string const& benchName)
 {
+    if (index == 0u)
+    {
+        return;
+    }
     currentBenchName = benchName;
     stats.setChronoUnit(common::CHRONO_UNIT::US);
     stats.setBatchNonce(nonceComputed);
@@ -76,8 +82,14 @@ void benchmark::Benchmark::startChrono(std::string const& benchName)
 }
 
 
-void benchmark::Benchmark::stopChrono()
+void benchmark::Benchmark::stopChrono(uint32_t const index)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    if (index == 0u)
+    {
+        return;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     stats.increaseKernelExecuted();
     stats.stop();
@@ -206,14 +218,14 @@ bool benchmark::Benchmark::initCleanResult64(t_result_64** result)
 void benchmark::Benchmark::runNvidia()
 {
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
-    if (false == runNvidiaEthash())
-    {
-        logErr() << "Nvidia ETHASH failled!";
-    }
-    if (false == runNvidiaAutolykosv2())
-    {
-        logErr() << "Nvidia AutolykosV2 failled!";
-    }
+    // if (false == runNvidiaEthash())
+    // {
+    //     logErr() << "Nvidia ETHASH failled!";
+    // }
+    // if (false == runNvidiaAutolykosv2())
+    // {
+    //     logErr() << "Nvidia AutolykosV2 failled!";
+    // }
     if (false == runNvidiaKawpow())
     {
         logErr() << "Nvidia Kawpow failled!";

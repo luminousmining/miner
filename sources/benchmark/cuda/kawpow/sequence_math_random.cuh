@@ -1,15 +1,5 @@
 #pragma once
 
-#define COUNT_DAG 64
-#define DAG_SIZE 8388606
-#define HEADER_ITEM_BY_THREAD 16
-#define LANES 16
-#define LANE_ID_MAX 15
-#define MODULE_CACHE 4096
-#define REGS 32
-#define STATE_LEN 25
-#define THREAD_COUNT 256
-
 
 // period      = 321799
 // COUNT_CACHE = 11

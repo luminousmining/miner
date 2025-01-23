@@ -12,14 +12,14 @@
 #define RUN_BENCH(name, loopCount, _threads, _blocks, function)                \
     logInfo() << "================================";                           \
     setGrid(_threads, _blocks);                                                \
-    for (uint32_t i{ 0u }; i < 10u; ++i)                                       \
+    for (uint32_t i{ 0u }; i < loopCount; ++i)                                 \
     {                                                                          \
-        startChrono(name);                                                     \
+        startChrono(i, name);                                                  \
         if (false == (function))                                               \
         {                                                                      \
             return false;                                                      \
         }                                                                      \
-        stopChrono();                                                          \
+        stopChrono(i);                                                         \
     }                                                                          \
     logInfo() << "================================";
 
@@ -61,8 +61,8 @@ namespace benchmark
         void writeReport();
 
         void setGrid(uint32_t const _threads, uint32_t _blocks);
-        void startChrono(std::string const& benchName);
-        void stopChrono();
+        void startChrono(uint32_t const index, std::string const& benchName);
+        void stopChrono(uint32_t const index);
 
         bool initCleanResult(t_result** result);
         bool initCleanResult32(t_result_32** result);

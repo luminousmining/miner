@@ -43,7 +43,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
     {
         RUN_BENCH
         (
-            "ethash_ethminer"s,
+            "ethash: ethminer"s,
             10u,
             256u,
             8192u,
@@ -221,7 +221,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm1"s,
-        10u,
+        100u,
         256u,
         1024u,
         kawpow_lm1(propertiesNvidia.cuStream,
@@ -235,7 +235,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm2"s,
-        10u,
+        100u,
         256u,
         1024u,
         kawpow_lm2(propertiesNvidia.cuStream,
@@ -247,13 +247,28 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     )
     // share 4096 first item of dag
     // No unroll loop
+    // RUN_BENCH
+    // (
+    //     "kawpow: lm3"s,
+    //     100u,
+    //     256u,
+    //     1024u,
+    //     kawpow_lm3(propertiesNvidia.cuStream,
+    //                result,
+    //                headerHash->word32,
+    //                dagHash->word32,
+    //                blocks,
+    //                threads)
+    // )
+    // share 4096 first item of dag
+    // 64 regs by kernel
     RUN_BENCH
     (
-        "kawpow: lm3"s,
-        10u,
+        "kawpow: lm4"s,
+        100u,
         256u,
         1024u,
-        kawpow_lm3(propertiesNvidia.cuStream,
+        kawpow_lm4(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
                    dagHash->word32,
@@ -261,14 +276,14 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                    threads)
     )
     // share 4096 first item of dag
-    // 64 regs by kernel
+    // using __threadfence_block insterad of __syncthreads
     RUN_BENCH
     (
-        "kawpow: lm4"s,
-        10u,
+        "kawpow: lm5"s,
+        100u,
         256u,
         1024u,
-        kawpow_lm4(propertiesNvidia.cuStream,
+        kawpow_lm5(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
                    dagHash->word32,
