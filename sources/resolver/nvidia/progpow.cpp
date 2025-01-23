@@ -97,12 +97,6 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         currentPeriod = jobInfo.period;
 
         ////////////////////////////////////////////////////////////////////////
-        if (false == buildSearch())
-        {
-            return false;
-        }
-
-        ////////////////////////////////////////////////////////////////////////
         if (true == config.occupancy.isAuto)
         {
             setThreads(kernelGenerator.maxThreads);
@@ -113,6 +107,12 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
             setThreads(256u);
             setBlocks(4096u);
             overrideOccupancy(threads, blocks);
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        if (false == buildSearch())
+        {
+            return false;
         }
     }
 
