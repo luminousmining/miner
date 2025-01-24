@@ -6,5 +6,5 @@
 namespace common
 {
     constexpr uint8_t VERSION_MAJOR{ 0 };
-    constexpr uint8_t VERSION_MINOR{ 7 };
+    constexpr uint8_t VERSION_MINOR{ 8 };
 }
