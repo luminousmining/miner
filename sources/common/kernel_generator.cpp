@@ -198,6 +198,7 @@ bool common::KernelGenerator::buildOpenCL(
 
 #if defined(CUDA_ENABLE)
 bool common::KernelGenerator::buildCuda(
+    uint32_t const deviceId,
     CUdevice* const cuDevice,
     uint32_t const major,
     uint32_t const minor)
@@ -279,7 +280,8 @@ bool common::KernelGenerator::buildCuda(
     ////////////////////////////////////////////////////////////////////////
     chrono.stop();
     logInfo()
-        << "Build kernel " << kernelName
+        << "GPU["<< deviceId << "]"
+        << " built kernel " << kernelName
         << " in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
 
     ////////////////////////////////////////////////////////////////////////

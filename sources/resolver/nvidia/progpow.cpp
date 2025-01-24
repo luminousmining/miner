@@ -99,6 +99,10 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         ////////////////////////////////////////////////////////////////////////
         if (true == config.occupancy.isAuto)
         {
+            resolverInfo()
+                << "Using auto occupancy:"
+                << " threads[" << kernelGenerator.maxThreads << "]"
+                << " blocks["<< kernelGenerator.maxBlocks << "]";
             setThreads(kernelGenerator.maxThreads);
             setThreads(kernelGenerator.maxBlocks);
         }
@@ -238,7 +242,8 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     IS_NULL(cuProperties);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.buildCuda(cuDevice,
+    if (false == kernelGenerator.buildCuda(deviceId,
+                                           cuDevice,
                                            castU32(cuProperties->major),
                                            castU32(cuProperties->minor)))
     {

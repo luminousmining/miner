@@ -247,19 +247,19 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     )
     // share 4096 first item of dag
     // No unroll loop
-    // RUN_BENCH
-    // (
-    //     "kawpow: lm3"s,
-    //     100u,
-    //     256u,
-    //     1024u,
-    //     kawpow_lm3(propertiesNvidia.cuStream,
-    //                result,
-    //                headerHash->word32,
-    //                dagHash->word32,
-    //                blocks,
-    //                threads)
-    // )
+    RUN_BENCH
+    (
+        "kawpow: lm3"s,
+        100u,
+        256u,
+        1024u,
+        kawpow_lm3(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
     // share 4096 first item of dag
     // 64 regs by kernel
     RUN_BENCH

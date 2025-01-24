@@ -87,7 +87,7 @@ namespace device
         };
         device::Device::AtomicSynchronizer synchronizer{};
 
-        uint32_t                     kernelMinimunExecuteNeeded{ 500u };
+        uint32_t                     kernelMinimunExecuteNeeded{ 100u };
         boost::atomic_bool           alive{ false };
         boost::atomic_bool           computing{ false };
         boost::thread                threadDoWork{};

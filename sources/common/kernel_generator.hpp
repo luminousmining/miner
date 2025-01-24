@@ -41,7 +41,8 @@ namespace common
                         cl::Context* const clContext);
 #endif
 #if defined(CUDA_ENABLE)
-        bool buildCuda(CUdevice* const cudevice,
+        bool buildCuda(uint32_t const deviceId,
+                       CUdevice* const cudevice,
                        uint32_t const major,
                        uint32_t const minor);
 #endif
