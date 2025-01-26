@@ -57,8 +57,29 @@ bool autolykos_v2_lm1(cudaStream_t stream,
                       uint32_t const blocks,
                       uint32_t const threads,
                       uint32_t const period);
+bool autolykos_v2_init_lm2(algo::hash256 const& boundary);
+bool autolykos_v2_lm2(cudaStream_t stream,
+                      t_result_64* result,
+                      uint32_t* dag,
+                      uint32_t* header,
+                      uint32_t* BHashes,
+                      uint32_t const blocks,
+                      uint32_t const threads,
+                      uint32_t const period);
 
 ///////////////////////////////////////////////////////////////////////////////
+bool kawpow_kawpowminer_1(cudaStream_t stream,
+                          t_result* result,
+                          uint32_t* const header,
+                          uint32_t* const dag,
+                          uint32_t const blocks,
+                          uint32_t const threads);
+bool kawpow_kawpowminer_2(cudaStream_t stream,
+                          t_result* result,
+                          uint32_t* const header,
+                          uint32_t* const dag,
+                          uint32_t const blocks,
+                          uint32_t const threads);
 bool kawpow_lm1(cudaStream_t stream,
                 t_result* result,
                 uint32_t* const header,

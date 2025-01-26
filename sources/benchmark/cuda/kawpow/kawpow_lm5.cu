@@ -132,7 +132,6 @@ void fill_hash(
 }
 
 
-
 __device__ __forceinline__
 void loop_math(
     uint32_t const lane_id,
@@ -151,6 +150,7 @@ void loop_math(
         dagIndex += ((lane_id ^ cnt) % LANES);
 
         uint4 entries = dag[dagIndex];
+        __threadfence_block();
         sequence_math_random(header_dag, hash, &entries);
     }
 }
@@ -193,15 +193,14 @@ void initialize_header_dag(
     uint32_t const* __restrict__ const dag,
     uint32_t const thread_id)
 {
-    uint32_t const thread_gap = thread_id % THREAD_BY_BLOCK;
     #pragma unroll
-    for (uint32_t i = 0u; i < HEADER_ITEM_BY_BLOCK_2; ++i)
+    for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
     {
-        uint32_t const indexDAG = i * THREAD_BY_BLOCK + thread_gap;
+        uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
         uint32_t const itemDag = dag[indexDAG];
         header_dag[indexDAG] = itemDag;
     }
-    __threadfence_block();
+    __syncthreads();
 }
 
 

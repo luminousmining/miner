@@ -24,9 +24,12 @@ if (BUILD_NVIDIA)
         benchmark/cuda/autolykos_v2/autolykos_v2_mhssamadani_prehash.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_mhssamadani.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_prehash_v1.cu
-        benchmark/cuda/autolykos_v2/autolykos_v2_v1.cu
+        benchmark/cuda/autolykos_v2/autolykos_v2_lm1.cu
+        benchmark/cuda/autolykos_v2/autolykos_v2_lm2.cu
         benchmark/cuda/common/array.cu
         benchmark/cuda/ethash/ethash_ethminer.cu
+        benchmark/cuda/kawpow/kawpow_kawpowminer_1.cu
+        benchmark/cuda/kawpow/kawpow_kawpowminer_2.cu
         benchmark/cuda/kawpow/kawpow_lm1.cu
         benchmark/cuda/kawpow/kawpow_lm2.cu
         benchmark/cuda/kawpow/kawpow_lm3.cu

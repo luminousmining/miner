@@ -166,6 +166,34 @@ bool benchmark::Benchmark::runNvidiaAutolykosv2()
             );
         }
     }
+    if (true == autolykos_v2_init_lm2(boundary))
+    {
+        if (true == autolykos_v2_prehash_lm1(propertiesNvidia.cuStream,
+                                             dagHash->word32,
+                                             blocks,
+                                             threads,
+                                             period,
+                                             height))
+        {
+            // using __threadfence_block() on load global memory
+            RUN_BENCH
+            (
+                "autolykos_v2: lm2"s,
+                10u,
+                64u,
+                algo::autolykos_v2::NONCES_PER_ITER / 64u,
+                autolykos_v2_lm2(
+                    propertiesNvidia.cuStream,
+                    result,
+                    dagHash->word32,
+                    headerHash->word32,
+                    BHashes->word32,
+                    blocks,
+                    threads,
+                    period)
+            );
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(headerHash);
@@ -217,6 +245,36 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                        cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
+    // Kawpowminer implementation
+    RUN_BENCH
+    (
+        "kawpow: kawpowminer_1"s,
+        100u,
+        256u,
+        1024u,
+        kawpow_kawpowminer_1(
+            propertiesNvidia.cuStream,
+            result,
+            headerHash->word32,
+            dagHash->word32,
+            blocks,
+            threads)
+    )
+    // Kawpowminer implementation
+    RUN_BENCH
+    (
+        "kawpow: kawpowminer_2"s,
+        100u,
+        256u,
+        1024u,
+        kawpow_kawpowminer_2(
+            propertiesNvidia.cuStream,
+            result,
+            headerHash->word32,
+            dagHash->word32,
+            blocks,
+            threads)
+    )
     // Do not share 4096 first item of dag
     RUN_BENCH
     (
@@ -224,12 +282,13 @@ bool benchmark::Benchmark::runNvidiaKawpow()
         100u,
         256u,
         1024u,
-        kawpow_lm1(propertiesNvidia.cuStream,
-                   result,
-                   headerHash->word32,
-                   dagHash->word32,
-                   blocks,
-                   threads)
+        kawpow_lm1(
+            propertiesNvidia.cuStream,
+            result,
+            headerHash->word32,
+            dagHash->word32,
+            blocks,
+            threads)
     )
     // share 4096 first item of dag
     RUN_BENCH
@@ -276,7 +335,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                    threads)
     )
     // share 4096 first item of dag
-    // using __threadfence_block insterad of __syncthreads
+    // using __threadfence_block on dag load
     RUN_BENCH
     (
         "kawpow: lm5"s,
@@ -290,6 +349,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                    blocks,
                    threads)
     )
+
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(headerHash);

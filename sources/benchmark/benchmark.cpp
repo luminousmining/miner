@@ -222,14 +222,14 @@ void benchmark::Benchmark::runNvidia()
     // {
     //     logErr() << "Nvidia ETHASH failled!";
     // }
-    // if (false == runNvidiaAutolykosv2())
-    // {
-    //     logErr() << "Nvidia AutolykosV2 failled!";
-    // }
-    if (false == runNvidiaKawpow())
+    if (false == runNvidiaAutolykosv2())
     {
-        logErr() << "Nvidia Kawpow failled!";
+        logErr() << "Nvidia AutolykosV2 failled!";
     }
+    // if (false == runNvidiaKawpow())
+    // {
+    //     logErr() << "Nvidia Kawpow failled!";
+    // }
 }
 
 
