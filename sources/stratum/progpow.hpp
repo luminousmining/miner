@@ -17,6 +17,7 @@ namespace stratum
         void onMiningSetDifficulty(boost::json::object const& root) final;
         void onMiningSetTarget(boost::json::object const& root) final;
         void onMiningSetExtraNonce(boost::json::object const& root) final;
+        void onMiningSet(boost::json::object const& root) final;
 
         void miningSubmit(uint32_t const deviceId,
                           boost::json::array const& params) override;

@@ -74,6 +74,7 @@ namespace stratum
         void setExtraNonce(std::string const& paramExtraNonce,
                            uint32_t const paramExtraNonce2Size);
         void doLoopTimeout();
+        void doLoopGetWork();
         bool isValidJob() const;
 
     protected:
@@ -81,11 +82,13 @@ namespace stratum
         boost::mutex        mtxSubmit;
         boost::mutex        mtxDispatchJob{};
         boost::thread       threadTimeout{};
+        boost::thread       threadGetWork{};
         callbackUpdateJob   dispatchJob{ nullptr };
         callbackShareStatus shareStatus{ nullptr };
 
         void onShare(boost::json::object const& root,
                      uint32_t const miningRequestID);
         void loopTimeout();
+        void loopGetWork();
     };
 }

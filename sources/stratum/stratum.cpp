@@ -170,6 +170,16 @@ void stratum::Stratum::loopTimeout()
 }
 
 
+void stratum::Stratum::loopGetWork()
+{
+    boost::chrono::seconds const sec{ 5 };
+    while (true == authenticated)
+    {
+        boost::this_thread::sleep_for(sec);
+    }
+}
+
+
 void stratum::Stratum::onUnknowMethod(
     boost::json::object const& root)
 {
@@ -207,6 +217,14 @@ void stratum::Stratum::doLoopTimeout()
     threadTimeout.interrupt();
     threadTimeout = boost_thread{ boost::bind(&stratum::Stratum::loopTimeout, this) };
 }
+
+
+void stratum::Stratum::doLoopGetWork()
+{
+    threadGetWork.interrupt();
+    threadGetWork = boost_thread{ boost::bind(&stratum::Stratum::loopGetWork, this) };
+}
+
 
 void stratum::Stratum::miningHello()
 {
