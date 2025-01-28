@@ -10,12 +10,6 @@
 #include <stratum/ethash.hpp>
 
 
-stratum::StratumEthash::StratumEthash()
-{
-    stratumName.assign("EthereumStratum/1.0.0");
-}
-
-
 void stratum::StratumEthash::onResponse(
     boost::json::object const& root)
 {

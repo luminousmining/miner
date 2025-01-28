@@ -9,9 +9,6 @@
 stratum::StratumProgpowQuai::StratumProgpowQuai() :
     stratum::StratumProgPOW()
 {
-    stratumType = stratum::STRATUM_TYPE::ETHEREUM_V2;
-    stratumName = "EthereumStratum/2.0.0";
-
     maxPeriod = algo::progpow_quai::MAX_PERIOD;
     maxEpochLength = algo::progpow_quai::EPOCH_LENGTH;
 }

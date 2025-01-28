@@ -15,6 +15,7 @@ miner.exe^
 ## PROGPOW QUAI
 ```bat
 miner.exe^
+ --stratum="v2"^
  --host="quai.luckypool.io"^
  --port=3333^
  --wallet="YOUR_WALLET"^

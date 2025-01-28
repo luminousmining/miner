@@ -114,6 +114,23 @@ bool common::Config::loadCli(int argc, char** argv)
             mining.host.assign(*host);
         }
 
+        auto const stratumType{ cli.getStratumType() };
+        if (std::nullopt != stratumType && false == stratumType->empty())
+        {
+            if ("v1" == stratumType)
+            {
+                mining.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
+            }
+            else if ("v2" == stratumType)
+            {
+                mining.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
+            }
+            else if ("proxy" == stratumType)
+            {
+                mining.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
+            }
+        }
+
         auto const port{ cli.getPort() };
         if (true == algo::inRange(1u, 65535u, port))
         {

@@ -54,6 +54,7 @@ namespace common
 
         // Pool Connection
         std::optional<std::string>   getHost() const;
+        std::optional<std::string>   getStratumType() const;
         bool                         isSSL() const;
         bool                         isStale() const;
         bool                         isSocks5() const;

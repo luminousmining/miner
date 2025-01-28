@@ -32,11 +32,11 @@ namespace stratum
         uint32_t              uuid{ 0u };
         StratumJobInfo        jobInfo{};
         algo::ALGORITHM       algorithm{ algo::ALGORITHM::UNKNOW };
-        stratum::STRATUM_TYPE stratumType{ stratum::STRATUM_TYPE::STRATUM };
+        stratum::STRATUM_TYPE stratumType{ stratum::STRATUM_TYPE::ETHEREUM_V1 };
         std::string           workerName{};
         std::string           wallet{};
         std::string           password{};
-        std::string           stratumName{};
+        std::string           protocol{};
 
         // Stratum EthereumV2
 

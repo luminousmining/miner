@@ -11,9 +11,6 @@ namespace stratum
     struct StratumEthash : public stratum::Stratum
     {
     public:
-        StratumEthash();
-        virtual ~StratumEthash() = default;
-
         void onResponse(boost::json::object const& root) final;
         void onMiningNotify(boost::json::object const& root) final;
         void onMiningSetDifficulty(boost::json::object const& root) final;

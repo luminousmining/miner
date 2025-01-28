@@ -135,7 +135,7 @@ void stratum::Stratum::onConnect()
 
     switch(stratumType)
     {
-        case stratum::STRATUM_TYPE::STRATUM:
+        case stratum::STRATUM_TYPE::ETHEREUM_V1:
         {
             miningSubscribe();
             break;
@@ -143,6 +143,10 @@ void stratum::Stratum::onConnect()
         case stratum::STRATUM_TYPE::ETHEREUM_V2:
         {
             miningHello();
+            break;
+        }
+        case stratum::STRATUM_TYPE::ETHPROXY:
+        {
             break;
         }
     }
@@ -222,7 +226,7 @@ void stratum::Stratum::miningHello()
         { "agent", softwareName },
         { "host", host },
         { "port", port },
-        { "proto", stratumName }
+        { "proto", protocol }
     };
 
     send(root);
@@ -243,9 +247,9 @@ void stratum::Stratum::miningSubscribe()
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
     root["method"] = "mining.subscribe";
 
-    if (stratumType == stratum::STRATUM_TYPE::STRATUM)
+    if (stratumType == stratum::STRATUM_TYPE::ETHEREUM_V1)
     {
-        root["params"] = boost::json::array{ softwareName, stratumName };
+        root["params"] = boost::json::array{ softwareName, protocol };
     }
 
     send(root);

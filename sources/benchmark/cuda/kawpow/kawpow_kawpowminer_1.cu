@@ -45,7 +45,7 @@ typedef struct
 } kiss99_t;
 
 
-typedef struct __align__(16)
+typedef struct alignas(16)
 {
     uint32_t s[PROGPOW_DAG_LOADS];
 } dag_t;

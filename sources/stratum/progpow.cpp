@@ -10,12 +10,6 @@
 #include <stratum/progpow.hpp>
 
 
-stratum::StratumProgPOW::StratumProgPOW()
-{
-    stratumName.assign("EthereumStratum/1.0.0");
-}
-
-
 void stratum::StratumProgPOW::onResponse(
     boost::json::object const& root)
 {
