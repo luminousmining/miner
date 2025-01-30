@@ -32,11 +32,11 @@ namespace stratum
         uint32_t              uuid{ 0u };
         StratumJobInfo        jobInfo{};
         algo::ALGORITHM       algorithm{ algo::ALGORITHM::UNKNOW };
-        stratum::STRATUM_TYPE stratumType{ stratum::STRATUM_TYPE::STRATUM };
+        stratum::STRATUM_TYPE stratumType{ stratum::STRATUM_TYPE::ETHEREUM_V1 };
         std::string           workerName{};
         std::string           wallet{};
         std::string           password{};
-        std::string           stratumName{};
+        std::string           protocol{};
 
         // Stratum EthereumV2
 
@@ -64,6 +64,8 @@ namespace stratum
         virtual void miningHello();
         virtual void miningSubscribe();
         virtual void miningAuthorize();
+        virtual void ethSubmitLogin();
+        virtual void ethGetWork();
 
         void onReceive(std::string const& message) final;
 
@@ -87,5 +89,6 @@ namespace stratum
         void onShare(boost::json::object const& root,
                      uint32_t const miningRequestID);
         void loopTimeout();
+        void loopGetWork();
     };
 }

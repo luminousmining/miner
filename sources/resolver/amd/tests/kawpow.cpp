@@ -3,26 +3,26 @@
 
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
-#include <algo/progpow/progpow_quai.hpp>
+#include <algo/progpow/kawpow.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
-#include <resolver/amd/progpow_quai.hpp>
+#include <resolver/amd/kawpow.hpp>
 #include <resolver/tests/amd.hpp>
 
 
-struct ResolverProgpowQuaiAmdTest : public testing::Test
+struct ResolverKawpowAmdTest : public testing::Test
 {
-    stratum::StratumJobInfo          jobInfo{};
-    resolver::tests::Properties      properties{};
-    resolver::ResolverAmdProgpowQuai resolver{};
-    common::mocker::MockerStratum    stratum{};
+    stratum::StratumJobInfo       jobInfo{};
+    resolver::tests::Properties   properties{};
+    resolver::ResolverAmdKawPOW   resolver{};
+    common::mocker::MockerStratum stratum{};
 
-    ResolverProgpowQuaiAmdTest()
+    ResolverKawpowAmdTest()
     {
         common::setLogLevel(common::TYPELOG::__DEBUG);
     }
 
-    ~ResolverProgpowQuaiAmdTest()
+    ~ResolverKawpowAmdTest()
     {
         properties.clDevice = nullptr;
         properties.clContext = nullptr;
@@ -44,21 +44,22 @@ struct ResolverProgpowQuaiAmdTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber = 48263ull;
-        jobInfo.headerHash = algo::toHash256("ff4fae1e1d8ae09e787b6841cf31db63be783346db3ce6dab388090d7b37f4a2");
-        jobInfo.seedHash = algo::toHash256("0000000000000000000000000000000000000000000000000000000000000000");
-        jobInfo.boundary = algo::toHash256("0000000394427b08175efa9a9eb59b9123e2969bf19bf272b20787ed022fbe6c");
+        jobInfo.blockNumber = 965398ull;
+        jobInfo.headerHash = algo::toHash256("71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb");
+        jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
+        jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow_quai::EPOCH_LENGTH);
-        jobInfo.period = jobInfo.blockNumber / algo::progpow_quai::MAX_PERIOD;
+        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.period = jobInfo.blockNumber / algo::kawpow::MAX_PERIOD;
     }
+
 };
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, findNonce)
+TEST_F(ResolverKawpowAmdTest, findNonce)
 {
     initializeDevice(0u);
-    initializeJob(0x9f990000004cb6fa);
+    initializeJob(0xce00000017f87f70);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -67,17 +68,17 @@ TEST_F(ResolverProgpowQuaiAmdTest, findNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, aroundFindNonce)
+TEST_F(ResolverKawpowAmdTest, aroundFindNonce)
 {
     initializeDevice(0u);
-    initializeJob(0x9f990000004cb6fa - 1024u);
+    initializeJob(0xce00000017f87f70 - 1024u);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -86,17 +87,17 @@ TEST_F(ResolverProgpowQuaiAmdTest, aroundFindNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, notFindNonce)
+TEST_F(ResolverKawpowAmdTest, notFindNonce)
 {
     initializeDevice(0u);
-    initializeJob(0x00000000004cb6fa);
+    initializeJob(0x00000017f87f7a);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -107,13 +108,13 @@ TEST_F(ResolverProgpowQuaiAmdTest, notFindNonce)
 }
 
 
-TEST_F(ResolverProgpowQuaiAmdTest, allDeviceFindNonce)
+TEST_F(ResolverKawpowAmdTest, allDeviceFindNonce)
 {
-    uint32_t const countDevice{ resolver::tests::getDeviceCount() };
-    for (uint32_t index{ 0u }; index < countDevice; ++index)
+    uint32_t const countDevice { resolver::tests::getDeviceCount() };
+    for (uint32_t index { 0u }; index < countDevice; ++index)
     {
         initializeDevice(index);
-        initializeJob(0x9f990000004cb6fa);
+        initializeJob(0xce00000017f87f70);
 
         ASSERT_TRUE(resolver.updateMemory(jobInfo));
         ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -122,9 +123,9 @@ TEST_F(ResolverProgpowQuaiAmdTest, allDeviceFindNonce)
 
         ASSERT_FALSE(stratum.paramSubmit.empty());
 
-        std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
+        std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
         using namespace std::string_literals;
-        EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
+        EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
     }
 }

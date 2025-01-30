@@ -1,4 +1,5 @@
 #include <common/custom.hpp>
+#include <common/config.hpp>
 #include <common/log/log.hpp>
 #include <stratum/stratums.hpp>
 
@@ -7,6 +8,8 @@ stratum::Stratum* stratum::NewStratum(
     algo::ALGORITHM const algorithm)
 {
     stratum::Stratum* stratum { nullptr };
+    auto const& config{ common::Config::instance() };
+
     switch (algorithm)
     {
         case algo::ALGORITHM::SHA256:
@@ -29,6 +32,16 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumProgPOW);
             break;
         }
+        case algo::ALGORITHM::PROGPOWQUAI:
+        {
+            stratum = NEW(stratum::StratumProgpowQuai);
+            break;
+        }
+        case algo::ALGORITHM::PROGPOWZ:
+        {
+            stratum = NEW(stratum::StratumProgpowZ);
+            break;
+        }
         case algo::ALGORITHM::KAWPOW:
         {
             stratum = NEW(stratum::StratumKawPOW);
@@ -47,11 +60,6 @@ stratum::Stratum* stratum::NewStratum(
         case algo::ALGORITHM::EVRPROGPOW:
         {
             stratum = NEW(stratum::StratumEvrprogPOW);
-            break;
-        }
-        case algo::ALGORITHM::PROGPOWQUAI:
-        {
-            stratum = NEW(stratum::StratumProgpowQuai);
             break;
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
@@ -73,6 +81,27 @@ stratum::Stratum* stratum::NewStratum(
     if (nullptr == stratum)
     {
         logErr() << "Fail alloc stratum for " << algorithm;
+    }
+
+    stratum->stratumType = config.mining.stratumType;
+
+    switch(stratum->stratumType)
+    {
+        case stratum::STRATUM_TYPE::ETHEREUM_V1:
+        {
+            stratum->protocol = "EthereumStratum/1.0.0";
+            break;
+        }
+        case stratum::STRATUM_TYPE::ETHEREUM_V2:
+        {
+            stratum->protocol = "EthereumStratum/2.0.0";
+            break;
+        }
+        case stratum::STRATUM_TYPE::ETHPROXY:
+        {
+            stratum->protocol.clear();
+            break;
+        }
     }
 
     return stratum;

@@ -35,3 +35,20 @@ std::string common::boostGetString(
 
     return ""s;
 }
+
+
+std::string common::boostGetString(
+    boost::json::array const& array,
+    uint32_t const index)
+{
+    using namespace std::string_literals;
+
+    if (index >= array.size())
+    {
+        return ""s;
+    }
+
+    auto const str{ array.at(index).as_string() };
+    std::string copy{ str.c_str() };
+    return copy;
+}

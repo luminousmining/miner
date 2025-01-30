@@ -57,6 +57,13 @@ common::Cli::Cli()
             "--host=\"ethw.2miners.com\""
         )
         (
+            "stratum",
+            value<std::string>(),
+            "[OPTIONAL] Stratum type.\n"
+            "Default value is v1.\n"
+            "--stratum=<v1|v2|proxy>"
+        )
+        (
             "port",
             value<uint32_t>(),
             "[MANDATORY] Port of the pool.\n"

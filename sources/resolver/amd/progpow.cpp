@@ -412,7 +412,7 @@ void resolver::ResolverAmdProgPOW::submit(
 
                 switch(stratum->stratumType)
                 {
-                    case stratum::STRATUM_TYPE::STRATUM:
+                    case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
@@ -438,6 +438,10 @@ void resolver::ResolverAmdProgPOW::submit(
                         };
 
                         stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHPROXY:
+                    {
                         break;
                     }
                 }
@@ -469,7 +473,7 @@ void resolver::ResolverAmdProgPOW::submit(
 
                 switch(stratum->stratumPool->stratumType)
                 {
-                    case stratum::STRATUM_TYPE::STRATUM:
+                    case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
@@ -495,6 +499,10 @@ void resolver::ResolverAmdProgPOW::submit(
                         };
 
                         stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHPROXY:
+                    {
                         break;
                     }
                 }

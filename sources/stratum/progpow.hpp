@@ -12,14 +12,12 @@ namespace stratum
     struct StratumProgPOW : public stratum::Stratum
     {
     public:
-        StratumProgPOW();
-        virtual ~StratumProgPOW() = default;
-
         void onResponse(boost::json::object const& root) override;
         void onMiningNotify(boost::json::object const& root) override;
         void onMiningSetDifficulty(boost::json::object const& root) final;
         void onMiningSetTarget(boost::json::object const& root) final;
         void onMiningSetExtraNonce(boost::json::object const& root) final;
+        void onMiningSet(boost::json::object const& root) final;
 
         void miningSubmit(uint32_t const deviceId,
                           boost::json::array const& params) override;
@@ -29,6 +27,10 @@ namespace stratum
         uint32_t maxEthashEpoch { algo::ethash::EPOCH_LENGTH };
         uint32_t maxEpochLength { algo::progpow::EPOCH_LENGTH };
 
+    private:
+        void onResponseEthereumV1(boost::json::object const& root);
+        void onResponseEthereumV2(boost::json::object const& root);
+        void onResponseEthProxy(boost::json::object const& root);
     };
 }
 

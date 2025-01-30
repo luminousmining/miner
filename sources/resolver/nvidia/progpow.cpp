@@ -400,7 +400,7 @@ void resolver::ResolverNvidiaProgPOW::submit(
 
                 switch(stratum->stratumType)
                 {
-                    case stratum::STRATUM_TYPE::STRATUM:
+                    case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa
@@ -428,6 +428,24 @@ void resolver::ResolverNvidiaProgPOW::submit(
                             resultShare.jobId,
                             nonceHexa.str().substr(resultShare.extraNonceSize),
                             stratum->workerID
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHPROXY:
+                    {
+                        std::stringstream nonceHexa;
+                        nonceHexa
+                            << "0x"
+                            << std::hex
+                            << std::setfill('0')
+                            << std::setw(16)
+                            << resultShare.nonces[i];
+                        boost::json::array params
+                        {
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
                         };
 
                         stratum->miningSubmit(deviceId, params);
@@ -462,7 +480,7 @@ void resolver::ResolverNvidiaProgPOW::submit(
 
                 switch(stratum->stratumPool->stratumType)
                 {
-                    case stratum::STRATUM_TYPE::STRATUM:
+                    case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
@@ -488,6 +506,10 @@ void resolver::ResolverNvidiaProgPOW::submit(
                         };
 
                         stratum->miningSubmit(deviceId, params);
+                        break;
+                    }
+                    case stratum::STRATUM_TYPE::ETHPROXY:
+                    {
                         break;
                     }
                 }

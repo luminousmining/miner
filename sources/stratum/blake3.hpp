@@ -10,9 +10,6 @@ namespace stratum
     class StratumBlake3 : public stratum::Stratum
     {
     public:
-        StratumBlake3();
-        ~StratumBlake3() = default;
-
         void onResponse(boost::json::object const& root) final;
         void onMiningNotify(boost::json::object const& root) final;
         void onMiningSetDifficulty(boost::json::object const& root) final;

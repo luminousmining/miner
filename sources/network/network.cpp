@@ -9,6 +9,7 @@
 #include <common/system.hpp>
 #include <network/network.hpp>
 #include <network/socks5.hpp>
+#include <stratum/stratum_type.hpp>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/bind/bind.hpp>
@@ -29,10 +30,12 @@ bool network::NetworkTCPClient::connect()
 {
     try
     {
-        logInfo() << "Connection to " << host << ":" << port;
-
         boost_error_code ec{};
         auto const& config{ common::Config::instance() };
+
+        logInfo()
+            << "Connection to " << host << ":" << port
+            << " with stratum " << stratum::toString(config.mining.stratumType);
 
         if (true == config.mining.secrureConnect)
         {

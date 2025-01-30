@@ -3,12 +3,11 @@
 #include <algo/hash_utils.hpp>
 #include <common/boost_utils.hpp>
 #include <common/custom.hpp>
-#include <stratum/progpow_quai.hpp>
+#include <stratum/progpow_z.hpp>
 
 
-stratum::StratumProgpowQuai::StratumProgpowQuai() :
+stratum::StratumProgpowZ::StratumProgpowZ() :
     stratum::StratumProgPOW()
 {
-    maxPeriod = algo::progpow_quai::MAX_PERIOD;
-    maxEpochLength = algo::progpow_quai::EPOCH_LENGTH;
+    maxEpochLength = algo::ethash::EPOCH_LENGTH;
 }

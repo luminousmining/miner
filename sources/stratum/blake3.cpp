@@ -10,12 +10,6 @@
 #include <stratum/blake3.hpp>
 
 
-stratum::StratumBlake3::StratumBlake3()
-{
-    stratumName.assign("AlephiumStratum/1.0.0");
-}
-
-
 void stratum::StratumBlake3::onResponse(
     [[maybe_unused]] boost::json::object const& root)
 {

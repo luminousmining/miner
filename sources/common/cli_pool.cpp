@@ -49,6 +49,16 @@ std::optional<std::string> common::Cli::getHost() const
 }
 
 
+std::optional<std::string> common::Cli::getStratumType() const
+{
+    if (true == contains("stratum"))
+    {
+        return params["stratum"].as<std::string>();
+    }
+    return std::nullopt;
+}
+
+
 bool common::Cli::isSSL() const
 {
     if (true == contains("ssl"))

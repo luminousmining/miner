@@ -27,4 +27,4 @@ cloreai `miner --host=fr.vipor.net --port=5030 --algo="kawpow" --wallet=YOUR_WAL
 evrprogpow `miner --host=eu.evrpool.com --port=1111 --algo="evrprogpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 
 ## LuckyPool
-progpow-quai `miner --host=quai.luckypool.io --port=3333 --algo="progpow-quai" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`
+progpow-quai `miner --stratum="v2" --host=quai.luckypool.io --port=3333 --algo="progpow-quai" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  

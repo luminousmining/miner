@@ -10,11 +10,7 @@ namespace algo
     {
         constexpr uint32_t MAX_RESULT { 4u };
 
-#if defined(__LIB_CUDA)
-        struct __align__(8) Result
-#else
         struct alignas(8) Result
-#endif
         {
             bool     found{ false };
             uint32_t count{ 0u };

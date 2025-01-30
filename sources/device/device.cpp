@@ -120,6 +120,60 @@ void device::Device::setAlgorithm(
             }
             break;
         }
+        case algo::ALGORITHM::PROGPOWQUAI:
+        {
+            switch (deviceType)
+            {
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaProgpowQuai);
+                    break;
+                }
+#endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverAmdProgpowQuai);
+                    break;
+                }
+#endif
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+        case algo::ALGORITHM::PROGPOWZ:
+        {
+            switch (deviceType)
+            {
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaProgPOW);
+                    break;
+                }
+#endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverAmdProgPOW);
+                    break;
+                }
+#endif
+                case device::DEVICE_TYPE::UNKNOW:
+                {
+                    break;
+                }
+            }
+            break;
+        }
         case algo::ALGORITHM::KAWPOW:
         {
             switch (deviceType)
@@ -218,33 +272,6 @@ void device::Device::setAlgorithm(
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverAmdEvrprogPOW);
-                    break;
-                }
-#endif
-                case device::DEVICE_TYPE::UNKNOW:
-                {
-                    break;
-                }
-            }
-            break;
-        }
-        case algo::ALGORITHM::PROGPOWQUAI:
-        {
-            switch (deviceType)
-            {
-#if defined(CUDA_ENABLE)
-                case device::DEVICE_TYPE::NVIDIA:
-                {
-                    SAFE_DELETE(resolver);
-                    resolver = NEW(resolver::ResolverNvidiaProgpowQuai);
-                    break;
-                }
-#endif
-#if defined(AMD_ENABLE)
-                case device::DEVICE_TYPE::AMD:
-                {
-                    SAFE_DELETE(resolver);
-                    resolver = NEW(resolver::ResolverAmdProgpowQuai);
                     break;
                 }
 #endif
