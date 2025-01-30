@@ -19,6 +19,7 @@ ethash `miner --host=pool.eu.woolypooly.com --port=3096 --algo="ethash" --wallet
 etchash `miner --host=pool.eu.woolypooly.com --port=35000 --algo="etchash" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 ergo `miner --host=pool.eu.woolypooly.com --port=3100 --algo="autolykosv2" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 alephium `miner --host=pool.eu.woolypooly.com --port=3106 --algo="blake3" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+progpow-z `miner --stratum="ethproxy" --host=pool.eu.woolypooly.com --port=3146 --algo="progpow-z" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
   
 ## Vipor
 cloreai `miner --host=fr.vipor.net --port=5030 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
@@ -28,3 +29,4 @@ evrprogpow `miner --host=eu.evrpool.com --port=1111 --algo="evrprogpow" --wallet
 
 ## LuckyPool
 progpow-quai `miner --stratum="v2" --host=quai.luckypool.io --port=3333 --algo="progpow-quai" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+progpow-z `miner --stratum="ethproxy" --host=zano.luckypool.io --port=8866 --algo="progpow-z" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
