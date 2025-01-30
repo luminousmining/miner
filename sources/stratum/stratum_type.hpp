@@ -14,9 +14,16 @@ namespace stratum
 
     enum class ETHEREUM_V2_ID : uint32_t
     {
-        MINING_HELLO = 1,
-        MINING_AUTHORIZE = 2,
-        MINING_NOOP = 7
+        MINING_HELLO = 1u,
+        MINING_AUTHORIZE = 2u,
+        MINING_NOOP = 7u
+    };
+
+    enum class ETHPROXY_ID : uint32_t
+    {
+        EMPTY = 0u,
+        SUBMITLOGIN = 1u,
+        GETWORK = 5u
     };
 
     std::string toString(stratum::STRATUM_TYPE const stratumType);

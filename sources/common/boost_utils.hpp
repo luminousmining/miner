@@ -46,4 +46,6 @@ namespace common
                            std::string const& keyName);
     std::string boostGetString(boost::json::object const& obj,
                                std::string const& keyName);
+    std::string boostGetString(boost::json::array const& obj,
+                               uint32_t const index);
 }

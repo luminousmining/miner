@@ -125,7 +125,7 @@ bool common::Config::loadCli(int argc, char** argv)
             {
                 mining.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V2;
             }
-            else if ("proxy" == stratumType)
+            else if ("ethproxy" == stratumType)
             {
                 mining.stratumType = stratum::STRATUM_TYPE::ETHPROXY;
             }

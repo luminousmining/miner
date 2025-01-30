@@ -64,6 +64,8 @@ namespace stratum
         virtual void miningHello();
         virtual void miningSubscribe();
         virtual void miningAuthorize();
+        virtual void ethSubmitLogin();
+        virtual void ethGetWork();
 
         void onReceive(std::string const& message) final;
 
@@ -74,7 +76,6 @@ namespace stratum
         void setExtraNonce(std::string const& paramExtraNonce,
                            uint32_t const paramExtraNonce2Size);
         void doLoopTimeout();
-        void doLoopGetWork();
         bool isValidJob() const;
 
     protected:
@@ -82,7 +83,6 @@ namespace stratum
         boost::mutex        mtxSubmit;
         boost::mutex        mtxDispatchJob{};
         boost::thread       threadTimeout{};
-        boost::thread       threadGetWork{};
         callbackUpdateJob   dispatchJob{ nullptr };
         callbackShareStatus shareStatus{ nullptr };
 

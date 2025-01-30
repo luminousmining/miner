@@ -147,6 +147,7 @@ void stratum::Stratum::onConnect()
         }
         case stratum::STRATUM_TYPE::ETHPROXY:
         {
+            ethSubmitLogin();
             break;
         }
     }
@@ -219,13 +220,6 @@ void stratum::Stratum::doLoopTimeout()
 }
 
 
-void stratum::Stratum::doLoopGetWork()
-{
-    threadGetWork.interrupt();
-    threadGetWork = boost_thread{ boost::bind(&stratum::Stratum::loopGetWork, this) };
-}
-
-
 void stratum::Stratum::miningHello()
 {
     auto const softwareName
@@ -280,6 +274,31 @@ void stratum::Stratum::miningAuthorize()
     root["id"] = stratum::Stratum::ID_MINING_AUTHORIZE;
     root["method"] = "mining.authorize";
     root["params"] = boost::json::array{ wallet + "." + workerName, password };
+
+    send(root);
+}
+
+
+void stratum::Stratum::ethSubmitLogin()
+{
+    common::Config const& config{ common::Config::instance() };
+
+    boost::json::object root;
+    root["id"] = castU32(stratum::ETHPROXY_ID::SUBMITLOGIN);
+    root["method"] = "eth_submitLogin";
+    root["worker"] = config.mining.workerName;
+    root["params"] = boost::json::array{ config.mining.wallet, config.mining.password };
+
+    send(root);
+}
+
+
+void stratum::Stratum::ethGetWork()
+{
+    boost::json::object root;
+    root["id"] = castU32(stratum::ETHPROXY_ID::GETWORK);
+    root["method"] = "eth_getWork";
+    root["params"] = boost::json::array{};
 
     send(root);
 }
@@ -383,24 +402,61 @@ void stratum::Stratum::onShare(
     boost::json::object const& root,
     uint32_t const miningRequestID)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    using namespace std::string_literals;
+
+    ////////////////////////////////////////////////////////////////////////////
     bool isValid { true };
-    bool const isErrResult
+
+    ////////////////////////////////////////////////////////////////////////////
+    switch(stratumType)
     {
-           false == common::boostJsonContains(root, "result")
-        || true == root.at("result").is_null()
-        || false == root.at("result").as_bool()
-    };
-    bool const isErrError
-    {
-           true == common::boostJsonContains(root, "error")
-        && false == root.at("error").is_null()
-    };
-    if (true == isErrResult || true == isErrError)
-    {
-        logErr() << root;
-        isValid = false;
+        case stratum::STRATUM_TYPE::ETHEREUM_V1:
+        case stratum::STRATUM_TYPE::ETHEREUM_V2:
+        {
+            bool const isErrResult
+            {
+                   false == common::boostJsonContains(root, "result")
+                || true == root.at("result").is_null()
+                || false == root.at("result").as_bool()
+            };
+            bool const isErrError
+            {
+                true == common::boostJsonContains(root, "error")
+                && false == root.at("error").is_null()
+            };
+            if (true == isErrResult || true == isErrError)
+            {
+                logErr() << root;
+                isValid = false;
+            }
+            break;
+        }
+        case stratum::STRATUM_TYPE::ETHPROXY:
+        {
+            bool const isErrResult
+            {
+                   false == common::boostJsonContains(root, "result")
+                || true == root.at("result").is_null()
+                || false == root.at("result").is_object()
+                || "OK"s != root.at("result").as_object().at("status").as_string().c_str()
+            };
+            bool const isErrError
+            {
+                   true == common::boostJsonContains(root, "error")
+                && false == root.at("error").is_null()
+            };
+
+            if (true == isErrResult || true == isErrError)
+            {
+                logErr() << root;
+                isValid = false;
+            }
+            break;
+        }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     if (nullptr != shareStatus)
     {
         shareStatus(isValid, miningRequestID, uuid);
