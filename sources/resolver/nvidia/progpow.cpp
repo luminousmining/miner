@@ -442,6 +442,7 @@ void resolver::ResolverNvidiaProgPOW::submit(
                             << std::setfill('0')
                             << std::setw(16)
                             << resultShare.nonces[i];
+
                         boost::json::array params
                         {
                             nonceHexa.str(),
@@ -510,6 +511,21 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     }
                     case stratum::STRATUM_TYPE::ETHPROXY:
                     {
+                        std::stringstream nonceHexa;
+                        nonceHexa
+                            << "0x"
+                            << std::hex
+                            << std::setfill('0')
+                            << std::setw(16)
+                            << resultShare.nonces[i];
+
+                        boost::json::array params
+                        {
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
+
+                        stratum->miningSubmit(deviceId, params);
                         break;
                     }
                 }
