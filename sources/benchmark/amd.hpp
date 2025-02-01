@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <common/log/log.hpp>
@@ -21,3 +23,4 @@ namespace benchmark
     bool initializeOpenCL(benchmark::PropertiesAmd& properties,
                           uint32_t index = 0u);
 }
+#endif

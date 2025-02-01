@@ -242,7 +242,7 @@ namespace algo
 
         ////////////////////////////////////////////////////////////////////////
         // cppcheck-suppress internalAstError
-        for (int32_t i{ cast32(sizeof(T)) - 1 }; i >= 0; --i)
+        for (int32_t i = cast32(sizeof(T)) - 1; i >= 0; --i)
         {
             auto const value
             {

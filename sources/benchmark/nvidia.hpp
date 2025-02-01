@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(CUDA_ENABLE)
+
 #include <common/error/cuda_error.hpp>
 
 
@@ -18,3 +20,5 @@ namespace benchmark
     bool initializeCuda(benchmark::PropertiesNvidia& properties,
                         uint32_t const index = 0u);
 }
+
+#endif

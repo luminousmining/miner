@@ -8,6 +8,7 @@
 #include <algo/hash_utils.hpp>
 #include <benchmark/result.hpp>
 
+#if defined(CUDA_ENABLE)
 ///////////////////////////////////////////////////////////////////////////////
 bool init_array(cudaStream_t stream,
                 uint32_t* const dest,
@@ -110,3 +111,4 @@ bool kawpow_lm5(cudaStream_t stream,
                 uint32_t* const dag,
                 uint32_t const blocks,
                 uint32_t const threads);
+#endif

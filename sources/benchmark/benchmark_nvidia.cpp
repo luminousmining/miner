@@ -1,3 +1,5 @@
+#if defined(CUDA_ENABLE)
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -358,3 +360,5 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     ////////////////////////////////////////////////////////////////////////////
     return true;
 }
+
+#endif

@@ -54,8 +54,10 @@ namespace device
         stratum::StratumSmartMining                        stratumSmartMining{};
         std::map<uint32_t/*DEVICE ID*/, stratum::Stratum*> stratums{};
 
-#if defined(CUDA_ENABLE)
+#if defined(AMD_ENABLE)
         profiler::Amd            profilerAmd{};
+#endif
+#if defined(CUDA_ENABLE)
         profiler::Nvidia         profilerNvidia{};
 #endif
 

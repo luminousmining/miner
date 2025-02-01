@@ -1,3 +1,5 @@
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <common/custom.hpp>
@@ -89,3 +91,5 @@ bool benchmark::initializeOpenCL(
 
     return true;
 }
+
+#endif

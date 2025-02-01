@@ -11,50 +11,66 @@
 
 
 benchmark::Benchmark::Benchmark(
-    bool const nvidia,
-    bool const amd)
+    [[maybe_unused]] bool const nvidia,
+    [[maybe_unused]] bool const amd)
 {
+#if defined(CUDA_ENABLE)
     enableNvidia = nvidia;
+#endif
+#if defined(AMD_ENABLE)
     enableAmd = amd;
+#endif
 }
 
 
 void benchmark::Benchmark::initializeDevices(uint32_t const deviceIndex)
 {
+#if defined(CUDA_ENABLE)
     if (true == enableNvidia)
     {
         benchmark::initializeCuda(propertiesNvidia, deviceIndex);
     }
+#endif
+#if defined(AMD_ENABLE)
     if (true == enableAmd)
     {
         benchmark::initializeOpenCL(propertiesAmd, deviceIndex);
     }
+#endif
 }
 
 
 void benchmark::Benchmark::destroyDevices()
 {
+#if defined(CUDA_ENABLE)
     if (true == enableNvidia)
     {
         benchmark::cleanUpCuda();
     }
+#endif
+#if defined(AMD_ENABLE)
     if (true == enableAmd)
     {
         benchmark::cleanUpOpenCL(propertiesAmd);
     }
+#endif
 }
 
 
 void benchmark::Benchmark::run()
 {
+#if defined(CUDA_ENABLE)
     if (true == enableNvidia)
     {
         runNvidia();
     }
+#endif
+#if defined(AMD_ENABLE)
     if (true == enableAmd)
     {
         runAmd();
     }
+#endif
     writeReport();
 }
 
@@ -113,8 +129,12 @@ void benchmark::Benchmark::stopChrono(uint32_t const index)
 void benchmark::Benchmark::writeReport()
 {
      boost::json::object root{};
+#if defined(CUDA_ENABLE)
      boost::json::array nvidia{};
+#endif
+#if defined(AMD_ENABLE)
      boost::json::array amd{};
+#endif
 
     for (auto const& snapshot : snapshots)
     {
@@ -125,16 +145,20 @@ void benchmark::Benchmark::writeReport()
         data["perform"] = snapshot.perform;
         switch(snapshot.deviceType)
         {
+#if defined(CUDA_ENABLE)
             case device::DEVICE_TYPE::NVIDIA:
             {
                 nvidia.push_back(data);
                 break;
             }
+#endif
+#if defined(AMD_ENABLE)
             case device::DEVICE_TYPE::AMD:
             {
                 amd.push_back(data);
                 break;
             }
+#endif
             case device::DEVICE_TYPE::UNKNOW:
             {
                 break;
@@ -142,8 +166,12 @@ void benchmark::Benchmark::writeReport()
         }
     }
 
+#if defined(CUDA_ENABLE)
     root["nvidia"] = nvidia;
+#endif
+#if defined(AMD_ENABLE)
     root["amd"] = amd;
+#endif
     
     std::ofstream output{ "benchmark.json" };
     if (output.is_open())
@@ -155,20 +183,25 @@ void benchmark::Benchmark::writeReport()
 }
 
 
-bool benchmark::Benchmark::initCleanResult(t_result** result)
+bool benchmark::Benchmark::initCleanResult(
+    [[maybe_unused]] t_result** result)
 {
+#if defined(CUDA_ENABLE)
     CU_ALLOC_HOST(result, sizeof(t_result));
 
     (*result)->found = false;
     (*result)->count = 0u;
     (*result)->nonce = 0ull;
+#endif
 
     return true;
 }
 
 
-bool benchmark::Benchmark::initCleanResult32(t_result_32** result)
+bool benchmark::Benchmark::initCleanResult32(
+    [[maybe_unused]] t_result_32** result)
 {
+#if defined(CUDA_ENABLE)
     CU_ALLOC_HOST(result, sizeof(t_result_32));
 
     (*result)->error = false;
@@ -186,13 +219,16 @@ bool benchmark::Benchmark::initCleanResult32(t_result_32** result)
             (*result)->mix[x][y] = 0ull;
         }
     }
+#endif
 
     return true;
 }
 
 
-bool benchmark::Benchmark::initCleanResult64(t_result_64** result)
+bool benchmark::Benchmark::initCleanResult64(
+    [[maybe_unused]] t_result_64** result)
 {
+#if defined(CUDA_ENABLE)
     CU_ALLOC_HOST(result, sizeof(t_result_64));
 
     (*result)->error = false;
@@ -210,30 +246,34 @@ bool benchmark::Benchmark::initCleanResult64(t_result_64** result)
             (*result)->mix[x][y] = 0ull;
         }
     }
+#endif
 
     return true;
 }
 
 
+#if defined(CUDA_ENABLE)
 void benchmark::Benchmark::runNvidia()
 {
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
-    // if (false == runNvidiaEthash())
-    // {
-    //     logErr() << "Nvidia ETHASH failled!";
-    // }
+    if (false == runNvidiaEthash())
+    {
+        logErr() << "Nvidia ETHASH failled!";
+    }
     if (false == runNvidiaAutolykosv2())
     {
         logErr() << "Nvidia AutolykosV2 failled!";
     }
-    // if (false == runNvidiaKawpow())
-    // {
-    //     logErr() << "Nvidia Kawpow failled!";
-    // }
+    if (false == runNvidiaKawpow())
+    {
+        logErr() << "Nvidia Kawpow failled!";
+    }
 }
+#endif
 
-
+#if defined(AMD_ENABLE)
 void benchmark::Benchmark::runAmd()
 {
     currentdeviceType = device::DEVICE_TYPE::AMD;
 }
+#endif

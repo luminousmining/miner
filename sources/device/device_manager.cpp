@@ -316,21 +316,28 @@ bool device::DeviceManager::initializeAmd()
 {
     std::vector<cl::Device> cldevices{};
     std::vector<cl::Platform> platforms{};
+
     cl::Platform::get(&platforms);
 
+__TRACE();
     // Get all OpenCL devices
     // GPU AMD
     for (cl::Platform const& platform : platforms)
     {
+__TRACE();
         std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
         if (platformName.find("AMD") == std::string::npos)
         {
             continue;
         }
 
+        logInfo() << platformName;
+__TRACE();
         platform.getDevices(CL_DEVICE_TYPE_GPU, &cldevices);
+        logInfo() << "cldevices.size(): " << cldevices.size();
         for (uint32_t i { 0u }; i < cldevices.size(); ++i)
         {
+__TRACE();
             ////////////////////////////////////////////////////////////////////////////
             device::DeviceAmd* device{ new device::DeviceAmd };
             device->deviceType = device::DEVICE_TYPE::AMD;

@@ -38,10 +38,14 @@ namespace benchmark
     struct Benchmark
     {
     public:
+#if defined(CUDA_ENABLE)
         bool                        enableNvidia{ true };
-        bool                        enableAmd{ true };
         benchmark::PropertiesNvidia propertiesNvidia{};
+#endif
+#if defined(AMD_ENABLE)
+        bool                        enableAmd{ true };
         benchmark::PropertiesAmd    propertiesAmd{};
+#endif
 
         explicit Benchmark(bool const nvidia,
                            bool const amd);
@@ -68,12 +72,15 @@ namespace benchmark
         bool initCleanResult32(t_result_32** result);
         bool initCleanResult64(t_result_64** result);
 
+#if defined(CUDA_ENABLE)
         void runNvidia();
         bool runNvidiaEthash();
         bool runNvidiaAutolykosv2();
         bool runNvidiaKawpow();
+#endif
 
+#if defined(AMD_ENABLE)
         void runAmd();
-
+#endif
     };
 }

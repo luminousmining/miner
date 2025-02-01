@@ -344,9 +344,13 @@ void stratum::StratumProgPOW::onMiningNotify(
             jobInfo.period = jobInfo.blockNumber / maxPeriod;
 
             ////////////////////////////////////////////////////////////////////
-            std::random_device engine;
-            uint64_t const nonce{ std::uniform_int_distribution<uint64_t>()(engine) };
-            setExtraNonce(std::to_string(nonce).substr(6));
+            std::random_device random;
+            std::mt19937 gen{ random() };
+            std::uniform_int_distribution<uint64_t> dis(100000, 999999);
+            uint64_t const nonce{ dis(gen) };
+            std::stringstream ss;
+            ss << std::hex << std::uppercase << std::setw(6) << std::setfill('0') << nonce;
+            setExtraNonce(ss.str());
 
             ////////////////////////////////////////////////////////////////////
             int32_t epoch{ 0 };

@@ -1,3 +1,5 @@
+#if defined(CUDA_ENABLE)
+
 #include <benchmark/nvidia.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/log/log.hpp>
@@ -31,3 +33,5 @@ bool benchmark::initializeCuda(
 
     return true;
 }
+
+#endif
