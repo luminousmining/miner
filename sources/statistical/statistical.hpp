@@ -29,6 +29,8 @@ namespace statistical
         double getHashrate() const;
         ShareInfo& getShares();
         ShareInfo getShares() const;
+        uint64_t getElapsed() const;
+        common::CHRONO_UNIT getChronoUnit() const;
 
     private:
         common::CHRONO_UNIT chronoUnit{ common::CHRONO_UNIT::US };
@@ -36,6 +38,7 @@ namespace statistical
         double              chronoTime{ common::SEC_TO_US };
         ShareInfo           shares{};
         uint64_t            batchNonce{ 0ull };
+        uint64_t            elapsed{ 0ull };
         double              hashrates{ 0.0 };
         uint32_t            kernelExecuted{ 0u };
     };

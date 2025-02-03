@@ -246,12 +246,14 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                        algo::LEN_HASH_256,
                        cudaMemcpyHostToDevice));
 
+    uint32_t const commonLoop{ 10u };
+
     ////////////////////////////////////////////////////////////////////////////
     // Kawpowminer implementation
     RUN_BENCH
     (
         "kawpow: kawpowminer_1"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_kawpowminer_1(
@@ -266,7 +268,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: kawpowminer_2"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_kawpowminer_2(
@@ -281,7 +283,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm1"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_lm1(
@@ -296,7 +298,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm2"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_lm2(propertiesNvidia.cuStream,
@@ -311,7 +313,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm3"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_lm3(propertiesNvidia.cuStream,
@@ -326,7 +328,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm4"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_lm4(propertiesNvidia.cuStream,
@@ -341,10 +343,58 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     RUN_BENCH
     (
         "kawpow: lm5"s,
-        100u,
+        commonLoop,
         256u,
         1024u,
         kawpow_lm5(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    // share 4096 first item of dag
+    // using __threadfence_block on dag load
+    RUN_BENCH
+    (
+        "kawpow: lm6"s,
+        commonLoop,
+        256u,
+        1024u,
+        kawpow_lm6(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    // share 4096 first item of dag
+    // 1 thread resolve multi nonce
+    setMultiplicator(10u);
+    RUN_BENCH
+    (
+        "kawpow: lm7"s,
+        commonLoop,
+        256u,
+        1024u,
+        kawpow_lm7(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    // share 4096 first item of dag
+    // 1 thread resolve multi nonce
+    // using __threadfence_block on dag load
+    setMultiplicator(10u);
+    RUN_BENCH
+    (
+        "kawpow: lm8"s,
+        commonLoop,
+        256u,
+        1024u,
+        kawpow_lm8(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
                    dagHash->word32,

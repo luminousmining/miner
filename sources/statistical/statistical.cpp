@@ -79,7 +79,7 @@ uint64_t statistical::Statistical::getBatchNonce() const
 
 void statistical::Statistical::updateHashrate()
 {
-    uint64_t const elapsed{ chrono.elapsed(chronoUnit) };
+    elapsed = chrono.elapsed(chronoUnit);
     double const diffTime{ chronoTime / elapsed };
     uint64_t const totalNonce{ batchNonce * kernelExecuted };
     double const values{ totalNonce * diffTime };
@@ -113,4 +113,16 @@ statistical::Statistical::ShareInfo& statistical::Statistical::getShares()
 statistical::Statistical::ShareInfo statistical::Statistical::getShares() const
 {
     return shares;
+}
+
+
+uint64_t statistical::Statistical::getElapsed() const
+{
+    return elapsed;
+}
+
+
+common::CHRONO_UNIT statistical::Statistical::getChronoUnit() const
+{
+    return chronoUnit;
 }
