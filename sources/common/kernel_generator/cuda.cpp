@@ -2,12 +2,12 @@
 #include <common/error/nvrtc_error.hpp>
 #include <common/kernel_generator/cuda.hpp>
 #include <common/log/log.hpp>
+#include <common/cast.hpp>
 #include <common/chrono.hpp>
 
 
 bool common::KernelGeneratorCuda::build(
     uint32_t const deviceId,
-    CUdevice* const cuDevice,
     uint32_t const major,
     uint32_t const minor)
 {
@@ -78,14 +78,6 @@ bool common::KernelGeneratorCuda::build(
     CU_ER(cuModuleGetFunction(&cuFunction, moduleData, mangledName));
 
     ////////////////////////////////////////////////////////////////////////
-    CU_ER(cuFuncGetAttribute(&maxThreads,
-                             CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK,
-                             cuFunction));
-    CU_ER(cuDeviceGetAttribute(&maxBlocks,
-                               CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,
-                               *cuDevice));
-
-    ////////////////////////////////////////////////////////////////////////
     chrono.stop();
     logInfo()
         << "GPU["<< deviceId << "]"
@@ -102,4 +94,30 @@ bool common::KernelGeneratorCuda::build(
     ////////////////////////////////////////////////////////////////////////
     built = true;
     return true;
+}
+
+
+bool common::KernelGeneratorCuda::occupancy(
+    CUdevice* const cuDevice,
+    uint32_t const threads,
+    uint32_t const blocks)
+{
+    CU_ER(
+        cuFuncGetAttribute(
+            &maxThreads,
+            CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK,
+            cuFunction));
+    CU_ER(
+        cuDeviceGetAttribute(
+            &maxBlocks,
+            CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,
+            *cuDevice));
+
+    if (   threads != castU32(maxThreads)
+        || blocks != castU32(maxBlocks))
+    {
+        return true;
+    }
+
+    return false;
 }

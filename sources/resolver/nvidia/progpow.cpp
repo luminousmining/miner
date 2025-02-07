@@ -97,27 +97,33 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         currentPeriod = jobInfo.period;
 
         ////////////////////////////////////////////////////////////////////////
-        if (true == config.occupancy.isAuto)
-        {
-            resolverInfo()
-                << "Using auto occupancy:"
-                << " threads[" << kernelGenerator.maxThreads << "]"
-                << " blocks["<< kernelGenerator.maxBlocks << "]";
-            setThreads(kernelGenerator.maxThreads);
-            setThreads(kernelGenerator.maxBlocks);
-        }
-        else
-        {
-            setThreads(256u);
-            setBlocks(4096u);
-            overrideOccupancy(threads, blocks);
-        }
+        setThreads(256u);
+        setBlocks(4096u);
 
         ////////////////////////////////////////////////////////////////////////
         if (false == buildSearch())
         {
             return false;
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        if (true == config.occupancy.isAuto)
+        {
+            if (true == kernelGenerator.occupancy(cuDevice,
+                                                  getThreads(),
+                                                  getBlocks()))
+            {
+                setThreads(kernelGenerator.maxThreads);
+                setBlocks(kernelGenerator.maxBlocks);
+                if (false == buildSearch())
+                {
+                    return false;
+                }
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        overrideOccupancy(getThreads(), getBlocks());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -141,6 +147,9 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
                                              countMath,
                                              regs,
                                              moduleSource);
+
+    ////////////////////////////////////////////////////////////////////////////
+    kernelGenerator.clear();
 
     ////////////////////////////////////////////////////////////////////////////
     switch (progpowVersion)
@@ -243,9 +252,8 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == kernelGenerator.build(deviceId,
-                                           cuDevice,
-                                           castU32(cuProperties->major),
-                                           castU32(cuProperties->minor)))
+                                       castU32(cuProperties->major),
+                                       castU32(cuProperties->minor)))
     {
         return false;
     }

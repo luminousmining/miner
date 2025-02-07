@@ -17,9 +17,11 @@ namespace common
         CUfunction cuFunction{ nullptr };
 
         bool build(uint32_t const deviceId,
-                   CUdevice* const cudevice,
                    uint32_t const major,
                    uint32_t const minor);
+        bool occupancy(CUdevice* const cuDevice,
+                       uint32_t const threads,
+                       uint32_t const blocks);
     private:
         nvrtcProgram cuProgram{};
     };
