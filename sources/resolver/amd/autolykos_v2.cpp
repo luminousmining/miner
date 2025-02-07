@@ -151,7 +151,7 @@ bool resolver::ResolverAmdAutolykosV2::buildDAG()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGeneratorDAG.buildOpenCL(clDevice, clContext))
+    if (false == kernelGeneratorDAG.build(clDevice, clContext))
     {
         return false;
     }
@@ -220,7 +220,7 @@ bool resolver::ResolverAmdAutolykosV2::buildKernelSearch()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGeneratorSearch.buildOpenCL(clDevice, clContext))
+    if (false == kernelGeneratorSearch.build(clDevice, clContext))
     {
         return false;
     }
@@ -257,7 +257,7 @@ bool resolver::ResolverAmdAutolykosV2::buildKernelVerify()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGeneratorVerify.buildOpenCL(clDevice, clContext))
+    if (false == kernelGeneratorVerify.build(clDevice, clContext))
     {
         return false;
     }

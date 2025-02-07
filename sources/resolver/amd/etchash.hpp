@@ -5,7 +5,6 @@
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/ethash/result.hpp>
-#include <common/kernel_generator.hpp>
 #include <resolver/amd/ethash.hpp>
 #include <resolver/amd/ethash_kernel_parameter.hpp>
 

@@ -7,7 +7,7 @@
 #include <algo/ethash/ethash.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <algo/progpow/result.hpp>
-#include <common/kernel_generator.hpp>
+#include <common/kernel_generator/opencl.hpp>
 #include <resolver/amd/amd.hpp>
 #include <resolver/amd/progpow_kernel_parameter.hpp>
 
@@ -42,7 +42,7 @@ namespace resolver
         algo::progpow::ResultShare resultShare{};
         resolver::amd::progpow::KernelParameters parameters{};
         algo::DagContext context{};
-        common::KernelGenerator kernelGenerator{};
+        common::KernelGeneratorOpenCL kernelGenerator{};
 
         virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
 

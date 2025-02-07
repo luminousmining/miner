@@ -4,48 +4,21 @@
 #include <string>
 #include <list>
 
-#if defined(CUDA_ENABLE)
-    #include <cuda.h>
-    #include <cuda_runtime.h>
-    #include <nvrtc.h>
-#endif
-#if defined(AMD_ENABLE)
-    #include <CL/opencl.hpp>
-#endif
-
 
 namespace common
 {
     struct KernelGenerator
     {
     public:
-#if defined(CUDA_ENABLE)
-        ////////////////////////////////////////////////////////////////////
-        CUfunction cuFunction{ nullptr };
-#endif
-#if defined(AMD_ENABLE)
-        ////////////////////////////////////////////////////////////////////
-        cl::Kernel clKernel{};
-#endif
         int32_t maxThreads{ 1 };
         int32_t maxBlocks{ 1 };
 
-        void clear();
+        virtual void clear();
         void setKernelName(std::string const& kernelFunctionName);
         void addInclude(std::string const& pathInclude);
         void declareDefine(std::string const& name);
         void appendLine(std::string const& line);
         bool appendFile(std::string const& pathFileName);
-#if defined(AMD_ENABLE)
-        bool buildOpenCL(cl::Device* const clDevice,
-                        cl::Context* const clContext);
-#endif
-#if defined(CUDA_ENABLE)
-        bool buildCuda(uint32_t const deviceId,
-                       CUdevice* const cudevice,
-                       uint32_t const major,
-                       uint32_t const minor);
-#endif
         bool isBuilt() const;
 
         template<typename T>
@@ -65,16 +38,7 @@ namespace common
             defines[name] = std::to_string(value);
         }
 
-    private:
-#if defined(CUDA_ENABLE)
-        ////////////////////////////////////////////////////////////////////
-        nvrtcProgram cuProgram{};
-#endif
-        ////////////////////////////////////////////////////////////////////
-#if defined(AMD_ENABLE)
-        cl::Program  clProgram{};
-#endif
-        ////////////////////////////////////////////////////////////////////
+    protected:
         bool built { false };
         std::string  kernelName{};
         std::string  compileFlags{};

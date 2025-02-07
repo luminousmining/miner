@@ -6,7 +6,7 @@
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/autolykos/result.hpp>
-#include <common/kernel_generator.hpp>
+#include <common/kernel_generator/opencl.hpp>
 #include <resolver/amd/amd.hpp>
 #include <resolver/amd/autolykos_v2_kernel_parameter.hpp>
 
@@ -28,9 +28,9 @@ namespace resolver
     protected:
         algo::autolykos_v2::ResultShare resultShare{};
         resolver::amd::autolykos_v2::KernelParameters parameters{};
-        common::KernelGenerator kernelGeneratorDAG{};
-        common::KernelGenerator kernelGeneratorSearch{};
-        common::KernelGenerator kernelGeneratorVerify{};
+        common::KernelGeneratorOpenCL kernelGeneratorDAG{};
+        common::KernelGeneratorOpenCL kernelGeneratorSearch{};
+        common::KernelGeneratorOpenCL kernelGeneratorVerify{};
 
         bool buildDAG();
         bool buildSearch();

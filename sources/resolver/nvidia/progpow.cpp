@@ -242,7 +242,7 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     IS_NULL(cuProperties);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.buildCuda(deviceId,
+    if (false == kernelGenerator.build(deviceId,
                                            cuDevice,
                                            castU32(cuProperties->major),
                                            castU32(cuProperties->minor)))

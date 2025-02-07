@@ -160,7 +160,7 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
 
     ////////////////////////////////////////////////////////////////////////////
     // build opencl kernel
-    if (false == kernelGenerator.buildOpenCL(clDevice, clContext))
+    if (false == kernelGenerator.build(clDevice, clContext))
     {
         return false;
     }
@@ -306,7 +306,7 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.buildOpenCL(clDevice, clContext))
+    if (false == kernelGenerator.build(clDevice, clContext))
     {
         return false;
     }

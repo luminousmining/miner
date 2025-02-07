@@ -160,7 +160,7 @@ bool resolver::ResolverAmdEthash::buildDAG()
 
     ////////////////////////////////////////////////////////////////////////////
     // build opencl kernel
-    if (false == kernelGenerator.buildOpenCL(clDevice, clContext))
+    if (false == kernelGenerator.build(clDevice, clContext))
     {
         return false;
     }
@@ -230,7 +230,7 @@ bool resolver::ResolverAmdEthash::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     // build opencl kernel
-    if (false == kernelGenerator.buildOpenCL(clDevice, clContext))
+    if (false == kernelGenerator.build(clDevice, clContext))
     {
         return false;
     }

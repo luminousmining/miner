@@ -7,7 +7,7 @@
 #include <algo/ethash/ethash.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <algo/progpow/result.hpp>
-#include <common/kernel_generator.hpp>
+#include <common/kernel_generator/cuda.hpp>
 #include <resolver/nvidia/nvidia.hpp>
 #include <resolver/nvidia/progpow_kernel_parameter.hpp>
 
@@ -41,7 +41,7 @@ namespace resolver
 
         algo::DagContext                            context{};
         algo::progpow::ResultShare                  resultShare{};
-        common::KernelGenerator                     kernelGenerator{};
+        common::KernelGeneratorCuda                 kernelGenerator{};
         resolver::nvidia::progpow::KernelParameters parameters{};
 
         bool buildSearch();

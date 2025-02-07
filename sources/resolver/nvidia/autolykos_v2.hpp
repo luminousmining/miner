@@ -5,7 +5,6 @@
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/autolykos/result.hpp>
-#include <common/kernel_generator.hpp>
 #include <resolver/nvidia/nvidia.hpp>
 #include <resolver/nvidia/autolykos_v2_kernel_parameter.hpp>
 

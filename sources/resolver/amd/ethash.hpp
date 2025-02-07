@@ -5,7 +5,7 @@
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/ethash/result.hpp>
-#include <common/kernel_generator.hpp>
+#include <common/kernel_generator/opencl.hpp>
 #include <resolver/amd/amd.hpp>
 #include <resolver/amd/ethash_kernel_parameter.hpp>
 
@@ -26,10 +26,10 @@ namespace resolver
         void submit(stratum::StratumSmartMining* const stratum) final;
 
     protected:
-        algo::ethash::ResultShare resultShare{};
+        algo::ethash::ResultShare               resultShare{};
         resolver::amd::ethash::KernelParameters parameters{};
-        algo::DagContext context{};
-        common::KernelGenerator kernelGenerator{};
+        algo::DagContext                        context{};
+        common::KernelGeneratorOpenCL           kernelGenerator{};
 
         virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
 
