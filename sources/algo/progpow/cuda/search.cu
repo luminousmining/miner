@@ -37,6 +37,7 @@ void initialize_header_dag(
         header_dag[indexDAG] = itemDag;
     }
     __syncthreads();
+    __threadfence_block()
 }
 
 
