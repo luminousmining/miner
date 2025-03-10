@@ -150,7 +150,6 @@ void progpowSearch(
     uint64_t const bytes_result = is_valid(state_init, digest);
 #endif
 
-
     if (bytes_result < boundary)
     {
         uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);

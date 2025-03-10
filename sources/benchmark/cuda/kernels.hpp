@@ -86,5 +86,6 @@ bool kawpow_lm5(PARAMETER_KAWPOW);
 bool kawpow_lm6(PARAMETER_KAWPOW);
 bool kawpow_lm7(PARAMETER_KAWPOW);
 bool kawpow_lm8(PARAMETER_KAWPOW);
+bool kawpow_lm9(PARAMETER_KAWPOW);
 
 #endif

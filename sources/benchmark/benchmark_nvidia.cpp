@@ -401,6 +401,22 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                    blocks,
                    threads)
     )
+    // share 4096 first item of dag
+    // header_dag using cache read-only
+    // using __threadfence_block on dag load
+    RUN_BENCH
+    (
+        "kawpow: lm9"s,
+        commonLoop,
+        256u,
+        1024u,
+        kawpow_lm9(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
