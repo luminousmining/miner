@@ -5,6 +5,7 @@
 #include <stratum/blake3.hpp>
 #include <stratum/etchash.hpp>
 #include <stratum/ethash.hpp>
+#include <stratum/ethash_blake3.hpp>
 #include <stratum/evrprogpow.hpp>
 #include <stratum/firopow.hpp>
 #include <stratum/kawpow.hpp>

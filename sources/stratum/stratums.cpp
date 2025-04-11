@@ -27,6 +27,11 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumEtchash);
             break;
         }
+        case algo::ALGORITHM::ETHASH_BLAKE3:
+        {
+            stratum = NEW(stratum::StratumEthashBlake3);
+            break;
+        }
         case algo::ALGORITHM::PROGPOW:
         {
             stratum = NEW(stratum::StratumProgPOW);

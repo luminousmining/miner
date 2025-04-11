@@ -10,6 +10,7 @@ namespace algo
         SHA256,
         ETHASH,
         ETCHASH,
+        ETHASH_BLAKE3,
         PROGPOW,
         PROGPOWQUAI,
         PROGPOWZ,
