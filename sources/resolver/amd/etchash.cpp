@@ -16,8 +16,10 @@ bool resolver::ResolverAmdEtchash::updateContext(
     algo::ethash::initializeDagContext(context,
                                        jobInfo.epoch,
                                        algo::ethash::EIP1099_MAX_EPOCH_NUMBER,
-                                       algo::ethash::DAG_COUNT_ITEMS_GROWTH,
-                                       algo::ethash::DAG_COUNT_ITEMS_INIT);
+                                       dagCountItemsGrowth,
+                                       dagCountItemsInit,
+                                       lightCacheCountItemsGrowth,
+                                       lightCacheCountItemsInit);
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull

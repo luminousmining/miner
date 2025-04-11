@@ -23,7 +23,9 @@ bool resolver::ResolverAmdProgPOW::updateContext(
                                        jobInfo.epoch,
                                        maxEpoch,
                                        dagCountItemsGrowth,
-                                       dagCountItemsInit);
+                                       dagCountItemsInit,
+                                       lightCacheCountItemsGrowth,
+                                       lightCacheCountItemsInit);
 
     if (   0ull == context.lightCache.numberItem
         || 0ull == context.lightCache.size

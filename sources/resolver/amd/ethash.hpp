@@ -4,6 +4,7 @@
 
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
+#include <algo/ethash/ethash.hpp>
 #include <algo/ethash/result.hpp>
 #include <common/kernel_generator/opencl.hpp>
 #include <resolver/amd/amd.hpp>
@@ -30,6 +31,11 @@ namespace resolver
         resolver::amd::ethash::KernelParameters parameters{};
         algo::DagContext                        context{};
         common::KernelGeneratorOpenCL           kernelGenerator{};
+
+        uint32_t lightCacheCountItemsGrowth{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH };
+        uint32_t lightCacheCountItemsInit{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT };
+        uint32_t dagCountItemsGrowth{ algo::ethash::DAG_COUNT_ITEMS_GROWTH };
+        uint32_t dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
 
         virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
 

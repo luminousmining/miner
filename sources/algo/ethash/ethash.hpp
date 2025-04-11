@@ -19,14 +19,14 @@ namespace algo
         constexpr uint32_t EIP1099_MAX_EPOCH_NUMBER{ 30000u };
         constexpr uint32_t EIP1057_MAX_EPOCH_NUMER{ 110u };
 
-        constexpr uint64_t LIGHT_CACHE_INIT_SIZE{ 1 << 24 };
-        constexpr uint64_t LIGHT_CACHE_GROWTH{ 1 << 17 };
+        constexpr uint64_t LIGHT_CACHE_INIT_SIZE{ 1u << 24 };
+        constexpr uint64_t LIGHT_CACHE_GROWTH{ 1u << 17 };
         constexpr uint64_t LIGHT_CACHE_ROUNDS{ 3ull };
         constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_INIT{ algo::ethash::LIGHT_CACHE_INIT_SIZE / algo::LEN_HASH_512 };
         constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_GROWTH{ algo::ethash::LIGHT_CACHE_GROWTH / algo::LEN_HASH_512 };
 
-        constexpr uint32_t DAG_INIT_SIZE{ 1 << 30 };
-        constexpr uint32_t DAG_GROWTH{ 1 << 23 };
+        constexpr uint32_t DAG_INIT_SIZE{ 1u << 30 };
+        constexpr uint32_t DAG_GROWTH{ 1u << 23 };
         constexpr uint32_t DAG_ITEM_PARENTS{ 256u };
         constexpr uint64_t DAG_COUNT_ITEMS_INIT{ algo::ethash::DAG_INIT_SIZE / algo::LEN_HASH_1024 };
         constexpr uint64_t DAG_COUNT_ITEMS_GROWTH{ algo::ethash::DAG_GROWTH / algo::LEN_HASH_1024 };
@@ -38,7 +38,9 @@ namespace algo
                                   uint64_t const currentEpoch,
                                   uint32_t const maxEpoch,
                                   uint64_t const dagCountItemsGrowth,
-                                  uint64_t const dagCountItemsInit);
+                                  uint64_t const dagCountItemsInit,
+                                  uint32_t const lightCacheCountItemsGrowth,
+                                  uint32_t const lightCacheCountItemsInit);
         void buildLightCache(algo::DagContext& context,
                              algo::hash256 const& seed);
 #endif

@@ -34,6 +34,8 @@ namespace resolver
         uint32_t regs{ algo::progpow::REGS };
         uint32_t moduleSource{ algo::progpow::MODULE_SOURCE };
         uint32_t dagItemParents{ algo::ethash::DAG_ITEM_PARENTS };
+        uint32_t lightCacheCountItemsGrowth{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH };
+        uint32_t lightCacheCountItemsInit{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT };
         uint32_t dagCountItemsGrowth{ algo::ethash::DAG_COUNT_ITEMS_GROWTH };
         uint32_t dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
         uint32_t countCache{ algo::progpow::v_0_9_2::COUNT_CACHE };

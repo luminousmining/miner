@@ -23,7 +23,9 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
                                        jobInfo.epoch,
                                        maxEpoch,
                                        dagCountItemsGrowth,
-                                       dagCountItemsInit);
+                                       dagCountItemsInit,
+                                       lightCacheCountItemsGrowth,
+                                       lightCacheCountItemsInit);
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
