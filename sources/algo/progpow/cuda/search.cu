@@ -37,7 +37,7 @@ void initialize_header_dag(
         header_dag[indexDAG] = itemDag;
     }
     __syncthreads();
-    __threadfence_block()
+    __threadfence_block();
 }
 
 
@@ -120,7 +120,7 @@ void progpowSearch(
     uint64_t const nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
-    uint32_t const* const dag_u32 = (uint32_t const* const)dag;
+    uint32_t const* const dag_u32 = (uint32_t const*)dag;
     initialize_header_dag(threadIdx.x, header_dag, dag_u32);
 
 #if defined(__KERNEL_PROGPOW)

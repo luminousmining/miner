@@ -83,8 +83,8 @@ else()
 ################################################################################
 ### CLANG                                                                   ####
 ################################################################################
-    set(CMAKE_C_COMPILER "clang-11" CACHE STRING "C compiler" FORCE)
-    set(CMAKE_CXX_COMPILER "clang++-11" CACHE STRING "C++ compiler" FORCE)
+    set(CMAKE_C_COMPILER "clang-15" CACHE STRING "C compiler" FORCE)
+    set(CMAKE_CXX_COMPILER "clang++-15" CACHE STRING "C++ compiler" FORCE)
     add_compile_options(-W -Wall -Wextra)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(-O0 -g3 -ggdb -v)

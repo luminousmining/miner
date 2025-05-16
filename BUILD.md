@@ -17,7 +17,7 @@ cmake :
 https://github.com/Kitware/CMake/releases/tag/v3.22.4  
   
 cuda :  
-https://developer.nvidia.com/cuda-12-8-0-download-archive  
+https://developer.nvidia.com/cuda-12-9-0-download-archive  
   
 boost :  
 https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.zip  
@@ -64,19 +64,18 @@ nmake install
 ### Install
 cmake :
 ```sh
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin --no-check-certificate
-sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget https://developer.download.nvidia.com/compute/cuda/12.8.0/local_installers/cuda-repo-ubuntu2004-12-8-local_12.8.0-570.86.10-1_amd64.deb --no-check-certificate
-sudo dpkg -i cuda-repo-ubuntu2004-12-8-local_12.8.0-570.86.10-1_amd64.deb
-sudo cp /var/cuda-repo-ubuntu2004-12-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
-sudo apt-get update
-sudo apt-get -y install cuda-toolkit-12-8
+wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh --no-check-certificate
+sudo mv cmake-3.26.4-linux-x86_64.sh /opt/cmake-3.26.4-linux-x86_64.sh
+sudo chmod +x /opt/cmake-3.26.4-linux-x86_64.sh
+sudo /opt/cmake-3.26.4-linux-x86_64.sh
+sudo cp -r cmake-3.26.4-linux-x86_64 /opt/
+sudo rm -rf cmake-3.26.4-linux-x86_64
+sudo ln -s /opt/cmake-3.26.4-linux-x86_64/bin/* /usr/local/bin
 ```
-
   
 compiler :
 ```sh
-sudo apt install -y build-essential libstdc++-11-dev libc++abi-11-dev gnutls-dev cppcheck checkinstall clang-11 libx11-dev
+sudo apt install -y build-essential libstdc++-12-dev libc++abi-12-dev gnutls-dev cppcheck checkinstall clang-15 libx11-dev
 ```
   
 openssl :
@@ -99,7 +98,7 @@ git submodule update
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DOPENCL_SDK_BUILD_SAMPLES=OFF -DOPENCL_SDK_TEST_SAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build . --target install
+sudo cmake --build . --target install
 ```
   
 cuda :
