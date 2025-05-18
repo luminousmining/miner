@@ -350,6 +350,7 @@ void stratum::Stratum::updateJob()
     }
     if (nullptr != dispatchJob)
     {
+        logDebug() << jobInfo;
         dispatchJob(uuid, jobInfo);
     }
     else
