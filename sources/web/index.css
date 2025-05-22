@@ -1,0 +1,36 @@
+body {
+  background: #171717;
+  color: #f1f1f1;
+  font-family: Arial, sans-serif;
+  padding: 30px;
+}
+h1 {
+  letter-spacing: 1px;
+  color: #89e051;
+}
+.info {
+  margin-bottom: 25px;
+}
+table {
+  width: 90%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  background: #232323;
+}
+th, td {
+  padding: 10px;
+  border: 1px solid #3a3a3a;
+  text-align: center;
+}
+th {
+  background: #444;
+  color: #ffe066;
+}
+.uptime, .ver {
+  font-size: 1.1em;
+}
+.updated {
+  color: #aaa;
+  font-size: 0.9em;
+  margin-left: 12px;
+}

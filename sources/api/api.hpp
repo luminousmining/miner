@@ -52,5 +52,7 @@ namespace api
                               boost_response& response);
         void onHiveOSGetTotalHashrate(boost_socket& socket,
                                       boost_response& response);
+        void onWebGetStats(boost_socket& socket,
+                           boost_response& response);
     };
 }

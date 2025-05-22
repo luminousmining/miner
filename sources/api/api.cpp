@@ -25,6 +25,8 @@ void api::ServerAPI::setPort(
 
 bool api::ServerAPI::bind()
 {
+    logInfo() << "Start API on port " << port;
+
     alive.store(true, boost::memory_order::seq_cst);
 
     threadDoAccept.interrupt();
@@ -85,6 +87,11 @@ void api::ServerAPI::onMessage(
     else if ("/hiveos/getTotalHashrate" == target)
     {
         onHiveOSGetTotalHashrate(socket, response);
+        response.result(boost_http::status::ok);
+    }
+    else if ("/api/get_stats" == target)
+    {
+        onWebGetStats(socket, response);
         response.result(boost_http::status::ok);
     }
     else
@@ -195,5 +202,78 @@ void api::ServerAPI::onHiveOSGetTotalHashrate(
     response.body() = boost::json::serialize(root);
     response.prepare_payload();
 
+    boost::beast::http::write(socket, response);
+}
+
+
+void api::ServerAPI::onWebGetStats(
+    boost_socket& socket,
+    boost_response& response)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    std::string version
+    {
+        std::to_string(common::VERSION_MAJOR)
+        + "."
+        + std::to_string(common::VERSION_MINOR)
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    boost::json::object root
+    {
+        { "hs", boost::json::array{} },         // Hashrates by device (GPU)
+        { "hs_units", "hs" },                   // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs"
+        { "temp", boost::json::array{} },       // Temperature by device (GPU)
+        { "fan", boost::json::array{} },        // Fans speed by device (GPU)
+        { "uptime", 0 },                        // Seconds elapsed from miner stats
+        { "ver", version },                     // Miner version currently run
+        { "shares", boost::json::array{} },     // Acceped and rejected shares
+    };
+    boost::json::array hs{};
+    boost::json::array temp{};
+    boost::json::array fan{};
+    boost::json::array shares{};
+
+    ////////////////////////////////////////////////////////////////////////////
+    uint64_t sharesValid { 0ull };
+    uint64_t sharesInvalid { 0ull };
+    std::string sharesInvalidGpus{};
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::vector<device::Device*> devices{ deviceManager->getDevices() };
+    for (device::Device* device : devices)
+    {
+        sharesInvalidGpus += "0;";
+        if (nullptr == device)
+        {
+            hs.push_back(0);
+        }
+        else
+        {
+            hs.push_back(castU64(device->getHashrate()));
+
+            statistical::Statistical::ShareInfo shareInfo{ device->getShare() };
+            sharesInvalid += shareInfo.invalid;
+            sharesValid += shareInfo.valid;
+        }
+        temp.push_back(0);
+        fan.push_back(0);
+    }
+    shares.push_back(sharesValid);               // share valid
+    shares.push_back(sharesInvalid);             // share rejected
+    shares.push_back(0);                         // share invalid
+    shares.push_back(sharesInvalidGpus.c_str()); // shares invalid by gpus
+
+    root["hs"] = hs;
+    root["temp"] = temp;
+    root["fan"] = fan;
+    root["shares"] = shares;
+
+    ////////////////////////////////////////////////////////////////////////////
+    response.body() = boost::json::serialize(root);
+    response.prepare_payload();
+    response.set("Access-Control-Allow-Origin", "*");
+
+    ////////////////////////////////////////////////////////////////////////////
     boost::beast::http::write(socket, response);
 }
