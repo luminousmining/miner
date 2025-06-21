@@ -70,11 +70,11 @@ bool autolykos_v2_lm2(cudaStream_t stream,
 
 ////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_KAWPOW cudaStream_t stream,                                  \
-                          t_result* result,                                    \
-                          uint32_t* const header,                              \
-                          uint32_t* const dag,                                 \
-                          uint32_t const blocks,                               \
-                          uint32_t const threads
+                         t_result* result,                                     \
+                         uint32_t* const header,                               \
+                         uint32_t* const dag,                                  \
+                         uint32_t const blocks,                                \
+                         uint32_t const threads
 
 bool kawpow_kawpowminer_1(PARAMETER_KAWPOW);
 bool kawpow_kawpowminer_2(PARAMETER_KAWPOW);
