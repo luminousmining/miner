@@ -46,6 +46,7 @@ struct ResolverProgpowZNvidiaTest : public testing::Test
     }
 };
 
+
 TEST_F(ResolverProgpowZNvidiaTest, jobValid)
 {
     initializeJob(0x62114e8a70455eef);

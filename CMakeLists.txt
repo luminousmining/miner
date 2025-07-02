@@ -12,6 +12,7 @@ endif()
 ### OPTION MACROS                                                           ####
 ################################################################################
 option(BUILD_AMD "Build with OpenCL for AMD GPU" ON)
+option(BUILD_CPU "Build with OpenMP for CPU(Intel/AMD)" ON)
 option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" ON)
 
 ################################################################################
@@ -215,6 +216,14 @@ endif()
 
 
 ################################################################################
+### OpenMP                                                                  ####
+################################################################################
+if (BUILD_CPU)
+    add_compile_definitions(CPU_ENABLE)
+endif()
+
+
+################################################################################
 ### PROJECTS                                                                ####
 ################################################################################
 add_subdirectory(sources)
@@ -255,6 +264,8 @@ message("-- OPENCL           : ${OpenCL_VERSION_STRING}")
 message("-- OPENCL Include   : ${OpenCL_INCLUDE_DIRS}")
 message("-- OPENCL Libraries : ${OpenCL_LIBRARIES}")
 endif()
+message("*********************************************************************")
+message("-- BUILD_CPU        : ${BUILD_CPU}")
 message("*********************************************************************")
 message("-- BUILD_NVIDIA     : ${BUILD_NVIDIA}")
 if (BUILD_NVIDIA)

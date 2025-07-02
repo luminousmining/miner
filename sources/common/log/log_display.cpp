@@ -46,7 +46,7 @@ void common::LoggerDisplay::print(common::LogInfo const& info)
             case TYPELOG::__INFO:    std::cout << common::COLOR_DEFAULT;  break;
             case TYPELOG::__WARNING: std::cout << common::COLOR_GREEN;    break;
             case TYPELOG::__ERROR:   std::cout << common::COLOR_RED;      break;
-            case TYPELOG::__TRACE:   std::cout << common::COLOR_MAGENTA;   break;
+            case TYPELOG::__TRACE:   std::cout << common::COLOR_MAGENTA;  break;
             case TYPELOG::__DEBUG:   std::cout << common::COLOR_PURPLE;   break;
             default:                 std::cout << common::COLOR_DEFAULT;  break;
         }

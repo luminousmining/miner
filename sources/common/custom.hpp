@@ -54,6 +54,9 @@
 #define NEW(type)\
     new (std::nothrow) type
 
+#define NEW_ARRAY(type, size)\
+    new (std::nothrow) type[size]
+
 #define MAX_LIMIT(value, max)\
     (value <= max ? value : max)
 

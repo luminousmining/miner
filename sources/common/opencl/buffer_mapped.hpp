@@ -50,8 +50,7 @@ namespace common
 
                 SAFE_DELETE(buffer);
                 OPENCL_CATCH(
-                    buffer = new(std::nothrow) cl::Buffer(
-                        clContext, flags, size));
+                    buffer = NEW(cl::Buffer(clContext, flags, size)));
                 IS_NULL(buffer);
 
                 OPENCL_CATCH(

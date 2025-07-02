@@ -153,8 +153,8 @@ void algo::progpow::writeMathRandomKernelCuda(
     std::ofstream ofs{ pathSequenceMath };
 
     ////////////////////////////////////////////////////////////////////////////
-    int32_t* dst{ NEW(int[regs]) };
-    int32_t* src{ NEW(int[regs]) };
+    int32_t* dst{ NEW_ARRAY(int32_t, regs) };
+    int32_t* src{ NEW_ARRAY(int32_t, regs) };
     algo::Kiss99Properties round{ algo::progpow::initializeRound(period, dst, src, regs) };
 
     ////////////////////////////////////////////////////////////////////////////

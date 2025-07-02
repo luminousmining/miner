@@ -1,0 +1,9 @@
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
+
+target_sources(${UNIT_TEST_EXE} PUBLIC
+${HEADERS}
+${SOURCES}
+)
+
+set(SOURCES_RESOLVER_CPU_TESTS ${HEADERS} ${SOURCES} PARENT_SCOPE)
