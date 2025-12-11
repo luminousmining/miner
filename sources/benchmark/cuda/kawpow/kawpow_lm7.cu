@@ -188,7 +188,7 @@ void reduce_hash(
 
 __device__ __forceinline__
 void initialize_header_dag(
-    uint32_t* __restrict__ const header_dag,
+    uint32_t* const __restrict__ header_dag,
     uint32_t const* __restrict__ const dag,
     uint32_t const thread_id)
 {
