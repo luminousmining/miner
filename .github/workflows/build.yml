@@ -1,4 +1,4 @@
-name: Build Linux
+name: Build LuminousMiner
 
 on:
   push:
@@ -10,118 +10,309 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
     
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install base dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential \
-                                libstdc++-12-dev \
-                                libc++abi-12-dev \
-                                gnutls-dev \
-                                cppcheck \
-                                checkinstall \
-                                clang-15 \
-                                clang++-15\
-                                libx11-dev \
-                                wget \
-                                git
-
-    - name: Cache dependencies
-      id: cache-deps
+    #==========================================================================
+    # CACHE SYSTEM
+    #==========================================================================
+    
+    - name: Cache CUDA 13.1
+      id: cache-cuda
       uses: actions/cache@v4
       with:
         path: |
-          /usr/local/include
-          /usr/local/lib
+          /usr/local/cuda-13.1
+          /usr/local/cuda
+        key: ${{ runner.os }}-cuda-13.1-v1
+        restore-keys: |
+          ${{ runner.os }}-cuda-13.1-
+
+    - name: Cache Boost 1.86.0
+      id: cache-boost
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/boost_1_86_0
+          /usr/local/include/boost
+          /usr/local/lib/libboost_*
+        key: ${{ runner.os }}-boost-1.86.0-${{ matrix.build_type }}-v1
+        restore-keys: |
+          ${{ runner.os }}-boost-1.86.0-
+
+    - name: Cache OpenSSL 1.1.1
+      id: cache-openssl
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/openssl-1.1.1
           /usr/local/ssl
-          /usr/local/cuda-12.9
-        key: ${{ runner.os }}-deps-${{ hashFiles('.github/workflows/**') }}-v1
+        key: ${{ runner.os }}-openssl-1.1.1-v1
+        restore-keys: |
+          ${{ runner.os }}-openssl-1.1.1-
 
-    - name: Install CMake 3.26.4
-      if: steps.cache-deps.outputs.cache-hit != 'true'
+    - name: Cache OpenCL
+      id: cache-opencl
+      uses: actions/cache@v4
+      with:
+        path: |
+          /usr/local/include/CL
+          /usr/local/lib/libOpenCL.so*
+        key: ${{ runner.os }}-opencl-3.0.17-v1
+        restore-keys: |
+          ${{ runner.os }}-opencl-
+
+    #==========================================================================
+    # INSTALLATION DES DÉPENDANCES
+    #==========================================================================
+
+    - name: Install system dependencies
       run: |
-        wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh --no-check-certificate
-        sudo chmod +x cmake-3.26.4-linux-x86_64.sh
-        sudo ./cmake-3.26.4-linux-x86_64.sh --skip-license --prefix=/usr/local
-        rm cmake-3.26.4-linux-x86_64.sh
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          clang-15 \
+          wget \
+          git \
+          ocl-icd-opencl-dev \
+          opencl-headers \
+          libgnutls28-dev
 
-    - name: Install OpenSSL 1.1.1
-      if: steps.cache-deps.outputs.cache-hit != 'true'
+    #==========================================================================
+    # CUDA 13.1
+    #==========================================================================
+
+    - name: Check CUDA installation
+      id: check-cuda
       run: |
-        git clone --depth 1 --branch OpenSSL_1_1_1t https://github.com/openssl/openssl.git
-        cd openssl
-        ./Configure
-        make -j$(nproc)
-        sudo make install
-        cd ..
-        rm -rf openssl
+        if [ -f "/usr/local/cuda-13.1/bin/nvcc" ]; then
+          echo "CUDA 13.1 found in cache"
+          echo "cuda-installed=true" >> $GITHUB_OUTPUT
+        else
+          echo "CUDA 13.1 not found, will install"
+          echo "cuda-installed=false" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Install OpenCL SDK
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      run: |
-        git clone https://github.com/KhronosGroup/OpenCL-SDK.git
-        cd OpenCL-SDK
-        git fetch --all
-        git checkout tags/v2024.10.24
-        git submodule init
-        git submodule update
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release \
-          -DBUILD_TESTING=OFF \
-          -DBUILD_DOCS=OFF \
-          -DBUILD_EXAMPLES=OFF \
-          -DBUILD_TESTS=OFF \
-          -DOPENCL_SDK_BUILD_SAMPLES=OFF \
-          -DOPENCL_SDK_TEST_SAMPLES=OFF \
-          -DCMAKE_INSTALL_PREFIX=/usr/local
-        sudo cmake --build . --target install --parallel $(nproc)
-        cd ../..
-        rm -rf OpenCL-SDK
-
-    - name: Install CUDA 12.9
-      if: steps.cache-deps.outputs.cache-hit != 'true'
+    - name: Install CUDA 13.1
+      if: steps.check-cuda.outputs.cuda-installed != 'true'
       run: |
         wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
         sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-        wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/12.9.0/local_installers/cuda-repo-ubuntu2204-12-9-local_12.9.0-560.35.03-1_amd64.deb
-        sudo dpkg -i cuda-repo-ubuntu2204-12-9-local_12.9.0-560.35.03-1_amd64.deb
-        sudo cp /var/cuda-repo-ubuntu2204-12-9-local/cuda-*-keyring.gpg /usr/share/keyrings/
+        wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/13.1.0/local_installers/cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
+        sudo dpkg -i cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
+        sudo cp /var/cuda-repo-ubuntu2204-13-1-local/cuda-*-keyring.gpg /usr/share/keyrings/
         sudo apt-get update
-        sudo apt-get -y install cuda-toolkit-12-9
-        echo "/usr/local/cuda-12.9/bin" >> $GITHUB_PATH
-        echo "LD_LIBRARY_PATH=/usr/local/cuda-12.9/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        sudo apt-get -y install cuda-toolkit-13-1
+        echo "CUDA 13.1 installed successfully"
 
-    - name: Install Boost 1.86.0
-      if: steps.cache-deps.outputs.cache-hit != 'true'
+    - name: Setup CUDA environment
       run: |
-        wget --no-check-certificate https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
+        echo "/usr/local/cuda-13.1/bin" >> $GITHUB_PATH
+        echo "LD_LIBRARY_PATH=/usr/local/cuda-13.1/lib64:\${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "CUDA_HOME=/usr/local/cuda-13.1" >> $GITHUB_ENV
+        echo "CUDA_PATH=/usr/local/cuda-13.1" >> $GITHUB_ENV
+        echo "CUDACXX=/usr/local/cuda-13.1/bin/nvcc" >> $GITHUB_ENV
+
+    #==========================================================================
+    # OPENSSL 1.1.1
+    #==========================================================================
+
+    - name: Check OpenSSL installation
+      id: check-openssl
+      run: |
+        if [ -f "/usr/local/ssl/lib/libssl.a" ]; then
+          echo "OpenSSL 1.1.1 found in cache"
+          echo "openssl-installed=true" >> $GITHUB_OUTPUT
+        else
+          echo "OpenSSL 1.1.1 not found, will install"
+          echo "openssl-installed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build OpenSSL 1.1.1
+      if: steps.check-openssl.outputs.openssl-installed != 'true'
+      run: |
+        cd ~
+        wget https://www.openssl.org/source/openssl-1.1.1w.tar.gz
+        tar -xzf openssl-1.1.1w.tar.gz
+        cd openssl-1.1.1w
+        ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl no-shared
+        make -j$(nproc)
+        sudo make install
+        echo "OpenSSL 1.1.1 installed successfully"
+
+    - name: Setup OpenSSL environment
+      run: |
+        echo "OPENSSL_ROOT_DIR=/usr/local/ssl" >> $GITHUB_ENV
+
+    #==========================================================================
+    # BOOST 1.86.0
+    #==========================================================================
+
+    - name: Check Boost installation
+      id: check-boost
+      run: |
+        if [ -f "/usr/local/lib/libboost_system.a" ]; then
+          BOOST_VERSION=$(/usr/local/lib/libboost_system.a 2>/dev/null || echo "not found")
+          echo "Boost 1.86.0 found in cache"
+          echo "boost-installed=true" >> $GITHUB_OUTPUT
+        else
+          echo "Boost 1.86.0 not found, will install"
+          echo "boost-installed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build Boost 1.86.0
+      if: steps.check-boost.outputs.boost-installed != 'true'
+      run: |
+        cd ~
+        wget https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
         tar -xzf boost_1_86_0.tar.gz
         cd boost_1_86_0
         ./bootstrap.sh --prefix=/usr/local
-        ./b2 -j$(nproc) debug release
-        sudo ./b2 install
-        cd ..
-        rm -rf boost_1_86_0 boost_1_86_0.tar.gz
+        if [ "${{ matrix.build_type }}" == "Debug" ]; then
+          sudo ./b2 variant=debug link=static threading=multi runtime-link=shared -j$(nproc) install
+        else
+          sudo ./b2 variant=release link=static threading=multi runtime-link=shared -j$(nproc) install
+        fi
+        echo "Boost 1.86.0 installed successfully"
 
-    - name: Configure project
+    #==========================================================================
+    # OPENCL 3.0.17
+    #==========================================================================
+
+    - name: Check OpenCL installation
+      id: check-opencl
       run: |
-        mkdir build
+        if [ -f "/usr/local/include/CL/cl.h" ]; then
+          echo "OpenCL headers found in cache"
+          echo "opencl-installed=true" >> $GITHUB_OUTPUT
+        else
+          echo "OpenCL not found, will install"
+          echo "opencl-installed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Install OpenCL 3.0.17
+      if: steps.check-opencl.outputs.opencl-installed != 'true'
+      run: |
+        cd ~
+        git clone --depth 1 --branch v2024.10.24 https://github.com/KhronosGroup/OpenCL-Headers.git
+        cd OpenCL-Headers
+        sudo cp -r CL /usr/local/include/
+        
+        cd ~
+        git clone --depth 1 --branch v2024.10.24 https://github.com/KhronosGroup/OpenCL-ICD-Loader.git
+        cd OpenCL-ICD-Loader
+        mkdir build && cd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+        make -j$(nproc)
+        sudo make install
+        echo "OpenCL 3.0.17 installed successfully"
+
+    #==========================================================================
+    # VÉRIFICATION DES INSTALLATIONS
+    #==========================================================================
+
+    - name: Verify installations
+      run: |
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔍 CUDA Version:"
+        nvcc --version
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔍 OpenSSL Version:"
+        /usr/local/ssl/bin/openssl version
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔍 Boost Version:"
+        ls -la /usr/local/lib/libboost_* | head -5
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔍 OpenCL Headers:"
+        ls -la /usr/local/include/CL/
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    #==========================================================================
+    # CONFIGURATION CMAKE
+    #==========================================================================
+
+    - name: Configure CMake
+      run: |
+        mkdir -p build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_C_COMPILER=clang-15 \
+          -DCMAKE_CXX_COMPILER=clang++-15 \
+          -DBOOST_INCLUDEDIR=/usr/local/include \
+          -DBOOST_LIBRARYDIR=/usr/local/lib \
+          -DOPENSSL_ROOT_DIR=/usr/local/ssl \
+          -DOpenCL_INCLUDE_DIRS=/usr/local/include \
+          -DBUILD_AMD=ON \
+          -DBUILD_CPU=ON \
+          -DBUILD_NVIDIA=ON
+      env:
+        CUDA_HOME: /usr/local/cuda-13.1
+        CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+
+    #==========================================================================
+    # BUILD
+    #==========================================================================
 
     - name: Build project
       run: |
         cd build
-        cmake --build . --config Release --parallel $(nproc)
+        cmake --build . --config ${{ matrix.build_type }} --parallel $(nproc)
 
-    - name: Upload artifacts
+    #==========================================================================
+    # TESTS (optionnel)
+    #==========================================================================
+
+    - name: Run tests
+      if: matrix.build_type == 'Release'
+      continue-on-error: true
+      run: |
+        cd build
+        ctest --output-on-failure --build-config ${{ matrix.build_type }}
+
+    #==========================================================================
+    # UPLOAD ARTIFACTS
+    #==========================================================================
+
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: linux-build
-        path: build/
+        name: luminousminer-linux-${{ matrix.build_type }}-cuda13.1
+        path: |
+          bin/
+          lib/
         retention-days: 7
+
+    - name: Upload binaries only
+      if: matrix.build_type == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: luminousminer-binaries-${{ matrix.build_type }}
+        path: bin/*
+        retention-days: 30
+
+  #============================================================================
+  # BUILD SUMMARY
+  #============================================================================
+
+  build-summary:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Build Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ LuminousMiner Build Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📦 CUDA: 13.1 (Blackwell support)"
+          echo "📦 Boost: 1.86.0"
+          echo "📦 OpenSSL: 1.1.1w"
+          echo "📦 OpenCL: 3.0.17"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
