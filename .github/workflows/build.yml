@@ -34,12 +34,19 @@ jobs:
           ocl-icd-opencl-dev \
           opencl-headers \
           libgnutls28-dev
+        
+        # Clean apt cache
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
 
     - name: Install CMake 3.26.4
       run: |
         wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh
         sudo sh cmake-3.26.4-linux-x86_64.sh --skip-license --prefix=/usr/local
         cmake --version
+        
+        # Clean downloaded file
+        rm -f cmake-3.26.4-linux-x86_64.sh
 
     #==========================================================================
     # CACHE SYSTEM
@@ -99,6 +106,13 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install cuda-toolkit-13-1
 
+        # CLEAN UP CUDA FILES
+        echo "🧹 Cleaning up CUDA installation files..."
+        rm -f cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
+        sudo rm -rf /var/cuda-repo-ubuntu2204-13-1-local
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
+
         echo "✅ CUDA 13.1 installed successfully"
 
     - name: Setup CUDA environment
@@ -138,6 +152,11 @@ jobs:
         # Install (no sudo needed as cache handles it)
         sudo make install
 
+        # CLEAN UP OPENSSL FILES
+        cd ..
+        echo "🧹 Cleaning up OpenSSL installation files..."
+        rm -rf openssl-1.1.1w openssl-1.1.1w.tar.gz
+
         echo "✅ OpenSSL 1.1.1 installed successfully"
 
     - name: Setup OpenSSL environment
@@ -176,6 +195,11 @@ jobs:
           cxxflags="-std=c++17" \
           -j$(nproc)
 
+        # CLEAN UP BOOST FILES
+        cd ..
+        echo "🧹 Cleaning up Boost installation files..."
+        rm -rf boost_1_86_0 boost_1_86_0.tar.gz
+
         echo "✅ Boost 1.86.0 installed successfully"
 
     #==========================================================================
@@ -190,7 +214,6 @@ jobs:
         cd OpenCL-Headers
         sudo cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
         sudo cmake --build build --target install
-
         cd ..
 
         # Clone OpenCL-ICD-Loader
@@ -200,6 +223,11 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DOPENCL_ICD_LOADER_HEADERS_DIR=/usr/local/include
         sudo cmake --build build --target install
+        cd ..
+
+        # CLEAN UP OPENCL FILES
+        echo "🧹 Cleaning up OpenCL installation files..."
+        rm -rf OpenCL-Headers OpenCL-ICD-Loader
 
         echo "✅ OpenCL 3.0.17 installed successfully"
 
@@ -285,6 +313,17 @@ jobs:
         # Build with all available CPU cores
         cmake --build . --config Release -j$(nproc)
 
+    - name: Clean build intermediates
+      run: |
+        echo "🧹 Cleaning up build intermediate files..."
+        # Remove CMake temporary files
+        find build -type f -name "*.o" -delete
+        find build -type f -name "*.a" -delete 2>/dev/null || true
+        find build -type d -name "CMakeFiles" -exec rm -rf {} + 2>/dev/null || true
+        
+        # Keep only final binaries and libraries
+        echo "✅ Build cleanup complete"
+
     - name: Verify build outputs
       run: |
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -300,7 +339,7 @@ jobs:
           echo ""
           echo "Binaries in build/bin/:"
           ls -lh build/bin/
-          
+
           echo ""
           echo "Binary types:"
           for f in build/bin/*; do
@@ -349,20 +388,20 @@ jobs:
         echo "📦 OpenCL:      3.0.17"
         echo "📦 Compiler:    Clang 15"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        
+
         # Check all possible artifact locations
         ARTIFACTS_FOUND=false
-        
+
         if [ -d "build/bin" ] && [ "$(ls -A build/bin 2>/dev/null)" ]; then
           echo "✅ Build artifacts found in build/bin/"
           ARTIFACTS_FOUND=true
         fi
-        
+
         if [ -d "bin" ] && [ "$(ls -A bin 2>/dev/null)" ]; then
           echo "✅ Build artifacts found in bin/"
           ARTIFACTS_FOUND=true
         fi
-        
+
         if [ "$ARTIFACTS_FOUND" = false ]; then
           echo "⚠️  No build artifacts detected (may be normal depending on project structure)"
           echo ""
