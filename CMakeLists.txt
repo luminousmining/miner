@@ -156,18 +156,15 @@ if (BUILD_NVIDIA)
     list(APPEND CUDA_NVCC_FLAGS "--ptxas-options=-v")
     list(APPEND CUDA_NVCC_FLAGS "-use_fast_math")
     ### NVCC FLAGS GENCODE
-    list(APPEND CUDA_NVCC_FLAGS "-arch=sm_60")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_60,code=sm_60") # Pascal
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=sm_61") # Pascal
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_62,code=sm_62") # Pascal
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=sm_70") # Volta
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90a,code=sm_90a") # Hopper
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_100,code=sm_100") # Blackwell
+    list(APPEND CUDA_NVCC_FLAGS "-arch=sm_70")
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=sm_70") # Volta (V100, Titan V)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing (RTX 2000, GTX 1600, T4)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere (A100, RTX 3000)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere (RTX 3050/3060, A40)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)  (RTX 4000, L4/L40)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper (H100)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90a,code=sm_90a") # Hopper optimised
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_100,code=sm_100") # Blackwell (B100/B200)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_103,code=sm_103") # Blackwell
     ### Macros C++
     add_compile_definitions(CUDA_ENABLE)
