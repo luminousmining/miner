@@ -37,7 +37,7 @@ jobs:
 
     - name: Install CMake 3.26.4
       run: |
-        wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh
+        wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh
         sudo sh cmake-3.26.4-linux-x86_64.sh --skip-license --prefix=/usr/local
         cmake --version
 
@@ -89,10 +89,10 @@ jobs:
         sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
 
         # Download CUDA local installer
-        wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/13.1.0/local_installers/cuda-repo-ubuntu2204-13-1-local_13.1.0-530.30.02-1_amd64.deb
+        wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/13.1.0/local_installers/cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
 
         # Install CUDA repository
-        sudo dpkg -i cuda-repo-ubuntu2204-13-1-local_13.1.0-530.30.02-1_amd64.deb
+        sudo dpkg -i cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
         sudo cp /var/cuda-repo-ubuntu2204-13-1-local/cuda-*-keyring.gpg /usr/share/keyrings/
 
         # Update and install CUDA toolkit
