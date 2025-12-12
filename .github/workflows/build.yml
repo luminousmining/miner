@@ -155,7 +155,7 @@ jobs:
         # CLEAN UP OPENSSL FILES
         cd ..
         echo "🧹 Cleaning up OpenSSL installation files..."
-        rm -rf openssl-1.1.1w openssl-1.1.1w.tar.gz
+        sudo rm -rf openssl-1.1.1w openssl-1.1.1w.tar.gz
 
         echo "✅ OpenSSL 1.1.1 installed successfully"
 
@@ -198,7 +198,7 @@ jobs:
         # CLEAN UP BOOST FILES
         cd ..
         echo "🧹 Cleaning up Boost installation files..."
-        rm -rf boost_1_86_0 boost_1_86_0.tar.gz
+        sudo rm -rf boost_1_86_0 boost_1_86_0.tar.gz
 
         echo "✅ Boost 1.86.0 installed successfully"
 
@@ -227,7 +227,7 @@ jobs:
 
         # CLEAN UP OPENCL FILES
         echo "🧹 Cleaning up OpenCL installation files..."
-        rm -rf OpenCL-Headers OpenCL-ICD-Loader
+        sudo rm -rf OpenCL-Headers OpenCL-ICD-Loader
 
         echo "✅ OpenCL 3.0.17 installed successfully"
 
