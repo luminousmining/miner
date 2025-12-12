@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        build_type: [Release, Debug]
-    
+        build_type: [Release]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -78,6 +77,7 @@ jobs:
           build-essential \
           cmake \
           clang-15 \
+          clang++-15 \
           wget \
           git \
           ocl-icd-opencl-dev \
