@@ -104,9 +104,10 @@ if (WIN32)
     set(Boost_COMPILER   -vc${VISUAL_STUDIO_VERSION})
     set(Boost_THREADAPI  win32)
 else()
-    set(BOOST_INCLUDEDIR "/usr/local/include/boost")
+    set(BOOST_INCLUDEDIR "/usr/local/include")
     set(BOOST_LIBRARYDIR "/usr/local/lib")
 endif()
+set(Boost_NO_SYSTEM_PATHS ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(Boost_DEBUG             ON)
     set(Boost_USE_DEBUG_LIBS    ON)
@@ -165,6 +166,9 @@ if (BUILD_NVIDIA)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90a,code=sm_90a") # Hopper
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_100,code=sm_100") # Blackwell
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_103,code=sm_103") # Blackwell
     ### Macros C++
     add_compile_definitions(CUDA_ENABLE)
 endif()

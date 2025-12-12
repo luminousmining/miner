@@ -1,0 +1,127 @@
+name: Build Linux
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install base dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential \
+                                libstdc++-12-dev \
+                                libc++abi-12-dev \
+                                gnutls-dev \
+                                cppcheck \
+                                checkinstall \
+                                clang-15 \
+                                clang++-15\
+                                libx11-dev \
+                                wget \
+                                git
+
+    - name: Cache dependencies
+      id: cache-deps
+      uses: actions/cache@v4
+      with:
+        path: |
+          /usr/local/include
+          /usr/local/lib
+          /usr/local/ssl
+          /usr/local/cuda-12.9
+        key: ${{ runner.os }}-deps-${{ hashFiles('.github/workflows/**') }}-v1
+
+    - name: Install CMake 3.26.4
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: |
+        wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh --no-check-certificate
+        sudo chmod +x cmake-3.26.4-linux-x86_64.sh
+        sudo ./cmake-3.26.4-linux-x86_64.sh --skip-license --prefix=/usr/local
+        rm cmake-3.26.4-linux-x86_64.sh
+
+    - name: Install OpenSSL 1.1.1
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: |
+        git clone --depth 1 --branch OpenSSL_1_1_1t https://github.com/openssl/openssl.git
+        cd openssl
+        ./Configure
+        make -j$(nproc)
+        sudo make install
+        cd ..
+        rm -rf openssl
+
+    - name: Install OpenCL SDK
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: |
+        git clone https://github.com/KhronosGroup/OpenCL-SDK.git
+        cd OpenCL-SDK
+        git fetch --all
+        git checkout tags/v2024.10.24
+        git submodule init
+        git submodule update
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_TESTING=OFF \
+          -DBUILD_DOCS=OFF \
+          -DBUILD_EXAMPLES=OFF \
+          -DBUILD_TESTS=OFF \
+          -DOPENCL_SDK_BUILD_SAMPLES=OFF \
+          -DOPENCL_SDK_TEST_SAMPLES=OFF \
+          -DCMAKE_INSTALL_PREFIX=/usr/local
+        sudo cmake --build . --target install --parallel $(nproc)
+        cd ../..
+        rm -rf OpenCL-SDK
+
+    - name: Install CUDA 12.9
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: |
+        wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+        sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
+        wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/12.9.0/local_installers/cuda-repo-ubuntu2204-12-9-local_12.9.0-560.35.03-1_amd64.deb
+        sudo dpkg -i cuda-repo-ubuntu2204-12-9-local_12.9.0-560.35.03-1_amd64.deb
+        sudo cp /var/cuda-repo-ubuntu2204-12-9-local/cuda-*-keyring.gpg /usr/share/keyrings/
+        sudo apt-get update
+        sudo apt-get -y install cuda-toolkit-12-9
+        echo "/usr/local/cuda-12.9/bin" >> $GITHUB_PATH
+        echo "LD_LIBRARY_PATH=/usr/local/cuda-12.9/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
+    - name: Install Boost 1.86.0
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: |
+        wget --no-check-certificate https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
+        tar -xzf boost_1_86_0.tar.gz
+        cd boost_1_86_0
+        ./bootstrap.sh --prefix=/usr/local
+        ./b2 -j$(nproc) debug release
+        sudo ./b2 install
+        cd ..
+        rm -rf boost_1_86_0 boost_1_86_0.tar.gz
+
+    - name: Configure project
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build project
+      run: |
+        cd build
+        cmake --build . --config Release --parallel $(nproc)
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: build/
+        retention-days: 7
