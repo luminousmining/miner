@@ -41,7 +41,7 @@ if (BUILD_NVIDIA)
         benchmark/cuda/kawpow/kawpow_lm9.cu
     )
 
-    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE CUDA_ENABLE)
+    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
 
     include_directories(${LIB_BENCH_NVIDIA} PUBLIC
         ${CUDA_INCLUDE_DIRS}
