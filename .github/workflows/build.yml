@@ -311,7 +311,7 @@ jobs:
       run: |
         cd build
         # Build with all available CPU cores
-        cmake --build . --config Release -j$(nproc)
+        cmake --build . --config Release
 
     - name: Clean build intermediates
       run: |
