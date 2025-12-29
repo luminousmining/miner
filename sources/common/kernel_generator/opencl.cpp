@@ -1,3 +1,5 @@
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
 
 #include <common/error/opencl_error.hpp>
@@ -114,3 +116,5 @@ bool common::KernelGeneratorOpenCL::build(
     built = true;
     return built;
 }
+
+#endif
