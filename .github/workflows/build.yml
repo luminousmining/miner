@@ -75,14 +75,14 @@ jobs:
           /usr/local/lib/libboost_*
         key: boost-1.86.0-ubuntu-22.04-static-v2
 
-    - name: Cache OpenCL 3.0.17
+    - name: Cache OpenCL 3.0.19
       id: cache-opencl
       uses: actions/cache@v4
       with:
         path: |
           /usr/local/include/CL
           /usr/local/lib/libOpenCL.so*
-        key: opencl-3.0.17-ubuntu-22.04-v2
+        key: opencl-3.0.19-ubuntu-22.04-v2
 
     #==========================================================================
     # CUDA 13.1 INSTALLATION
@@ -203,33 +203,47 @@ jobs:
         echo "✅ Boost 1.86.0 installed successfully"
 
     #==========================================================================
-    # OPENCL 3.0.17 INSTALLATION
+    # OPENCL 3.0.19 INSTALLATION
     #==========================================================================
 
-    - name: Install OpenCL 3.0.17
+    - name: Install OpenCL SDK 3.0.19
       if: steps.cache-opencl.outputs.cache-hit != 'true'
       run: |
-        # Clone OpenCL-Headers
-        git clone --depth 1 --branch v2024.10.24 https://github.com/KhronosGroup/OpenCL-Headers.git
-        cd OpenCL-Headers
-        sudo cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
-        sudo cmake --build build --target install
-        cd ..
+        echo "📥 Cloning OpenCL-SDK..."
+        git clone --depth 1 https://github.com/KhronosGroup/OpenCL-SDK.git
+        cd OpenCL-SDK
 
-        # Clone OpenCL-ICD-Loader
-        git clone --depth 1 --branch v2024.10.24 https://github.com/KhronosGroup/OpenCL-ICD-Loader.git
-        cd OpenCL-ICD-Loader
-        sudo cmake -B build \
-          -DCMAKE_INSTALL_PREFIX=/usr/local \
-          -DOPENCL_ICD_LOADER_HEADERS_DIR=/usr/local/include
-        sudo cmake --build build --target install
-        cd ..
+        echo "🔄 Fetching tags..."
+        git fetch --all --tags
+        git checkout tags/v2025.07.23
 
-        # CLEAN UP OPENCL FILES
-        echo "🧹 Cleaning up OpenCL installation files..."
-        sudo rm -rf OpenCL-Headers OpenCL-ICD-Loader
+        echo "📦 Initializing submodules..."
+        git submodule init
+        git submodule update
 
-        echo "✅ OpenCL 3.0.17 installed successfully"
+        echo "🏗️ Configuring OpenCL-SDK build..."
+        mkdir build
+        cd build
+
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_TESTING=OFF \
+          -DBUILD_DOCS=OFF \
+          -DBUILD_EXAMPLES=OFF \
+          -DBUILD_TESTS=OFF \
+          -DOPENCL_SDK_BUILD_SAMPLES=OFF \
+          -DOPENCL_SDK_TEST_SAMPLES=OFF \
+          -DCMAKE_INSTALL_PREFIX=/usr/local
+
+        echo "🔨 Building and installing OpenCL-SDK..."
+        sudo cmake --build . --target install
+
+        cd ../..
+
+        echo "🧹 Cleaning up OpenCL-SDK sources..."
+        sudo rm -rf OpenCL-SDK
+
+        echo "✅ OpenCL SDK 3.0.19 installed successfully"
 
     #==========================================================================
     # VERIFY DEPENDENCIES
@@ -272,7 +286,7 @@ jobs:
         # OpenCL version
         if [ -f "/usr/local/include/CL/cl.h" ]; then
           OPENCL_VERSION=$(grep "#define CL_TARGET_OPENCL_VERSION" /usr/local/include/CL/cl.h | awk '{print $3}')
-          echo "✓ OpenCL: 3.0.17 (target: ${OPENCL_VERSION})"
+          echo "✓ OpenCL: 3.0.19 (target: ${OPENCL_VERSION})"
         else
           echo "✗ OpenCL not found"
           exit 1
@@ -385,7 +399,7 @@ jobs:
         echo "📦 CUDA:        13.1 (Blackwell support)"
         echo "📦 Boost:       1.86.0"
         echo "📦 OpenSSL:     1.1.1"
-        echo "📦 OpenCL:      3.0.17"
+        echo "📦 OpenCL:      3.0.19"
         echo "📦 Compiler:    Clang 15"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
