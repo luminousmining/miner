@@ -31,9 +31,11 @@ jobs:
           clang++-15 \
           wget \
           git \
-          ocl-icd-opencl-dev \
-          opencl-headers \
           libgnutls28-dev
+
+        # Clean apt cache
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
         
         # Clean apt cache
         sudo apt-get clean
