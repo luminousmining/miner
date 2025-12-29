@@ -83,8 +83,12 @@ jobs:
       with:
         path: |
           /usr/local/include/CL
+          /usr/local/include/opencl
           /usr/local/lib/libOpenCL.so*
-        key: opencl-3.0.19-ubuntu-22.04-v2
+          /usr/local/lib/cmake/OpenCL
+          /usr/local/share/OpenCL
+        key: opencl-sdk-3.0.19-ubuntu-22.04-v1
+
 
     #==========================================================================
     # CUDA 13.1 INSTALLATION
