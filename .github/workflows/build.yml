@@ -311,17 +311,21 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -B build \
+        CMAKE_CMD="cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
           -DBUILD_NVIDIA=ON \
-          -DBUILD_AMD=ON \
+          -DBUILD_AMD=OFF \
           -DBUILD_CPU=ON \
           -DENABLE_LTO=OFF \
-          -DENABLE_NATIVE=OFF
+          -DENABLE_NATIVE=OFF"
+
+        $CMAKE_CMD
+        $CMAKE_CMD
       env:
         CUDA_HOME: /usr/local/cuda-13.1
         CUDACXX: /usr/local/cuda-13.1/bin/nvcc
         LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/ssl/lib
+
 
     #==========================================================================
     # BUILD PROJECT
