@@ -184,22 +184,16 @@ jobs:
       if: steps.cache-boost.outputs.cache-hit != 'true'
       run: |
         # Download Boost 1.86.0
-        wget https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
+        wget --no-check-certificate https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
         tar -xzf boost_1_86_0.tar.gz
         cd boost_1_86_0
 
-        # Bootstrap Boost build system
-        ./bootstrap.sh --prefix=/usr/local --with-libraries=system,filesystem,thread,chrono,date_time,atomic
+        # Bootstrap Boost
+        ./bootstrap.sh --prefix=/usr/local
 
-        # Build and install static libraries
-        sudo ./b2 install \
-          --prefix=/usr/local \
-          variant=release \
-          link=static \
-          threading=multi \
-          runtime-link=shared \
-          cxxflags="-std=c++17" \
-          -j$(nproc)
+        # Build and install libraries
+        ./b2 release
+        sudo ./b2 install
 
         # CLEAN UP BOOST FILES
         cd ..
