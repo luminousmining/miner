@@ -144,37 +144,30 @@ jobs:
     - name: Install OpenSSL 1.1.1
       if: steps.cache-openssl.outputs.cache-hit != 'true'
       run: |
-        # Download OpenSSL 1.1.1w (latest 1.1.1 version)
-        wget https://www.openssl.org/source/openssl-1.1.1w.tar.gz
-        tar -xzf openssl-1.1.1w.tar.gz
-        cd openssl-1.1.1w
+        git clone https://github.com/openssl/openssl.git
+        cd openssl
 
-        # Configure for installation in /usr/local/ssl
-        ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
-
-        # Build with all CPU cores
-        make -j$(nproc)
-
-        # Install (no sudo needed as cache handles it)
+        ./Configure
+        make
         sudo make install
 
         # CLEAN UP OPENSSL FILES
         cd ..
         echo "🧹 Cleaning up OpenSSL installation files..."
-        sudo rm -rf openssl-1.1.1w openssl-1.1.1w.tar.gz
+        sudo rm -rf openssl
 
         echo "✅ OpenSSL 1.1.1 installed successfully"
 
-    - name: Setup OpenSSL environment
-      run: |
-        # Add OpenSSL to library path
-        echo "LD_LIBRARY_PATH=/usr/local/ssl/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-        echo "OPENSSL_ROOT_DIR=/usr/local/ssl" >> $GITHUB_ENV
-        echo "OPENSSL_INCLUDE_DIR=/usr/local/ssl/include" >> $GITHUB_ENV
+    # - name: Setup OpenSSL environment
+    #   run: |
+    #     # Add OpenSSL to library path
+    #     echo "LD_LIBRARY_PATH=/usr/local/ssl/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+    #     echo "OPENSSL_ROOT_DIR=/usr/local/ssl" >> $GITHUB_ENV
+    #     echo "OPENSSL_INCLUDE_DIR=/usr/local/ssl/include" >> $GITHUB_ENV
 
-        # Update dynamic linker cache
-        echo "/usr/local/ssl/lib" | sudo tee /etc/ld.so.conf.d/openssl.conf
-        sudo ldconfig
+    #     # Update dynamic linker cache
+    #     echo "/usr/local/ssl/lib" | sudo tee /etc/ld.so.conf.d/openssl.conf
+    #     sudo ldconfig
 
     #==========================================================================
     # BOOST 1.86.0 INSTALLATION
