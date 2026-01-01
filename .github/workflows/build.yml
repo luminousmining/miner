@@ -158,17 +158,6 @@ jobs:
 
         echo "✅ OpenSSL 1.1.1 installed successfully"
 
-    # - name: Setup OpenSSL environment
-    #   run: |
-    #     # Add OpenSSL to library path
-    #     echo "LD_LIBRARY_PATH=/usr/local/ssl/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-    #     echo "OPENSSL_ROOT_DIR=/usr/local/ssl" >> $GITHUB_ENV
-    #     echo "OPENSSL_INCLUDE_DIR=/usr/local/ssl/include" >> $GITHUB_ENV
-
-    #     # Update dynamic linker cache
-    #     echo "/usr/local/ssl/lib" | sudo tee /etc/ld.so.conf.d/openssl.conf
-    #     sudo ldconfig
-
     #==========================================================================
     # BOOST 1.86.0 INSTALLATION
     #==========================================================================
@@ -260,11 +249,11 @@ jobs:
         fi
 
         # OpenSSL version
-        if [ -f "/usr/local/ssl/bin/openssl" ]; then
-          echo "✓ OpenSSL: $(/usr/local/ssl/bin/openssl version)"
+        if [ -f "/usr/local/lib64/libssl.so" ]; then
+          echo "✓ OpenSSL: found"
         else
           echo "✗ OpenSSL not found"
-          # exit 1
+          exit 1
         fi
 
         # Boost version
