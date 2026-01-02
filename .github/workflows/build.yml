@@ -290,7 +290,7 @@ jobs:
         CMAKE_CMD="cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
           -DBUILD_NVIDIA=ON \
-          -DBUILD_AMD=OFF \
+          -DBUILD_AMD=ON \
           -DBUILD_CPU=ON \
           -DENABLE_LTO=OFF \
           -DENABLE_NATIVE=OFF"
