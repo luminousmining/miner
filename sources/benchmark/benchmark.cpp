@@ -81,6 +81,12 @@ void benchmark::Benchmark::setMultiplicator(uint32_t const _multiplicator)
 }
 
 
+void benchmark::Benchmark::setDivisor(uint32_t const _divisor)
+{
+    divisor = _divisor;
+}
+
+
 void benchmark::Benchmark::setGrid(uint32_t const _threads, uint32_t _blocks)
 {
     threads = _threads;
@@ -116,7 +122,7 @@ void benchmark::Benchmark::stopChrono(uint32_t const index)
     stats.increaseKernelExecuted();
     stats.stop();
     stats.updateHashrate();
-    double const hashrate{ stats.getHashrate() * multiplicator };
+    double const hashrate{ (stats.getHashrate() * multiplicator) / divisor };
     logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
 
     ////////////////////////////////////////////////////////////////////////////

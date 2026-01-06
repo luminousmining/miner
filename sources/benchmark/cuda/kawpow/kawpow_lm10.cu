@@ -137,7 +137,7 @@ void loop_math(
     uint32_t const lane_id,
     uint4 const* __restrict__ const dag,
     uint32_t* __restrict__ const hash,
-    uint32_t* __restrict__ const header_dag)
+    uint32_t const* __restrict__ const header_dag)
 {
     #pragma unroll 1
     for (uint32_t cnt = 0u; cnt < COUNT_DAG; ++cnt)
@@ -188,7 +188,7 @@ void reduce_hash(
 
 __device__ __forceinline__
 void initialize_header_dag(
-    uint32_t* const __restrict__ header_dag,
+    uint32_t* __restrict__ const header_dag,
     uint32_t const* __restrict__ const dag,
     uint32_t const thread_id)
 {
@@ -204,68 +204,84 @@ void initialize_header_dag(
 
 
 __global__
-void kernel_kawpow_lm7(
+void kernel_kawpow_lm10(
     t_result* const __restrict__ result,
     uint4 const* __restrict__ const header,
     uint4 const* __restrict__ const dag,
-    uint64_t const startNonce,
-    uint32_t const nonceComputed)
+    uint64_t const startNonce)
 {
     ////////////////////////////////////////////////////////////////////////
     __shared__ uint32_t header_dag[MODULE_CACHE];
+    __shared__ uint32_t shared_digest[16 * LANES];
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t hash[REGS];
     uint32_t digest[LANES];
     uint32_t state_init[STATE_LEN];
-    uint32_t lsb;
-    uint32_t msb;
+    uint32_t lsb, msb;
 
     ////////////////////////////////////////////////////////////////////////
-    uint32_t const thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
     uint32_t const lane_id = threadIdx.x & LANE_ID_MAX;
-    uint64_t nonce = startNonce + thread_id;
+    uint32_t const warp_id = threadIdx.x / LANES;
+    uint64_t const base_nonce = startNonce + (blockIdx.x * 16) + warp_id;
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t const* const dag_u32 = (uint32_t*)dag;
     initialize_header_dag(header_dag, dag_u32, threadIdx.x);
 
-    #pragma unroll 1
-    for (uint32_t i = 0u; i < 10u; ++i)
+    ////////////////////////////////////////////////////////////////////////
+    create_seed(base_nonce, state_init, header, &lsb, &msb);
+
+    ////////////////////////////////////////////////////////////////////////
+    uint32_t const target_lane = warp_id;  // Warp 0 traite lane 0, etc.
+
+    ////////////////////////////////////////////////////////////////////////
+    uint32_t lane_lsb = __shfl_sync(0xffffffff, lsb, target_lane, LANES);
+    uint32_t lane_msb = __shfl_sync(0xffffffff, msb, target_lane, LANES);
+
+    ////////////////////////////////////////////////////////////////////////
+    fill_hash(lane_id, lane_lsb, lane_msb, hash);
+    loop_math(lane_id, dag, hash, header_dag);
+    
+    uint32_t local_digest[LANES];
+    reduce_hash(true, hash, local_digest);
+
+    ////////////////////////////////////////////////////////////////////////
+    if (lane_id == 0)
     {
-        ////////////////////////////////////////////////////////////////////////
-        create_seed(nonce, state_init, header, &lsb, &msb);
-
-        ////////////////////////////////////////////////////////////////////////
-        #pragma unroll 1
-        for (uint32_t l_id = 0u; l_id < LANES; ++l_id)
+        #pragma unroll
+        for (uint32_t i = 0; i < LANES; ++i)
         {
-            uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
-            uint32_t const lane_msb = reg_load(msb, l_id, LANES);
-            fill_hash(lane_id, lane_lsb, lane_msb, hash);
-            loop_math(lane_id, dag, hash, header_dag);
-            reduce_hash(l_id == lane_id, hash, digest);
+            shared_digest[warp_id * LANES + i] = local_digest[i];
         }
+    }
+    __syncthreads();
 
-        uint64_t const bytes = is_valid(state_init, digest);
-        if (bytes == 0ull)
+    ////////////////////////////////////////////////////////////////////////
+    if (lane_id == 0)
+    {
+        #pragma unroll
+        for (uint32_t i = 0; i < LANES; ++i)
         {
+            digest[i] = shared_digest[i * LANES + warp_id];
+        }
+        
+        uint64_t const bytes = is_valid(state_init, digest);
+        if (bytes < 1ull)
+        {
+            result->found = true;
             uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
             if (index < 1)
             {
-                result->found = true;
-                result->nonce = nonce;
+                result->nonce = base_nonce;
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        nonce += nonceComputed;
     }
 }
 
 
 __host__
-bool kawpow_lm7(
+bool kawpow_lm10(
     cudaStream_t stream,
     t_result* result,
     uint32_t* const header,
@@ -275,13 +291,12 @@ bool kawpow_lm7(
 {
     uint64_t const nonce{ 0ull };
 
-    kernel_kawpow_lm7<<<blocks, threads, 0, stream>>>
+    kernel_kawpow_lm10<<<blocks, threads, 0, stream>>>
     (
         result,
         (uint4*)header,
         (uint4*)dag,
-        nonce,
-        blocks * threads
+        nonce
     );
     CUDA_ER(cudaStreamSynchronize(stream));
     CUDA_ER(cudaGetLastError());

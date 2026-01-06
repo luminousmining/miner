@@ -81,11 +81,11 @@ def create_graphs(device_data, device_type):
 
 
 # Create graphs for NVIDIA
-if data['nvidia']:
+if 'nvidia' in data and data['nvidia']:
     create_graphs(data['nvidia'], 'nvidia')
 
 # Create graphs for AMD
-if data['amd']:
+if 'amd' in data and data['amd']:
     create_graphs(data['amd'], 'amd')
 
 print("Graphs successfully generated!")

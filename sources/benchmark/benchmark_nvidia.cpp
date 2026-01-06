@@ -418,6 +418,23 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                    threads)
     )
 
+    // From: lm6
+    // Remove loop by LANES, using only warp parrallelism
+    setDivisor(16u);
+    RUN_BENCH
+    (
+        "kawpow: lm10"s,
+        commonLoop,
+        256u,
+        1024u,
+        kawpow_lm10(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(headerHash);

@@ -22,6 +22,7 @@
         stopChrono(i);                                                         \
     }                                                                          \
     setMultiplicator(1u);                                                      \
+    setDivisor(1u);                                                            \
     logInfo() << "================================";
 
 
@@ -61,12 +62,14 @@ namespace benchmark
         uint32_t                         threads{ 32u };
         uint64_t                         nonceComputed{ 1ull };
         uint32_t                         multiplicator{ 1u };
+        uint32_t                         divisor{ 1u };
         statistical::Statistical         stats{};
         std::vector<benchmark::Snapshot> snapshots{};
 
         void writeReport();
 
         void setMultiplicator(uint32_t const _multiplicator);
+        void setDivisor(uint32_t const _divisor);
         void setGrid(uint32_t const _threads, uint32_t _blocks);
         void startChrono(uint32_t const index, std::string const& benchName);
         void stopChrono(uint32_t const index);

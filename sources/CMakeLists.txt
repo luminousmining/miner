@@ -39,6 +39,7 @@ if (BUILD_NVIDIA)
         benchmark/cuda/kawpow/kawpow_lm7.cu
         benchmark/cuda/kawpow/kawpow_lm8.cu
         benchmark/cuda/kawpow/kawpow_lm9.cu
+        benchmark/cuda/kawpow/kawpow_lm10.cu
     )
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
