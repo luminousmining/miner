@@ -150,7 +150,7 @@ void loop_math(
         dagIndex += ((lane_id ^ cnt) % LANES);
 
         uint4 entries = dag[dagIndex];
-        sequence_math_random(header_dag, hash, &entries);
+        sequence_math_random_cache_only(header_dag, hash, &entries);
     }
 }
 
@@ -211,7 +211,7 @@ void kernel_kawpow_lm9(
     uint64_t const startNonce)
 {
     ////////////////////////////////////////////////////////////////////////
-    __shared__ uint32_t header_dag[MODULE_CACHE];
+    // __shared__ uint32_t header_dag[MODULE_CACHE];
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t hash[REGS];
@@ -226,8 +226,10 @@ void kernel_kawpow_lm9(
     uint64_t const nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
-    uint32_t const* const dag_u32 = (uint32_t*)dag;
-    initialize_header_dag(header_dag, dag_u32, threadIdx.x);
+    // uint32_t const* const dag_u32 = (uint32_t*)dag;
+    // initialize_header_dag(header_dag, dag_u32, threadIdx.x);
+
+    uint32_t const* const header_dag = (uint32_t*)dag;
 
     ////////////////////////////////////////////////////////////////////////
     create_seed(nonce, state_init, header, &lsb, &msb);

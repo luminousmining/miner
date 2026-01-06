@@ -354,6 +354,7 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                    threads)
     )
     // share 4096 first item of dag
+    // using __threadfence_block on header initialize
     // using __threadfence_block on dag load
     RUN_BENCH
     (
@@ -403,7 +404,6 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     )
     // share 4096 first item of dag
     // header_dag using cache read-only
-    // using __threadfence_block on dag load
     RUN_BENCH
     (
         "kawpow: lm9"s,
