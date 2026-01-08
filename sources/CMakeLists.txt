@@ -40,6 +40,15 @@ if (BUILD_NVIDIA)
         benchmark/cuda/kawpow/kawpow_lm8.cu
         benchmark/cuda/kawpow/kawpow_lm9.cu
         benchmark/cuda/kawpow/kawpow_lm10.cu
+        benchmark/cuda/keccak/keccak_f800_lm1.cu
+        benchmark/cuda/keccak/keccak_f800_lm2.cu
+        benchmark/cuda/keccak/keccak_f800_lm3.cu
+        benchmark/cuda/keccak/keccak_f800_lm4.cu
+        benchmark/cuda/keccak/keccak_f800_lm5.cu
+        benchmark/cuda/keccak/keccak_f800_lm6.cu
+        benchmark/cuda/keccak/keccak_f800_lm7.cu
+        benchmark/cuda/keccak/keccak_f800_lm8.cu
+        benchmark/cuda/keccak/keccak_f800_lm9.cu
     )
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)

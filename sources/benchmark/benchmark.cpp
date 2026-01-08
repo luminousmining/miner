@@ -268,6 +268,10 @@ bool benchmark::Benchmark::initCleanResult64(
 void benchmark::Benchmark::runNvidia()
 {
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
+    if (false == runNvidiaKeccak())
+    {
+        logErr() << "Nvidia Keccak failled!";
+    }
     // if (false == runNvidiaEthash())
     // {
     //     logErr() << "Nvidia ETHASH failled!";
@@ -276,10 +280,10 @@ void benchmark::Benchmark::runNvidia()
     // {
     //     logErr() << "Nvidia AutolykosV2 failled!";
     // }
-    if (false == runNvidiaKawpow())
-    {
-        logErr() << "Nvidia Kawpow failled!";
-    }
+    // if (false == runNvidiaKawpow())
+    // {
+    //     logErr() << "Nvidia Kawpow failled!";
+    // }
 }
 #endif
 

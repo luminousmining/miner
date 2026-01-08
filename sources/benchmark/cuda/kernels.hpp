@@ -76,6 +76,7 @@ bool autolykos_v2_lm2(cudaStream_t stream,
                          uint32_t const blocks,                                \
                          uint32_t const threads
 
+
 bool kawpow_kawpowminer_1(PARAMETER_KAWPOW);
 bool kawpow_kawpowminer_2(PARAMETER_KAWPOW);
 bool kawpow_lm1(PARAMETER_KAWPOW);
@@ -88,5 +89,21 @@ bool kawpow_lm7(PARAMETER_KAWPOW);
 bool kawpow_lm8(PARAMETER_KAWPOW);
 bool kawpow_lm9(PARAMETER_KAWPOW);
 bool kawpow_lm10(PARAMETER_KAWPOW);
+
+
+////////////////////////////////////////////////////////////////////////////////
+#define PARAMETER_KECCAK_F800 cudaStream_t stream,                             \
+                         uint32_t const blocks,                                \
+                         uint32_t const threads
+
+bool keccak_f800_lm1(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm2(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm3(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm4(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm5(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm6(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm7(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm8(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm9(PARAMETER_KECCAK_F800);
 
 #endif

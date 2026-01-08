@@ -83,6 +83,7 @@ namespace benchmark
         bool runNvidiaEthash();
         bool runNvidiaAutolykosv2();
         bool runNvidiaKawpow();
+        bool runNvidiaKeccak();
 #endif
 
 #if defined(AMD_ENABLE)

@@ -7,8 +7,6 @@
 #include <algo/hash_utils.hpp>
 #include <benchmark/benchmark.hpp>
 #include <benchmark/cuda/kernels.hpp>
-#include <common/formater_hashrate.hpp>
-#include <common/log/log.hpp>
 #include <common/custom.hpp>
 
 
