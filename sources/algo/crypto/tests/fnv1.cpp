@@ -3,14 +3,14 @@
 #include <algo/crypto/fnv1.hpp>
 
 
-struct Fnv1est : public testing::Test
+struct Fnv1Test : public testing::Test
 {
-    Fnv1est() = default;
-    ~Fnv1est() = default;
+    Fnv1Test() = default;
+    ~Fnv1Test() = default;
 };
 
 
-TEST_F(Fnv1est, fnv1)
+TEST_F(Fnv1Test, fnv1)
 {
     EXPECT_EQ(1677762180u, algo::fnv1(100u, 1000u));
     EXPECT_EQ(3892717148u, algo::fnv1(1000u, 100u));
@@ -21,7 +21,7 @@ TEST_F(Fnv1est, fnv1)
 
 
 // https://github.com/ethereum/EIPs/blob/master/assets/eip-1057/test-vectors.md
-TEST_F(Fnv1est, fromETH)
+TEST_F(Fnv1Test, fromETH)
 {
     EXPECT_EQ(0xD8DCF964, algo::fnv1(0x811C9DC5, 0xDDD0A47B));
     EXPECT_EQ(0xE4F472A8, algo::fnv1(0XD37EE61A, 0XEE304846));
@@ -29,7 +29,7 @@ TEST_F(Fnv1est, fromETH)
 }
 
 
-TEST_F(Fnv1est, fnv1a)
+TEST_F(Fnv1Test, fnv1a)
 {
     EXPECT_EQ(2349176164u, algo::fnv1a(100u, 1000u));
     EXPECT_EQ(2349176164u, algo::fnv1a(1000u, 100u));
