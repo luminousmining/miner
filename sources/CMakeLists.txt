@@ -27,6 +27,7 @@ if (BUILD_NVIDIA)
         benchmark/cuda/autolykos_v2/autolykos_v2_lm1.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_lm2.cu
         benchmark/cuda/common/array.cu
+        benchmark/cuda/ethash/ethash_base.cu
         benchmark/cuda/ethash/ethash_ethminer.cu
         benchmark/cuda/ethash/ethash_lm1.cu
         benchmark/cuda/ethash/ethash_lm2.cu

@@ -31,10 +31,11 @@ namespace algo
 
     union u_hash1024
     {
-        uint64_t   word64[16];
-        uint32_t   word32[32];
-        uint8_t    ubytes[128];
-        int8_t     bytes[128];
+        union u_hash512 h512[2];
+        uint64_t        word64[16];
+        uint32_t        word32[32];
+        uint8_t         ubytes[128];
+        int8_t          bytes[128];
     };
 
     union u_hash2048
@@ -52,7 +53,6 @@ namespace algo
         uint8_t    ubytes[384];
         int8_t     bytes[384];
     };
-
 
     union u_hash4096
     {

@@ -38,13 +38,34 @@ bool benchmark::Benchmark::runNvidiaEthash()
     uint32_t const commonLoop{ 10u };
 
     ////////////////////////////////////////////////////////////////////////////
+    if (true == init_ethash_base(&headerHash, dagItems))
+    {
+        // Official etherminer implement
+        RUN_BENCH
+        (
+            "ethash: ethash_base"s,
+            commonLoop,
+            128u,
+            8192u,
+            ethash_base(
+                propertiesNvidia.cuStream,
+                result,
+                dagHash,
+                blocks,
+                threads)
+        )
+        BENCH_INIT_RESET_RESULT(result);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     if (true == init_ethash_ethminer(dagHash, &headerHash, dagItems))
     {
+        // Official etherminer implement
         RUN_BENCH
         (
             "ethash: ethminer"s,
             commonLoop,
-            256u,
+            128u,
             8192u,
             ethash_ethminer(
                 propertiesNvidia.cuStream,
@@ -58,6 +79,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
     ////////////////////////////////////////////////////////////////////////////
     if (true == init_ethash_lm1(&headerHash, dagItems))
     {
+        // Custom implement
         RUN_BENCH
         (
             "ethash: ethash_lm1"s,
@@ -77,6 +99,7 @@ bool benchmark::Benchmark::runNvidiaEthash()
     ////////////////////////////////////////////////////////////////////////////
     if (true == init_ethash_lm2(&headerHash, dagItems))
     {
+        // Integer Division (fast_mod)
         RUN_BENCH
         (
             "ethash: ethash_lm2"s,

@@ -94,7 +94,13 @@ bool autolykos_v2_lm2(cudaStream_t stream,
                                 algo::hash1024* const dag,                     \
                                 uint32_t const blocks,                         \
                                 uint32_t const threads
-
+bool init_ethash_base(algo::hash256 const* header_hash,
+                      uint64_t const dag_number_item);
+bool ethash_base(cudaStream_t stream,
+                 t_result* const result,
+                 algo::hash1024* const dag,
+                 uint32_t const blocks,
+                 uint32_t const threads);
 bool init_ethash_ethminer(algo::hash1024 const* dagHash,
                           algo::hash256 const* headerHash,
                           uint64_t const dagNumberItem);
