@@ -1,18 +1,37 @@
-#pragma once
+///////////////////////////////////////////////////////////////////////////////
+#include <common/cast.hpp>
+#include <benchmark/result.hpp>
+
+///////////////////////////////////////////////////////////////////////////////
+#include <benchmark/cuda/common/common.cuh>
+
+///////////////////////////////////////////////////////////////////////////////
+#include <common/cuda/be_u64.cuh>
+#include <common/cuda/copy_u4.cuh>
+#include <common/cuda/register.cuh>
+
+///////////////////////////////////////////////////////////////////////////////
+#include <algo/crypto/cuda/fnv1.cuh>
+
+///////////////////////////////////////////////////////////////////////////////
+__constant__ uint4 d_header[2];
+__constant__ uint32_t d_dag_number_item;
+
+///////////////////////////////////////////////////////////////////////////////
+#include <algo/crypto/cuda/keccak_f1600.cuh>
 
 
-#define SEARCH_PARRALLEL_LANE 8u
+constexpr uint32_t THREADS_PER_HASH{ 8u };
 
 
 __device__ __forceinline__
 void keccak_f1600_first(
     uint64_t* __restrict__ const state,
     uint4* __restrict__ const seed,
-    uint4 const* __restrict__ const header,
     uint64_t const nonce)
 {
-    toU64(state, 0u, header[0]);
-    toU64(state, 2u, header[1]);
+    toU64(state, 0u, d_header[0]);
+    toU64(state, 2u, d_header[1]);
 
     state[4] = nonce;
     state[5] = 1ull;
@@ -147,6 +166,7 @@ void keccak_f1600_final(
 
 __device__ __forceinline__
 uint32_t mix_reduce(
+    uint4 const* __restrict__ const dag,
     uint4& matrix,
     uint32_t const word,
     uint32_t const thread_lane_id)
@@ -158,29 +178,31 @@ uint32_t mix_reduce(
         uint32_t const index_gap{ i * 4u };
         uint32_t const index_mix{ i & 7u };
 
+        // TODO: Should be possible to use texture memory for DAG ?
+        // TODO: Remove modulo by "Integer Division by Invariants" method
         {
-            start_index = fnv1(index_gap ^ word, reg_load(matrix.x, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1(index_gap ^ word, reg_load(matrix.x, index_mix, THREADS_PER_HASH));
             start_index %= d_dag_number_item;
             start_index *= 8u;
-            fnv1(matrix, d_dag[start_index + thread_lane_id]);
+            fnv1(matrix, dag[start_index + thread_lane_id]);
         }
         {
-            start_index = fnv1((index_gap + 1u) ^ word, reg_load(matrix.y, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1((index_gap + 1u) ^ word, reg_load(matrix.y, index_mix, THREADS_PER_HASH));
             start_index %= d_dag_number_item;
             start_index *= 8u;
-            fnv1(matrix, d_dag[start_index + thread_lane_id]);
+            fnv1(matrix, dag[start_index + thread_lane_id]);
         }
         {
-            start_index = fnv1((index_gap + 2u) ^ word, reg_load(matrix.z, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1((index_gap + 2u) ^ word, reg_load(matrix.z, index_mix, THREADS_PER_HASH));
             start_index %= d_dag_number_item;
             start_index *= 8u;
-            fnv1(matrix, d_dag[start_index + thread_lane_id]);
+            fnv1(matrix, dag[start_index + thread_lane_id]);
         }
         {
-            start_index = fnv1((index_gap + 3u) ^ word, reg_load(matrix.w, index_mix, SEARCH_PARRALLEL_LANE));
+            start_index = fnv1((index_gap + 3u) ^ word, reg_load(matrix.w, index_mix, THREADS_PER_HASH));
             start_index %= d_dag_number_item;
             start_index *= 8u;
-            fnv1(matrix, d_dag[start_index + thread_lane_id]);
+            fnv1(matrix, dag[start_index + thread_lane_id]);
         }
     }
 
@@ -190,6 +212,7 @@ uint32_t mix_reduce(
 
 __device__ __forceinline__
 void ethash_create_mix_hash(
+    uint4 const* __restrict__ const dag,
     uint64_t* const __restrict__ state,
     uint4 const* const __restrict__ seed,
     uint32_t const thread_id)
@@ -200,7 +223,7 @@ void ethash_create_mix_hash(
     uint32_t word0;
 
     #pragma unroll
-    for (uint32_t lane_id{ 0u }; lane_id < SEARCH_PARRALLEL_LANE; ++lane_id)
+    for (uint32_t lane_id{ 0u }; lane_id < THREADS_PER_HASH; ++lane_id)
     {
         uint4 matrix;
         uint4 copy_matrix;
@@ -208,38 +231,40 @@ void ethash_create_mix_hash(
         #pragma unroll
         for (uint32_t i{ 0u }; i < 4u; ++i)
         {
-            copy_matrix.x = reg_load(seed[i].x, lane_id, SEARCH_PARRALLEL_LANE);
-            copy_matrix.y = reg_load(seed[i].y, lane_id, SEARCH_PARRALLEL_LANE);
-            copy_matrix.z = reg_load(seed[i].z, lane_id, SEARCH_PARRALLEL_LANE);
-            copy_matrix.w = reg_load(seed[i].w, lane_id, SEARCH_PARRALLEL_LANE);
+            copy_matrix.x = reg_load(seed[i].x, lane_id, THREADS_PER_HASH);
+            copy_matrix.y = reg_load(seed[i].y, lane_id, THREADS_PER_HASH);
+            copy_matrix.z = reg_load(seed[i].z, lane_id, THREADS_PER_HASH);
+            copy_matrix.w = reg_load(seed[i].w, lane_id, THREADS_PER_HASH);
             if (i == index_seed)
             {
                 matrix = copy_matrix;
             }
+            // TODO: Delete this if, we can load data before
             if (i == 0)
             {
                 word0 = copy_matrix.x;
             }
         }
 
-        uint32_t const matrix_reduce{ mix_reduce(matrix, word0, thread_lane_id) };
+        uint32_t const matrix_reduce{ mix_reduce(dag, matrix, word0, thread_lane_id) };
 
         uint4 const shuffle_1
         {
-            reg_load(matrix_reduce, 0, SEARCH_PARRALLEL_LANE),
-            reg_load(matrix_reduce, 1, SEARCH_PARRALLEL_LANE),
-            reg_load(matrix_reduce, 2, SEARCH_PARRALLEL_LANE),
-            reg_load(matrix_reduce, 3, SEARCH_PARRALLEL_LANE)
+            reg_load(matrix_reduce, 0, THREADS_PER_HASH),
+            reg_load(matrix_reduce, 1, THREADS_PER_HASH),
+            reg_load(matrix_reduce, 2, THREADS_PER_HASH),
+            reg_load(matrix_reduce, 3, THREADS_PER_HASH)
         };
 
         uint4 const shuffle_2
         {
-            reg_load(matrix_reduce, 4, SEARCH_PARRALLEL_LANE),
-            reg_load(matrix_reduce, 5, SEARCH_PARRALLEL_LANE),
-            reg_load(matrix_reduce, 6, SEARCH_PARRALLEL_LANE),
-            reg_load(matrix_reduce, 7, SEARCH_PARRALLEL_LANE)
+            reg_load(matrix_reduce, 4, THREADS_PER_HASH),
+            reg_load(matrix_reduce, 5, THREADS_PER_HASH),
+            reg_load(matrix_reduce, 6, THREADS_PER_HASH),
+            reg_load(matrix_reduce, 7, THREADS_PER_HASH)
         };
 
+        // TODO: Find way or loading can be do after
         if (lane_id == thread_lane_id)
         {
             toU64(state, 8u, shuffle_1);
@@ -251,46 +276,73 @@ void ethash_create_mix_hash(
 
 __device__ __forceinline__
 void check_nonce(
-    algo::ethash::Result* const result,
+    t_result* const result,
     uint64_t const state0,
     uint64_t const nonce)
 {
-    if (be_u64(state0) <= d_boundary)
+    uint64_t const bytes = be_u64(state0);
+    if (bytes <= 1ull)
     {
         result->found = true;
         uint32_t const index{ atomicAdd((uint32_t*)&result->count, 1) };
-        if (index < algo::ethash::MAX_RESULT)
+        if (index < 1)
         {
-            result->nonces[index] = nonce;
+            result->nonce = nonce;
         }
     }
 }
 
 
 __global__
-void search(
-    algo::ethash::Result* result,
-    uint64_t const startNonce)
+void kernel_ethash_lm1(
+    t_result* __restrict__ const result,
+    uint4 const* __restrict__ const dag,
+    uint64_t const start_nonce)
 {
     uint64_t state[25];
     uint4 seed[4];
     uint32_t const thread_id{ (blockIdx.x * blockDim.x) + threadIdx.x };
-    uint64_t const nonce{ thread_id + startNonce };
+    uint64_t const nonce{ thread_id + start_nonce };
 
-    keccak_f1600_first(state, seed, d_header, nonce);
-    ethash_create_mix_hash(state, seed, thread_id);
+    keccak_f1600_first(state, seed, nonce);
+    ethash_create_mix_hash(dag, state, seed, thread_id);
     keccak_f1600_final(state);
     check_nonce(result, state[0], nonce);
 }
 
 
 __host__
-void ethashSearch(
-    cudaStream_t stream,
-    algo::ethash::Result* result,
-    uint32_t const blocks,
-    uint32_t const threads,
-    uint64_t const startNonce)
+bool init_ethash_lm1(
+    algo::hash256 const* header_hash,
+    uint64_t const dag_number_item)
 {
-    search<<<blocks, threads, 0, stream>>>(result, startNonce);
+    uint4 const* header{ (uint4*)&header_hash };
+
+    CUDA_ER(cudaMemcpyToSymbol(d_header, header, sizeof(uint4) * 2));
+    CUDA_ER(cudaMemcpyToSymbol(d_dag_number_item, (void*)&dag_number_item, sizeof(uint32_t)));
+
+    return true;
+}
+
+
+__host__
+bool ethash_lm1(
+    cudaStream_t stream,
+    t_result* const result,
+    algo::hash1024* const dag,
+    uint32_t const blocks,
+    uint32_t const threads)
+{
+    uint64_t const nonce{ 0ull };
+
+    kernel_ethash_lm1<<<blocks, threads, 0, stream>>>
+    (
+        result,
+        (uint4*)dag,
+        nonce
+    );
+    CUDA_ER(cudaStreamSynchronize(stream));
+    CUDA_ER(cudaGetLastError());
+
+    return true;
 }

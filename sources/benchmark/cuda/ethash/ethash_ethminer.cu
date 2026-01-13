@@ -8,7 +8,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 __constant__ uint4* d_dag;
 __constant__ uint4 d_header[2];
-__constant__ uint64_t d_boundary;
 __constant__ uint32_t d_dag_number_item;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,7 +48,7 @@ uint64_t cuda_swab64(uint64_t const x)
 
 __global__
 void kernel_ethash_ethminer(
-    volatile t_result_64* result,
+    volatile t_result* result,
     uint64_t const startNonce)
 {
     uint2 state[12];
@@ -139,25 +138,16 @@ void kernel_ethash_ethminer(
     }
 
     uint64_t const final_state = ethash_keccak_f1600_final(state);
+    uint64_t const bytes = cuda_swab64(final_state);
 
-    if (cuda_swab64(final_state) > d_boundary)
+    if (bytes <= 1ull)
     {
-        uint32_t const index = atomicAdd((uint32_t*)&result->index, 1);
-        if (index >= MAX_RESULT_INDEX)
-        {
-            return;
-        }
-
         result->found = true;
-        result->nonce[index] = gid;
-        result->mix[index][0] = state[8].x;
-        result->mix[index][1] = state[8].y;
-        result->mix[index][2] = state[9].x;
-        result->mix[index][3] = state[9].y;
-        result->mix[index][4] = state[10].x;
-        result->mix[index][5] = state[10].y;
-        result->mix[index][6] = state[11].x;
-        result->mix[index][7] = state[11].y;
+        uint32_t const index{ atomicAdd((uint32_t*)&result->count, 1) };
+        if (index < 1)
+        {
+            result->nonce = nonce;
+        }
     }
 }
 
@@ -166,14 +156,12 @@ __host__
 bool init_ethash_ethminer(
     algo::hash1024 const* dagHash,
     algo::hash256 const* headerHash,
-    uint64_t const dagNumberItem,
-    uint64_t const boundary)
+    uint64_t const dagNumberItem)
 {
     uint4 const* header{ (uint4*)&headerHash };
     uint4 const* dag{ (uint4*)dagHash };
 
     CUDA_ER(cudaMemcpyToSymbol(d_header, header, sizeof(uint4) * 2));
-    CUDA_ER(cudaMemcpyToSymbol(d_boundary, (void*)&boundary, sizeof(uint64_t)));
     CUDA_ER(cudaMemcpyToSymbol(d_dag_number_item, (void*)&dagNumberItem, sizeof(uint32_t)));
     CUDA_ER(cudaMemcpyToSymbol(d_dag, &dag, sizeof(uint4*)));
 
@@ -184,7 +172,7 @@ bool init_ethash_ethminer(
 __host__
 bool ethash_ethminer(
         cudaStream_t stream,
-        t_result_64* result,
+        t_result* const result,
         uint32_t const blocks,
         uint32_t const threads)
 {

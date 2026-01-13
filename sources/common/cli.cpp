@@ -6,6 +6,7 @@
 #include <common/cli.hpp>
 #include <common/log/log.hpp>
 
+
 std::vector<std::string> optionDeviceEnable;
 std::vector<std::string> optionDevicePool;
 std::vector<std::string> optionDevicePort;

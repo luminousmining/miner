@@ -11,8 +11,30 @@
 
 #define THD_PRINT_BUFFER(identifier, buffer, length)                           \
     {                                                                          \
-        uint32_t const tidTmp{ (blockIdx.x * blockDim.x) + threadIdx.x };      \
-        thread_print_buffer(identifier, tidTmp, buffer, length);               \
+        uint32_t const debug_tid{ (blockIdx.x * blockDim.x) + threadIdx.x };   \
+        thread_print_buffer(identifier, debug_tid, buffer, length);            \
+    }
+
+
+#define PRINT_TRACE(thread_id_target)                                          \
+    {                                                                          \
+        printf                                                                 \
+        (                                                                      \
+            "[%s][%d]: tid(%u)\n",                                             \
+            __FUNCTION__,                                                      \
+            __LINE__,                                                          \
+            thread_id_target                                                   \
+        );                                                                     \
+    }
+
+
+#define PRINT_TRACE_IF(thread_id_target)                                       \
+    {                                                                          \
+        uint32_t const debug_tid{ (blockIdx.x * blockDim.x) + threadIdx.x };   \
+        if (debug_tid == thread_id_target)                                     \
+        {                                                                      \
+            PRINT_TRACE(debug_tid);                                            \
+        }                                                                      \
     }
 
 
@@ -21,7 +43,7 @@ void print_buffer(
     uint32_t const* const buffer,
     uint32_t const length)
 {
-    printf("(uint32_t) ->");
+    printf("(uint32_t) ->\n");
     for (int i = 0; i < length; ++i)
     {
         if (0u != buffer[i])

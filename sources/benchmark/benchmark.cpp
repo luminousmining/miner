@@ -96,13 +96,8 @@ void benchmark::Benchmark::setGrid(uint32_t const _threads, uint32_t _blocks)
 
 
 void benchmark::Benchmark::startChrono(
-    uint32_t const index,
     std::string const& benchName)
 {
-    if (index == 0u)
-    {
-        return;
-    }
     currentBenchName = benchName;
     stats.setChronoUnit(common::CHRONO_UNIT::US);
     stats.setBatchNonce(nonceComputed);
@@ -113,17 +108,17 @@ void benchmark::Benchmark::startChrono(
 void benchmark::Benchmark::stopChrono(uint32_t const index)
 {
     ////////////////////////////////////////////////////////////////////////////
-    if (index == 0u)
-    {
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     stats.increaseKernelExecuted();
     stats.stop();
     stats.updateHashrate();
     double const hashrate{ (stats.getHashrate() * multiplicator) / divisor };
     logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (index == 0u)
+    {
+        return;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     benchmark::Snapshot snapshot{};
@@ -199,7 +194,10 @@ bool benchmark::Benchmark::initCleanResult(
     [[maybe_unused]] t_result** result)
 {
 #if defined(CUDA_ENABLE)
-    CU_ALLOC_HOST(result, sizeof(t_result));
+    if (nullptr == *result)
+    {
+        CU_ALLOC_HOST(result, sizeof(t_result));
+    }
 
     (*result)->found = false;
     (*result)->count = 0u;
@@ -214,7 +212,10 @@ bool benchmark::Benchmark::initCleanResult32(
     [[maybe_unused]] t_result_32** result)
 {
 #if defined(CUDA_ENABLE)
-    CU_ALLOC_HOST(result, sizeof(t_result_32));
+    if (nullptr == *result)
+    {
+        CU_ALLOC_HOST(result, sizeof(t_result_32));
+    }
 
     (*result)->error = false;
     (*result)->found = false;
@@ -241,7 +242,10 @@ bool benchmark::Benchmark::initCleanResult64(
     [[maybe_unused]] t_result_64** result)
 {
 #if defined(CUDA_ENABLE)
-    CU_ALLOC_HOST(result, sizeof(t_result_64));
+    if (nullptr == *result)
+    {
+        CU_ALLOC_HOST(result, sizeof(t_result_64));
+    }
 
     (*result)->error = false;
     (*result)->found = false;
@@ -268,14 +272,18 @@ bool benchmark::Benchmark::initCleanResult64(
 void benchmark::Benchmark::runNvidia()
 {
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
-    if (false == runNvidiaKeccak())
-    {
-        logErr() << "Nvidia Keccak failled!";
-    }
-    // if (false == runNvidiaEthash())
+    // if (false == runNvidiaKeccak())
     // {
-    //     logErr() << "Nvidia ETHASH failled!";
+    //     logErr() << "Nvidia Keccak failled!";
     // }
+    // if (false == runNvidiaFnv1())
+    // {
+    //     logErr() << "Nvidia Keccak failled!";
+    // }
+    if (false == runNvidiaEthash())
+    {
+        logErr() << "Nvidia ETHASH failled!";
+    }
     // if (false == runNvidiaAutolykosv2())
     // {
     //     logErr() << "Nvidia AutolykosV2 failled!";
@@ -286,6 +294,7 @@ void benchmark::Benchmark::runNvidia()
     // }
 }
 #endif
+
 
 #if defined(AMD_ENABLE)
 void benchmark::Benchmark::runAmd()

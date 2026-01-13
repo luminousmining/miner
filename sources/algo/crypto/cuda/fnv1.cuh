@@ -9,7 +9,7 @@ uint32_t fnv1(
     uint32_t const u,
     uint32_t const v)
 {
-    return (u * FNV1_PRIME) ^ v;
+    return __umulhi(u, FNV1_PRIME) ^ v;
 }
 
 
@@ -50,6 +50,5 @@ uint32_t fnv1a(
     uint32_t const u,
     uint32_t const v)
 {
-    return (u ^ v) * FNV1_PRIME;
+    return __umulhi((u ^ v), FNV1_PRIME);
 }
-

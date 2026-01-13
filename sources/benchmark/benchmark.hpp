@@ -14,7 +14,7 @@
     setGrid(_threads, _blocks);                                                \
     for (uint32_t i{ 0u }; i < loopCount; ++i)                                 \
     {                                                                          \
-        startChrono(i, name);                                                  \
+        startChrono(name);                                                     \
         if (false == (function))                                               \
         {                                                                      \
             return false;                                                      \
@@ -25,6 +25,24 @@
     setDivisor(1u);                                                            \
     logInfo() << "================================";
 
+
+#define BENCH_INIT_RESET_RESULT(result)                                        \
+    if (false == initCleanResult(&result))                                     \
+    {                                                                          \
+        return false;                                                          \
+    }
+
+#define BENCH_INIT_RESET_RESULT_32(result)                                     \
+    if (false == initCleanResult32(&result))                                   \
+    {                                                                          \
+        return false;                                                          \
+    }
+
+#define BENCH_INIT_RESET_RESULT_64(result)                                     \
+    if (false == initCleanResult64(&result))                                   \
+    {                                                                          \
+        return false;                                                          \
+    }
 
 namespace benchmark
 {
@@ -71,7 +89,7 @@ namespace benchmark
         void setMultiplicator(uint32_t const _multiplicator);
         void setDivisor(uint32_t const _divisor);
         void setGrid(uint32_t const _threads, uint32_t _blocks);
-        void startChrono(uint32_t const index, std::string const& benchName);
+        void startChrono(std::string const& benchName);
         void stopChrono(uint32_t const index);
 
         bool initCleanResult(t_result** result);
@@ -80,10 +98,11 @@ namespace benchmark
 
 #if defined(CUDA_ENABLE)
         void runNvidia();
-        bool runNvidiaEthash();
-        bool runNvidiaAutolykosv2();
-        bool runNvidiaKawpow();
+        bool runNvidiaFnv1();
         bool runNvidiaKeccak();
+        bool runNvidiaAutolykosv2();
+        bool runNvidiaEthash();
+        bool runNvidiaKawpow();
 #endif
 
 #if defined(AMD_ENABLE)

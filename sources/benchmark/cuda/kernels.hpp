@@ -14,15 +14,31 @@ bool init_array(cudaStream_t stream,
                 uint32_t* const dest,
                 uint64_t const size);
 
+
 ////////////////////////////////////////////////////////////////////////////////
-bool init_ethash_ethminer(algo::hash1024 const* dagHash,
-                          algo::hash256 const* headerHash,
-                          uint64_t const dagNumberItem,
-                          uint64_t const boundary);
-bool ethash_ethminer(cudaStream_t stream,
-                     t_result_64* result,
-                     uint32_t const blocks,
-                     uint32_t const threads);
+#define PARAMETER_FNV1 cudaStream_t stream,                                    \
+                       uint32_t* const result,                                 \
+                       uint32_t const blocks,                                  \
+                       uint32_t const threads
+bool fnv1_lm1(PARAMETER_FNV1);
+bool fnv1_lm2(PARAMETER_FNV1);
+
+
+////////////////////////////////////////////////////////////////////////////////
+#define PARAMETER_KECCAK_F800 cudaStream_t stream,                             \
+                         uint32_t const blocks,                                \
+                         uint32_t const threads
+
+bool keccak_f800_lm1(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm2(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm3(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm4(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm5(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm6(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm7(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm8(PARAMETER_KECCAK_F800);
+bool keccak_f800_lm9(PARAMETER_KECCAK_F800);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 bool autolykos_v2_mhssamadi_init(algo::hash256 const& boundary);
@@ -68,6 +84,30 @@ bool autolykos_v2_lm2(cudaStream_t stream,
                       uint32_t const threads,
                       uint32_t const period);
 
+
+////////////////////////////////////////////////////////////////////////////////
+#define PARAMETER_ETHASH_INIT algo::hash256 const* header_hash,                \
+                              uint64_t const dag_number_item
+
+#define PARAMETER_ETHASH_SEARCH cudaStream_t stream,                           \
+                                t_result* const result,                        \
+                                algo::hash1024* const dag,                     \
+                                uint32_t const blocks,                         \
+                                uint32_t const threads
+
+bool init_ethash_ethminer(algo::hash1024 const* dagHash,
+                          algo::hash256 const* headerHash,
+                          uint64_t const dagNumberItem);
+bool ethash_ethminer(cudaStream_t stream,
+                     t_result* const result,
+                     uint32_t const blocks,
+                     uint32_t const threads);
+bool init_ethash_lm1(PARAMETER_ETHASH_INIT);
+bool ethash_lm1(PARAMETER_ETHASH_SEARCH);
+bool init_ethash_lm2(PARAMETER_ETHASH_INIT);
+bool ethash_lm2(PARAMETER_ETHASH_SEARCH);
+
+
 ////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_KAWPOW cudaStream_t stream,                                  \
                          t_result* result,                                     \
@@ -89,21 +129,5 @@ bool kawpow_lm7(PARAMETER_KAWPOW);
 bool kawpow_lm8(PARAMETER_KAWPOW);
 bool kawpow_lm9(PARAMETER_KAWPOW);
 bool kawpow_lm10(PARAMETER_KAWPOW);
-
-
-////////////////////////////////////////////////////////////////////////////////
-#define PARAMETER_KECCAK_F800 cudaStream_t stream,                             \
-                         uint32_t const blocks,                                \
-                         uint32_t const threads
-
-bool keccak_f800_lm1(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm2(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm3(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm4(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm5(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm6(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm7(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm8(PARAMETER_KECCAK_F800);
-bool keccak_f800_lm9(PARAMETER_KECCAK_F800);
 
 #endif
