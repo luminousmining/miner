@@ -93,7 +93,7 @@ In these examples the RIG contains more than 2 GPUs !
 
 ## Many Coins
 All gpu will mine `RVN` on `rvn.2miners.com:6060` except GPUs 1 and 2 !  
-The GPU 1 will mine `CLORE` on `clore.2miner.com:2020`.  
+The GPU 1 will mine `XNA` on `xna.2miner.com:6060`.  
 The GPU 2 will mine `ETC` on `etc.2miner.com:1010`.
 ```bat
 miner.exe^
@@ -105,8 +105,8 @@ miner.exe^
  --password="x"^
  --ssl=false^
  --device_algo=1:kawpow^
- --device_pool=1:clore.2miner.com^
- --device_port=1:2020^
+ --device_pool=1:xna.2miner.com^
+ --device_port=1:6060^
  --device_wallet=1:YOUR_WALLET^
  --device_algo=2:etchash^
  --device_pool=2:etc.2miner.com^
@@ -115,13 +115,13 @@ miner.exe^
 ```
 
 ## Many Pools
-All gpu will mine `CLORE` on `rvn.2miners.com:6060` except GPUs 1 and 2 !  
-The GPU 1 will mine `CLORE` on `stratum-eu.rplant.xyz:17083`.  
-The GPU 2 will mine `CLORE` on `pool.eu.woolypooly.com:3126`.
+All gpu will mine `RVN` on `rvn.2miners.com:6060` except GPUs 1 and 2 !  
+The GPU 1 will mine `RVN` on `stratum-eu.rplant.xyz:17083`.  
+The GPU 2 will mine `RVN` on `pool.eu.woolypooly.com:3126`.
 ```bat
 miner.exe^
- --host="clore.2miners.com"^
- --port=2020^
+ --host="rvn.2miners.com"^
+ --port=6060^
  --wallet="YOUR_WALLET"^
  --algo="kawpow"^
  --workername="luminousminer"^
@@ -138,13 +138,13 @@ miner.exe^
 ```
 
 ## Many Coins And Pools
-All gpu will mine `CLORE` on `rvn.2miners.com:6060` except GPUs 1 and 2 !  
+All gpu will mine `RVN` on `rvn.2miners.com:6060` except GPUs 1 and 2 !  
 The GPU 1 will mine `ERGO` on `de.ergo.herominers.com:1180`.  
 The GPU 2 will mine `ETHW` on `pool.eu.woolypooly.com:3096`.
 ```bat
 miner.exe^
- --host="clore.2miners.com"^
- --port=2020^
+ --host="rvn.2miners.com"^
+ --port=6060^
  --wallet="YOUR_WALLET"^
  --algo="kawpow"^
  --workername="luminousminer"^
