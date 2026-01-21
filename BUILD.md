@@ -1,8 +1,8 @@
 # Requirements
   
 ## Libraires
-- cuda 12.9 => Windows
-- cuda 12.9 => Ubuntu
+- cuda 13.1 => Windows
+- cuda 13.1 => Ubuntu
 - OpenSSL 1.1.1
 - boost 1.86.0
 - OpenCL 3.0.19
@@ -17,7 +17,7 @@ cmake :
 https://github.com/Kitware/CMake/releases/tag/v3.22.4  
   
 cuda :  
-https://developer.nvidia.com/cuda-12-9-0-download-archive  
+https://developer.nvidia.com/cuda-13-1-0-download-archive  
   
 boost :  
 https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.zip  
