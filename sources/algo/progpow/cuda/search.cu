@@ -114,9 +114,7 @@ void progpowSearch(
     uint32_t digest[LANES];
 
     ////////////////////////////////////////////////////////////////////////
-    uint32_t const thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
     uint32_t const lane_id = threadIdx.x & LANE_ID_MAX;
-    uint64_t const nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t const* const dag_u32 = (uint32_t const*)dag;
@@ -127,7 +125,7 @@ void progpowSearch(
     #pragma unroll 1
     for (uint32_t i = 0u; i < INTERNAL_LOOP; ++i)
     {
-        nonce += (i * TOTAL_THREADS);
+        uint64_t const nonce = startNonce + ((blockIdx.x * blockDim.x) + threadIdx.x) + (i * TOTAL_THREADS);
 #endif
         ///////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)
@@ -149,33 +147,33 @@ void progpowSearch(
             loop_math(lane_id, dag, hash, header_dag);
             reduce_hash(l_id == lane_id, hash, digest);
         }
+
+        ///////////////////////////////////////////////////////////////////////
+#if defined(__KERNEL_PROGPOW)
+        uint64_t const bytes_result = is_valid(header, digest, seed);
+#else
+        uint64_t const bytes_result = is_valid(state_init, digest);
+#endif
+        if (bytes_result < boundary)
+        {
+            uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
+            if (index < algo::progpow::MAX_RESULT)
+            {
+                result->found = true;
+                result->nonces[index] = nonce;
+
+                result->hash[index][0] = digest[0];
+                result->hash[index][1] = digest[1];
+                result->hash[index][2] = digest[2];
+                result->hash[index][3] = digest[3];
+                result->hash[index][4] = digest[4];
+                result->hash[index][5] = digest[5];
+                result->hash[index][6] = digest[6];
+                result->hash[index][7] = digest[7];
+            }
+        }
 #if defined(INTERNAL_LOOP)
     }
 #endif
 
-    ////////////////////////////////////////////////////////////////////////
-#if defined(__KERNEL_PROGPOW)
-    uint64_t const bytes_result = is_valid(header, digest, seed);
-#else
-    uint64_t const bytes_result = is_valid(state_init, digest);
-#endif
-
-    if (bytes_result < boundary)
-    {
-        uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
-        if (index < algo::progpow::MAX_RESULT)
-        {
-            result->found = true;
-            result->nonces[index] = nonce;
-
-            result->hash[index][0] = digest[0];
-            result->hash[index][1] = digest[1];
-            result->hash[index][2] = digest[2];
-            result->hash[index][3] = digest[3];
-            result->hash[index][4] = digest[4];
-            result->hash[index][5] = digest[5];
-            result->hash[index][6] = digest[6];
-            result->hash[index][7] = digest[7];
-        }
-    }
 }
