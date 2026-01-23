@@ -41,13 +41,13 @@ bool common::Config::isValidConfig() const
         CLI_CHECK(mining.host.empty() == true,       "missing --host");
         CLI_CHECK(mining.port == 0,                  "missing --port");
         CLI_CHECK(mining.algo.empty() == true,       "missing --algo");
-        CLI_CHECK(mining.workerName.empty() == true, "missing --wokername");
+        CLI_CHECK(mining.workerName.empty() == true, "missing --workername");
         CLI_CHECK(mining.password.empty() == true,   "missing --password");
         CLI_CHECK(mining.wallet.empty() == true,     "missing --wallet");
     }
     else if (common::PROFILE::SMART_MINING == profile)
     {
-        CLI_CHECK(mining.workerName.empty() == true,          "missing --wokername");
+        CLI_CHECK(mining.workerName.empty() == true,          "missing --workername");
         CLI_CHECK(mining.password.empty() == true,            "missing --password");
         CLI_CHECK(smartMining.coinPoolConfig.empty() == true, "missing --sm_wallet and --sm_pool");
         for (auto const& it : smartMining.coinPoolConfig)
