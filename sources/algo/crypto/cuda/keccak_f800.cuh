@@ -82,7 +82,7 @@ void keccak_f800_round(
     out[13] = rol_u32(out_base[19], 8u);
     out[12] = rol_u32(out_base[13], 25u);
     out[2]  = rol_u32(out_base[12], 43u);
-    out[20] = rol_u32(out_base[2], 62);
+    out[20] = rol_u32(out_base[2], 62u);
     out[14] = rol_u32(out_base[20], 18u);
     out[22] = rol_u32(out_base[14], 39u);
     out[9]  = rol_u32(out_base[22], 61u);

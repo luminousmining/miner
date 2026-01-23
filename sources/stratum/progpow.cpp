@@ -46,6 +46,7 @@ void stratum::StratumProgPOW::onResponseEthereumV1(boost::json::object const& ro
     {
         case stratum::Stratum::ID_MINING_SUBSCRIBE:
         {
+            ////////////////////////////////////////////////////////////////////
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
             {
@@ -61,10 +62,13 @@ void stratum::StratumProgPOW::onResponseEthereumV1(boost::json::object const& ro
             {
                 logErr() << "Subscribe failed : " << root;
             }
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
+            ////////////////////////////////////////////////////////////////////
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
             {
@@ -82,11 +86,16 @@ void stratum::StratumProgPOW::onResponseEthereumV1(boost::json::object const& ro
             {
                 logErr() << "Authorize failed : " << root;
             }
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         default:
         {
+            ////////////////////////////////////////////////////////////////////
             onShare(root, miningRequestID);
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
     }
@@ -107,6 +116,7 @@ void stratum::StratumProgPOW::onResponseEthereumV2(boost::json::object const& ro
     {
         case stratum::ETHEREUM_V2_ID::MINING_HELLO:
         {
+            ////////////////////////////////////////////////////////////////////
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
             {
@@ -131,10 +141,13 @@ void stratum::StratumProgPOW::onResponseEthereumV2(boost::json::object const& ro
             {
                 logErr() << "Hello failed: " << root;
             }
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::ETHEREUM_V2_ID::MINING_AUTHORIZE:
         {
+            ////////////////////////////////////////////////////////////////////
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
             {
@@ -147,11 +160,16 @@ void stratum::StratumProgPOW::onResponseEthereumV2(boost::json::object const& ro
                 authenticated = false;
                 logErr() << "Authorize failed: " << root;
             }
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         default:
         {
+            ////////////////////////////////////////////////////////////////////
             onShare(root, miningRequestID);
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
     }
@@ -168,6 +186,7 @@ void stratum::StratumProgPOW::onResponseEthProxy(boost::json::object const& root
     {
         case stratum::ETHPROXY_ID::SUBMITLOGIN:
         {
+            ////////////////////////////////////////////////////////////////////
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
             {
@@ -182,17 +201,25 @@ void stratum::StratumProgPOW::onResponseEthProxy(boost::json::object const& root
                 }
                 ethGetWork();
             }
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::ETHPROXY_ID::EMPTY: /*stratum::ETHPROXY_ID::GETWORK */
         case stratum::ETHPROXY_ID::GETWORK:
         {
+            ////////////////////////////////////////////////////////////////////
             onMiningNotify(root);
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         default:
         {
+            ////////////////////////////////////////////////////////////////////
             onShare(root, miningRequestID);
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
     }
@@ -213,6 +240,7 @@ void stratum::StratumProgPOW::miningSubmit(
     {
         case stratum::STRATUM_TYPE::ETHEREUM_V1:
         {
+            ////////////////////////////////////////////////////////////////////
             root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
             root["method"] = "mining.submit";
             root["params"] = boost::json::array
@@ -223,10 +251,13 @@ void stratum::StratumProgPOW::miningSubmit(
                 "0x" + algo::toHex(jobInfo.headerHash), // header
                 params.at(2)                            // mix
             };
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::STRATUM_TYPE::ETHEREUM_V2:
         {
+            ////////////////////////////////////////////////////////////////////
             root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
             root["method"] = "mining.submit";
             root["params"] = boost::json::array
@@ -235,10 +266,13 @@ void stratum::StratumProgPOW::miningSubmit(
                 params.at(1), // nonce
                 params.at(2)  // workerID
             };
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::STRATUM_TYPE::ETHPROXY:
         {
+            ////////////////////////////////////////////////////////////////////
             root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
             root["method"] = "eth_submitWork";
             root["params"] = boost::json::array
@@ -247,6 +281,8 @@ void stratum::StratumProgPOW::miningSubmit(
                 "0x" + algo::toHex(jobInfo.headerHash), // header
                 params.at(1)                            // hash
             };
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
     }
@@ -304,6 +340,8 @@ void stratum::StratumProgPOW::onMiningNotify(
             {
                 jobInfo.epoch = epoch;
             }
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::STRATUM_TYPE::ETHEREUM_V2:
@@ -322,6 +360,8 @@ void stratum::StratumProgPOW::onMiningNotify(
             jobInfo.jobIDStr.assign(jobID);
             jobInfo.blockNumber = std::strtoul(blockHeight.c_str(), nullptr, 16);
             jobInfo.period = jobInfo.blockNumber / maxPeriod;
+
+            ////////////////////////////////////////////////////////////////////
             break;
         }
         case stratum::STRATUM_TYPE::ETHPROXY:
@@ -367,6 +407,7 @@ void stratum::StratumProgPOW::onMiningNotify(
                 jobInfo.epoch = epoch;
             }
 
+            ////////////////////////////////////////////////////////////////////
             break;
         }
     }
@@ -379,9 +420,11 @@ void stratum::StratumProgPOW::onMiningNotify(
 void stratum::StratumProgPOW::onMiningSetDifficulty(
     boost::json::object const& root)
 {
+    ////////////////////////////////////////////////////////////////////////////
     boost::json::array const& params(root.at("params").as_array());
     double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
+    ////////////////////////////////////////////////////////////////////////////
     jobInfo.boundary = algo::toHash256(difficulty);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
     if (jobInfo.boundaryU64 < jobInfo.targetBits)
@@ -389,6 +432,7 @@ void stratum::StratumProgPOW::onMiningSetDifficulty(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     logInfo()
         << "Target: "
         << std::hex << jobInfo.boundaryU64
@@ -399,9 +443,11 @@ void stratum::StratumProgPOW::onMiningSetDifficulty(
 void stratum::StratumProgPOW::onMiningSetTarget(
     boost::json::object const& root)
 {
+    ////////////////////////////////////////////////////////////////////////////
     boost::json::array const& params(root.at("params").as_array());
     auto boundary{ params.at(0).as_string().c_str() };
-    
+
+    ////////////////////////////////////////////////////////////////////////////
     jobInfo.boundary = algo::toHash256(boundary);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
     if (jobInfo.boundaryU64 < jobInfo.targetBits)
@@ -409,6 +455,7 @@ void stratum::StratumProgPOW::onMiningSetTarget(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     logInfo() << "Target: " << std::hex << jobInfo.boundaryU64;
 }
 
@@ -443,8 +490,10 @@ void stratum::StratumProgPOW::onMiningSet(
     std::string const extraNonce{ common::boostGetString(params, "extranonce") };
     std::string const target{ common::boostGetString(params, "target") };
 
+    ////////////////////////////////////////////////////////////////////////////
     setExtraNonce(extraNonce);
 
+    ////////////////////////////////////////////////////////////////////////////
     jobInfo.epoch = std::stoull(epoch);
     jobInfo.boundary = algo::toHash256(target);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
