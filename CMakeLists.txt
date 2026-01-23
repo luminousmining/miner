@@ -155,16 +155,21 @@ if (BUILD_NVIDIA)
     list(APPEND CUDA_NVCC_FLAGS "-std=c++20")
     list(APPEND CUDA_NVCC_FLAGS "--ptxas-options=-v")
     list(APPEND CUDA_NVCC_FLAGS "-use_fast_math")
-    ### NVCC FLAGS GENCODE
-    list(APPEND CUDA_NVCC_FLAGS "-arch=sm_75")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing (RTX 2000, GTX 1600, T4)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere (A100, RTX 3000)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere (RTX 3050/3060, A40)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)  (RTX 4000, L4/L40)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper (H100)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90a,code=sm_90a") # Hopper optimised
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_100,code=sm_100") # Blackwell (B100/B200)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_103,code=sm_103") # Blackwell
+    ### NVCC NVIDIA ARCHITECTURE
+    if (NVCC_ARCH_COMPUTE)
+        list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${NVCC_ARCH_COMPUTE}")
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_${NVCC_ARCH_COMPUTE},code=sm_${NVCC_ARCH_COMPUTE}") # Turing (RTX 2000, GTX 1600, T4)
+    else()
+        ### NVCC FLAGS GENCODE
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing (RTX 2000, GTX 1600, T4)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere (A100, RTX 3000)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere (RTX 3050/3060, A40)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)  (RTX 4000, L4/L40)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper (H100)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90a,code=sm_90a") # Hopper optimised
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_100,code=sm_100") # Blackwell (B100/B200)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_103,code=sm_103") # Blackwell
+    endif()
     ### Macros C++
     add_compile_definitions(CUDA_ENABLE)
 endif()
