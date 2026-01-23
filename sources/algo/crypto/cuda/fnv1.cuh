@@ -9,7 +9,18 @@ uint32_t fnv1(
     uint32_t const u,
     uint32_t const v)
 {
-    return (u * FNV1_PRIME) ^ v;
+    uint32_t result;
+    // (u * FNV1_PRIME) ^ v
+    asm volatile
+    (
+        "mul.lo.u32 %0, %1, %2;\n"
+        "xor.b32 %0, %0, %3;"
+        : "=r"(result)     // %0
+        : "r"(u),          // %1
+          "r"(FNV1_PRIME), // %2
+          "r"(v)           // %3
+    );
+    return result;
 }
 
 
@@ -50,5 +61,16 @@ uint32_t fnv1a(
     uint32_t const u,
     uint32_t const v)
 {
-    return (u ^ v) * FNV1_PRIME;
+    uint32_t result;
+    // (u ^ v) * FNV1_PRIME
+    asm volatile
+    (
+        "xor.b32 %0, %1, %2;\n"
+        "mul.lo.u32 %0, %0, %3;"
+        : "=r"(result)    // %0
+        : "r"(u),         // %1
+          "r"(v),         // %2
+          "r"(FNV1_PRIME) // %3
+    );
+    return result;
 }

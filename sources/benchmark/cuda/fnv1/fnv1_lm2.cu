@@ -18,7 +18,19 @@ void kernel_fnv1_lm2(
     uint32_t const thread_id{ (blockIdx.x * blockDim.x) + threadIdx.x };
     uint32_t const u2{ u + thread_id };
     uint32_t const v2{ v + thread_id };
-    uint32_t const result{ __umulhi(u2, FNV1_PRIME) ^ v2 };
+
+    // (u2 * FNV1_PRIME) ^ v2
+    uint32_t result;
+    asm volatile
+    (
+        "mul.lo.u32 %0, %1, %2;\n"
+        "xor.b32 %0, %0, %3;"
+        : "=r"(result)     // %0
+        : "r"(u2),         // %1
+          "r"(FNV1_PRIME), // %2
+          "r"(v2)          // %3
+    );
+
     output[thread_id] = result;
 }
 

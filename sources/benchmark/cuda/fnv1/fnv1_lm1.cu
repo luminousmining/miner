@@ -18,7 +18,7 @@ void kernel_fnv1_lm1(
     uint32_t const thread_id{ (blockIdx.x * blockDim.x) + threadIdx.x };
     uint32_t const u2{ u + thread_id };
     uint32_t const v2{ v + thread_id };
-    uint32_t const result{ (u2 * FNV1_PRIME) ^ v2 };
+    uint32_t const result{ (u2 * FNV1_PRIME) ^ v2};
     output[thread_id] = result;
 }
 
