@@ -38,7 +38,7 @@ uint32_t common::Cli::getInternalLoop() const
     if (true == contains("internal_loop"))
     {
         internalLoop = params["internal_loop"].as<uint32_t>();
-        if (1 > internalLoop)
+        if (0u == internalLoop)
         {
             logErr() << "--internal_loop must be greater than 0, reset to default value: 1";
             internalLoop = 1u;

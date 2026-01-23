@@ -8,12 +8,12 @@
 namespace common
 {
     template<typename T>
-    struct AtomicPair
+    struct AtomicIncrement
     {
         boost::atomic<T> current{};
         T                last{};
 
-        AtomicPair(T const value)
+        AtomicIncrement(T const value)
         {
             current = value;
             last = value;
