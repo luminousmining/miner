@@ -270,7 +270,9 @@ bool common::Config::loadCli(int argc, char** argv)
         bool const isAutoOccupancy{ cli.isAutoOccupancy() };
         uint32_t const occupancyThreads{ cli.getOccupancyThreads() };
         uint32_t const occupancyBlocks{ cli.getOccupancyBlocks() };
+        uint32_t const internalLoop{ cli.getInternalLoop() };
         occupancy.isAuto = isAutoOccupancy;
+        occupancy.internalLoop = internalLoop;
         if (0u != occupancyThreads)
         {
             occupancy.threads = occupancyThreads;

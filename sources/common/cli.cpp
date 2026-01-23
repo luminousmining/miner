@@ -298,6 +298,13 @@ common::Cli::Cli()
             "[OPTIONAL] System will define the best occupancy for kernel.\n"
             "--occupancy=true|false"
         )
+        (
+            "internal_loop",
+            value<uint32_t>(),
+            "[OPTIONAL] Set internal loop for kernel.\n"
+            "Default is value is 1.\n"
+            "--internal_loop=1"
+        )
 
         // smart mining
         (

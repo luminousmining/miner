@@ -122,25 +122,36 @@ void progpowSearch(
     uint32_t const* const dag_u32 = (uint32_t const*)dag;
     initialize_header_dag(threadIdx.x, header_dag, dag_u32);
 
+    ////////////////////////////////////////////////////////////////////////
+#if defined(INTERNAL_LOOP)
+    #pragma unroll 1
+    for (uint32_t i = 0u; i < INTERNAL_LOOP; ++i)
+    {
+        nonce += (i * TOTAL_THREADS);
+#endif
+        ///////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)
-    create_seed(header, nonce, &msb, &lsb);
-    msb = be_u32(msb);
-    lsb = be_u32(lsb);
-    uint64_t const seed = ((uint64_t)msb) << 32 | lsb;
+        create_seed(header, nonce, &msb, &lsb);
+        msb = be_u32(msb);
+        lsb = be_u32(lsb);
+        uint64_t const seed = ((uint64_t)msb) << 32 | lsb;
 #else
-    create_seed(nonce, state_init, header, &lsb, &msb);
+        create_seed(nonce, state_init, header, &lsb, &msb);
 #endif
 
-    ////////////////////////////////////////////////////////////////////////
-    #pragma unroll 1
-    for (uint32_t l_id = 0u; l_id < LANES; ++l_id)
-    {
-        uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
-        uint32_t const lane_msb = reg_load(msb, l_id, LANES);
-        fill_hash(lane_id, lane_lsb, lane_msb, hash);
-        loop_math(lane_id, dag, hash, header_dag);
-        reduce_hash(l_id == lane_id, hash, digest);
+        ///////////////////////////////////////////////////////////////////////
+        #pragma unroll 1
+        for (uint32_t l_id = 0u; l_id < LANES; ++l_id)
+        {
+            uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
+            uint32_t const lane_msb = reg_load(msb, l_id, LANES);
+            fill_hash(lane_id, lane_lsb, lane_msb, hash);
+            loop_math(lane_id, dag, hash, header_dag);
+            reduce_hash(l_id == lane_id, hash, digest);
+        }
+#if defined(INTERNAL_LOOP)
     }
+#endif
 
     ////////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)

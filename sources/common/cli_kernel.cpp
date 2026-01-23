@@ -30,3 +30,19 @@ bool common::Cli::isAutoOccupancy() const
     }
     return enable;
 }
+
+
+uint32_t common::Cli::getInternalLoop() const
+{
+    uint32_t internalLoop{ 1u };
+    if (true == contains("internal_loop"))
+    {
+        internalLoop = params["internal_loop"].as<uint32_t>();
+        if (1 > internalLoop)
+        {
+            logErr() << "--internal_loop must be greater than 0, reset to default value: 1";
+            internalLoop = 1u;
+        }
+    }
+    return internalLoop;
+}

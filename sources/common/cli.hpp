@@ -105,6 +105,7 @@ namespace common
         uint32_t getOccupancyThreads() const;
         uint32_t getOccupancyBlocks() const;
         bool     isAutoOccupancy() const;
+        uint32_t getInternalLoop() const;
 
         // Smart mining settings
         bool isSmartMining() const;

@@ -50,6 +50,7 @@ namespace common
             bool                    isAuto{ false };
             std::optional<uint32_t> threads{};
             std::optional<uint32_t> blocks{};
+            std::optional<uint32_t> internalLoop{};
         };
 
         struct DeviceEnableSetting

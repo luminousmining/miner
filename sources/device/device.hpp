@@ -77,6 +77,7 @@ namespace device
         bool updateJob();
         void waitJob();
         void loopDoWork();
+        void updateBatchNonce();
 
     private:
         struct AtomicSynchronizer

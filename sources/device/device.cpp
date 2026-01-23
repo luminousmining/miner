@@ -605,6 +605,25 @@ bool device::Device::updateJob()
 }
 
 
+void device::Device::updateBatchNonce()
+{
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config { common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
+    uint32_t internalLoop{ 1u };
+    if (std::nullopt != config.occupancy.internalLoop)
+    {
+        internalLoop = *config.occupancy.internalLoop;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads() * internalLoop);
+    miningStats.resetHashrate();
+    miningStats.reset();
+}
+
+
 void device::Device::loopDoWork()
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -633,10 +652,7 @@ void device::Device::loopDoWork()
     waitJob();
 
     ////////////////////////////////////////////////////////////////////////////
-    // Statistical to compute the hashrate.
-    miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads());
-    miningStats.resetHashrate();
-    miningStats.reset();
+    updateBatchNonce();
 
     ////////////////////////////////////////////////////////////////////////////
     computing.store(true, boost::memory_order::seq_cst);
@@ -650,7 +666,7 @@ void device::Device::loopDoWork()
         // A new job should spawn during the update.
         if (true == updateJob())
         {
-            miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads());
+            updateBatchNonce();
             continue;
         }
 

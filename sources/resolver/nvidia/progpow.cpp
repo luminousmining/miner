@@ -142,6 +142,9 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
 bool resolver::ResolverNvidiaProgPOW::buildSearch()
 {
     ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
     algo::progpow::writeMathRandomKernelCuda(progpowVersion,
                                              deviceId,
                                              currentPeriod,
@@ -201,6 +204,12 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     kernelGenerator.addDefine("DAG_SIZE", dagSize);
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
     kernelGenerator.addDefine("STATE_LEN", 25u);
+    kernelGenerator.addDefine("TOTAL_THREADS", getThreads() * getBlocks());
+    if (std::nullopt != config.occupancy.internalLoop )
+    {
+        uint32_t const internalLoop{ *config.occupancy.internalLoop };
+        kernelGenerator.addDefine("INTERNAL_LOOP", internalLoop);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.appendLine("using uint32_t = unsigned int;");

@@ -12,7 +12,7 @@
 --port             [MANDATORY] Port of the pool.
                --port=2020
 --wallet           [MANDATORY] Wallet address.
-               -wallet="WALLET"
+               --wallet="WALLET"
 --algo             [MANDATORY] <ethash>
                --algo="ethash"
 --workername       [MANDATORY] Name of the rig.
@@ -41,7 +41,7 @@
                Default value is 9050.
                --socks_port=9050
 --api_port        [OPTIONAL] miner API port.
-               Default value is 8080.
+                Default value is 8080.
                --api_port=8080
 ```
 
@@ -121,8 +121,11 @@
                     --threads=128
 --blocks arg            [OPTIONAL] Set occupancy blocks.
                     --blocks=128
---occupancy arg         [OPTIONAL] System will define the best occupancy for 
-                        kernel.
+--occupancy arg         [OPTIONAL] System will define the best occupancy for kernel.
+                    --occupancy=false
+--internal_loop         [OPTIONAL] Set internal loop for kernel.
+                    Default value is 1.
+                    --internal_loop=1
 ```
 
 ## Smart Mining
