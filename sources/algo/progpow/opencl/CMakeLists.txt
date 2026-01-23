@@ -1,9 +1,33 @@
-set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}/kernel/progpow)
+set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernel/progpow)
 
-file(COPY progpow_result.cl DESTINATION ${OUT_PROGPOW})
-file(COPY evrprogpow_functions.cl DESTINATION ${OUT_PROGPOW})
-file(COPY firopow_functions.cl DESTINATION ${OUT_PROGPOW})
-file(COPY progpow_functions.cl DESTINATION ${OUT_PROGPOW})
-file(COPY kawpow_functions.cl DESTINATION ${OUT_PROGPOW})
-file(COPY meowpow_functions.cl DESTINATION ${OUT_PROGPOW})
-file(COPY progpow.cl DESTINATION ${OUT_PROGPOW})
+file(MAKE_DIRECTORY ${OUT_PROGPOW})
+
+set(PROGPOW_FILES
+  progpow_result.cl
+  evrprogpow_functions.cl
+  firopow_functions.cl
+  progpow_functions.cl
+  kawpow_functions.cl
+  meowpow_functions.cl
+  progpow.cl
+)
+
+foreach(FILE ${PROGPOW_FILES})
+  add_custom_command(
+    OUTPUT ${OUT_PROGPOW}/${FILE}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${FILE} ${OUT_PROGPOW}/${FILE}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+    COMMENT "Copy ${FILE}"
+  )
+endforeach()
+
+add_custom_target(copy_progpow_opencl_files ALL
+  DEPENDS
+    ${OUT_PROGPOW}/progpow_result.cl
+    ${OUT_PROGPOW}/evrprogpow_functions.cl
+    ${OUT_PROGPOW}/firopow_functions.cl
+    ${OUT_PROGPOW}/progpow_functions.cl
+    ${OUT_PROGPOW}/kawpow_functions.cl
+    ${OUT_PROGPOW}/meowpow_functions.cl
+    ${OUT_PROGPOW}/progpow.cl
+)

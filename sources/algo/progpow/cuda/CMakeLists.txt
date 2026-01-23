@@ -1,8 +1,31 @@
-set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}/kernel/progpow)
+set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernel/progpow)
 
-file(COPY evrprogpow_functions.cuh DESTINATION ${OUT_PROGPOW})
-file(COPY firopow_functions.cuh DESTINATION ${OUT_PROGPOW})
-file(COPY progpow_functions.cuh DESTINATION ${OUT_PROGPOW})
-file(COPY kawpow_functions.cuh DESTINATION ${OUT_PROGPOW})
-file(COPY meowpow_functions.cuh DESTINATION ${OUT_PROGPOW})
-file(COPY search.cu DESTINATION ${OUT_PROGPOW})
+file(MAKE_DIRECTORY ${OUT_PROGPOW})
+
+set(PROGPOW_FILES
+  evrprogpow_functions.cuh
+  firopow_functions.cuh
+  progpow_functions.cuh
+  kawpow_functions.cuh
+  meowpow_functions.cuh
+  search.cu
+)
+
+foreach(FILE ${PROGPOW_FILES})
+  add_custom_command(
+    OUTPUT ${OUT_PROGPOW}/${FILE}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${FILE} ${OUT_PROGPOW}/${FILE}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+    COMMENT "Copy ${FILE}"
+  )
+endforeach()
+
+add_custom_target(copy_progpow_cuda_files ALL
+  DEPENDS
+    ${OUT_PROGPOW}/evrprogpow_functions.cuh
+    ${OUT_PROGPOW}/firopow_functions.cuh
+    ${OUT_PROGPOW}/progpow_functions.cuh
+    ${OUT_PROGPOW}/kawpow_functions.cuh
+    ${OUT_PROGPOW}/meowpow_functions.cuh
+    ${OUT_PROGPOW}/search.cu
+)

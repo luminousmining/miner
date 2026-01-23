@@ -11,9 +11,27 @@ ${HEADERS}
 ${SOURCES}
 )
 
-set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}/kernel/progpow)
+set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernel/progpow)
 
-file(COPY result.hpp DESTINATION ${OUT_PROGPOW})
+file(MAKE_DIRECTORY ${OUT_PROGPOW})
+
+set(PROGPOW_FILES
+  result.hpp
+)
+
+foreach(FILE ${PROGPOW_FILES})
+  add_custom_command(
+    OUTPUT ${OUT_PROGPOW}/${FILE}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${FILE} ${OUT_PROGPOW}/${FILE}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+    COMMENT "Copy ${FILE}"
+  )
+endforeach()
+
+add_custom_target(copy_progpow_cpp_files ALL
+  DEPENDS
+    ${OUT_PROGPOW}/result.hpp
+)
 
 add_subdirectory(cuda)
 add_subdirectory(opencl)

@@ -115,6 +115,8 @@ void progpowSearch(
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t const lane_id = threadIdx.x & LANE_ID_MAX;
+    uint64_t nonce = startNonce + ((blockIdx.x * blockDim.x) + threadIdx.x);
+
 
     ////////////////////////////////////////////////////////////////////////
     uint32_t const* const dag_u32 = (uint32_t const*)dag;
@@ -125,7 +127,7 @@ void progpowSearch(
     #pragma unroll 1
     for (uint32_t i = 0u; i < INTERNAL_LOOP; ++i)
     {
-        uint64_t const nonce = startNonce + ((blockIdx.x * blockDim.x) + threadIdx.x) + (i * TOTAL_THREADS);
+        nonce += (i * TOTAL_THREADS);
 #endif
         ///////////////////////////////////////////////////////////////////////
 #if defined(__KERNEL_PROGPOW)
