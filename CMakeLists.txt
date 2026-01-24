@@ -162,14 +162,40 @@ if (BUILD_NVIDIA)
         list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_${NVCC_ARCH_COMPUTE},code=sm_${NVCC_ARCH_COMPUTE}") # Turing (RTX 2000, GTX 1600, T4)
     else()
         ### NVCC FLAGS GENCODE
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75") # Turing (RTX 2000, GTX 1600, T4)
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_80,code=sm_80") # Ampere (A100, RTX 3000)
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86") # Ampere (RTX 3050/3060, A40)
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_89,code=sm_89") # Ada(Lovelace)  (RTX 4000, L4/L40)
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90,code=sm_90") # Hopper (H100)
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_90a,code=sm_90a") # Hopper optimised
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_100,code=sm_100") # Blackwell (B100/B200)
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_103,code=sm_103") # Blackwell
+        list(APPEND CUDA_NVCC_FLAGS
+            # ============================================================
+            # 🎮 Gaming / Consumer GPUs
+            # ============================================================
+
+            "-gencode arch=compute_75,code=sm_75"     # Turing — GTX 1660, RTX 2060, RTX 2080
+
+            "-gencode arch=compute_86,code=sm_86"     # Ampere RTX — RTX 3060, 3070, 3080, 3090
+            "-gencode arch=compute_89,code=sm_89"     # Ada Lovelace — RTX 4060, 4070, 4080, 4090
+
+            "-gencode arch=compute_120,code=sm_120"   # Blackwell CC 12.0 — RTX 50xx (expected)
+            "-gencode arch=compute_121,code=sm_121"   # Blackwell CC 12.1 — RTX 50xx refresh
+
+            # ============================================================
+            # 🏢 Professional / Datacenter GPUs
+            # ============================================================
+
+            "-gencode arch=compute_80,code=sm_80"     # Ampere A100 — A100 40GB / 80GB
+
+            "-gencode arch=compute_90,code=sm_90"     # Hopper — H100 SXM / PCIe
+            "-gencode arch=compute_90a,code=sm_90a"   # Hopper optimized — H100 NVL (HPC / AI)
+
+            "-gencode arch=compute_100,code=sm_100"   # Blackwell CC 10.0 — B100
+            "-gencode arch=compute_100a,code=sm_100a" # Blackwell CC 10.0a — B100 NVL
+            "-gencode arch=compute_100f,code=sm_100f" # Blackwell CC 10.0f — feature variants
+
+            "-gencode arch=compute_103,code=sm_103"   # Blackwell CC 10.3 — B200
+            "-gencode arch=compute_103a,code=sm_103a" # Blackwell CC 10.3a — B200 NVL
+            "-gencode arch=compute_103f,code=sm_103f" # Blackwell CC 10.3f — feature variants
+
+            "-gencode arch=compute_110,code=sm_110"   # Blackwell CC 11.0 — intermediate datacenter gen
+            "-gencode arch=compute_110a,code=sm_110a" # Blackwell CC 11.0a — NVL / HPC variants
+            "-gencode arch=compute_110f,code=sm_110f" # Blackwell CC 11.0f — feature variants
+        )
     endif()
     ### Macros C++
     add_compile_definitions(CUDA_ENABLE)

@@ -288,7 +288,6 @@ void stratum::StratumProgPOW::miningSubmit(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    logCustom() << root;
     send(root);
 }
 
