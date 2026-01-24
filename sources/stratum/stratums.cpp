@@ -32,16 +32,12 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumProgPOW);
             break;
         }
-        case algo::ALGORITHM::PROGPOWQUAI:
-        {
-            stratum = NEW(stratum::StratumProgpowQuai);
-            break;
-        }
         case algo::ALGORITHM::PROGPOWZ:
         {
             stratum = NEW(stratum::StratumProgpowZ);
             break;
         }
+        case algo::ALGORITHM::PROGPOWQUAI:
         case algo::ALGORITHM::KAWPOW:
         {
             stratum = NEW(stratum::StratumKawPOW);
