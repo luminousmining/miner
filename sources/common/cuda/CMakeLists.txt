@@ -5,7 +5,6 @@ file(MAKE_DIRECTORY ${OUT_COMMON})
 set(COMMON_FILES
   be_u32.cuh
   be_u64.cuh
-  copy_u4.cuh
   get_lane_id.cuh
   register.cuh
   rotate_byte.cuh
@@ -28,7 +27,6 @@ add_custom_target(copy_common_cuda_files ALL
   DEPENDS
     ${OUT_COMMON}/be_u32.cuh
     ${OUT_COMMON}/be_u64.cuh
-    ${OUT_COMMON}/copy_u4.cuh
     ${OUT_COMMON}/get_lane_id.cuh
     ${OUT_COMMON}/register.cuh
     ${OUT_COMMON}/rotate_byte.cuh

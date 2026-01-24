@@ -238,7 +238,6 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     }
     if (   false == kernelGenerator.appendFile("kernel/common/be_u32.cuh")
         || false == kernelGenerator.appendFile("kernel/common/be_u64.cuh")
-        || false == kernelGenerator.appendFile("kernel/common/copy_u4.cuh")
         || false == kernelGenerator.appendFile("kernel/common/get_lane_id.cuh")
         || false == kernelGenerator.appendFile("kernel/common/register.cuh")
         || false == kernelGenerator.appendFile("kernel/common/rotate_byte.cuh")
