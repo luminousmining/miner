@@ -31,5 +31,13 @@ void operator^=(
     uint2& a,
     uint2 const b)
 {
-    a = a ^ b;
+    asm
+    (
+        "xor.b32 %0, %0, %2;\n"
+        "xor.b32 %1, %1, %3;\n"
+        : "+r"(a.x),
+          "+r"(a.y)
+        : "r"(b.x),
+          "r"(b.y)
+    ); //  a = a ^ b;
 }
