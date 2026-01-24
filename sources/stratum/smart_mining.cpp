@@ -147,7 +147,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         }
         default:
         {
-            logErr() << "Unknow algorithm!";
+            logErr() << "Unknown algorithm!";
             return false;
         }
     }

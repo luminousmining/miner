@@ -11,6 +11,6 @@ namespace device
 #if defined(AMD_ENABLE)
         AMD,
 #endif
-        UNKNOW
+        UNKNOWN
     };
 }

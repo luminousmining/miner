@@ -31,7 +31,7 @@ namespace stratum
 
         uint32_t              uuid{ 0u };
         StratumJobInfo        jobInfo{};
-        algo::ALGORITHM       algorithm{ algo::ALGORITHM::UNKNOW };
+        algo::ALGORITHM       algorithm{ algo::ALGORITHM::UNKNOWN };
         stratum::STRATUM_TYPE stratumType{ stratum::STRATUM_TYPE::ETHEREUM_V1 };
         std::string           workerName{};
         std::string           wallet{};
@@ -59,7 +59,7 @@ namespace stratum
         virtual void onMiningSetDifficulty(boost::json::object const& root) = 0;
 
         virtual void onConnect();
-        virtual void onUnknowMethod(boost::json::object const& root);
+        virtual void onUnknownMethod(boost::json::object const& root);
         virtual void updateJob();
         virtual void miningHello();
         virtual void miningSubscribe();

@@ -113,7 +113,7 @@ void stratum::Stratum::onMethod(
     }
     else
     {
-        onUnknowMethod(root);
+        onUnknownMethod(root);
     }
 }
 
@@ -181,13 +181,13 @@ void stratum::Stratum::loopGetWork()
 }
 
 
-void stratum::Stratum::onUnknowMethod(
+void stratum::Stratum::onUnknownMethod(
     boost::json::object const& root)
 {
     std::string const method{ root.at("method").as_string().c_str() };
 
     logErr()
-        << "Unknow[" << method << "]"
+        << "Unknown[" << method << "]"
         << " " << root;
 }
 

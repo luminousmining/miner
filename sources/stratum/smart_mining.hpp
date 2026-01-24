@@ -54,7 +54,7 @@ namespace stratum
         callbackUpdateJob    doUpdateJob{ nullptr };
         callbackShareStatus  doShareStatus{ nullptr };
 
-        algo::ALGORITHM   currentAlgorithm { algo::ALGORITHM::UNKNOW };
+        algo::ALGORITHM   currentAlgorithm { algo::ALGORITHM::UNKNOWN };
 
         void subscribe();
         void setProfile();

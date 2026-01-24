@@ -72,7 +72,7 @@ stratum::Stratum* stratum::NewStratum(
             stratum = NEW(stratum::StratumBlake3);
             break;
         }
-        case algo::ALGORITHM::UNKNOW:
+        case algo::ALGORITHM::UNKNOWN:
         {
             break;
         }

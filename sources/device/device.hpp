@@ -34,8 +34,8 @@ namespace device
     public:
         uint32_t            id{ 0u };
         uint32_t            pciBus { 0u };
-        device::DEVICE_TYPE deviceType { device::DEVICE_TYPE::UNKNOW };
-        algo::ALGORITHM     algorithm { algo::ALGORITHM::UNKNOW };
+        device::DEVICE_TYPE deviceType { device::DEVICE_TYPE::UNKNOWN };
+        algo::ALGORITHM     algorithm { algo::ALGORITHM::UNKNOWN };
         uint32_t            stratumUUID { 0u };
         uint64_t            memoryAvailable{ 0ull };
 #if defined(CUDA_ENABLE)

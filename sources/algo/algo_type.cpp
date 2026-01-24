@@ -17,7 +17,7 @@ std::string algo::toString(algo::ALGORITHM const algorithm)
         case algo::ALGORITHM::EVRPROGPOW:   { return "evrprogpow";   }
         case algo::ALGORITHM::AUTOLYKOS_V2: { return "autolykosv2";  }
         case algo::ALGORITHM::BLAKE3:       { return "blake3";       }
-        case algo::ALGORITHM::UNKNOW:       { return "unknow";       }
+        case algo::ALGORITHM::UNKNOWN:      { return "unknown";      }
     }
 
     return "";
@@ -40,5 +40,5 @@ algo::ALGORITHM algo::toEnum(
     else if (algo == "autolykosv2")  { return algo::ALGORITHM::AUTOLYKOS_V2; }
     else if (algo == "blake3")       { return algo::ALGORITHM::BLAKE3;       }
 
-    return algo::ALGORITHM::UNKNOW;
+    return algo::ALGORITHM::UNKNOWN;
 }

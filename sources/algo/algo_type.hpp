@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 
@@ -19,8 +20,8 @@ namespace algo
         EVRPROGPOW,
         AUTOLYKOS_V2,
         BLAKE3,
-        UNKNOW,
-        MAX_SIZE = algo::ALGORITHM::UNKNOW
+        UNKNOWN,
+        MAX_SIZE = algo::ALGORITHM::UNKNOWN
     };
 
     std::string toString(algo::ALGORITHM const algorithm);

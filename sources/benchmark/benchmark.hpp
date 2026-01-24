@@ -48,7 +48,7 @@ namespace benchmark
 {
     struct Snapshot
     {
-        device::DEVICE_TYPE deviceType{ device::DEVICE_TYPE::UNKNOW };
+        device::DEVICE_TYPE deviceType{ device::DEVICE_TYPE::UNKNOWN };
         std::string         name{};
         uint32_t            threads{ 0u };
         uint32_t            blocks{ 0u };
@@ -74,7 +74,7 @@ namespace benchmark
         void run();
 
     private:
-        device::DEVICE_TYPE              currentdeviceType{ device::DEVICE_TYPE::UNKNOW };
+        device::DEVICE_TYPE              currentdeviceType{ device::DEVICE_TYPE::UNKNOWN };
         std::string                      currentBenchName{};
         uint32_t                         blocks{ 1u };
         uint32_t                         threads{ 32u };

@@ -39,7 +39,7 @@ void stratum::StratumBlake3::onResponse(
 }
 
 
-void stratum::StratumBlake3::onUnknowMethod(
+void stratum::StratumBlake3::onUnknownMethod(
     boost::json::object const& root)
 {
     std::string const method{ common::boostGetString(root, "method") };

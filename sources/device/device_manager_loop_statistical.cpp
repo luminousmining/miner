@@ -123,7 +123,7 @@ void device::DeviceManager::showMiningStats(
     statistical::Statistical::ShareInfo const& shareInfo)
 {
     ///////////////////////////////////////////////////////////////////
-    std::string deviceType{ "UNKNOW" };
+    std::string deviceType{ "UNKNOWN" };
     switch(device->deviceType)
     {
 #if defined(CUDA_ENABLE)
@@ -140,9 +140,9 @@ void device::DeviceManager::showMiningStats(
             break;
         }
 #endif
-        case device::DEVICE_TYPE::UNKNOW:
+        case device::DEVICE_TYPE::UNKNOWN:
         {
-            deviceType = "UNKNOW";
+            deviceType = "UNKNOWN";
             break;
         }
     }
@@ -181,7 +181,7 @@ void device::DeviceManager::showDeviceStats(
     double cost{ 0.0 };
 
     ///////////////////////////////////////////////////////////////////
-    std::string deviceType{ "UNKNOW" };
+    std::string deviceType{ "UNKNOWN" };
     switch(device->deviceType)
     {
 #if defined(CUDA_ENABLE)
@@ -198,9 +198,9 @@ void device::DeviceManager::showDeviceStats(
             break;
         }
 #endif
-        case device::DEVICE_TYPE::UNKNOW:
+        case device::DEVICE_TYPE::UNKNOWN:
         {
-            deviceType = "UNKNOW";
+            deviceType = "UNKNOWN";
             break;
         }
     }
@@ -235,7 +235,7 @@ void device::DeviceManager::showDeviceStats(
             break;
         }
 #endif
-        case device::DEVICE_TYPE::UNKNOW:
+        case device::DEVICE_TYPE::UNKNOWN:
         {
             break;
         }

@@ -166,7 +166,7 @@ void benchmark::Benchmark::writeReport()
                 break;
             }
 #endif
-            case device::DEVICE_TYPE::UNKNOW:
+            case device::DEVICE_TYPE::UNKNOWN:
             {
                 break;
             }

@@ -59,7 +59,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -86,7 +86,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -113,7 +113,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -140,7 +140,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -167,7 +167,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -194,7 +194,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -221,7 +221,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -248,7 +248,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -275,7 +275,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -302,7 +302,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
@@ -327,7 +327,7 @@ void device::Device::setAlgorithm(
                     break;
                 }
 #endif
-                case device::DEVICE_TYPE::UNKNOW:
+                case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
                 }
