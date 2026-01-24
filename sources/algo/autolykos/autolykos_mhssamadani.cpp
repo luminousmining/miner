@@ -47,7 +47,6 @@ struct ctx_t
 
 // G mixing function
 #define B2B_G(v, a, b, c, d, x, y)                                             \
-do                                                                             \
 {                                                                              \
     ((uint64_t *)(v))[a] += ((uint64_t *)(v))[b] + x;                          \
     ((uint64_t *)(v))[d]                                                       \
@@ -61,12 +60,10 @@ do                                                                             \
     ((uint64_t *)(v))[c] += ((uint64_t *)(v))[d];                              \
     ((uint64_t *)(v))[b]                                                       \
         = ROTR64(((uint64_t *)(v))[b] ^ ((uint64_t *)(v))[c], 63);             \
-}                                                                              \
-while (0)
+}
 
 // mixing rounds
 #define B2B_MIX(v, m)                                                          \
-do                                                                             \
 {                                                                              \
     B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 1]);      \
     B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[ 3]);      \
@@ -175,12 +172,10 @@ do                                                                             \
     B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 2]);      \
     B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[11], ((uint64_t *)(m))[ 7]);      \
     B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[ 3]);      \
-}                                                                              \
-while (0)
+}
 
 // initialization vector
 #define B2B_IV(v)                                                              \
-do                                                                             \
 {                                                                              \
     ((uint64_t *)(v))[0] = 0x6A09E667F3BCC908;                                 \
     ((uint64_t *)(v))[1] = 0xBB67AE8584CAA73B;                                 \
@@ -190,12 +185,10 @@ do                                                                             \
     ((uint64_t *)(v))[5] = 0x9B05688C2B3E6C1F;                                 \
     ((uint64_t *)(v))[6] = 0x1F83D9ABFB41BD6B;                                 \
     ((uint64_t *)(v))[7] = 0x5BE0CD19137E2179;                                 \
-}                                                                              \
-while (0)
+}
 
 // blake2b initialization
 #define B2B_INIT(ctx, aux)                                                     \
-do                                                                             \
 {                                                                              \
     ((uint64_t *)(aux))[0] = ((ctx_t *)(ctx))->h[0];                           \
     ((uint64_t *)(aux))[1] = ((ctx_t *)(ctx))->h[1];                           \
@@ -210,12 +203,10 @@ do                                                                             \
                                                                                \
     ((uint64_t *)(aux))[12] ^= ((ctx_t *)(ctx))->t[0];                         \
     ((uint64_t *)(aux))[13] ^= ((ctx_t *)(ctx))->t[1];                         \
-}                                                                              \
-while (0)
+}
 
 // blake2b mixing
 #define B2B_FINAL(ctx, aux)                                                    \
-do                                                                             \
 {                                                                              \
     ((uint64_t *)(aux))[16] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 0];         \
     ((uint64_t *)(aux))[17] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 1];         \
@@ -244,12 +235,10 @@ do                                                                             \
     ((ctx_t *)(ctx))->h[5] ^= ((uint64_t *)(aux))[5] ^ ((uint64_t *)(aux))[13];\
     ((ctx_t *)(ctx))->h[6] ^= ((uint64_t *)(aux))[6] ^ ((uint64_t *)(aux))[14];\
     ((ctx_t *)(ctx))->h[7] ^= ((uint64_t *)(aux))[7] ^ ((uint64_t *)(aux))[15];\
-}                                                                              \
-while (0)
+}
 
 // blake2b intermediate mixing procedure on host
 #define HOST_B2B_H(ctx, aux)                                                   \
-do                                                                             \
 {                                                                              \
     ((ctx_t *)(ctx))->t[0] += algo::autolykos_v2::BUF_SIZE_8;                  \
     ((ctx_t *)(ctx))->t[1] += 1 - !(((ctx_t *)(ctx))->t[0] < algo::autolykos_v2::BUF_SIZE_8); \
@@ -258,12 +247,10 @@ do                                                                             \
     B2B_FINAL(ctx, aux);                                                       \
                                                                                \
     ((ctx_t *)(ctx))->c = 0;                                                   \
-}                                                                              \
-while (0)
+}
 
 // blake2b intermediate mixing procedure on host
 #define HOST_B2B_H_LAST(ctx, aux)                                              \
-do                                                                             \
 {                                                                              \
     ((ctx_t *)(ctx))->t[0] += ((ctx_t *)(ctx))->c;                             \
     ((ctx_t *)(ctx))->t[1]                                                     \
@@ -279,8 +266,7 @@ do                                                                             \
     ((uint64_t *)(aux))[14] = ~((uint64_t *)(aux))[14];                        \
                                                                                \
     B2B_FINAL(ctx, aux);                                                       \
-}                                                                              \
-while (0)
+}
 
 
 static uint32_t calcN(uint32_t const Hblock)
