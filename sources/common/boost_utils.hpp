@@ -12,17 +12,17 @@ namespace common
 {
     template<typename T>
     inline
-    T boostJsonGetNumber(boost::json::value const& v)
+    T boostJsonGetNumber(boost::json::value const& value)
     {
         try
         {
-            if (v.is_double())
+            if (true == value.is_double())
             {
-                return static_cast<T>(v.as_double());
+                return static_cast<T>(value.as_double());
             }
-            else if (v.is_uint64())
+            else if (true == value.is_uint64())
             {
-                return static_cast<T>(v.as_uint64());
+                return static_cast<T>(value.as_uint64());
             }
         }
         catch(boost::exception const& e)
@@ -31,7 +31,8 @@ namespace common
             return T{0};
         }
 
-        return static_cast<T>(v.as_int64());
+        int64_t const result = value.as_int64();
+        return static_cast<T>(result);
     }
 
     template<typename T>

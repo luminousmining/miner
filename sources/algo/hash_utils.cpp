@@ -92,10 +92,10 @@ algo::hash256 algo::toHash256(
         if (offset != std::string::npos)
         {
             // Number of decimal places
-            size_t const precision { (lengthDifficulty - 1u) - offset };
+            size_t const precision{ (lengthDifficulty - 1u) - offset };
 
             // Effective sequence of decimal places
-            std::string decimals { stringDifficulty.substr(offset + 1u) };
+            std::string decimals{ stringDifficulty.substr(offset + 1u) };
 
             // Strip leading zeroes. If a string begins with
             // 0 or 0x boost parser considers it hex
@@ -103,16 +103,16 @@ algo::hash256 algo::toHash256(
 
             // Build up the divisor as string - just in case
             // parser does some implicit conversion with 10^precision
-            std::string decimalDivisor { "1" };
+            std::string decimalDivisor{ "1" };
             decimalDivisor.resize(precision + 1u, '0');
 
             // This is the multiplier for decimalsthe decimal part
-            BigInteger const multiplier { decimals };
+            BigInteger const multiplier{ decimals };
 
             // This is the divisor for the decimal part
-            BigInteger const divisor { decimalDivisor };
+            BigInteger const divisor{ decimalDivisor };
 
-            BigInteger decimalproduct{  base * multiplier };
+            BigInteger decimalproduct{ base * multiplier };
             decimalproduct /= divisor;
 
             // Add the computed decimal part
@@ -129,6 +129,67 @@ algo::hash256 algo::toHash256(
         << product;
 
     std::string target{ ss.str() };
+    boost::algorithm::to_lower(target);
+
+    return toHash256(target);
+}
+
+
+/*
+    TODO: Fix toHash256 to double CRASH
+    --
+    double value = 1.0 / 230000; // ≈ 4.34782608695652e-06
+    boost::lexical_cast<std::string>(value); // "4.34783e-06"
+    --
+    size_t offset = stringDifficulty.find('.');
+    size_t precision = (lengthDifficulty - 1u) - offset;
+    std::string decimals = stringDifficulty.substr(offset + 1u);
+    "34783e-06"
+    --
+    BigInteger const multiplier{ decimals }; -> crash
+*/
+algo::hash256 algo::toHash256_v2(double const valueOriginal)
+{
+    using namespace boost::multiprecision;
+    using BigInteger = cpp_int;
+
+    static BigInteger const base{
+        "0xffff0000000000000000000000000000000000000000000000000000"
+    };
+
+    BigInteger product{};
+
+    if (valueOriginal == 0.0)
+    {
+        product = BigInteger(
+            "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        );
+    }
+    else
+    {
+        double value = 1.0 / valueOriginal;
+
+        double intPart;
+        double fracPart = std::modf(value, &intPart);
+
+        BigInteger ip = static_cast<long long>(intPart);
+        product = base * ip;
+
+        if (fracPart > 0.0)
+        {
+            constexpr std::uint64_t scale = 1'000'000'000'000'000'000ULL;
+            BigInteger frac = static_cast<std::uint64_t>(fracPart * scale);
+            product += (base * frac) / scale;
+        }
+    }
+
+    std::stringstream ss;
+    ss << std::setw(64)
+       << std::setfill('0')
+       << std::hex
+       << product;
+
+    std::string target = ss.str();
     boost::algorithm::to_lower(target);
 
     return toHash256(target);

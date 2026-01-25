@@ -23,6 +23,7 @@ namespace algo
     algo::hash256  toHash256(uint8_t const* bytes);
     algo::hash256  toHash256(std::string const& str);
     algo::hash256  toHash256(double const value);
+    algo::hash256  toHash256_v2(double const value);
     algo::hash1024 toHash1024(std::string const& str);
 
 
