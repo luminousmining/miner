@@ -1,4 +1,4 @@
-#include <common/cli.hpp>
+#include <common/cli/cli.hpp>
 
 
 std::optional<std::string> common::Cli::getRavenMinerBTCWallet() const

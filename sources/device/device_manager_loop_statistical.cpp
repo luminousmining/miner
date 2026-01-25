@@ -17,7 +17,13 @@ void device::DeviceManager::loopStatistical()
     common::Dashboard boardDevice{};
     stratum::Stratum* stratum{ nullptr };
     common::Config const& config{ common::Config::instance() };
-    boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_HASH_STATS };
+    boost::chrono::milliseconds interval{ device::DeviceManager::WAITING_HASH_STATS };
+
+    ////////////////////////////////////////////////////////////////////////
+    if (std::nullopt != config.log.intervalHashStats)
+    {
+        interval = boost::chrono::milliseconds(*config.log.intervalHashStats);
+    }
 
     ////////////////////////////////////////////////////////////////////////
     boardMining.setTitle("HASHRATE");
@@ -45,7 +51,7 @@ void device::DeviceManager::loopStatistical()
     while (true)
     {
         ////////////////////////////////////////////////////////////////////////
-        boost::this_thread::sleep_for(ms);
+        boost::this_thread::sleep_for(interval);
 
         ////////////////////////////////////////////////////////////////////////
         boardMining.resetLines();

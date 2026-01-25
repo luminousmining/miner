@@ -1,4 +1,5 @@
-#include <common/cli.hpp>
+#include <common/cli/cli.hpp>
+
 
 extern std::vector<std::string> optionSmartMiningWallet;
 extern std::vector<std::string> optionSmartMiningPool;

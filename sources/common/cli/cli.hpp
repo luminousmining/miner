@@ -47,7 +47,8 @@ namespace common
 
         // logger
         std::optional<common::TYPELOG> getLevelLog() const;
-        std::optional<std::string> getLogFilenaName() const;
+        std::optional<std::string>     getLogFilenaName() const;
+        std::optional<uint32_t>        getLogIntervalHashStats() const;
 
         // Common
          std::optional<double> getPricekWH() const;

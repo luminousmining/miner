@@ -8,7 +8,7 @@
 
 #include <algo/algo_type.hpp>
 #include <device/type.hpp>
-#include <common/cli.hpp>
+#include <common/cli/cli.hpp>
 #include <common/profile.hpp>
 #include <stratum/stratum_type.hpp>
 
@@ -66,8 +66,9 @@ namespace common
 
         struct LogConfig
         {
-            common::TYPELOG level { common::TYPELOG::__INFO };
-            std::string file{};
+            common::TYPELOG         level{ common::TYPELOG::__INFO };
+            std::string             file{};
+            std::optional<uint32_t> intervalHashStats{};
         };
 
         struct ApiConfig
@@ -75,7 +76,7 @@ namespace common
             uint32_t port{ 8080u };
         };
 
-        common::PROFILE                profile { common::PROFILE::STANDARD };
+        common::PROFILE                profile{ common::PROFILE::STANDARD };
         common::Cli                    cli{};
         LogConfig                      log{};
         PoolConfig                     mining{};

@@ -3,7 +3,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 
 #include <common/cast.hpp>
-#include <common/cli.hpp>
+#include <common/cli/cli.hpp>
 #include <common/log/log.hpp>
 
 
@@ -40,6 +40,12 @@ common::Cli::Cli()
             value<std::string>(),
             "[OPTIONAL] Set path to write log.\n"
             "--log_file=PATH"
+        )
+        (
+            "log_interval_hash",
+            value<uint32_t>(),
+            "[OPTIONAL] Set the time interval (in milliseconds) between logs of information about the hashrate.\n"
+            "--log_interval_hash=10000"
         )
 
         // Common

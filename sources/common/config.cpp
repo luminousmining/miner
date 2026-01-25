@@ -1,5 +1,6 @@
 #include <algo/math.hpp>
 #include <common/config.hpp>
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <common/log/log_file.hpp>
 
@@ -98,6 +99,12 @@ bool common::Config::loadCli(int argc, char** argv)
         {
             log.file.assign(*logFile);
             common::LoggerFile::instance().openFilename();
+        }
+
+        auto const intervalHashStats { cli.getLogIntervalHashStats() };
+        if (std::nullopt != intervalHashStats)
+        {
+            log.intervalHashStats = MIN_LIMIT(*intervalHashStats, 100u);
         }
 
         ////////////////////////////////////////////////////////////////////////

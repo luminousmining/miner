@@ -24,3 +24,6 @@ evrprogpow `miner --host=eu.evrpool.com --port=1111 --algo="evrprogpow" --wallet
 ## LuckyPool
 progpow-quai `miner --stratum="v2" --host=quai.luckypool.io --port=3333 --algo="progpow-quai" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 progpow-z `miner --stratum="ethproxy" --host=zano.luckypool.io --port=8866 --algo="progpow-z" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+
+##
+kawpow `miner --log_interval_hash=500 --host=de.quai.herominers.com --port=1185 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
