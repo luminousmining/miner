@@ -172,11 +172,7 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const stratumType{ cli.getStratumType() };
         if (std::nullopt != stratumType && false == stratumType->empty())
         {
-            if ("v0" == stratumType)
-            {
-                mining.stratumType = stratum::STRATUM_TYPE::BITCOIN;
-            }
-            else if ("v1" == stratumType)
+            if ("v1" == stratumType)
             {
                 mining.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
             }
@@ -188,6 +184,7 @@ bool common::Config::loadCli(int argc, char** argv)
             {
                 mining.stratumType = stratum::STRATUM_TYPE::ETHPROXY;
             }
+            // TODO: implement stratum BITCOIN
         }
 
         auto const port{ cli.getPort() };

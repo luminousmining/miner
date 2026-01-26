@@ -6,6 +6,7 @@
 #include <dlfcn.h>
 #endif
 #include <cmath>
+#include <set>
 
 #include <common/cast.hpp>
 #include <common/custom.hpp>
@@ -39,7 +40,22 @@ bool profiler::Nvidia::load()
 #ifdef _WIN32
     libModule = LoadLibrary("nvml.dll");
 #else
-    libModule = dlopen("libnvidia-ml.so", RTLD_LAZY);
+    std::set<std::string> allPathLibNvidiaML
+    {
+        "libnvidia-ml.so.1",
+        "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1",
+        "/usr/lib64/libnvidia-ml.so.1",
+        "/usr/lib/libnvidia-ml.so.1"
+    };
+    for (auto pathLibNvidiaML : allPathLibNvidiaML)
+    {
+        libModule = dlopen(pathLibNvidiaML.c_str(), RTLD_LAZY);
+        if (nullptr != libModule)
+        {
+            logInfo() << "Loaded library " << pathLibNvidiaML;
+            break;
+        }
+    }
 #endif
 
     if (nullptr == libModule)
