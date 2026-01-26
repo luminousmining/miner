@@ -12,7 +12,7 @@ N/A : No default value is set.
 | Parameter | Optional | Default Value | Description | Example |
 |---------|--------|--------------|-------------|---------|
 | `--help` | ❌ | N/A | Help screen. | `--help` |
-| `--level_log` | ✅ | N/A | Set level of log. | `--level_log=<debug|info|error|warning>` |
+| `--level_log` | ✅ | N/A | Set level of log. | `--level_log=<debug\|info\|error\|warning>` |
 | `--log_file` | ✅ | N/A | Set the log file path. | `--log_file=PATH` |
 | `--log_interval_hash` | ✅ | 10000 | Set the time interval (in milliseconds) between logs of information about the hashrate. | `--log_interval_hash=10000` |
 | `--host` | ❌ | N/A | Hostname of the pool. | `--host="ethw.2miners.com"` |
@@ -21,16 +21,17 @@ N/A : No default value is set.
 | `--algo` | ❌ | N/A | Algorithm. | `--algo="ethash"` |
 | `--workername` | ❌ | N/A | Name of the rig. | `--workername="MyWorkerName"` |
 | `--password` | ✅ | N/A | Account password. | `--password="MyPassword"` |
-| `--ssl` | ✅ | false | Enable or not the SSL. | `--ssl=<true|false>` |
-| `--stale` | ✅ | false | Enable stale share. | `--stale=<true|false>` |
-| `--nvidia` | ✅ | true | Enable or disable device nvidia. | `--nvidia=<true|false>` |
-| `--amd` | ✅ | true | Enable or disable device amd. | `--amd=<true|false>` |
-| `--cpu` | ✅ | false | Enable or disable device cpu. | `--cpu=<true|false>` |
-| `--socks5` | ✅ | false | Enable pool connection through a SOCKS5 proxy server on localhost. | `--socks5=<true|false>` |
+| `--ssl` | ✅ | false | Enable or not the SSL. | `--ssl=<true\|false>` |
+| `--stale` | ✅ | false | Enable stale share. | `--stale=<true\|false>` |
+| `--nvidia` | ✅ | true | Enable or disable device nvidia. | `--nvidia=<true\|false>` |
+| `--amd` | ✅ | true | Enable or disable device amd. | `--amd=<true\|false>` |
+| `--cpu` | ✅ | false | Enable or disable device cpu. | `--cpu=<true\|false>` |
+| `--socks5` | ✅ | false | Enable pool connection through a SOCKS5 proxy server on localhost. | `--socks5=<true\|false>` |
 | `--socks_port` | ✅ | 9050 | The port of the SOCKS5 proxy server on localhost. | `--socks_port=9050` |
 | `--api_port` | ✅ | 8080 | Miner API port. | `--api_port=8080` |
 
 ## Environment
+
 | Parameter | Optional | Default Value | Description | Example |
 |---------|--------|--------------|-------------|---------|
 | `--env_cuda_lazy` | ✅ | N/A | Set var env `CUDA_MODULE_LOADING`.`true: CUDA_MODULE_LOADING=LAZY` - `false: CUDA_MODULE_LOADING=EAGER` | `--env_cuda_lazy=true` |
