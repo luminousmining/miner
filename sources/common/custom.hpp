@@ -57,15 +57,24 @@
 #define NEW_ARRAY(type, size)\
     new (std::nothrow) type[size]
 
-#define MAX_LIMIT(value, max)\
-    (value <= max ? value : max)
-
-#define MIN_LIMIT(value, minimun)\
-    (value >= minimun ? value : minimun)
-
 
 namespace common
 {
+    template<typename T>
+    inline
+    T max_limit(T const value, T const maximun)
+    {
+        return value <= maximun ? value : maximun;
+    }
+
+
+    template<typename T>
+    inline
+    T min_limit(T const value, T const minimun)
+    {
+        return value >= minimun ? value : minimun;
+    }
+
     template<typename T>
     inline
     void swap(T* a, T* b)

@@ -30,6 +30,15 @@ N/A : No default value is set.
 | `--socks_port` | ✅ | 9050 | The port of the SOCKS5 proxy server on localhost. | `--socks_port=9050` |
 | `--api_port` | ✅ | 8080 | Miner API port. | `--api_port=8080` |
 
+## Environment
+| Parameter | Optional | Default Value | Description | Example |
+|---------|--------|--------------|-------------|---------|
+| `--env_cuda_lazy` | ✅ | N/A | Set var env `CUDA_MODULE_LOADING`.`true: CUDA_MODULE_LOADING=LAZY` - `false: CUDA_MODULE_LOADING=EAGER` | `--env_cuda_lazy=true` |
+| `--env_cuda_device_order` | ✅ | N/A | Set var env `CUDA_DEVICE_ORDER` PCI_BUS_ID or FASTEST_FIRST | `--env_cuda_device_order=PCI_BUS_ID` |
+| `--env_gpu_heap_size` | ✅ |  N/A  | Set var env `GPU_MAX_HEAP_SIZE` | `--env_gpu_heap_size=100` |
+| `--env_gpu_max_alloc_percent` | ✅ |  N/A  | Set var env `GPU_MAX_ALLOC_PERCENT` | `--env_gpu_max_alloc_percent=100` |
+| `--env_gpu_single_alloc_percent` | ✅ | N/A  | Set var env `GPU_SINGLE_ALLOC_PERCENT` | `--env_gpu_single_alloc_percent=100` |
+
 ## AMD Settings
 
 | Parameter | Optional | Default Value | Description | Example |

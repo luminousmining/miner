@@ -289,7 +289,7 @@ bool resolver::ResolverAmdEthash::getResultCache(
     {
         uint32_t const count
         {
-            MAX_LIMIT(data.count, algo::ethash::MAX_RESULT)
+            common::max_limit(data.count, algo::ethash::MAX_RESULT)
         };
 
         resultShare.found = true;

@@ -304,7 +304,7 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(result->count, algo::progpow::MAX_RESULT)
+            common::max_limit(result->count, algo::progpow::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -369,7 +369,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(resultCache->count, algo::progpow::MAX_RESULT)
+            common::max_limit(resultCache->count, algo::progpow::MAX_RESULT)
         };
 
         resultShare.found = true;

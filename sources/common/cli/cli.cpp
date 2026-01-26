@@ -48,6 +48,44 @@ common::Cli::Cli()
             "--log_interval_hash=10000"
         )
 
+        // Environment
+        (
+            "env_cuda_lazy",
+            value<bool>(),
+            "[OPTIONAL] Set var env CUDA_MODULE_LOADING\n"
+            "true: CUDA_MODULE_LOADING=LAZY\n"
+            "false: CUDA_MODULE_LOADING=EAGER\n"
+            "--env_cuda_lazy=false"
+        )
+        (
+            "env_cuda_device_order",
+            value<std::string>(),
+            "[OPTIONAL] Set var env CUDA_DEVICE_ORDE <PCI_BUS_ID|FASTEST_FIRST>\n"
+            "--env_cuda_device_order=PCI_BUS_ID"
+        )
+        (
+            "env_gpu_heap_size",
+            value<uint32_t>(),
+            "[OPTIONAL] Set var env GPU_MAX_HEAP_SIZE\n"
+            "Default value is GPU_MAX_HEAP_SIZE=100\n"
+            "--env_gpu_heap_size=100"
+
+        )
+        (
+            "env_gpu_max_alloc_percent",
+            value<uint32_t>(),
+            "[OPTIONAL] Set var env GPU_MAX_ALLOC_PERCENT\n"
+            "Default value is GPU_MAX_ALLOC_PERCENT=100\n"
+            "--env_gpu_max_alloc_percent=100"
+        )
+        (
+            "env_gpu_single_alloc_percent",
+            value<uint32_t>(),
+            "[OPTIONAL] Set var env GPU_SINGLE_ALLOC_PERCENT\n"
+            "Default value is GPU_SINGLE_ALLOC_PERCENT=100\n"
+            "--env_gpu_single_alloc_percent=100"
+        )
+
         // Common
         (
             "price_kwh",

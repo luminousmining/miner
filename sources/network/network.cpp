@@ -6,7 +6,7 @@
 #include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
-#include <common/system.hpp>
+#include <common/env_utils.hpp>
 #include <network/network.hpp>
 #include <network/socks5.hpp>
 #include <stratum/stratum_type.hpp>

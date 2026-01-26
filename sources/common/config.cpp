@@ -1,6 +1,7 @@
 #include <algo/math.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
+#include <common/env_utils.hpp>
 #include <common/log/log.hpp>
 #include <common/log/log_file.hpp>
 
@@ -87,6 +88,8 @@ bool common::Config::loadCli(int argc, char** argv)
         }
 
         ////////////////////////////////////////////////////////////////////////
+        // LOGGER
+        ////////////////////////////////////////////////////////////////////////
         auto const levelLog { cli.getLevelLog() };
         if (std::nullopt != levelLog)
         {
@@ -104,9 +107,52 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const intervalHashStats { cli.getLogIntervalHashStats() };
         if (std::nullopt != intervalHashStats)
         {
-            log.intervalHashStats = MIN_LIMIT(*intervalHashStats, 100u);
+            log.intervalHashStats = common::min_limit(*intervalHashStats, 100u);
         }
 
+        ////////////////////////////////////////////////////////////////////////
+        // ENVIRONMENT
+        ////////////////////////////////////////////////////////////////////////
+        auto const cudaLazy{ cli.getEnvironmentCudaLazy() };
+        if (std::nullopt != cudaLazy)
+        {
+            common::setVarEnv
+            (
+                "CUDA_MODULE_LOADING",
+                *cudaLazy == true ? "LAZY" : "EAGER"
+            );
+        }
+
+        auto const cudaDeviceOrder{ cli.getEnvironmentCudadeviceOrder() };
+        if (std::nullopt != cudaDeviceOrder)
+        {
+            std::string const order = *cudaDeviceOrder;
+            if ("PCI_BUS_ID" == order || "FASTEST_FIRST" == order)
+            {
+                common::setVarEnv("CUDA_DEVICE_ORDER", order.c_str());
+            }
+        }
+
+        auto const gpuHeapSize{ cli.getEnvironmentGpuHeapSize() };
+        if (std::nullopt != gpuHeapSize)
+        {
+            common::setVarEnv("GPU_MAX_HEAP_SIZE", common::min_limit(*gpuHeapSize, 10u));
+        }
+
+        auto const gpuMaxAllocPercent{ cli.getEnvironmentGpuMaxAllocPercent() };
+        if (std::nullopt != gpuMaxAllocPercent)
+        {
+            common::setVarEnv("GPU_MAX_ALLOC_PERCENT", common::min_limit(*gpuMaxAllocPercent, 10u));
+        }
+
+        auto const gpuSingleAllocPercent{ cli.getEnvironmentGpuSingleAllocPercent() };
+        if (std::nullopt != gpuMaxAllocPercent)
+        {
+            common::setVarEnv("GPU_SINGLE_ALLOC_PERCENT", common::min_limit(*gpuSingleAllocPercent, 10u));
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // COMMON
         ////////////////////////////////////////////////////////////////////////
         auto const priceKWH{ cli.getPricekWH() };
         if (std::nullopt != priceKWH)
@@ -114,6 +160,8 @@ bool common::Config::loadCli(int argc, char** argv)
             common.priceKWH = *priceKWH;
         }
 
+        ////////////////////////////////////////////////////////////////////////
+        // POOL
         ////////////////////////////////////////////////////////////////////////
         auto const host{ cli.getHost() };
         if (std::nullopt != host && false == host->empty())
@@ -124,7 +172,11 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const stratumType{ cli.getStratumType() };
         if (std::nullopt != stratumType && false == stratumType->empty())
         {
-            if ("v1" == stratumType)
+            if ("v0" == stratumType)
+            {
+                mining.stratumType = stratum::STRATUM_TYPE::BITCOIN;
+            }
+            else if ("v1" == stratumType)
             {
                 mining.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
             }
@@ -180,6 +232,8 @@ bool common::Config::loadCli(int argc, char** argv)
             }
         }
         
+        ////////////////////////////////////////////////////////////////////////
+        // RAVEN MINER
         ////////////////////////////////////////////////////////////////////////
         auto const ravenMinerBTCWallet{ cli.getRavenMinerBTCWallet() };
         if (std::nullopt != ravenMinerBTCWallet)
@@ -246,6 +300,8 @@ bool common::Config::loadCli(int argc, char** argv)
         }
 
         ////////////////////////////////////////////////////////////////////////
+        // DEVICES SETTING CUSTOM
+        ////////////////////////////////////////////////////////////////////////
 #if defined(CUDA_ENABLE)
         deviceEnable.nvidiaEnable = cli.isNvidiaEnable();
 #endif
@@ -255,6 +311,8 @@ bool common::Config::loadCli(int argc, char** argv)
         deviceEnable.cpuEnable = cli.isCpuEnable();
 
 #if defined(AMD_ENABLE)
+        ////////////////////////////////////////////////////////////////////////
+        // DEVICE SETTING AMD
         ////////////////////////////////////////////////////////////////////////
         if (true == deviceEnable.amdEnable)
         {
@@ -274,21 +332,7 @@ bool common::Config::loadCli(int argc, char** argv)
 #endif
 
         ////////////////////////////////////////////////////////////////////////
-        bool const isAutoOccupancy{ cli.isAutoOccupancy() };
-        uint32_t const occupancyThreads{ cli.getOccupancyThreads() };
-        uint32_t const occupancyBlocks{ cli.getOccupancyBlocks() };
-        uint32_t const internalLoop{ cli.getInternalLoop() };
-        occupancy.isAuto = isAutoOccupancy;
-        occupancy.internalLoop = internalLoop;
-        if (0u != occupancyThreads)
-        {
-            occupancy.threads = occupancyThreads;
-        }
-        if (0u != occupancyBlocks)
-        {
-            occupancy.blocks = occupancyBlocks;
-        }
-
+        // DEVICE SETTING NVIDIA
         ////////////////////////////////////////////////////////////////////////
 #if defined(CUDA_ENABLE)
         if (true == deviceEnable.nvidiaEnable)
@@ -357,6 +401,26 @@ bool common::Config::loadCli(int argc, char** argv)
         }
 
         ////////////////////////////////////////////////////////////////////////
+        // KERNEL
+        ////////////////////////////////////////////////////////////////////////
+        bool const isAutoOccupancy{ cli.isAutoOccupancy() };
+        uint32_t const occupancyThreads{ cli.getOccupancyThreads() };
+        uint32_t const occupancyBlocks{ cli.getOccupancyBlocks() };
+        uint32_t const internalLoop{ cli.getInternalLoop() };
+        occupancy.isAuto = isAutoOccupancy;
+        occupancy.internalLoop = internalLoop;
+        if (0u != occupancyThreads)
+        {
+            occupancy.threads = occupancyThreads;
+        }
+        if (0u != occupancyBlocks)
+        {
+            occupancy.blocks = occupancyBlocks;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // SMART MINING
+        ////////////////////////////////////////////////////////////////////////
         if (true == cli.isSmartMining())
         {
             profile = common::PROFILE::SMART_MINING;
@@ -396,6 +460,8 @@ bool common::Config::loadCli(int argc, char** argv)
             }
         }
         
+        ////////////////////////////////////////////////////////////////////////
+        // API
         ////////////////////////////////////////////////////////////////////////
         auto const ApiPort { cli.getApiPort() };
         if (true == algo::inRange(1u, 65535u, ApiPort))

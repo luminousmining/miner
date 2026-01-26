@@ -50,29 +50,36 @@ namespace common
         std::optional<std::string>     getLogFilenaName() const;
         std::optional<uint32_t>        getLogIntervalHashStats() const;
 
+        // Environment
+        std::optional<bool>        getEnvironmentCudaLazy() const;
+        std::optional<std::string> getEnvironmentCudadeviceOrder() const;
+        std::optional<uint32_t>    getEnvironmentGpuHeapSize() const;
+        std::optional<uint32_t>    getEnvironmentGpuMaxAllocPercent() const;
+        std::optional<uint32_t>    getEnvironmentGpuSingleAllocPercent() const;
+
         // Common
          std::optional<double> getPricekWH() const;
 
         // Pool Connection
-        std::optional<std::string>   getHost() const;
-        std::optional<std::string>   getStratumType() const;
-        bool                         isSSL() const;
-        bool                         isStale() const;
-        bool                         isSocks5() const;
-        uint32_t                     getPort() const;
-        std::optional<std::string>   getAlgo() const;
-        std::optional<std::string>   getWallet() const;
-        std::optional<std::string>   getWorkerName() const;
-        std::optional<std::string>   getPassword() const;
+        std::optional<std::string> getHost() const;
+        std::optional<std::string> getStratumType() const;
+        bool                       isSSL() const;
+        bool                       isStale() const;
+        bool                       isSocks5() const;
+        uint32_t                   getPort() const;
+        std::optional<std::string> getAlgo() const;
+        std::optional<std::string> getWallet() const;
+        std::optional<std::string> getWorkerName() const;
+        std::optional<std::string> getPassword() const;
 
         // Pool Custom
-        std::optional<std::string>     getRavenMinerBTCWallet() const;
-        std::optional<std::string>     getRavenMinerETHWallet() const;
-        std::optional<std::string>     getRavenMinerLTCWallet() const;
-        std::optional<std::string>     getRavenMinerBCHWallet() const;
-        std::optional<std::string>     getRavenMinerADAWallet() const;
-        std::optional<std::string>     getRavenMinerDODGEWallet() const;
-        std::optional<std::string>     getRavenMinerMATICWallet() const;
+        std::optional<std::string> getRavenMinerBTCWallet() const;
+        std::optional<std::string> getRavenMinerETHWallet() const;
+        std::optional<std::string> getRavenMinerLTCWallet() const;
+        std::optional<std::string> getRavenMinerBCHWallet() const;
+        std::optional<std::string> getRavenMinerADAWallet() const;
+        std::optional<std::string> getRavenMinerDODGEWallet() const;
+        std::optional<std::string> getRavenMinerMATICWallet() const;
 
         // Device settings common
 #if defined(CUDA_ENABLE)
@@ -85,12 +92,12 @@ namespace common
 
         // Device settings custom
         std::vector<uint32_t> getDevicesDisable() const;
-        customTupleStr getCustomHost() const;
-        customTupleU32 getCustomPort() const;
-        customTupleStr getCustomPassword() const;
-        customTupleStr getCustomAlgorithm() const;
-        customTupleStr getCustomWallet() const;
-        customTupleStr getCustomWorkerName() const;
+        customTupleStr        getCustomHost() const;
+        customTupleU32        getCustomPort() const;
+        customTupleStr        getCustomPassword() const;
+        customTupleStr        getCustomAlgorithm() const;
+        customTupleStr        getCustomWallet() const;
+        customTupleStr        getCustomWorkerName() const;
 
         // AMD settings
         std::optional<std::string> getAMDHost() const;
@@ -109,8 +116,8 @@ namespace common
         uint32_t getInternalLoop() const;
 
         // Smart mining settings
-        bool isSmartMining() const;
-        customTupleStrStr getSmartMiningWallet() const;
+        bool                 isSmartMining() const;
+        customTupleStrStr    getSmartMiningWallet() const;
         customTupleStrStrU32 getSmartMiningPool() const;
 
         // Api

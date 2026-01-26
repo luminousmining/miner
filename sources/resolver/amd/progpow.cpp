@@ -367,7 +367,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
     {
         uint32_t const count
         {
-            MAX_LIMIT(data.count , algo::progpow::MAX_RESULT)
+            common::max_limit(data.count , algo::progpow::MAX_RESULT)
         };
 
         resultShare.found = true;

@@ -94,7 +94,7 @@ bool resolver::ResolverNvidiaAutolykosV2::executeSync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::autolykos_v2::MAX_RESULT)
+            common::max_limit(parameters.resultCache->count, algo::autolykos_v2::MAX_RESULT)
         };
 
         uint32_t indexValidNonce{ 0u };

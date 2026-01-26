@@ -69,7 +69,7 @@ bool resolver::ResolverNvidiaBlake3::executeSync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(parameters.resultCache->count, algo::blake3::MAX_RESULT)
+            common::max_limit(parameters.resultCache->count, algo::blake3::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -115,7 +115,7 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(resultCache->count, algo::blake3::MAX_RESULT)
+            common::max_limit(resultCache->count, algo::blake3::MAX_RESULT)
         };
 
         resultShare.found = true;

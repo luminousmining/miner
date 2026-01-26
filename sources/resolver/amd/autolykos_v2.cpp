@@ -350,7 +350,7 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     {
         uint32_t const count
         {
-            MAX_LIMIT(data.count, algo::autolykos_v2::MAX_RESULT)
+            common::max_limit(data.count, algo::autolykos_v2::MAX_RESULT)
         };
 
         uint32_t indexValidNonce{ 0u };

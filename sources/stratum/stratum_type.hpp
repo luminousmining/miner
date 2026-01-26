@@ -8,9 +8,10 @@ namespace stratum
 {
     enum class STRATUM_TYPE : uint8_t
     {
+        BITCOIN,
         ETHEREUM_V1,
         ETHEREUM_V2,
-        ETHPROXY
+        ETHPROXY,
     };
 
     enum class ETHEREUM_V2_ID : uint32_t

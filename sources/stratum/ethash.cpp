@@ -111,8 +111,8 @@ void stratum::StratumEthash::onMiningSetDifficulty(
             : ((currentDifficulty * 2.0) / 8589934592.0)
     };
 
-    difficulty = MIN_LIMIT(difficulty, 0.0001);
-    difficulty = MAX_LIMIT(difficulty, 2.0);
+    difficulty = common::min_limit(difficulty, 0.0001);
+    difficulty = common::max_limit(difficulty, 2.0);
 
     jobInfo.boundary = algo::toHash256(difficulty);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);

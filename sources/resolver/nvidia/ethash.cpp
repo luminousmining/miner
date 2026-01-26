@@ -117,7 +117,7 @@ bool resolver::ResolverNvidiaEthash::executeSync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(resultCache->count, algo::ethash::MAX_RESULT)
+            common::max_limit(resultCache->count, algo::ethash::MAX_RESULT)
         };
 
         resultShare.found = true;
@@ -160,7 +160,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     {
         uint32_t const count
         {
-            MAX_LIMIT(resultCache->count, algo::ethash::MAX_RESULT)
+            common::max_limit(resultCache->count, algo::ethash::MAX_RESULT)
         };
 
         resultShare.found = true;
