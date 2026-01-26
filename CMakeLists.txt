@@ -186,15 +186,12 @@ if (BUILD_NVIDIA)
 
             "-gencode arch=compute_100,code=sm_100"   # Blackwell CC 10.0 — B100
             "-gencode arch=compute_100a,code=sm_100a" # Blackwell CC 10.0a — B100 NVL
-            "-gencode arch=compute_100f,code=sm_100f" # Blackwell CC 10.0f — feature variants
 
             "-gencode arch=compute_103,code=sm_103"   # Blackwell CC 10.3 — B200
             "-gencode arch=compute_103a,code=sm_103a" # Blackwell CC 10.3a — B200 NVL
-            "-gencode arch=compute_103f,code=sm_103f" # Blackwell CC 10.3f — feature variants
 
             "-gencode arch=compute_110,code=sm_110"   # Blackwell CC 11.0 — intermediate datacenter gen
             "-gencode arch=compute_110a,code=sm_110a" # Blackwell CC 11.0a — NVL / HPC variants
-            "-gencode arch=compute_110f,code=sm_110f" # Blackwell CC 11.0f — feature variants
         )
     endif()
     ### Macros C++
