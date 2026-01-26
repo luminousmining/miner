@@ -81,6 +81,7 @@ stratum::Stratum* stratum::NewStratum(
     if (nullptr == stratum)
     {
         logErr() << "Fail alloc stratum for " << algorithm;
+        return nullptr;
     }
 
     stratum->stratumType = config.mining.stratumType;
