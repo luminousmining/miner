@@ -504,8 +504,10 @@ void device::DeviceManager::onShareStatus(
     uint32_t const requestID,
     uint32_t const stratumUUID)
 {
+    ///////////////////////////////////////////////////////////////////////////
     common::Config const& config { common::Config::instance() };
 
+    ///////////////////////////////////////////////////////////////////////////
     for (device::Device* const device : devices)
     {
         if (nullptr == device)

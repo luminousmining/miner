@@ -467,10 +467,12 @@ void device::Device::increaseShare(
     ++info.total;
     if (true == isValid)
     {
+        deviceInfo() << "Share valid";
         ++info.valid;
     }
     else
     {
+        deviceErr() << "Share invalid";
         ++info.invalid;
     }
 }
