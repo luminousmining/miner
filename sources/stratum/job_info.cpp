@@ -20,8 +20,13 @@ stratum::StratumJobInfo& stratum::StratumJobInfo::operator=(
 void stratum::StratumJobInfo::copy(
     stratum::StratumJobInfo const& obj)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    UNIQUE_LOCK(mtx);
+
+    ////////////////////////////////////////////////////////////////////////////
     epoch = obj.epoch;
 
+    ////////////////////////////////////////////////////////////////////////////
     algo::copyHash(jobID, obj.jobID);
     algo::copyHash(headerHash, obj.headerHash);
     algo::copyHash(coinb1, obj.coinb1);
@@ -33,6 +38,7 @@ void stratum::StratumJobInfo::copy(
         algo::copyHash(merkletree[i], obj.merkletree[i]);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     nonce = obj.nonce;
     startNonce = obj.startNonce;
     extraNonce = obj.extraNonce;
@@ -44,10 +50,12 @@ void stratum::StratumJobInfo::copy(
     cleanJob = obj.cleanJob;
     jobIDStr.assign(obj.jobIDStr);
 
+    ////////////////////////////////////////////////////////////////////////////
     // ETHASH && PROGPOW
     extraNonceSize = obj.extraNonceSize;
     extraNonce2Size = obj.extraNonce2Size;
 
+    ////////////////////////////////////////////////////////////////////////////
     // Blake 3
     algo::copyHash(headerBlob, obj.headerBlob);
     algo::copyHash(targetBlob, obj.targetBlob);

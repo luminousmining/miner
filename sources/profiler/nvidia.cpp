@@ -18,13 +18,13 @@
 void* profiler::Nvidia::loadFunction(char const* name)
 {
 #ifdef _WIN32
-    void* ptr{ castVOIDP(GetProcAddress(libModule, name)) };
+    auto* ptr{ castVOIDP(GetProcAddress(libModule, name)) };
     if (nullptr == ptr)
     {
         logErr() << "Cannot load function: " << name << " (" << GetLastError() << ")";
     }
 #else
-    void* ptr{ castVOIDP(dlsym(libModule, name)) };
+    auto* ptr{ castVOIDP(dlsym(libModule, name)) };
     if (nullptr == ptr)
     {
         logErr() << "Cannot load function: " << name << " (" << dlerror() << ")";

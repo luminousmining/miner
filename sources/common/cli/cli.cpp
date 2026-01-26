@@ -349,6 +349,13 @@ common::Cli::Cli()
             "Default is value is 1.\n"
             "--internal_loop=1"
         )
+        (
+            "cuda_context",
+            value<std::string>(),
+            "[OPTIONAL] Set CUDA context.\n"
+            "Default value is auto\n"
+            "--cuda_context=<auto|blocking|yield|spin>"
+        )
 
         // smart mining
         (

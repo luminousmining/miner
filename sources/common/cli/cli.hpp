@@ -110,10 +110,11 @@ namespace common
         std::optional<std::string> getNvidiaAlgo() const;
 
         // Kernel
-        uint32_t getOccupancyThreads() const;
-        uint32_t getOccupancyBlocks() const;
-        bool     isAutoOccupancy() const;
-        uint32_t getInternalLoop() const;
+        uint32_t    getOccupancyThreads() const;
+        uint32_t    getOccupancyBlocks() const;
+        bool        isAutoOccupancy() const;
+        uint32_t    getInternalLoop() const;
+        std::string getCudaContext() const;
 
         // Smart mining settings
         bool                 isSmartMining() const;

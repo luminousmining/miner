@@ -89,6 +89,7 @@ N/A : No default value is set.
 | `--blocks` | ✅ | N/A | Set occupancy blocks. | `--blocks=128` |
 | `--occupancy` | ✅ | false | System will define the best occupancy for kernel. | `--occupancy=<true\|false>` |
 | `--internal_loop` | ✅ | 1 | Set internal loop for kernel. | `--internal_loop=1` |
+| `--cuda_context` | ✅ | auto | Set CUDA context. | `--cuda_context=<auto\|blocking\|yield\|spin>` |
 
 ## Smart Mining
 

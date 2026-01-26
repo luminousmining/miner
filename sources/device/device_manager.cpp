@@ -258,14 +258,18 @@ bool device::DeviceManager::initializeStratum(
 #if defined(CUDA_ENABLE)
 bool device::DeviceManager::initializeNvidia()
 {
+    ////////////////////////////////////////////////////////////////////////////
     int32_t numberDevice{ 0 };
     CUDA_ER(cudaGetDeviceCount(&numberDevice));
 
+    ////////////////////////////////////////////////////////////////////////////
     if (0u == numberDevice)
     {
+        logInfo() << "GPU NVIDA not found";
         return true;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     for (int32_t i{ 0 }; i < numberDevice; ++i)
     {
         ////////////////////////////////////////////////////////////////////////////
@@ -319,25 +323,19 @@ bool device::DeviceManager::initializeAmd()
 
     cl::Platform::get(&platforms);
 
-__TRACE();
     // Get all OpenCL devices
     // GPU AMD
     for (cl::Platform const& platform : platforms)
     {
-__TRACE();
         std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
         if (platformName.find("AMD") == std::string::npos)
         {
             continue;
         }
 
-        logInfo() << platformName;
-__TRACE();
         platform.getDevices(CL_DEVICE_TYPE_GPU, &cldevices);
-        logInfo() << "cldevices.size(): " << cldevices.size();
         for (uint32_t i { 0u }; i < cldevices.size(); ++i)
         {
-__TRACE();
             ////////////////////////////////////////////////////////////////////////////
             device::DeviceAmd* device{ new device::DeviceAmd };
             device->deviceType = device::DEVICE_TYPE::AMD;
@@ -450,16 +448,20 @@ void device::DeviceManager::onUpdateJob(
     uint32_t const stratumUUID,
     stratum::StratumJobInfo const& newJobInfo)
 {
+    ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxJobInfo);
 
+    ////////////////////////////////////////////////////////////////////////////
     stratum::StratumJobInfo& jobInfo { jobInfos[stratumUUID] };
 
+    ////////////////////////////////////////////////////////////////////////////
     bool updateMemory { false };
     bool updateConstants { false };
     bool const isSameEpoch { jobInfo.epoch == newJobInfo.epoch };
     bool const isSameHeader { algo::isEqual(jobInfo.headerHash, newJobInfo.headerHash) };
     bool const isSameHeaderBlob { algo::isEqual(jobInfo.headerBlob, newJobInfo.headerBlob) };
 
+    ////////////////////////////////////////////////////////////////////////////
     if (   true == isSameEpoch
         && true == isSameHeader
         && true == isSameHeaderBlob)
@@ -473,17 +475,20 @@ void device::DeviceManager::onUpdateJob(
         return;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     if (false == isSameEpoch)
     {
         updateMemory = true;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     if (   false == isSameHeader
         || false == isSameHeaderBlob)
     {
         updateConstants = true;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     if (   true == updateMemory
         || true == updateConstants)
     {
@@ -537,10 +542,13 @@ void device::DeviceManager::onShareStatus(
 void device::DeviceManager::onSmartMiningSetAlgorithm(
     algo::ALGORITHM const algorithm)
 {
+    ////////////////////////////////////////////////////////////////////////////
     threadStatistical.interrupt();
 
+    ////////////////////////////////////////////////////////////////////////////
     boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_DEVICE_STOP_COMPUTE };
 
+    ////////////////////////////////////////////////////////////////////////////
     for (device::Device* device : devices)
     {
         if (nullptr == device)
@@ -555,6 +563,7 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     for (device::Device* device : devices)
     {
         if (nullptr == device)
@@ -566,6 +575,7 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
         device->setAlgorithm(algorithm);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     run();
 }
 
@@ -582,8 +592,10 @@ void device::DeviceManager::updateDevice(
     bool const updateMemory,
     bool const updateConstants)
 {
-    common::Config const& config { common::Config::instance() };
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
 
+    ////////////////////////////////////////////////////////////////////////////
     for (device::Device* const device : devices)
     {
         if (nullptr == device)
@@ -593,7 +605,7 @@ void device::DeviceManager::updateDevice(
 
         if (common::PROFILE::STANDARD == config.profile)
         {
-            stratum::Stratum* stratum { device->getStratum() };
+            stratum::Stratum* stratum{ device->getStratum() };
             if (   nullptr == stratum
                 || stratum->uuid != stratumUUID)
             {
@@ -601,7 +613,7 @@ void device::DeviceManager::updateDevice(
             }
         }
 
-        stratum::StratumJobInfo& jobInfo { jobInfos[stratumUUID] };
+        stratum::StratumJobInfo& jobInfo{ jobInfos[stratumUUID] };
         device->update(updateMemory, updateConstants, jobInfo);
     }
 }
@@ -618,28 +630,35 @@ stratum::Stratum* device::DeviceManager::getOrCreateStratum(
     algo::ALGORITHM const algorithm,
     uint32_t const deviceId)
 {
+    ////////////////////////////////////////////////////////////////////////////
     stratum::Stratum* stratum{ nullptr };
 
+    ////////////////////////////////////////////////////////////////////////////
     auto it { stratums.find(deviceId) };
     if (it != stratums.end())
     {
         return it->second;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     stratum = stratum::NewStratum(algorithm);
 
+    ////////////////////////////////////////////////////////////////////////////
     if (nullptr == stratum)
     {
         return nullptr;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     stratum->uuid = stratumCount++;
     if (stratumCount >= 100u)
     {
         stratumCount = 0u;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     stratums[deviceId] = stratum;
 
+    ////////////////////////////////////////////////////////////////////////////
     return stratum;
 }

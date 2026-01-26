@@ -3,6 +3,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/error/cuda_error.hpp>
 #include <device/nvidia.hpp>
@@ -11,11 +12,31 @@
 
 bool device::DeviceNvidia::initialize()
 {
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config { common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
     cleanUp();
 
+    ////////////////////////////////////////////////////////////////////////////
+    uint32_t contextFlag = CU_CTX_SCHED_AUTO;
+    if ("blocking" == config.occupancy.cudaContext)
+    {
+        contextFlag = CU_CTX_SCHED_BLOCKING_SYNC;
+    }
+    else if ("spin" == config.occupancy.cudaContext)
+    {
+        contextFlag = CU_CTX_SCHED_SPIN;
+    }
+    else if ("yield" == config.occupancy.cudaContext)
+    {
+        contextFlag = CU_CTX_SCHED_YIELD;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     CU_ER(cuInit(0));
     CU_ER(cuDeviceGet(&cuDevice, cuIndex));
-    CU_ER(cuCtxCreate(&cuContext, nullptr, CU_CTX_SCHED_BLOCKING_SYNC, cuDevice));
+    CU_ER(cuCtxCreate(&cuContext, nullptr, contextFlag, cuDevice));
     CUDA_ER(cudaStreamCreateWithFlags(&cuStream[0], cudaStreamNonBlocking));
     CUDA_ER(cudaStreamCreateWithFlags(&cuStream[1], cudaStreamNonBlocking));
 

@@ -46,3 +46,14 @@ uint32_t common::Cli::getInternalLoop() const
     }
     return internalLoop;
 }
+
+
+std::string common::Cli::getCudaContext() const
+{
+    std::string context{ "auto" };
+    if (true == contains("cuda_context"))
+    {
+        context = params["cuda_context"].as<std::string>();
+    }
+    return context;
+}

@@ -67,7 +67,7 @@ bool common::KernelGeneratorCuda::build(
     ////////////////////////////////////////////////////////////////////////
     size_t ptxSize{ 0ull };
     NVRTC_ER(nvrtcGetPTXSize(cuProgram, &ptxSize));
-    char* ptx { new char[ptxSize] };
+    char* ptx{ NEW_ARRAY(char, ptxSize) };
     NVRTC_ER(nvrtcGetPTX(cuProgram, ptx));
 
     ////////////////////////////////////////////////////////////////////////

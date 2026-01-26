@@ -445,7 +445,7 @@ void device::Device::update(
     bool const constants,
     stratum::StratumJobInfo const& newJobInfo)
 {
-    nextjobInfo = newJobInfo;
+    nextjobInfo.copy(newJobInfo);
     nextjobInfo.nonce += (nextjobInfo.gapNonce * id);
 
     if (true == constants)
@@ -537,6 +537,7 @@ void device::Device::cleanJob()
 
 bool device::Device::updateJob()
 {
+    ////////////////////////////////////////////////////////////////////////////
     common::Chrono chrono{};
     bool const needUpdateJob{ synchronizer.job.isEqual() == false ? true : false };
     bool const needUpdateConstant{ synchronizer.constant.isEqual() == false ? true : false };
@@ -584,7 +585,7 @@ bool device::Device::updateJob()
     ////////////////////////////////////////////////////////////////////////////
     if (true == needUpdateConstant)
     {
-        deviceInfo() << "Updating constants";
+        deviceDebug() << "Updating constants";
         chrono.start();
         resolver->updateJobId(currentJobInfo.jobIDStr);
         if (false == resolver->updateConstants(currentJobInfo))

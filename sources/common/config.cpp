@@ -400,12 +400,14 @@ bool common::Config::loadCli(int argc, char** argv)
         ////////////////////////////////////////////////////////////////////////
         // KERNEL
         ////////////////////////////////////////////////////////////////////////
-        bool const isAutoOccupancy{ cli.isAutoOccupancy() };
-        uint32_t const occupancyThreads{ cli.getOccupancyThreads() };
-        uint32_t const occupancyBlocks{ cli.getOccupancyBlocks() };
-        uint32_t const internalLoop{ cli.getInternalLoop() };
+        auto const isAutoOccupancy{ cli.isAutoOccupancy() };
+        auto const occupancyThreads{ cli.getOccupancyThreads() };
+        auto const occupancyBlocks{ cli.getOccupancyBlocks() };
+        auto const internalLoop{ cli.getInternalLoop() };
+        auto const cudaContext{ cli.getCudaContext() };
         occupancy.isAuto = isAutoOccupancy;
         occupancy.internalLoop = internalLoop;
+        occupancy.cudaContext = cudaContext;
         if (0u != occupancyThreads)
         {
             occupancy.threads = occupancyThreads;

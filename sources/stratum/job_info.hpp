@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <boost/thread/mutex.hpp>
+
 #include <algo/hash.hpp>
 
 
@@ -9,6 +11,9 @@ namespace stratum
 {
     struct StratumJobInfo
     {
+        // Thread Safe
+        boost::mutex mtx{};
+
         // Common
         int32_t        epoch{ -1 };
         algo::hash256  jobID{};
