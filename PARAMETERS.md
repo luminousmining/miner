@@ -11,15 +11,15 @@ N/A : No default value is set.
 
 | Parameter | Optional | Default Value | Description | Example |
 |---------|--------|--------------|-------------|---------|
-| `--help` | ❌ | N/A | Help screen. | `--help` |
-| `--level_log` | ✅ | N/A | Set level of log. | `--level_log=<debug\|info\|error\|warning>` |
-| `--log_file` | ✅ | N/A | Set the log file path. | `--log_file=PATH` |
-| `--log_interval_hash` | ✅ | 10000 | Set the time interval (in milliseconds) between logs of information about the hashrate. | `--log_interval_hash=10000` |
+| `--help` | ✅ | N/A | Help screen. | `--help` |
 | `--host` | ❌ | N/A | Hostname of the pool. | `--host="ethw.2miners.com"` |
 | `--port` | ❌ | N/A | Port of the pool. | `--port=2020` |
 | `--wallet` | ❌ | N/A | Wallet address. | `--wallet="WALLET"` |
 | `--algo` | ❌ | N/A | Algorithm. | `--algo="ethash"` |
 | `--workername` | ❌ | N/A | Name of the rig. | `--workername="MyWorkerName"` |
+| `--level_log` | ✅ | N/A | Set level of log. | `--level_log=<debug\|info\|error\|warning>` |
+| `--log_file` | ✅ | N/A | Set the log file path. | `--log_file=PATH` |
+| `--log_interval_hash` | ✅ | 10000 | Set the time interval (in milliseconds) between logs of information about the hashrate. | `--log_interval_hash=10000` |
 | `--password` | ✅ | N/A | Account password. | `--password="MyPassword"` |
 | `--ssl` | ✅ | false | Enable or not the SSL. | `--ssl=<true\|false>` |
 | `--stale` | ✅ | false | Enable stale share. | `--stale=<true\|false>` |
@@ -30,12 +30,13 @@ N/A : No default value is set.
 | `--socks_port` | ✅ | 9050 | The port of the SOCKS5 proxy server on localhost. | `--socks_port=9050` |
 | `--api_port` | ✅ | 8080 | Miner API port. | `--api_port=8080` |
 
+
 ## Environment
 
 | Parameter | Optional | Default Value | Description | Example |
 |---------|--------|--------------|-------------|---------|
-| `--env_cuda_lazy` | ✅ | N/A | Set var env `CUDA_MODULE_LOADING`.`true: CUDA_MODULE_LOADING=LAZY` - `false: CUDA_MODULE_LOADING=EAGER` | `--env_cuda_lazy=true` |
-| `--env_cuda_device_order` | ✅ | N/A | Set var env `CUDA_DEVICE_ORDER` PCI_BUS_ID or FASTEST_FIRST | `--env_cuda_device_order=PCI_BUS_ID` |
+| `--env_cuda_lazy` | ✅ | N/A | Set var env `CUDA_MODULE_LOADING`.`true: CUDA_MODULE_LOADING=LAZY` - `false: CUDA_MODULE_LOADING=EAGER` | `--env_cuda_lazy=<true\|false>` |
+| `--env_cuda_device_order` | ✅ | N/A | Set var env `CUDA_DEVICE_ORDER` | `--env_cuda_device_order=<PCI_BUS_ID\|FASTEST_FIRST>` |
 | `--env_gpu_heap_size` | ✅ |  N/A  | Set var env `GPU_MAX_HEAP_SIZE` | `--env_gpu_heap_size=100` |
 | `--env_gpu_max_alloc_percent` | ✅ |  N/A  | Set var env `GPU_MAX_ALLOC_PERCENT` | `--env_gpu_max_alloc_percent=100` |
 | `--env_gpu_single_alloc_percent` | ✅ | N/A  | Set var env `GPU_SINGLE_ALLOC_PERCENT` | `--env_gpu_single_alloc_percent=100` |
@@ -46,7 +47,7 @@ N/A : No default value is set.
 |---------|--------|--------------|-------------|---------|
 | `--amd_host` | ✅ | N/A | Set default hostname of pool for all GPU AMD. If defined, the parameters `amd_port` and `amd_algo` must be defined. | `--amd_host="ethw.2miners.com"` |
 | `--amd_port` | ✅ | N/A | Set port of the pool for all GPU AMD. If defined, the parameters `amd_host` and `amd_algo` must be defined. | `--amd_port=2020` |
-| `--amd_algo` | ❌ | N/A | Algorithm. If defined, the parameters `amd_host` and `amd_port` must be defined. | `--amd_algo="ethash"` |
+| `--amd_algo` | ✅ | N/A | Algorithm. If defined, the parameters `amd_host` and `amd_port` must be defined. | `--amd_algo="ethash"` |
 
 ## Nvidia Settings
 
@@ -54,7 +55,7 @@ N/A : No default value is set.
 |---------|--------|--------------|-------------|---------|
 | `--nvidia_host` | ✅ | N/A | Set default hostname of pool for all GPU NVIDIA. If defined, the parameters `nvidia_port` and `nvidia_algo` must be defined. | `--nvidia_host="ethw.2miners.com"` |
 | `--nvidia_port` | ✅ | N/A | Set port of the pool for all GPU NVIDIA. If defined, the parameters `nvidia_host` and `nvidia_algo` must be defined. | `--nvidia_port=2020` |
-| `--nvidia_algo` | ❌ | N/A | Algorithm. If defined, the parameters `nvidia_host` and `nvidia_port` must be defined. | `--nvidia_algo="ethash"` |
+| `--nvidia_algo` | ✅ | N/A | Algorithm. If defined, the parameters `nvidia_host` and `nvidia_port` must be defined. | `--nvidia_algo="ethash"` |
 
 ## Specific Device
 
@@ -86,7 +87,7 @@ N/A : No default value is set.
 |---------|--------|--------------|-------------|---------|
 | `--threads` | ✅ | N/A | Set occupancy threads. | `--threads=128` |
 | `--blocks` | ✅ | N/A | Set occupancy blocks. | `--blocks=128` |
-| `--occupancy` | ✅ | false | System will define the best occupancy for kernel. | `--occupancy=false` |
+| `--occupancy` | ✅ | false | System will define the best occupancy for kernel. | `--occupancy=<true\|false>` |
 | `--internal_loop` | ✅ | 1 | Set internal loop for kernel. | `--internal_loop=1` |
 
 ## Smart Mining
