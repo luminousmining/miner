@@ -570,6 +570,7 @@ bool device::Device::updateJob()
     ////////////////////////////////////////////////////////////////////////////
     if (true == needUpdateMemory)
     {
+        deviceInfo() << "Updating memory";
         chrono.start();
         if (false == resolver->updateMemory(currentJobInfo))
         {
@@ -583,6 +584,7 @@ bool device::Device::updateJob()
     ////////////////////////////////////////////////////////////////////////////
     if (true == needUpdateConstant)
     {
+        deviceInfo() << "Updating constants";
         chrono.start();
         resolver->updateJobId(currentJobInfo.jobIDStr);
         if (false == resolver->updateConstants(currentJobInfo))
