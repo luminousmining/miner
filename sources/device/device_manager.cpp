@@ -17,6 +17,13 @@
 #include <stratum/stratums.hpp>
 
 
+device::DeviceManager& device::DeviceManager::instance()
+{
+    static device::DeviceManager handler{};
+    return handler;
+}
+
+
 device::DeviceManager::~DeviceManager()
 {
     for (auto [_, stratum] : stratums)

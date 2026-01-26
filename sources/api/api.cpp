@@ -8,12 +8,7 @@
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
-
-
-void api::ServerAPI::setDeviceManager(device::DeviceManager* _deviceManager)
-{
-    deviceManager = _deviceManager;
-}
+#include <device/device_manager.hpp>
 
 
 void api::ServerAPI::setPort(
@@ -138,7 +133,8 @@ void api::ServerAPI::onHiveOSGetStats(
     std::string sharesInvalidGpus{};
 
     ////////////////////////////////////////////////////////////////////////////
-    std::vector<device::Device*> devices{ deviceManager->getDevices() };
+    auto& deviceManager{ device::DeviceManager::instance() };
+    std::vector<device::Device*> devices{ deviceManager.getDevices() };
     for (device::Device* device : devices)
     {
         sharesInvalidGpus += "0;";
@@ -184,10 +180,13 @@ void api::ServerAPI::onHiveOSGetTotalHashrate(
     boost_socket& socket,
     boost_response& response)
 {
+    ////////////////////////////////////////////////////////////////////////////
     uint64_t totalHashrate{ 0ull };
     boost::json::object root{};
-    std::vector<device::Device*> devices{ deviceManager->getDevices() };
+    auto& deviceManager{ device::DeviceManager::instance() };
+    std::vector<device::Device*> devices{ deviceManager.getDevices() };
 
+    ////////////////////////////////////////////////////////////////////////////
     for (device::Device* device : devices)
     {
         if (nullptr == device)
@@ -197,11 +196,14 @@ void api::ServerAPI::onHiveOSGetTotalHashrate(
         totalHashrate += castU64(device->getHashrate());
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     root["total_hash_rate"] = totalHashrate;
 
+    ////////////////////////////////////////////////////////////////////////////
     response.body() = boost::json::serialize(root);
     response.prepare_payload();
 
+    ////////////////////////////////////////////////////////////////////////////
     boost::beast::http::write(socket, response);
 }
 
@@ -240,7 +242,8 @@ void api::ServerAPI::onWebGetStats(
     std::string sharesInvalidGpus{};
 
     ////////////////////////////////////////////////////////////////////////////
-    std::vector<device::Device*> devices{ deviceManager->getDevices() };
+    auto& deviceManager{ device::DeviceManager::instance() };
+    std::vector<device::Device*> devices{ deviceManager.getDevices() };
     for (device::Device* device : devices)
     {
         sharesInvalidGpus += "0;";

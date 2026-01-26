@@ -10,8 +10,6 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include <device/device_manager.hpp>
-
 
 namespace api
 {
@@ -39,13 +37,11 @@ namespace api
         boost_mutex       mtx{};
         boost_atomic_bool alive { false };
 
-        void setDeviceManager(device::DeviceManager* _deviceManager);
         void setPort(uint32_t const _port);
         bool bind();
         void loopAccept();
 
     private:
-        device::DeviceManager* deviceManager{ nullptr };
         void onMessage(boost_socket& socket,
                        boost_request const& request);
         void onHiveOSGetStats(boost_socket& socket,

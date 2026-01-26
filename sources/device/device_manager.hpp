@@ -21,7 +21,7 @@ namespace device
     class DeviceManager
     {
     public:
-        DeviceManager() = default;
+        static DeviceManager& instance();
         ~DeviceManager();
 
         static constexpr uint32_t MAX_STRATUMS { 100u };
@@ -45,6 +45,8 @@ namespace device
         void onSmartMiningUpdateJob(stratum::StratumJobInfo const& newJobInfo);
 
     private:
+        DeviceManager() = default;
+
         uint32_t                 stratumCount{ 0u };
         boost::thread            threadStatistical{};
         boost::mutex             mtxJobInfo{};

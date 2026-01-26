@@ -25,7 +25,7 @@ int main(
     try
     {
         ////////////////////////////////////////////////////////////////////////
-        device::DeviceManager deviceManager{};
+        device::DeviceManager& deviceManager{ device::DeviceManager::instance() };
         common::Config& config { common::Config::instance() };
         api::ServerAPI serverAPI{};
 
@@ -50,7 +50,6 @@ int main(
         {
             return 1;
         }
-        serverAPI.setDeviceManager(&deviceManager);
         if (common::PROFILE::STANDARD == config.profile)
         {
             deviceManager.run();
