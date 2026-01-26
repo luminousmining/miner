@@ -14,6 +14,7 @@ endif()
 option(BUILD_AMD "Build with OpenCL for AMD GPU" ON)
 option(BUILD_CPU "Build with OpenMP for CPU(Intel/AMD)" ON)
 option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" ON)
+option(TOOL_TRACE_MEMORY "Build tool trace memory allocation" ON)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
@@ -251,6 +252,13 @@ if (BUILD_CPU)
     add_compile_definitions(CPU_ENABLE)
 endif()
 
+################################################################################
+### TOOLS                                                                   ####
+################################################################################
+if (TOOL_TRACE_MEMORY)
+    add_compile_definitions(TOOL_TRACE_MEMORY)
+endif()
+
 
 ################################################################################
 ### PROJECTS                                                                ####
@@ -308,6 +316,8 @@ message("-- CUDA NVRTC       : ${CUDA_NVRTC_LIBRARY}")
 message("-- CUDA BUILTINS    : ${CUDA_NVRTC_BUILTINS_LIBRARY}")
 message("-- NVRTC LIBRARY    : ${CUDA_NVRTC_LIBRARY}")
 endif()
+message("*********************************************************************")
+message("-- TOOL_TRACE_MEMORY        : ${TOOL_TRACE_MEMORY}")
 message("*********************************************************************")
 message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LIBRAIRES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 get_target_property(LIST_LIBS ${MINER_EXE} LINK_LIBRARIES)
