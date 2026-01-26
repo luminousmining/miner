@@ -26,7 +26,7 @@ int main(
     {
         ////////////////////////////////////////////////////////////////////////
         device::DeviceManager& deviceManager{ device::DeviceManager::instance() };
-        common::Config& config { common::Config::instance() };
+        common::Config& config{ common::Config::instance() };
         api::ServerAPI serverAPI{};
 
         ////////////////////////////////////////////////////////////////////////
