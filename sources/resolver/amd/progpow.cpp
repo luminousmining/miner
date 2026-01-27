@@ -45,7 +45,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(
     }
 
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
-    if (   0ull < deviceMemoryAvailable
+    if (   0ull != deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
     {
         resolverErr()
@@ -102,6 +102,9 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     {
         return false;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    algo::ethash::freeDagContext(context);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

@@ -18,19 +18,19 @@ int32_t algo::ethash::findEpoch(
     ////////////////////////////////////////////////////////////////////////////
     int32_t const  epochNumber{ cachedEpochNumber };
     uint32_t const seedpart{ seedHash.word32[0] };
-    algo::hash256  cached{ cachedSeed };
+    algo::hash256  seed{ cachedSeed };
 
     ////////////////////////////////////////////////////////////////////////////
-    if (seedpart == cached.word32[0])
+    if (seedpart == seed.word32[0])
     {
         return epochNumber;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    cached = algo::keccak(cached);
-    if (cached.word32[0] == seedpart)
+    seed = algo::keccak(seed);
+    if (seed.word32[0] == seedpart)
     {
-        cachedSeed = cached;
+        cachedSeed = seed;
         cachedEpochNumber = epochNumber + 1;
         return epochNumber + 1;
     }
@@ -50,6 +50,14 @@ int32_t algo::ethash::findEpoch(
 
     ////////////////////////////////////////////////////////////////////////////
     return -1;
+}
+
+
+void algo::ethash::freeDagContext(algo::DagContext& context)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    SAFE_DELETE_ARRAY(context.data);
+    context.lightCache.hash = nullptr;
 }
 
 
@@ -98,7 +106,8 @@ void algo::ethash::initializeDagContext(
 
     ////////////////////////////////////////////////////////////////////////////
     size_t const dataLength{ algo::LEN_HASH_512 + context.lightCache.size };
-    context.data = NEW(char[dataLength]{});
+    context.data = NEW_ARRAY(char, dataLength);
+    std::memset(context.data, 0, sizeof(char) * dataLength);
     if (nullptr == context.data)
     {
         logErr() << "Cannot alloc context data";

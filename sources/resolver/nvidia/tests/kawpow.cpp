@@ -5,6 +5,7 @@
 #include <algo/progpow/kawpow.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
+#include <common/config.hpp>
 #include <resolver/nvidia/kawpow.hpp>
 #include <resolver/tests/nvidia.hpp>
 
@@ -18,11 +19,14 @@ struct ResolverKawpowNvidiaTest : public testing::Test
 
     ResolverKawpowNvidiaTest()
     {
+        ////////////////////////////////////////////////////////////////////////////
         common::setLogLevel(common::TYPELOG::__DEBUG);
         if (false == resolver::tests::initializeCuda(properties))
         {
             logErr() << "Fail init cuda";
         }
+
+        ////////////////////////////////////////////////////////////////////////////
         resolver.cuStream[0] = properties.cuStream;
         resolver.cuStream[1] = properties.cuStream;
         resolver.cuProperties = &properties.cuProperties;
@@ -31,7 +35,33 @@ struct ResolverKawpowNvidiaTest : public testing::Test
 
     ~ResolverKawpowNvidiaTest()
     {
+        ////////////////////////////////////////////////////////////////////////////
+        common::Config& config{ common::Config::instance() };
+        config.occupancy.threads = std::nullopt;
+        config.occupancy.blocks = std::nullopt;
+
+        ////////////////////////////////////////////////////////////////////////////
         resolver::tests::cleanUpCuda();
+    }
+
+    void setOccupancy(
+        std::optional<uint32_t> const thread = std::nullopt,
+        std::optional<uint32_t> const block = std::nullopt,
+        std::optional<uint32_t> const internalLoop = std::nullopt)
+    {
+        common::Config& config{ common::Config::instance() };
+        if (std::nullopt != thread)
+        {
+            config.occupancy.threads = *thread;
+        }
+        if (std::nullopt != block)
+        {
+            config.occupancy.blocks = *block;
+        }
+        if (std::nullopt != internalLoop)
+        {
+            config.occupancy.internalLoop = *internalLoop;
+        }
     }
 
     void initializeJob(uint64_t const nonce)
@@ -67,21 +97,75 @@ TEST_F(ResolverKawpowNvidiaTest, findNonce)
 }
 
 
-TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
+TEST_F(ResolverKawpowNvidiaTest, findNonceInternalLoop)
 {
-    initializeJob(0xce00000017f87f70 - 1024u);
+    ////////////////////////////////////////////////////////////////////////////
+    setOccupancy(std::nullopt, std::nullopt, 4u);
 
+    ////////////////////////////////////////////////////////////////////////////
+    initializeJob(0xce00000017f87f70);
+
+    ////////////////////////////////////////////////////////////////////////////
     ASSERT_NE(nullptr, resolver.cuStream[0]);
-
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
+    ////////////////////////////////////////////////////////////////////////////
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    ////////////////////////////////////////////////////////////////////////////
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
+    using namespace std::string_literals;
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+}
 
+
+TEST_F(ResolverKawpowNvidiaTest, findNonceLittleOccupancy)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    setOccupancy(32u, 4096u);
+
+    ////////////////////////////////////////////////////////////////////////////
+    initializeJob(0xce00000017f87f70);
+
+    ////////////////////////////////////////////////////////////////////////////
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
+    resolver.submit(&stratum);
+
+    ////////////////////////////////////////////////////////////////////////////
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    using namespace std::string_literals;
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+}
+
+
+TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    initializeJob(0xce00000017f87f70 - 1024u);
+
+    ////////////////////////////////////////////////////////////////////////////
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
+
+    ////////////////////////////////////////////////////////////////////////////
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
+    resolver.submit(&stratum);
+
+    ////////////////////////////////////////////////////////////////////////////
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    ////////////////////////////////////////////////////////////////////////////
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
     using namespace std::string_literals;
     EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
@@ -89,14 +173,18 @@ TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
 
 TEST_F(ResolverKawpowNvidiaTest, notFindNonce)
 {
+    ////////////////////////////////////////////////////////////////////////////
     initializeJob(0x00000017f87f7a);
 
+    ////////////////////////////////////////////////////////////////////////////
     ASSERT_NE(nullptr, resolver.cuStream[0]);
 
+    ////////////////////////////////////////////////////////////////////////////
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
 
+    ////////////////////////////////////////////////////////////////////////////
     EXPECT_TRUE(stratum.paramSubmit.empty());
 }

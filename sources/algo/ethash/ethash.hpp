@@ -41,6 +41,7 @@ namespace algo
                                   uint64_t const dagCountItemsInit,
                                   uint32_t const lightCacheCountItemsGrowth,
                                   uint32_t const lightCacheCountItemsInit);
+        void freeDagContext(algo::DagContext& context);
         void buildLightCache(algo::DagContext& context,
                              algo::hash256 const& seed);
 #endif

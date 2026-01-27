@@ -3,7 +3,7 @@
 #include <boost/thread.hpp>
 
 #include <common/error/cuda_error.hpp>
-#include <common/trace/tool_memory_trace.hpp
+#include <common/tool/tool_memory_trace.hpp>
 
 
 #define UNIQUE_LOCK(mtxName)\
@@ -36,23 +36,25 @@
 
 #define CU_ALLOC(src, size)\
     CUDA_ER(cudaMalloc((void**)src, size));\
-    TOOL_MEMORY_ALLOC(src, size);
+    TOOL_MEMORY_ALLOC(*src, size);
 
 
 #define CU_ALLOC_HOST(src, size)\
     CUDA_ER(cudaMallocHost((void**)src, size, 0));\
-    TOOL_MEMORY_FREE(src, size);
+    TOOL_MEMORY_ALLOC(*src, size);
 
 #define CU_SAFE_DELETE(ptr)\
     if (nullptr != ptr)\
     {\
         CUDA_ER(cudaFree(ptr));\
+        TOOL_MEMORY_FREE(ptr);\
     }
 
 #define CU_SAFE_DELETE_HOST(ptr)\
     if (nullptr != ptr)\
     {\
         CUDA_ER(cudaFreeHost(ptr));\
+        TOOL_MEMORY_FREE(ptr);\
     }
 
 #define NEW(type)\

@@ -43,7 +43,7 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
         + algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256
         + sizeof(algo::autolykos_v2::Result)
     };
-    if (   0ull < deviceMemoryAvailable
+    if (   0ull != deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
     {
         resolverErr()

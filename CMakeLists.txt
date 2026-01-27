@@ -14,7 +14,7 @@ endif()
 option(BUILD_AMD "Build with OpenCL for AMD GPU" ON)
 option(BUILD_CPU "Build with OpenMP for CPU(Intel/AMD)" ON)
 option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" ON)
-option(TOOL_TRACE_MEMORY "Build tool trace memory allocation" ON)
+option(TOOL_TRACE_MEMORY "Build tool trace memory allocation" OFF)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
