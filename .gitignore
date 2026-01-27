@@ -458,3 +458,4 @@ build_vs/
 .vscode/
 build_amd/
 build_nvidia/
+build_all/
