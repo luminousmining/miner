@@ -3,47 +3,47 @@
 
 
 void stratum::StratumJobInfo::copy(
-    stratum::StratumJobInfo const& obj)
+    stratum::StratumJobInfo const& other)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtx);
 
     ////////////////////////////////////////////////////////////////////////////
-    epoch = obj.epoch;
+    epoch = other.epoch;
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::copyHash(jobID, obj.jobID);
-    algo::copyHash(headerHash, obj.headerHash);
-    algo::copyHash(coinb1, obj.coinb1);
-    algo::copyHash(coinb2, obj.coinb2);
-    algo::copyHash(seedHash, obj.seedHash);
-    algo::copyHash(boundary, obj.boundary);
+    algo::copyHash(jobID, other.jobID);
+    algo::copyHash(headerHash, other.headerHash);
+    algo::copyHash(coinb1, other.coinb1);
+    algo::copyHash(coinb2, other.coinb2);
+    algo::copyHash(seedHash, other.seedHash);
+    algo::copyHash(boundary, other.boundary);
     for (uint32_t i { 0u }; i < 12u; ++i)
     {
-        algo::copyHash(merkletree[i], obj.merkletree[i]);
+        algo::copyHash(merkletree[i], other.merkletree[i]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    nonce = obj.nonce;
-    startNonce = obj.startNonce;
-    extraNonce = obj.extraNonce;
-    gapNonce = obj.gapNonce;
-    blockNumber = obj.blockNumber;
-    period = obj.period;
-    boundaryU64 = obj.boundaryU64;
-    targetBits = obj.targetBits;
-    cleanJob = obj.cleanJob;
-    jobIDStr.assign(obj.jobIDStr);
+    nonce = other.nonce;
+    startNonce = other.startNonce;
+    extraNonce = other.extraNonce;
+    gapNonce = other.gapNonce;
+    blockNumber = other.blockNumber;
+    period = other.period;
+    boundaryU64 = other.boundaryU64;
+    targetBits = other.targetBits;
+    cleanJob = other.cleanJob;
+    jobIDStr.assign(other.jobIDStr);
 
     ////////////////////////////////////////////////////////////////////////////
     // ETHASH && PROGPOW
-    extraNonceSize = obj.extraNonceSize;
-    extraNonce2Size = obj.extraNonce2Size;
+    extraNonceSize = other.extraNonceSize;
+    extraNonce2Size = other.extraNonce2Size;
 
     ////////////////////////////////////////////////////////////////////////////
     // Blake 3
-    algo::copyHash(headerBlob, obj.headerBlob);
-    algo::copyHash(targetBlob, obj.targetBlob);
-    fromGroup = obj.fromGroup;
-    toGroup = obj.toGroup;
+    algo::copyHash(headerBlob, other.headerBlob);
+    algo::copyHash(targetBlob, other.targetBlob);
+    fromGroup = other.fromGroup;
+    toGroup = other.toGroup;
 }

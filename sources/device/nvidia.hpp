@@ -9,7 +9,7 @@
 
 namespace device
 {
-    class DeviceNvidia : public device::Device
+    struct DeviceNvidia : public device::Device
     {
     public:
         uint32_t       cuIndex{ 0u };

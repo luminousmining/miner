@@ -14,6 +14,9 @@
 #include <common/error/cuda_error.hpp>
 #include <common/error/opencl_error.hpp>
 #include <device/device_manager.hpp>
+#include <device/amd.hpp>
+#include <device/mocker.hpp>
+#include <device/nvidia.hpp>
 #include <stratum/stratums.hpp>
 
 
@@ -52,6 +55,15 @@ bool device::DeviceManager::initialize()
             logErr() << "Cannot initialize device Amd";
         }
         initialized =  true;
+    }
+#endif
+
+    ////////////////////////////////////////////////////////////////////////////
+#if defined(TOOL_MOCKER)
+    if (false == initializeMocker())
+    {
+        logErr() << "Cannot initialize device mocker";
+        return false;
     }
 #endif
 
@@ -96,9 +108,9 @@ bool device::DeviceManager::initialize()
                 continue;
             }
 
-            algo::ALGORITHM customAlgorithm { algorithm };
-            uint32_t        customDeviceID { device::DeviceManager::DEVICE_MAX_ID };
-            auto            settings { config.getConfigDevice(device->id) };
+            algo::ALGORITHM customAlgorithm{ algorithm };
+            uint32_t        customDeviceID{ device::DeviceManager::DEVICE_MAX_ID };
+            auto            settings{ config.getConfigDevice(device->id) };
 
             if (std::nullopt == settings)
             {
@@ -127,6 +139,12 @@ bool device::DeviceManager::initialize()
                             customDeviceID = device->id;
                             customAlgorithm = algo::toEnum(config.nvidiaSetting.algo);
                         }
+                        break;
+                    }
+#endif
+#if defined(TOOL_MOCKER)
+                    case device::DEVICE_TYPE::MOCKER:
+                    {
                         break;
                     }
 #endif
@@ -262,6 +280,24 @@ bool device::DeviceManager::initializeStratum(
 }
 
 
+#if defined(TOOL_MOCKER)
+bool device::DeviceManager::initializeMocker()
+{
+    for (uint32_t i = 0; i < 8u; ++i)
+    {
+        device::DeviceMocker* device{ NEW(device::DeviceMocker) };
+        if (nullptr == device)
+        {
+            return false;
+        }
+        device->id = 1000 + i;
+        device->deviceType = device::DEVICE_TYPE::MOCKER;
+        devices.push_back(device);
+    }
+    return true;
+}
+#endif
+
 #if defined(CUDA_ENABLE)
 bool device::DeviceManager::initializeNvidia()
 {
@@ -280,7 +316,7 @@ bool device::DeviceManager::initializeNvidia()
     for (int32_t i{ 0 }; i < numberDevice; ++i)
     {
         ////////////////////////////////////////////////////////////////////////////
-        device::DeviceNvidia* device{ new device::DeviceNvidia };
+        device::DeviceNvidia* device{ NEW(device::DeviceNvidia) };
         device->deviceType = device::DEVICE_TYPE::NVIDIA;
 
         ////////////////////////////////////////////////////////////////////////////
@@ -344,7 +380,7 @@ bool device::DeviceManager::initializeAmd()
         for (uint32_t i { 0u }; i < cldevices.size(); ++i)
         {
             ////////////////////////////////////////////////////////////////////////////
-            device::DeviceAmd* device{ new device::DeviceAmd };
+            device::DeviceAmd* device{ NEW(device::DeviceAmd) };
             device->deviceType = device::DEVICE_TYPE::AMD;
 
             ////////////////////////////////////////////////////////////////////////////
@@ -400,7 +436,7 @@ void device::DeviceManager::run()
     ////////////////////////////////////////////////////////////////////////////
     for (uint32_t i { 0u }; i < device::DeviceManager::MAX_STRATUMS; ++i)
     {
-        stratum::StratumJobInfo& jobInfo { jobInfos[i] };
+        stratum::StratumJobInfo& jobInfo{ jobInfos[i] };
         jobInfo.copy(cleanJob);
     }
 
@@ -459,7 +495,7 @@ void device::DeviceManager::onUpdateJob(
     UNIQUE_LOCK(mtxJobInfo);
 
     ////////////////////////////////////////////////////////////////////////////
-    stratum::StratumJobInfo& jobInfo { jobInfos[stratumUUID] };
+    stratum::StratumJobInfo& jobInfo{ jobInfos[stratumUUID] };
 
     ////////////////////////////////////////////////////////////////////////////
     bool updateMemory { false };
@@ -601,6 +637,7 @@ void device::DeviceManager::updateDevice(
 {
     ////////////////////////////////////////////////////////////////////////////
     common::Config const& config{ common::Config::instance() };
+    stratum::StratumJobInfo const& jobInfo{ jobInfos[stratumUUID] };
 
     ////////////////////////////////////////////////////////////////////////////
     for (device::Device* const device : devices)
@@ -620,7 +657,6 @@ void device::DeviceManager::updateDevice(
             }
         }
 
-        stratum::StratumJobInfo& jobInfo{ jobInfos[stratumUUID] };
         device->update(updateMemory, updateConstants, jobInfo);
     }
 }

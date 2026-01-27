@@ -11,6 +11,9 @@ namespace device
 #if defined(AMD_ENABLE)
         AMD,
 #endif
+#if defined(TOOL_MOCKER)
+        MOCKER,
+#endif
         UNKNOWN
     };
 }

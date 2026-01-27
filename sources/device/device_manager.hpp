@@ -7,8 +7,7 @@
 
 #include <algo/algo_type.hpp>
 #include <common/dashboard.hpp>
-#include <device/amd.hpp>
-#include <device/nvidia.hpp>
+#include <device/device.hpp>
 #include <profiler/amd.hpp>
 #include <profiler/nvidia.hpp>
 #include <stratum/job_info.hpp>
@@ -24,7 +23,7 @@ namespace device
         static DeviceManager& instance();
         ~DeviceManager();
 
-        static constexpr uint32_t MAX_STRATUMS { 100u };
+        static constexpr uint32_t MAX_STRATUMS{ 100u };
         static constexpr uint32_t WAITING_DEVICE_STOP_COMPUTE{ 100u };
         static constexpr uint32_t WAITING_HASH_STATS{ 10000u };
         static constexpr uint32_t DEVICE_MAX_ID{ 1000000u };
@@ -66,6 +65,9 @@ namespace device
         bool initializeStratum(uint32_t const deviceId,
                                algo::ALGORITHM const algorithm);
         bool initializeStratumSmartMining();
+#if defined(TOOL_MOCKER)
+        bool initializeMocker();
+#endif
 #if defined(CUDA_ENABLE)
         bool initializeNvidia();
 #endif

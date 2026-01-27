@@ -8,6 +8,7 @@
 
 #include <algo/algo_type.hpp>
 #include <common/atomic_increment.hpp>
+#include <common/profile.hpp>
 #include <device/type.hpp>
 #include <network/network.hpp>
 #include <profiler/nvidia.hpp>
@@ -78,6 +79,7 @@ namespace device
         void waitJob();
         void loopDoWork();
         void updateBatchNonce();
+        void submit(common::PROFILE const profile);
 
     private:
         struct AtomicSynchronizer

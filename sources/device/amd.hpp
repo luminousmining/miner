@@ -9,7 +9,7 @@
 
 namespace device
 {
-    class DeviceAmd : public device::Device
+    struct DeviceAmd : public device::Device
     {
     public:
         cl::Device clDevice;

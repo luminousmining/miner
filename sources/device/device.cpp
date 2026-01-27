@@ -4,6 +4,7 @@
 #include <common/cast.hpp>
 #include <common/log/log.hpp>
 #include <device/device.hpp>
+#include <resolver/mocker.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
 #include <resolver/amd/etchash.hpp>
 #include <resolver/amd/ethash.hpp>
@@ -30,6 +31,15 @@ void device::Device::setAlgorithm(
 {
     ////////////////////////////////////////////////////////////////////////////
     common::Config const& config { common::Config::instance() };
+
+    ////////////////////////////////////////////////////////////////////////////
+#if defined(TOOL_MOCKER)
+    if (device::DEVICE_TYPE::MOCKER == deviceType)
+    {
+        SAFE_DELETE(resolver);
+        resolver = NEW(resolver::ResolverMocker);
+    }
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     algorithm = newAlgorithm;
@@ -376,6 +386,7 @@ void device::Device::setStratumSmartMining(
     stratumSmartMining = newStratum;
 }
 
+
 void device::Device::kill(
     device::KILL_STATE const state)
 {
@@ -521,6 +532,7 @@ void device::Device::run()
 
 void device::Device::waitJob()
 {
+    deviceDebug() << "waiting job!";
     while (true == synchronizer.job.isEqual())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -571,6 +583,7 @@ bool device::Device::updateJob()
     ////////////////////////////////////////////////////////////////////////////
     if (true == needUpdateMemory)
     {
+        synchronizer.memory.update(currentAtomicMemory);
         deviceInfo() << "Updating memory";
         chrono.start();
         if (false == resolver->updateMemory(currentJobInfo))
@@ -585,6 +598,7 @@ bool device::Device::updateJob()
     ////////////////////////////////////////////////////////////////////////////
     if (true == needUpdateConstant)
     {
+        synchronizer.constant.update(currentAtomicConstant);
         deviceDebug() << "Updating constants";
         chrono.start();
         resolver->updateJobId(currentJobInfo.jobIDStr);
@@ -595,7 +609,6 @@ bool device::Device::updateJob()
         }
         chrono.stop();
         deviceDebug() << "Update constants in " << chrono.elapsed(common::CHRONO_UNIT::US) << "us";
-        synchronizer.constant.update(currentAtomicConstant);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -603,8 +616,10 @@ bool device::Device::updateJob()
     {
         // Reset the stats, the memory was rebuilt
         miningStats.reset();
-        synchronizer.memory.update(currentAtomicMemory);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    updateBatchNonce();
 
     return true;
 }
@@ -657,21 +672,18 @@ void device::Device::loopDoWork()
     waitJob();
 
     ////////////////////////////////////////////////////////////////////////////
-    updateBatchNonce();
-
-    ////////////////////////////////////////////////////////////////////////////
     computing.store(true, boost::memory_order::seq_cst);
 
     ////////////////////////////////////////////////////////////////////////////
+    deviceDebug() << "Start working!";
     while (   true == isAlive()
            && nullptr != resolver)
     {
         // Check and update the job.
         // Do not compute directly after update device.
-        // A new job should spawn during the update.
+        // A new job can spawn during the update.
         if (true == updateJob())
         {
-            updateBatchNonce();
             continue;
         }
 
@@ -681,17 +693,10 @@ void device::Device::loopDoWork()
             kill(device::KILL_STATE::KERNEL_EXECUTE_FAIL);
             continue;
         }
-
-        if (common::PROFILE::STANDARD == config.profile)
-        {
-            resolver->submit(stratum);
-        }
-        else
-        {
-            resolver->submit(stratumSmartMining);
-        }
-
         miningStats.increaseKernelExecuted();
+
+        // Send share found
+        submit(config.profile);
 
         // Increasing nonce to next kernel.
         currentJobInfo.nonce += miningStats.getBatchNonce();
@@ -702,4 +707,23 @@ void device::Device::loopDoWork()
 
     ////////////////////////////////////////////////////////////////////////////
     computing.store(false, boost::memory_order::seq_cst);
+}
+
+
+void device::Device::submit(common::PROFILE const profile)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    switch(profile)
+    {
+        case common::PROFILE::STANDARD:
+        {
+            resolver->submit(stratum);
+            break;
+        }
+        case common::PROFILE::SMART_MINING:
+        {
+            resolver->submit(stratumSmartMining);
+            break;
+        }
+    }
 }

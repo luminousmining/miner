@@ -146,6 +146,13 @@ void device::DeviceManager::showMiningStats(
             break;
         }
 #endif
+#if defined(TOOL_MOCKER)
+        case device::DEVICE_TYPE::MOCKER:
+        {
+            deviceType = "MOCKER";
+            break;
+        }
+#endif
         case device::DEVICE_TYPE::UNKNOWN:
         {
             deviceType = "UNKNOWN";
@@ -204,6 +211,13 @@ void device::DeviceManager::showDeviceStats(
             break;
         }
 #endif
+#if defined(TOOL_MOCKER)
+        case device::DEVICE_TYPE::MOCKER:
+        {
+            deviceType = "MOCKER";
+            break;
+        }
+#endif
         case device::DEVICE_TYPE::UNKNOWN:
         {
             deviceType = "UNKNOWN";
@@ -238,6 +252,12 @@ void device::DeviceManager::showDeviceStats(
                 memoryClock = activity.iMemoryClock;
                 utilizationPercent = activity.iActivityPercent;
             }
+            break;
+        }
+#endif
+#if defined(TOOL_MOCKER)
+        case device::DEVICE_TYPE::MOCKER:
+        {
             break;
         }
 #endif
