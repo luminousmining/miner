@@ -2,21 +2,6 @@
 #include <stratum/job_info.hpp>
 
 
-stratum::StratumJobInfo::StratumJobInfo(
-    stratum::StratumJobInfo const& obj)
-{
-    copy(obj);
-}
-
-
-stratum::StratumJobInfo& stratum::StratumJobInfo::operator=(
-    stratum::StratumJobInfo const& obj)
-{
-    copy(obj);
-    return *this;
-}
-
-
 void stratum::StratumJobInfo::copy(
     stratum::StratumJobInfo const& obj)
 {

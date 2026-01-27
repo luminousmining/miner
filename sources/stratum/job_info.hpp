@@ -47,13 +47,12 @@ namespace stratum
         uint32_t       toGroup { 0u };
 
         StratumJobInfo(StratumJobInfo&& obj) = delete;
+        StratumJobInfo(StratumJobInfo const& obj) = delete;
         StratumJobInfo& operator=(StratumJobInfo&& obj) = delete;
+        StratumJobInfo& operator=(StratumJobInfo const& obj) = delete;
 
         StratumJobInfo() = default;
         ~StratumJobInfo() = default;
-
-        StratumJobInfo(StratumJobInfo const& obj);
-        StratumJobInfo& operator=(StratumJobInfo const& obj);
 
         void copy(StratumJobInfo const& obj);
     };
