@@ -60,6 +60,7 @@ namespace algo
         return str;
     }
 
+
     template<typename T>
     inline
     bool isHashEmpty(T const& hash)
@@ -151,6 +152,7 @@ namespace algo
 
         return hash;
     }
+
 
     template<typename HashTo, typename HashFrom>
     inline
@@ -259,6 +261,7 @@ namespace algo
         return hash;
     }
 
+
     template<typename T>
     inline
     T toLittleEndian(T const& input)
@@ -283,6 +286,7 @@ namespace algo
 
         return hash;
     }
+
 
     template<typename T>
     inline

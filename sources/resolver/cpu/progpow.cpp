@@ -17,13 +17,17 @@ resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext(context,
-                                       jobInfo.epoch,
-                                       maxEpoch,
-                                       dagCountItemsGrowth,
-                                       dagCountItemsInit,
-                                       lightCacheCountItemsGrowth,
-                                       lightCacheCountItemsInit);
+    algo::ethash::initializeDagContext
+    (
+        context,
+        jobInfo.epoch,
+        maxEpoch,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit,
+        true
+    );
 
     if (   0ull == context.lightCache.numberItem
         || 0ull == context.lightCache.size

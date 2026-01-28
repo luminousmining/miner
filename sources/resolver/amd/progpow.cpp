@@ -19,13 +19,17 @@ resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
 bool resolver::ResolverAmdProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
-    algo::ethash::initializeDagContext(context,
-                                       jobInfo.epoch,
-                                       maxEpoch,
-                                       dagCountItemsGrowth,
-                                       dagCountItemsInit,
-                                       lightCacheCountItemsGrowth,
-                                       lightCacheCountItemsInit);
+    algo::ethash::initializeDagContext
+    (
+        context,
+        jobInfo.epoch,
+        maxEpoch,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit,
+        true // TODO: build light cache on GPU
+    );
 
     if (   0ull == context.lightCache.numberItem
         || 0ull == context.lightCache.size

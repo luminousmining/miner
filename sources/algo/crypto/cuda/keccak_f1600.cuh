@@ -2,6 +2,7 @@
 
 #include <common/cuda/rotate_byte.cuh>
 #include <common/cuda/to_u4.cuh>
+#include <common/cuda/to_u32.cuh>
 #include <common/cuda/to_u64.cuh>
 #include <common/cuda/xor.cuh>
 
@@ -189,16 +190,9 @@ void keccak_f1600_round(
 
 
 __device__ __forceinline__
-void keccak_f1600(
-    uint4* const hash)
+void keccak_process(
+    uint64_t* const state)
 {
-    uint64_t state[25];
-
-    toU64(state, 0, hash[0]);
-    toU64(state, 2, hash[1]);
-    toU64(state, 4, hash[2]);
-    toU64(state, 6, hash[3]);
-
     state[8] = 0x8000000000000001ull;
 
     #pragma unroll
@@ -212,9 +206,72 @@ void keccak_f1600(
     {
         keccak_f1600_round(state, i);
     }
+}
+
+
+__device__ __forceinline__
+void keccak_f1600(
+    uint4* const hash)
+{
+    uint64_t state[25];
+
+    toU64(state, 0, hash[0]);
+    toU64(state, 2, hash[1]);
+    toU64(state, 4, hash[2]);
+    toU64(state, 6, hash[3]);
+
+    keccak_process(state);
 
     hash[0] = toU4(state[0], state[1]);
     hash[1] = toU4(state[2], state[3]);
     hash[2] = toU4(state[4], state[5]);
     hash[3] = toU4(state[6], state[7]);
+}
+
+
+__device__ __forceinline__
+void keccak_f1600_u32(
+    uint32_t* const hash)
+{
+    uint64_t state[25];
+
+    toU64FromU32(state, 0, hash);
+    toU64FromU32(state, 2, hash + 4);
+    toU64FromU32(state, 4, hash + 8);
+    toU64FromU32(state, 6, hash + 12);
+
+    keccak_process(state);
+
+    toU32FromU64(hash, state[0], state[1]);
+    toU32FromU64(hash + 4, state[2], state[3]);
+    toU32FromU64(hash + 8, state[4], state[5]);
+    toU32FromU64(hash + 12, state[6], state[7]);
+}
+
+
+__device__ __forceinline__
+void keccak_f1600_u64(
+    uint64_t* const hash)
+{
+    uint64_t state[25];
+
+    state[0] = hash[0];
+    state[1] = hash[1];
+    state[2] = hash[2];
+    state[3] = hash[3];
+    state[4] = hash[4];
+    state[5] = hash[5];
+    state[6] = hash[6];
+    state[7] = hash[7];
+
+    keccak_process(state);
+
+    hash[0] = state[0];
+    hash[1] = state[1];
+    hash[2] = state[2];
+    hash[3] = state[3];
+    hash[4] = state[4];
+    hash[5] = state[5];
+    hash[6] = state[6];
+    hash[7] = state[7];
 }

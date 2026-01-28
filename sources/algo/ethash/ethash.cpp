@@ -1,4 +1,5 @@
 #include <algo/bitwise.hpp>
+#include <algo/hash_utils.hpp>
 #include <algo/keccak.hpp>
 #include <algo/math.hpp>
 #include <algo/ethash/ethash.hpp>
@@ -68,7 +69,8 @@ void algo::ethash::initializeDagContext(
     uint64_t const dagCountItemsGrowth,
     uint64_t const dagCountItemsInit,
     uint32_t const lightCacheCountItemsGrowth,
-    uint32_t const lightCacheCountItemsInit)
+    uint32_t const lightCacheCountItemsInit,
+    bool const buildOnCPU)
 {
     ////////////////////////////////////////////////////////////////////////////
     context.epoch = castU32(currentEpoch);
@@ -105,6 +107,22 @@ void algo::ethash::initializeDagContext(
     context.dagCache.size = context.dagCache.numberItem * algo::LEN_HASH_1024;
 
     ////////////////////////////////////////////////////////////////////////////
+    algo::hash256 seed{};
+    for (int32_t i{ 0 }; i < context.epoch; ++i)
+    {
+        seed = algo::keccak(seed);
+    }
+    algo::copyHash(context.originalSeedCache, seed);
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (false == buildOnCPU)
+    {
+        algo::hash512 const hashedSeed{ algo::keccak<algo::hash512, algo::hash256>(seed) };
+        algo::copyHash(context.hashedSeedCache, hashedSeed);
+        return;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     size_t const dataLength{ algo::LEN_HASH_512 + context.lightCache.size };
     context.data = NEW_ARRAY(char, dataLength);
     std::memset(context.data, 0, sizeof(char) * dataLength);
@@ -115,11 +133,6 @@ void algo::ethash::initializeDagContext(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::hash256 seed{};
-    for (int32_t i{ 0 }; i < context.epoch; ++i)
-    {
-        seed = algo::keccak(seed);
-    }
     context.lightCache.hash = castPtrHash512(context.data + algo::LEN_HASH_512);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -154,7 +167,8 @@ void algo::ethash::buildLightCache(
             algo::hash512 const& firstCache{ context.lightCache.hash[fi] };
             algo::hash512 const& secondCache{ context.lightCache.hash[si] };
 
-            context.lightCache.hash[i] = algo::keccak(algo::hashXor(firstCache, secondCache));
+            algo::hash512 const xored = algo::hashXor(firstCache, secondCache);
+            context.lightCache.hash[i] = algo::keccak(xored);
         }
     }
 }

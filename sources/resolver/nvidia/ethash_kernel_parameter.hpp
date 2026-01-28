@@ -12,9 +12,10 @@ namespace resolver
         {
             struct KernelParameters
             {
-                uint32_t* lightCache { nullptr };
-                uint32_t* dagCache { nullptr };
-                algo::ethash::Result* resultCache { nullptr };
+                uint32_t*             seedCache{ nullptr };
+                uint32_t*             lightCache{ nullptr };
+                uint32_t*             dagCache{ nullptr };
+                algo::ethash::Result* resultCache{ nullptr };
             };
         }
     }

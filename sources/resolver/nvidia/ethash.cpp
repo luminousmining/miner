@@ -17,13 +17,17 @@ resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
 bool resolver::ResolverNvidiaEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
-    algo::ethash::initializeDagContext(context,
-                                       jobInfo.epoch,
-                                       algo::ethash::MAX_EPOCH_NUMBER,
-                                       dagCountItemsGrowth,
-                                       dagCountItemsInit,
-                                       lightCacheCountItemsGrowth,
-                                       lightCacheCountItemsInit);
+    algo::ethash::initializeDagContext
+    (
+        context,
+        jobInfo.epoch,
+        algo::ethash::MAX_EPOCH_NUMBER,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit,
+        false
+    );
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
@@ -60,6 +64,9 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    common::Chrono chrono{};
+
+    ////////////////////////////////////////////////////////////////////////////
     if (false == updateContext(jobInfo))
     {
         return false;
@@ -72,12 +79,27 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    resolverInfo() << "Building LightCache";
+    chrono.start();
+    if (false == ethashBuildLightCache(cuStream[currentIndexStream],
+                                       parameters.seedCache))
+    {
+        return false;
+    }
+    chrono.stop();
+    resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
+    ////////////////////////////////////////////////////////////////////////////
+    resolverInfo() << "Building DAG";
+    chrono.start();
     if (false == ethashBuildDag(cuStream[currentIndexStream],
                                 algo::ethash::DAG_ITEM_PARENTS,
                                 castU32(context.dagCache.numberItem)))
     {
         return false;
     }
+    chrono.stop();
+    resolverInfo() << "DAG built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
 
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::freeDagContext(context);

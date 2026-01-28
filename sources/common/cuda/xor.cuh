@@ -47,3 +47,18 @@ uint32_t xor5(
     ); // arr[i] ^ arr[i + 5u] ^ arr[i + 10u] ^ arr[i + 15u] ^ arr[i + 20u]
     return result;
 }
+
+
+template<typename T, uint32_t COUNT>
+__device__ __forceinline__
+void xor_buffer(
+    T* __restrict__ const dst,
+    T const* __restrict__ const left,
+    T const* __restrict__ const right)
+{
+    #pragma unroll
+    for (uint32_t i = 0u; i < COUNT; ++i)
+    {
+        dst[i] = left[i] ^ right[i];
+    }
+}

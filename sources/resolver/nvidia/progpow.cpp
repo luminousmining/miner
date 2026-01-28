@@ -1,9 +1,10 @@
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <common/error/cuda_error.hpp>
-#include <common/log/log.hpp>
 #include <common/cast.hpp>
+#include <common/chrono.hpp>
 #include <common/config.hpp>
+#include <common/log/log.hpp>
 #include <resolver/nvidia/progpow.hpp>
 
 #include <algo/progpow/cuda/progpow.cuh>
@@ -19,13 +20,17 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext(context,
-                                       jobInfo.epoch,
-                                       maxEpoch,
-                                       dagCountItemsGrowth,
-                                       dagCountItemsInit,
-                                       lightCacheCountItemsGrowth,
-                                       lightCacheCountItemsInit);
+    algo::ethash::initializeDagContext
+    (
+        context,
+        jobInfo.epoch,
+        maxEpoch,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit,
+        false
+    );
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
@@ -64,6 +69,9 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    common::Chrono chrono{};
+
+    ////////////////////////////////////////////////////////////////////////////
     if (false == updateContext(jobInfo))
     {
         return false;
@@ -76,12 +84,27 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    resolverInfo() << "Building LightCache";
+    chrono.start();
+    if (false == progpowBuildLightCache(cuStream[currentIndexStream],
+                                        parameters.seedCache))
+    {
+        return false;
+    }
+    chrono.stop();
+    resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
+    ////////////////////////////////////////////////////////////////////////////
+    resolverInfo() << "Building DAG";
+    chrono.start();
     if (false == progpowBuildDag(cuStream[currentIndexStream],
                                  dagItemParents,
                                  castU32(context.dagCache.numberItem)))
     {
         return false;
     }
+    chrono.stop();
+    resolverInfo() << "DAG built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
 
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::freeDagContext(context);

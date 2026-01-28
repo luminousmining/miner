@@ -251,7 +251,7 @@ void algo::keccak(
 
     while (size >= blockSize)
     {
-        for (uint32_t i{ 0 }; i < (blockSize / wordSize); ++i)
+        for (uint32_t i{ 0u }; i < (blockSize / wordSize); ++i)
         {
             state[i] ^= le::uint64(data);
             data += wordSize;
@@ -270,7 +270,7 @@ void algo::keccak(
         size -= wordSize;
     }
 
-    while (size > 0)
+    while (size > 0u)
     {
         *last_word_iter = *data;
         ++last_word_iter;

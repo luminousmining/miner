@@ -12,6 +12,8 @@ bool ethashInitMemory(algo::DagContext const& context,
                       resolver::nvidia::ethash::KernelParameters& params);
 bool ethashUpdateConstants(uint32_t const* const header,
                            uint64_t const boundary);
+bool ethashBuildLightCache(cudaStream_t stream,
+                           uint32_t const* const seed);
 bool ethashBuildDag(cudaStream_t stream,
                     uint32_t const dagItemParents,
                     uint32_t const dagNumberItems);

@@ -15,5 +15,6 @@
 
 #include <algo/ethash/cuda/constants.cuh>
 #include <algo/ethash/cuda/memory.cuh>
+#include <algo/ethash/cuda/light_cache.cuh>
 #include <algo/ethash/cuda/dag.cuh>
 #include <algo/ethash/cuda/search.cuh>

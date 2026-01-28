@@ -23,13 +23,17 @@ resolver::ResolverAmdEthash::~ResolverAmdEthash()
 bool resolver::ResolverAmdEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
-    algo::ethash::initializeDagContext(context,
-                                       jobInfo.epoch,
-                                       algo::ethash::MAX_EPOCH_NUMBER,
-                                       dagCountItemsGrowth,
-                                       dagCountItemsInit,
-                                       lightCacheCountItemsGrowth,
-                                       lightCacheCountItemsInit);
+    algo::ethash::initializeDagContext
+    (
+        context,
+        jobInfo.epoch,
+        algo::ethash::MAX_EPOCH_NUMBER,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit,
+        true // TODO: build light cache on GPU
+    );
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull

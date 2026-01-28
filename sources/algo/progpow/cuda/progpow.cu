@@ -16,4 +16,5 @@
 
 #include <algo/progpow/cuda/constants.cuh>
 #include <algo/progpow/cuda/memory.cuh>
+#include <algo/progpow/cuda/light_cache.cuh>
 #include <algo/progpow/cuda/dag.cuh>

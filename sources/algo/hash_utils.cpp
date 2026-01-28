@@ -7,11 +7,12 @@
 
 #include <common/log/log.hpp>
 
+
 uint64_t algo::toUINT64(
     algo::hash256 const& hash)
 {
-    std::string const hashHex{ algo::toHex(hash) };
     std::string hex{};
+    std::string const hashHex{ algo::toHex(hash) };
     for (uint32_t i{ 0u }; i < 16u; ++i)
     {
         hex += hashHex.at(i);

@@ -44,6 +44,7 @@ bool resolver::ResolverNvidiaAutolykosV2::updateMemory(
     {
         return false;
     }
+
     ////////////////////////////////////////////////////////////////////////////
     if (false == autolykosv2BuildDag(cuStream[currentIndexStream], parameters))
     {

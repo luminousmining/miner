@@ -283,7 +283,7 @@ bool device::DeviceManager::initializeStratum(
 #if defined(TOOL_MOCKER)
 bool device::DeviceManager::initializeMocker()
 {
-    for (uint32_t i = 0; i < 8u; ++i)
+    for (uint32_t i = 0; i < 100u; ++i)
     {
         device::DeviceMocker* device{ NEW(device::DeviceMocker) };
         if (nullptr == device)

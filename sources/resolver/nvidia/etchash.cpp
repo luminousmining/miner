@@ -11,13 +11,17 @@
 bool resolver::ResolverNvidiaEtchash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
-    algo::ethash::initializeDagContext(context,
-                                       jobInfo.epoch,
-                                       algo::ethash::EIP1099_MAX_EPOCH_NUMBER,
-                                       dagCountItemsGrowth,
-                                       dagCountItemsInit,
-                                       lightCacheCountItemsGrowth,
-                                       lightCacheCountItemsInit);
+    algo::ethash::initializeDagContext
+    (
+        context,
+        jobInfo.epoch,
+        algo::ethash::EIP1099_MAX_EPOCH_NUMBER,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit,
+        false
+    );
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
