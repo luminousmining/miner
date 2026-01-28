@@ -26,4 +26,7 @@ progpow-quai `miner --stratum="v2" --host=quai.luckypool.io --port=3333 --algo="
 progpow-z `miner --stratum="ethproxy" --host=zano.luckypool.io --port=8866 --algo="progpow-z" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 
 ## HEROMINERS
-kawpow `miner --log_interval_hash=500 --host=de.quai.herominers.com --port=1185 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+kawpow `miner --host=de.quai.herominers.com --port=1185 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+
+## Mining Stratum X
+kawpow `miner --host=mining.stratumx.org --port=3335 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
