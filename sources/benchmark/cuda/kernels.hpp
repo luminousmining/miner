@@ -92,6 +92,7 @@ bool autolykos_v2_lm2(cudaStream_t stream,
                                      uint64_t const lightCacheNumber
 bool etash_light_cache_lm1(ETHASH_LIGHT_CACHE_PARAMETER);
 bool etash_light_cache_lm2(ETHASH_LIGHT_CACHE_PARAMETER);
+bool etash_light_cache_lm3(ETHASH_LIGHT_CACHE_PARAMETER);
 
 ////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_ETHASH_INIT algo::hash256 const* header_hash,                \

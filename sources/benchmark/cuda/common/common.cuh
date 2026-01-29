@@ -12,6 +12,7 @@
 #include <common/cuda/be_u64.cuh>
 #include <common/cuda/bfe.cuh>
 #include <common/cuda/compare.cuh>
+#include <common/cuda/debug.cuh>
 #include <common/cuda/get_lane_id.cuh>
 #include <common/cuda/operator_override.cuh>
 #include <common/cuda/register.cuh>

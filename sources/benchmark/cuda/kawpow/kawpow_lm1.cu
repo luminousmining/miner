@@ -185,23 +185,6 @@ void reduce_hash(
 }
 
 
-__device__ __forceinline__
-void initialize_header_dag(
-    uint32_t* __restrict__ const header_dag,
-    uint32_t const* __restrict__ const dag,
-    uint32_t const thread_id)
-{
-    #pragma unroll
-    for (uint32_t i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
-    {
-        uint32_t const indexDAG = i * THREAD_COUNT + thread_id;
-        uint32_t const itemDag = dag[indexDAG];
-        header_dag[indexDAG] = itemDag;
-    }
-    __syncthreads();
-}
-
-
 __global__
 void kernel_kawpow_lm1(
     t_result* const __restrict__ result,
