@@ -8,6 +8,7 @@
 #include <algo/hash_utils.hpp>
 #include <benchmark/result.hpp>
 
+
 #if defined(CUDA_ENABLE)
 ////////////////////////////////////////////////////////////////////////////////
 bool init_array(cudaStream_t stream,
@@ -84,6 +85,13 @@ bool autolykos_v2_lm2(cudaStream_t stream,
                       uint32_t const threads,
                       uint32_t const period);
 
+////////////////////////////////////////////////////////////////////////////////
+#define ETHASH_LIGHT_CACHE_PARAMETER cudaStream_t stream,                      \
+                                     uint32_t* lightCache,                     \
+                                     uint32_t const* const seed,               \
+                                     uint64_t const lightCacheNumber
+bool etash_light_cache_lm1(ETHASH_LIGHT_CACHE_PARAMETER);
+bool etash_light_cache_lm2(ETHASH_LIGHT_CACHE_PARAMETER);
 
 ////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_ETHASH_INIT algo::hash256 const* header_hash,                \

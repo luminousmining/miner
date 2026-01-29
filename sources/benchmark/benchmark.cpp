@@ -280,10 +280,14 @@ void benchmark::Benchmark::runNvidia()
     // {
     //     logErr() << "Nvidia Keccak failled!";
     // }
-    if (false == runNvidiaEthash())
+    if (false == runNvidiaEthashLightCache())
     {
         logErr() << "Nvidia ETHASH failled!";
     }
+    // if (false == runNvidiaEthash())
+    // {
+    //     logErr() << "Nvidia ETHASH failled!";
+    // }
     // if (false == runNvidiaAutolykosv2())
     // {
     //     logErr() << "Nvidia AutolykosV2 failled!";

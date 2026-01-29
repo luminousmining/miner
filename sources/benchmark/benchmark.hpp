@@ -101,6 +101,7 @@ namespace benchmark
         bool runNvidiaFnv1();
         bool runNvidiaKeccak();
         bool runNvidiaAutolykosv2();
+        bool runNvidiaEthashLightCache();
         bool runNvidiaEthash();
         bool runNvidiaKawpow();
 #endif
