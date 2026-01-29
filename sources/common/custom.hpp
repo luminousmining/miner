@@ -48,6 +48,7 @@
     {\
         CUDA_ER(cudaFree(ptr));\
         TOOL_MEMORY_FREE(ptr);\
+        ptr = nullptr;\
     }
 
 #define CU_SAFE_DELETE_HOST(ptr)\
@@ -55,6 +56,7 @@
     {\
         CUDA_ER(cudaFreeHost(ptr));\
         TOOL_MEMORY_FREE(ptr);\
+        ptr = nullptr;\
     }
 
 #define NEW(type)\

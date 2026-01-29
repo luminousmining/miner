@@ -90,6 +90,9 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
 
     ////////////////////////////////////////////////////////////////////////////
+    CU_SAFE_DELETE(parameters.seedCache);
+
+    ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
     chrono.start();
     if (false == ethashBuildDag(cuStream[currentIndexStream],
@@ -100,6 +103,9 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     }
     chrono.stop();
     resolverInfo() << "DAG built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
+    ////////////////////////////////////////////////////////////////////////////
+    CU_SAFE_DELETE(parameters.lightCache);
 
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::freeDagContext(context);

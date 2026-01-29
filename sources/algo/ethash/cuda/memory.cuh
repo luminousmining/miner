@@ -11,6 +11,7 @@ bool ethashFreeMemory(
     resolver::nvidia::ethash::KernelParameters& params)
 {
     CU_SAFE_DELETE(params.lightCache);
+    CU_SAFE_DELETE(params.seedCache);
     CU_SAFE_DELETE(params.dagCache);
     CU_SAFE_DELETE_HOST(params.resultCache);
     return true;
