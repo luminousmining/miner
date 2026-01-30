@@ -50,7 +50,7 @@ void print_buffer(
     ///////////////////////////////////////////////////////////////////////////
     if constexpr (std::is_floating_point_v<T>)
     {
-        printf("(float %lubits) ->\n", sizeof(T) * 8);
+        printf("(float %zubits) ->\n", sizeof(T) * 8);
     }
     else if constexpr (sizeof(T) == 8)
     {
