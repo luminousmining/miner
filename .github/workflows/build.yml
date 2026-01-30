@@ -215,7 +215,9 @@ jobs:
           -DBUILD_TESTS=OFF \
           -DOPENCL_SDK_BUILD_SAMPLES=OFF \
           -DOPENCL_SDK_TEST_SAMPLES=OFF \
-          -DCMAKE_INSTALL_PREFIX=/usr/local
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
+
+        cmake .. -DNVCC_ARCH_COMPUTE=89
 
         echo "🔨 Building and installing OpenCL-SDK..."
         sudo cmake --build . --target install
