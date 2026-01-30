@@ -82,7 +82,30 @@ struct ResolverKawpowNvidiaTest : public testing::Test
 };
 
 
-TEST_F(ResolverKawpowNvidiaTest, findNonce)
+TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheGPU)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+    config.deviceAlgorithm.ethashBuildLightCacheCPU = false;
+
+    initializeJob(0xce00000017f87f70);
+
+    ASSERT_NE(nullptr, resolver.cuStream[0]);
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
+    resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+
+    using namespace std::string_literals;
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+}
+
+
+TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheCPU)
 {
     initializeJob(0xce00000017f87f70);
 

@@ -7,6 +7,7 @@
 #include <algo/ethash/ethash.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
+#include <common/config.hpp>
 #include <resolver/nvidia/ethash.hpp>
 #include <resolver/tests/nvidia.hpp>
 
@@ -20,7 +21,14 @@ struct ResolverEthashNvidiaTest : public testing::Test
 
     ResolverEthashNvidiaTest()
     {
+        ////////////////////////////////////////////////////////////////////////////
+        common::Config& config{ common::Config::instance() };
+        config.deviceAlgorithm.ethashBuildLightCacheCPU = true;
+
+        ////////////////////////////////////////////////////////////////////////////
         common::setLogLevel(common::TYPELOG::__DEBUG);
+
+        ////////////////////////////////////////////////////////////////////////////
         if (false == resolver::tests::initializeCuda(properties))
         {
             logErr() << "Fail init cuda";
@@ -53,7 +61,29 @@ TEST_F(ResolverEthashNvidiaTest, emptyJob)
 }
 
 
-TEST_F(ResolverEthashNvidiaTest, findNonce)
+TEST_F(ResolverEthashNvidiaTest, findNonceWithLightCacheGPU)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+    config.deviceAlgorithm.ethashBuildLightCacheCPU = false;
+
+    initializeJob(0x77530000094A7C09);
+
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
+    resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+
+    using namespace std::string_literals;
+    EXPECT_EQ("77530000094a7c09"s, nonceStr);
+}
+
+
+TEST_F(ResolverEthashNvidiaTest, findNonceWithLightCacheCPU)
 {
     initializeJob(0x77530000094A7C09);
 
