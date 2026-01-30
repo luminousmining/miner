@@ -1,4 +1,7 @@
+#if defined(AMD_ENABLE)
+
 #include <CL/opencl.hpp>
+
 
 char const* openclShowError(
     cl_int const err)
@@ -148,3 +151,5 @@ char const* openclShowError(
 
     return "Unknown CL error encountered";
 }
+
+#endif // AMD_ENABLE

@@ -1,7 +1,9 @@
 #include <sstream>
 #include <string>
 
+#if defined(AMD_ENABLE)
 #include <CL/opencl.hpp>
+#endif
 
 #include <algo/algo_type.hpp>
 #include <algo/hash_utils.hpp>

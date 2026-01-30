@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(AMD_ENABLE)
+
 #include <common/log/log.hpp>
 
 
@@ -58,3 +60,6 @@ char const* openclShowError(cl_int err);
         OPENCL_CALL(function);\
     }
 #endif //!defined(CL_HPP_ENABLE_EXCEPTIONS)
+
+
+#endif // AMD_ENABLE
