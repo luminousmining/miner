@@ -3,9 +3,9 @@
 #include <chrono>
 #include <cstddef>
 
-#if !defined(__LIB_CUDA)
+#if !defined(__LIB_CUDA) && defined(AMD_ENABLE)
 #include <CL/opencl.hpp>
-#endif // !__LIB_CUDA
+#endif // !__LIB_CUDA && AMD_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////
 #define castU2(value) static_cast<unsigned short>(value)
