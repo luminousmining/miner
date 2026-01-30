@@ -4,6 +4,7 @@
 
 
 #include <common/log/log.hpp>
+#include <common/config.hpp>
 #include <resolver/mocker.hpp>
 
 #include <algo/ethash/ethash.hpp>
@@ -26,6 +27,10 @@ void  resolver::ResolverMocker::overrideOccupancy(
 bool resolver::ResolverMocker::updateMemory(
     [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
     algo::DagContext context{};
     uint32_t maxEpoch{ algo::ethash::MAX_EPOCH_NUMBER };
     uint32_t lightCacheCountItemsGrowth{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH };
@@ -35,7 +40,6 @@ bool resolver::ResolverMocker::updateMemory(
     uint32_t dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
     uint32_t countCache{ algo::progpow::v_0_9_3::COUNT_CACHE };
     uint32_t countMath{ algo::progpow::v_0_9_3::COUNT_MATH };
-
     algo::ethash::initializeDagContext
     (
         context,
@@ -45,10 +49,13 @@ bool resolver::ResolverMocker::updateMemory(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        false
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
+    ///////////////////////////////////////////////////////////////////////////
     boost::this_thread::sleep_for(WAIT_UPDATE_MEMORY);
+
+    ///////////////////////////////////////////////////////////////////////////
     return true;
 }
 

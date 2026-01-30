@@ -7,7 +7,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include <algo/algo_type.hpp>
-#include <common/atomic_increment.hpp>
+#include <common/atomic_counter.hpp>
 #include <common/profile.hpp>
 #include <device/type.hpp>
 #include <network/network.hpp>
@@ -84,9 +84,9 @@ namespace device
     private:
         struct AtomicSynchronizer
         {
-            common::AtomicIncrement<uint64_t> job{ 0ull };
-            common::AtomicIncrement<uint64_t> constant{ 0ull };
-            common::AtomicIncrement<uint64_t> memory{ 0ull };
+            common::AtomicCounter<uint64_t> job{ 0ull };
+            common::AtomicCounter<uint64_t> constant{ 0ull };
+            common::AtomicCounter<uint64_t> memory{ 0ull };
         };
         device::Device::AtomicSynchronizer synchronizer{};
 

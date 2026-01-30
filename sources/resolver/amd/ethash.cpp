@@ -4,6 +4,7 @@
 #include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <common/error/opencl_error.hpp>
@@ -23,6 +24,10 @@ resolver::ResolverAmdEthash::~ResolverAmdEthash()
 bool resolver::ResolverAmdEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
     algo::ethash::initializeDagContext
     (
         context,
@@ -32,7 +37,7 @@ bool resolver::ResolverAmdEthash::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        true // TODO: build light cache on GPU
+        true // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     if (   context.lightCache.numberItem == 0ull

@@ -19,6 +19,9 @@ resolver::ResolverNvidiaProgPOW::~ResolverNvidiaProgPOW()
 bool resolver::ResolverNvidiaProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::initializeDagContext
     (
@@ -29,7 +32,7 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        false
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     if (   context.lightCache.numberItem == 0ull
@@ -70,6 +73,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
 {
     ////////////////////////////////////////////////////////////////////////////
     common::Chrono chrono{};
+    common::Config& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == updateContext(jobInfo))
@@ -84,15 +88,19 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    resolverInfo() << "Building LightCache";
-    chrono.start();
-    if (false == progpowBuildLightCache(cuStream[currentIndexStream],
-                                        parameters.seedCache))
+    if (false == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
-        return false;
+        resolverInfo() << "Building LightCache on GPU";
+        chrono.start();
+        if (false == progpowBuildLightCache(cuStream[currentIndexStream],
+                                            parameters.seedCache))
+        {
+            return false;
+        }
+        chrono.stop();
+        resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
     }
-    chrono.stop();
-    resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(parameters.seedCache);

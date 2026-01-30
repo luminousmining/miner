@@ -8,12 +8,12 @@
 namespace common
 {
     template<typename T>
-    struct AtomicIncrement
+    struct AtomicCounter
     {
         boost::atomic<T> current{};
         T                last{};
 
-        AtomicIncrement(T const value)
+        AtomicCounter(T const value)
         {
             current = value;
             last = value;
@@ -32,6 +32,11 @@ namespace common
         void add(T const value)
         {
             current.fetch_add(value, boost::memory_order::seq_cst);
+        }
+
+        void sub(T const value)
+        {
+            current.fetch_sub(value, boost::memory_order::seq_cst);
         }
 
         void update(T const value)

@@ -81,6 +81,13 @@ N/A : No default value is set.
 | `--rm_rvn_dodge` | ✅ | N/A | Mining on ravenminer RVN with DODGE wallet | `--rm_rvn_dodge=WALLET` |
 | `--rm_rvn_matic` | ✅ | N/A | Mining on ravenminer RVN with MATIC wallet | `--rm_rvn_matic=WALLET` |
 
+## Algorithm
+
+| Parameter | Optional | Default Value | Description | Example |
+|---------|--------|--------------|-------------|---------|
+| `--ethash_light_cache_cpu` | ✅ | true | Light Cache will be build from CPU or GPU | `--ethash_light_cache_cpu=true` |
+
+
 ## Kernel Intensity
 
 | Parameter | Optional | Default Value | Description | Example |

@@ -3,6 +3,7 @@
 #include <algo/ethash/cuda/ethash.cuh>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <resolver/nvidia/etchash.hpp>
@@ -11,6 +12,10 @@
 bool resolver::ResolverNvidiaEtchash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
     algo::ethash::initializeDagContext
     (
         context,
@@ -20,9 +25,10 @@ bool resolver::ResolverNvidiaEtchash::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        false
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
+    ///////////////////////////////////////////////////////////////////////////
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
         || context.dagCache.numberItem == 0ull
@@ -40,6 +46,7 @@ bool resolver::ResolverNvidiaEtchash::updateContext(
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
     if (   0ull != deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
@@ -50,5 +57,6 @@ bool resolver::ResolverNvidiaEtchash::updateContext(
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     return true;
 }

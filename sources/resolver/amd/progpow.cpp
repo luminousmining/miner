@@ -1,6 +1,7 @@
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <common/error/opencl_error.hpp>
@@ -19,6 +20,10 @@ resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
 bool resolver::ResolverAmdProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
     algo::ethash::initializeDagContext
     (
         context,
@@ -28,7 +33,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        true // TODO: build light cache on GPU
+        true // config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     if (   0ull == context.lightCache.numberItem

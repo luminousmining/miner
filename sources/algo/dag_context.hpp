@@ -3,6 +3,7 @@
 
 #include <algo/hash.hpp>
 
+
 namespace algo
 {
     template<typename T>

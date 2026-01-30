@@ -357,6 +357,15 @@ common::Cli::Cli()
             "--cuda_context=<auto|blocking|yield|spin>"
         )
 
+        // Algorithm
+        (
+            "ethash_light_cache_cpu",
+            value<bool>(),
+            "[OPTIONAL] Light Cache will be build from CPU or GPU.\n"
+            "Default value is true for CPU.\n"
+            "--ethash_light_cache_cpu=true"
+        )
+
         // smart mining
         (
             "sm_wallet",

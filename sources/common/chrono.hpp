@@ -21,11 +21,11 @@ namespace common
     class ChronoGuard
     {
     public:
-
-        ChronoGuard(common::CHRONO_UNIT unit);
+        ChronoGuard(std::string const& text, common::CHRONO_UNIT unit);
         ~ChronoGuard();
 
     private:
+        std::string text{};
         common::CHRONO_UNIT unit{ common::CHRONO_UNIT::SEC };
         std::chrono::system_clock::time_point tmStart{};
     };

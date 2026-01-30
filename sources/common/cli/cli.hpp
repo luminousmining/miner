@@ -116,6 +116,9 @@ namespace common
         uint32_t    getInternalLoop() const;
         std::string getCudaContext() const;
 
+        // Algorithm
+        bool isEthashBuildLightCacheCPU() const;
+
         // Smart mining settings
         bool                 isSmartMining() const;
         customTupleStrStr    getSmartMiningWallet() const;

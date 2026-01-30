@@ -3,6 +3,7 @@
 #include <algo/ethash/cuda/ethash.cuh>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <resolver/nvidia/ethash.hpp>
@@ -17,6 +18,9 @@ resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
 bool resolver::ResolverNvidiaEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
     algo::ethash::initializeDagContext
     (
         context,
@@ -26,7 +30,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        false
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     if (   context.lightCache.numberItem == 0ull
@@ -65,6 +69,8 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
 {
     ////////////////////////////////////////////////////////////////////////////
     common::Chrono chrono{};
+    common::Config& config{ common::Config::instance() };
+
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == updateContext(jobInfo))
@@ -79,15 +85,16 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    resolverInfo() << "Building LightCache";
-    chrono.start();
-    if (false == ethashBuildLightCache(cuStream[currentIndexStream],
-                                       parameters.seedCache))
+    if (false == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
-        return false;
+        resolverInfo() << "Building light cache on GPU";
+        common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
+        if (false == ethashBuildLightCache(cuStream[currentIndexStream],
+                                        parameters.seedCache))
+        {
+            return false;
+        }
     }
-    chrono.stop();
-    resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(parameters.seedCache);

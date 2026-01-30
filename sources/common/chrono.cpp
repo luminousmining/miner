@@ -4,8 +4,10 @@
 
 
 common::ChronoGuard::ChronoGuard(
+    std::string const& newText,
     common::CHRONO_UNIT chronoUnit)
 {
+    text.assign(newText);
     unit = chronoUnit;
     tmStart = std::chrono::system_clock::now();
 }
@@ -20,31 +22,31 @@ common::ChronoGuard::~ChronoGuard()
         case common::CHRONO_UNIT::SEC:
         {
             auto const elapsed { castSec(tmEnd - tmStart) };
-            logInfo() << "elapsed: " << elapsed.count() << "s";
+            logInfo() << text << " in " << elapsed.count() << "s";
             break;
         }
         case common::CHRONO_UNIT::MS:
         {
             auto const elapsed { castMs(tmEnd - tmStart) };
-            logInfo() << "elapsed: " << elapsed.count() << "ms";
+            logInfo() << text << " in "  << elapsed.count() << "ms";
             break;
         }
         case common::CHRONO_UNIT::US:
         {
             auto const elapsed { castUs(tmEnd - tmStart) };
-            logInfo() << "elapsed: " << elapsed.count() << "us";
+            logInfo() << text << " in "  << elapsed.count() << "us";
             break;
         }
         case common::CHRONO_UNIT::NS:
         {
             auto const elapsed { castNs(tmEnd - tmStart) };
-            logInfo() << "elapsed: " << elapsed.count() << "ns";
+            logInfo() << text << " in "  << elapsed.count() << "ns";
             break;
         }
         default:
         {
             auto const elapsed { castMs(tmEnd - tmStart) };
-            logInfo() << "elapsed: " << elapsed.count() << "ms";
+            logInfo() << text << " in "  << elapsed.count() << "ms";
             break;
         }
     }

@@ -9,3 +9,13 @@ std::optional<double> common::Cli::getPricekWH() const
     }
     return std::nullopt;
 }
+
+
+bool common::Cli::isEthashBuildLightCacheCPU() const
+{
+    if (true == contains("ethash_light_cache_cpu"))
+    {
+        return params["ethash_light_cache_cpu"].as<bool>();
+    }
+    return true;
+}

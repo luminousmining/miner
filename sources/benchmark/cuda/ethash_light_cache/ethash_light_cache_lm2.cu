@@ -83,19 +83,6 @@ void kernel_ethash_light_cache_xor_lm2(
 }
 
 
-
-__global__
-void kernel_show_lm2(uint32_t* __restrict__ light_cache)
-{
-    printf("light_cache[0]: %u\n", light_cache[0]);
-    printf("light_cache[1]: %u\n", light_cache[1]);
-    printf("light_cache[2]: %u\n", light_cache[2]);
-    printf("light_cache[3]: %u\n", light_cache[3]);
-    printf("light_cache[5000]: %u\n", light_cache[5000]);
-    printf("light_cache[1409016]: %u\n", light_cache[1409016]);
-}
-
-
 __host__
 bool etash_light_cache_lm2(
     cudaStream_t stream,
@@ -134,11 +121,6 @@ bool etash_light_cache_lm2(
         CUDA_ER(cudaStreamSynchronize(stream));
         CUDA_ER(cudaGetLastError());
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    kernel_show_lm2<<<1, 1, 0, stream>>>(lightCache);
-    CUDA_ER(cudaStreamSynchronize(stream));
-    CUDA_ER(cudaGetLastError());
 
     ///////////////////////////////////////////////////////////////////////////
     return true;

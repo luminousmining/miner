@@ -54,6 +54,11 @@ namespace common
             std::optional<std::string> cudaContext{};
         };
 
+        struct DeviceAlgorithmConfig
+        {
+            bool ethashBuildLightCacheCPU{ true };
+        };
+
         struct DeviceEnableSetting
         {
 #if defined(CUDA_ENABLE)
@@ -84,6 +89,7 @@ namespace common
         DeviceOccupancy                occupancy{};
         SmartMiningConfig              smartMining{};
         DeviceEnableSetting            deviceEnable{};
+        DeviceAlgorithmConfig          deviceAlgorithm{};
         std::vector<uint32_t>          deviceDisable{};
         std::map<uint32_t, PoolConfig> deviceSettings{};
         PoolConfig                     amdSetting{};
