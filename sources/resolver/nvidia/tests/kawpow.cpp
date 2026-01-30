@@ -20,6 +20,10 @@ struct ResolverKawpowNvidiaTest : public testing::Test
     ResolverKawpowNvidiaTest()
     {
         ////////////////////////////////////////////////////////////////////////////
+        common::Config& config{ common::Config::instance() };
+        config.deviceAlgorithm.ethashBuildLightCacheCPU = true;
+
+        ////////////////////////////////////////////////////////////////////////////
         common::setLogLevel(common::TYPELOG::__DEBUG);
         if (false == resolver::tests::initializeCuda(properties))
         {

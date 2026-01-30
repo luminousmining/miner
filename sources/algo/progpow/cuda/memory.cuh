@@ -22,7 +22,8 @@ bool progpowFreeMemory(
 __host__
 bool progpowInitMemory(
     algo::DagContext const& context,
-    resolver::nvidia::progpow::KernelParameters& params)
+    resolver::nvidia::progpow::KernelParameters& params,
+    bool const buildLightCacheOnGPU)
 {
     ////////////////////////////////////////////////////////////////////////////
     if (false == progpowFreeMemory(params))
@@ -60,12 +61,24 @@ bool progpowInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(
-        cudaMemcpy(
-            params.seedCache,
-            context.hashedSeedCache.word32,
-            algo::LEN_HASH_512_WORD_32 * sizeof(uint32_t),
-            cudaMemcpyHostToDevice));
+    if (true == buildLightCacheOnGPU)
+    {
+        CUDA_ER(
+            cudaMemcpy(
+                params.seedCache,
+                context.hashedSeedCache.word32,
+                algo::LEN_HASH_512_WORD_32 * sizeof(uint32_t),
+                cudaMemcpyHostToDevice));
+    }
+    else
+    {
+        CUDA_ER(
+            cudaMemcpy(
+                (void*)params.lightCache,
+                (void const*)context.lightCache.hash->bytes,
+                context.lightCache.size,
+                cudaMemcpyHostToDevice));
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(

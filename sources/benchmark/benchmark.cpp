@@ -280,10 +280,10 @@ void benchmark::Benchmark::runNvidia()
     // {
     //     logErr() << "Nvidia Keccak failled!";
     // }
-    if (false == runNvidiaEthashLightCache())
-    {
-        logErr() << "Nvidia ETHASH failled!";
-    }
+    // if (false == runNvidiaEthashLightCache())
+    // {
+    //     logErr() << "Nvidia ETHASH failled!";
+    // }
     // if (false == runNvidiaEthash())
     // {
     //     logErr() << "Nvidia ETHASH failled!";
@@ -292,10 +292,10 @@ void benchmark::Benchmark::runNvidia()
     // {
     //     logErr() << "Nvidia AutolykosV2 failled!";
     // }
-    // if (false == runNvidiaKawpow())
-    // {
-    //     logErr() << "Nvidia Kawpow failled!";
-    // }
+    if (false == runNvidiaKawpow())
+    {
+        logErr() << "Nvidia Kawpow failled!";
+    }
 }
 #endif
 

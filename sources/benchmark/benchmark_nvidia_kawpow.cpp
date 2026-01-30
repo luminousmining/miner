@@ -258,6 +258,23 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    // From: lm5
+    // TODO: reduce register
+    RUN_BENCH
+    (
+        "kawpow: lm11"s,
+        commonLoop,
+        256u,
+        1024u,
+        kawpow_lm11(propertiesNvidia.cuStream,
+                   result,
+                   headerHash->word32,
+                   dagHash->word32,
+                   blocks,
+                   threads)
+    )
+    BENCH_INIT_RESET_RESULT(result);
+
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(headerHash);

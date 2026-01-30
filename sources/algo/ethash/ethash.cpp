@@ -4,6 +4,8 @@
 #include <algo/math.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
+#include <common/config.hpp>
+#include <common/chrono.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 
@@ -136,7 +138,12 @@ void algo::ethash::initializeDagContext(
     context.lightCache.hash = castPtrHash512(context.data + algo::LEN_HASH_512);
 
     ////////////////////////////////////////////////////////////////////////////
-    buildLightCache(context, seed);
+    if (true == buildOnCPU)
+    {
+        logInfo() << "Building light cache on CPU";
+        common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
+        buildLightCache(context, seed);
+    }
 }
 
 

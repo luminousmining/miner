@@ -9,7 +9,8 @@
 
 bool ethashFreeMemory(resolver::nvidia::ethash::KernelParameters& params);
 bool ethashInitMemory(algo::DagContext const& context,
-                      resolver::nvidia::ethash::KernelParameters& params);
+                      resolver::nvidia::ethash::KernelParameters& params,
+                      bool const buildLightCacheOnGPU);
 bool ethashUpdateConstants(uint32_t const* const header,
                            uint64_t const boundary);
 bool ethashBuildLightCache(cudaStream_t stream,

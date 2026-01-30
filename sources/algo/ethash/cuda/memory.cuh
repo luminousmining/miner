@@ -21,7 +21,8 @@ bool ethashFreeMemory(
 __host__
 bool ethashInitMemory(
     algo::DagContext const& context,
-    resolver::nvidia::ethash::KernelParameters& params)
+    resolver::nvidia::ethash::KernelParameters& params,
+    bool const buildLightCacheOnGPU)
 {
     ////////////////////////////////////////////////////////////////////////////
     if (false == ethashFreeMemory(params))
@@ -53,12 +54,24 @@ bool ethashInitMemory(
     IS_NULL(params.resultCache);
 
     ////////////////////////////////////////////////////////////////////////////
-    CUDA_ER(
-        cudaMemcpy(
-            params.seedCache,
-            context.hashedSeedCache.word32,
-            algo::LEN_HASH_512_WORD_32 * sizeof(uint32_t),
-            cudaMemcpyHostToDevice));
+    if (true == buildLightCacheOnGPU)
+    {
+        CUDA_ER(
+            cudaMemcpy(
+                params.seedCache,
+                context.hashedSeedCache.word32,
+                algo::LEN_HASH_512_WORD_32 * sizeof(uint32_t),
+                cudaMemcpyHostToDevice));
+    }
+    else
+    {
+         CUDA_ER(
+            cudaMemcpy(
+                (void*)params.lightCache,
+                (void const*)context.lightCache.hash->bytes,
+                context.lightCache.size,
+                cudaMemcpyHostToDevice));
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(

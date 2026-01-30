@@ -8,7 +8,8 @@
 
 bool progpowFreeMemory(resolver::nvidia::progpow::KernelParameters& params);
 bool progpowInitMemory(algo::DagContext const& context,
-                       resolver::nvidia::progpow::KernelParameters& params);
+                       resolver::nvidia::progpow::KernelParameters& params,
+                       bool const buildLightCacheOnGPU);
 bool progpowBuildLightCache(cudaStream_t stream,
                             uint32_t const* const seed);
 bool progpowUpdateConstants(uint32_t const* const headerSrc,

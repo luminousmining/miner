@@ -48,6 +48,7 @@ if (BUILD_NVIDIA)
         benchmark/cuda/kawpow/kawpow_lm8.cu
         benchmark/cuda/kawpow/kawpow_lm9.cu
         benchmark/cuda/kawpow/kawpow_lm10.cu
+        benchmark/cuda/kawpow/kawpow_lm11.cu
         benchmark/cuda/keccak/keccak_f800_lm1.cu
         benchmark/cuda/keccak/keccak_f800_lm2.cu
         benchmark/cuda/keccak/keccak_f800_lm3.cu

@@ -82,7 +82,9 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == progpowInitMemory(context, parameters))
+    if (false == progpowInitMemory(context,
+                                   parameters,
+                                   !config.deviceAlgorithm.ethashBuildLightCacheCPU))
     {
         return false;
     }
@@ -99,11 +101,13 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
         }
         chrono.stop();
         resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+        ////////////////////////////////////////////////////////////////////////////
+        CU_SAFE_DELETE(parameters.seedCache);
     }
+    else
+    {
 
-
-    ////////////////////////////////////////////////////////////////////////////
-    CU_SAFE_DELETE(parameters.seedCache);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
