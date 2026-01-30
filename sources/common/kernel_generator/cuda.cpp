@@ -1,3 +1,5 @@
+#if defined(CUDA_ENABLE)
+
 #include <common/error/cuda_error.hpp>
 #include <common/error/nvrtc_error.hpp>
 #include <common/kernel_generator/cuda.hpp>
@@ -121,3 +123,5 @@ bool common::KernelGeneratorCuda::occupancy(
 
     return false;
 }
+
+#endif

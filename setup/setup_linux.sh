@@ -9,9 +9,11 @@ mkdir ${PROJECT}
 
 # Copy executable
 cp bin/miner ${PROJECT}/
+cp bin/miner_nvidia ${PROJECT}/
+cp bin/miner_amd ${PROJECT}/
 
 # Copy kernels
-cp -r bin/Release/kernel ${PROJECT}/
+cp -r bin/kernel ${PROJECT}/
 
 # Zip folder
 tar czvf ${PROJECT}-${VERSION}.tar.gz ${PROJECT}

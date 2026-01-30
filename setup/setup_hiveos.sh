@@ -23,7 +23,7 @@ chmod +x ${PROJECT}/h-stats.sh
 cp bin/miner ${PROJECT}/
 
 # Copy kernels
-cp -r bin/Release/kernel ${PROJECT}/
+cp -r bin/kernel ${PROJECT}/
 
 # Zip folder
 tar czvf ${PROJECT}-${VERSION}_hiveos.tar.gz ${PROJECT}
