@@ -258,7 +258,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
-    // From: lm5
+    // share 4096 first item of dag
+    // using __threadfence_block on dag load
     // TODO: reduce register
     RUN_BENCH
     (

@@ -150,7 +150,6 @@ void loop_math(
         dagIndex += ((lane_id ^ cnt) % LANES);
 
         uint4 entries = dag[dagIndex];
-        __threadfence_block();
         sequence_math_random(header_dag, hash, &entries);
     }
 }
@@ -220,16 +219,16 @@ void kernel_kawpow_lm11(
     uint32_t msb;
 
     ////////////////////////////////////////////////////////////////////////
+    uint64_t const nonce = startNonce + (blockIdx.x * blockDim.x) + threadIdx.x;
+
+    ////////////////////////////////////////////////////////////////////////
     {
         uint32_t const* const dag_u32 = (uint32_t*)dag;
         initialize_header_dag(header_dag, dag_u32, threadIdx.x);
     }
 
     ////////////////////////////////////////////////////////////////////////
-    {
-        uint64_t const nonce = startNonce + (blockIdx.x * blockDim.x) + threadIdx.x;
-        create_seed(nonce, state_init, header, &lsb, &msb);
-    }
+    create_seed(nonce, state_init, header, &lsb, &msb);
 
     ////////////////////////////////////////////////////////////////////////
     {
@@ -254,7 +253,6 @@ void kernel_kawpow_lm11(
             uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
             if (index < 1)
             {
-                uint64_t const nonce = startNonce + (blockIdx.x * blockDim.x) + threadIdx.x;
                 result->nonce = nonce;
             }
         }
