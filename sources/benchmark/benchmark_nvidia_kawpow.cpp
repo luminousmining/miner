@@ -48,6 +48,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
                        cudaMemcpyHostToDevice));
 
     uint32_t const commonLoop{ 10u };
+    uint32_t const commonThread{ 256u };
+    uint32_t const commonBlocks{ 1024u };
 
     ////////////////////////////////////////////////////////////////////////////
     // Kawpowminer implementation
@@ -55,8 +57,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: kawpowminer_1"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_kawpowminer_1(
             propertiesNvidia.cuStream,
             result,
@@ -72,8 +74,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: kawpowminer_2"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_kawpowminer_2(
             propertiesNvidia.cuStream,
             result,
@@ -89,8 +91,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm1"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm1(
             propertiesNvidia.cuStream,
             result,
@@ -106,8 +108,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm2"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm2(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -123,8 +125,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm3"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm3(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -140,8 +142,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm4"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm4(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -157,8 +159,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm5"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm5(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -175,8 +177,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm6"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm6(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -193,8 +195,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm7"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm7(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -212,8 +214,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm8"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm8(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -229,8 +231,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm9"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm9(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -247,8 +249,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm10"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm10(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -265,8 +267,8 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     (
         "kawpow: lm11"s,
         commonLoop,
-        256u,
-        1024u,
+        commonThread,
+        commonBlocks,
         kawpow_lm11(propertiesNvidia.cuStream,
                    result,
                    headerHash->word32,
@@ -284,6 +286,5 @@ bool benchmark::Benchmark::runNvidiaKawpow()
     ////////////////////////////////////////////////////////////////////////////
     return true;
 }
-
 
 #endif

@@ -210,50 +210,52 @@ void kernel_kawpow_lm11(
     uint4 const* __restrict__ const dag,
     uint64_t const startNonce)
 {
-    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     __shared__ uint32_t header_dag[MODULE_CACHE];
 
-    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     uint32_t state_init[STATE_LEN];
     uint32_t lsb;
     uint32_t msb;
 
     ////////////////////////////////////////////////////////////////////////
-    uint64_t const nonce = startNonce + (blockIdx.x * blockDim.x) + threadIdx.x;
-
-    ////////////////////////////////////////////////////////////////////////
     {
-        uint32_t const* const dag_u32 = (uint32_t*)dag;
-        initialize_header_dag(header_dag, dag_u32, threadIdx.x);
+        initialize_header_dag(header_dag, (uint32_t*)dag, threadIdx.x);
     }
 
-    ////////////////////////////////////////////////////////////////////////
-    create_seed(nonce, state_init, header, &lsb, &msb);
-
-    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     {
-        uint32_t digest[LANES];
+        uint64_t const nonce = startNonce + (blockIdx.x * blockDim.x) + threadIdx.x;
+        create_seed(nonce, state_init, header, &lsb, &msb);
+    }
 
+    ///////////////////////////////////////////////////////////////////////////
+    {
+        ///////////////////////////////////////////////////////////////////////
+        uint32_t digest[LANES];
         #pragma unroll 1
-        for (uint32_t l_id = 0u; l_id < LANES; ++l_id)
+        for (uint32_t current_lane_id = 0u; current_lane_id < LANES; ++current_lane_id)
         {
             uint32_t hash[REGS];
             uint32_t const lane_id = threadIdx.x & LANE_ID_MAX;
-            uint32_t const lane_lsb = reg_load(lsb, l_id, LANES);
-            uint32_t const lane_msb = reg_load(msb, l_id, LANES);
+            uint32_t const lane_lsb = reg_load(lsb, current_lane_id, LANES);
+            uint32_t const lane_msb = reg_load(msb, current_lane_id, LANES);
             fill_hash(lane_id, lane_lsb, lane_msb, hash);
             loop_math(lane_id, dag, hash, header_dag);
-            reduce_hash(l_id == lane_id, hash, digest);
+            reduce_hash(current_lane_id == lane_id, hash, digest);
         }
 
-        uint64_t const bytes = is_valid(state_init, digest);
-        if (bytes < 1ull)
+        ////////////////////////////////////////////////////////////////////////
         {
-            result->found = true;
-            uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
-            if (index < 1)
+            uint64_t const bytes = is_valid(state_init, digest);
+            if (bytes < 1ull)
             {
-                result->nonce = nonce;
+                result->found = true;
+                uint32_t const index = atomicAdd((uint32_t*)(&result->count), 1);
+                if (index < 1)
+                {
+                    result->nonce = (blockIdx.x * blockDim.x) + threadIdx.x;
+                }
             }
         }
     }

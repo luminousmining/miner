@@ -408,14 +408,21 @@ bool common::Config::loadCli(int argc, char** argv)
         occupancy.isAuto = isAutoOccupancy;
         occupancy.internalLoop = internalLoop;
         occupancy.cudaContext = cudaContext;
-        if (0u != occupancyThreads)
+        if (   0u != occupancyThreads
+            || 0u != occupancyBlocks)
         {
-            occupancy.threads = occupancyThreads;
+            if (0u != occupancyThreads)
+            {
+                occupancy.threads = occupancyThreads;
+            }
+            if (0u != occupancyBlocks)
+            {
+                occupancy.blocks = occupancyBlocks;
+            }
+            logInfo() << "Force disable occupancy at FALSE, using override occupancy";
+            occupancy.isAuto = false;
         }
-        if (0u != occupancyBlocks)
-        {
-            occupancy.blocks = occupancyBlocks;
-        }
+
 
         ////////////////////////////////////////////////////////////////////////
         // ALGORITHM

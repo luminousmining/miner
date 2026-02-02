@@ -148,18 +148,22 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         setBlocks(4096u);
 
         ////////////////////////////////////////////////////////////////////////
-        if (false == buildSearch())
-        {
-            return false;
-        }
-
-        ////////////////////////////////////////////////////////////////////////
+        logInfo() << "config.occupancy.isAuto: " << config.occupancy.isAuto;
         if (true == config.occupancy.isAuto)
         {
+            ///////////////////////////////////////////////////////////////////
+            if (false == buildSearch())
+            {
+                return false;
+            }
+
+            ///////////////////////////////////////////////////////////////////
             if (true == kernelGenerator.occupancy(cuDevice,
                                                   getThreads(),
                                                   getBlocks()))
             {
+                logInfo() << "kernelGenerator.maxThreads: " << kernelGenerator.maxThreads;
+                logInfo() << "kernelGenerator.maxBlocks: " << kernelGenerator.maxBlocks;
                 setThreads(kernelGenerator.maxThreads);
                 setBlocks(kernelGenerator.maxBlocks);
                 if (false == buildSearch())
@@ -168,9 +172,18 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
                 }
             }
         }
+        else
+        {
+            ///////////////////////////////////////////////////////////////////
+            overrideOccupancy(getThreads(), getBlocks());
 
-        ////////////////////////////////////////////////////////////////////////
-        overrideOccupancy(getThreads(), getBlocks());
+            ///////////////////////////////////////////////////////////////////
+            if (false == buildSearch())
+            {
+                return false;
+            }
+        }
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
