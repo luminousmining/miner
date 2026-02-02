@@ -336,9 +336,13 @@ bool device::DeviceManager::initializeNvidia()
         size_t freeMem{ 0u };
         size_t totalMem{ 0u };
         codeError = cudaMemGetInfo(&freeMem, &totalMem);
-        device->memoryAvailable = castU64(freeMem);
+        if (cudaSuccess != codeError)
+        {
+            logErr() << "[" << codeError << "]" << __FUNCTION__ << cudaGetErrorString(codeError);
+        }
 
         ////////////////////////////////////////////////////////////////////////////
+        device->memoryAvailable = castU64(freeMem);
         device->cuIndex = castU32(i);
         device->id = castU32(devices.size());
         device->pciBus = device->properties.pciBusID;

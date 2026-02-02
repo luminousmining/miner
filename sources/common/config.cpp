@@ -419,7 +419,7 @@ bool common::Config::loadCli(int argc, char** argv)
             {
                 occupancy.blocks = occupancyBlocks;
             }
-            logInfo() << "Force disable occupancy at FALSE, using override occupancy";
+            logInfo() << "Disable auto occupancy, using override occupancy!";
             occupancy.isAuto = false;
         }
 

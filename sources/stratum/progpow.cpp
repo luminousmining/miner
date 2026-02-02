@@ -179,8 +179,13 @@ void stratum::StratumProgPOW::onResponseEthereumV2(boost::json::object const& ro
 void stratum::StratumProgPOW::onResponseEthProxy(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const miningRequestID{ common::boostJsonGetNumber<uint32_t>(root.at("id")) };
-    auto const requestID{ static_cast<stratum::ETHPROXY_ID>(miningRequestID) };
+    uint32_t miningRequestID{ 0u };
+    stratum::ETHPROXY_ID requestID{ stratum::ETHPROXY_ID::EMPTY };
+    if (true == common::boostJsonContains(root, "id"))
+    {
+        miningRequestID = common::boostJsonGetNumber<uint32_t>(root, "id");
+        requestID = static_cast<stratum::ETHPROXY_ID>(miningRequestID);
+    }
 
     switch(requestID)
     {

@@ -148,7 +148,6 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
         setBlocks(4096u);
 
         ////////////////////////////////////////////////////////////////////////
-        logInfo() << "config.occupancy.isAuto: " << config.occupancy.isAuto;
         if (true == config.occupancy.isAuto)
         {
             ///////////////////////////////////////////////////////////////////
@@ -162,8 +161,6 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
                                                   getThreads(),
                                                   getBlocks()))
             {
-                logInfo() << "kernelGenerator.maxThreads: " << kernelGenerator.maxThreads;
-                logInfo() << "kernelGenerator.maxBlocks: " << kernelGenerator.maxBlocks;
                 setThreads(kernelGenerator.maxThreads);
                 setBlocks(kernelGenerator.maxBlocks);
                 if (false == buildSearch())
