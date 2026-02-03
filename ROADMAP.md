@@ -1,6 +1,6 @@
 # Roadmap
   
-current version `v0.6`  
+current version `v0.12`  
   
 + step 1
 - [x] GPU mining Nvidia
@@ -26,20 +26,15 @@ current version `v0.6`
   
 + step 2
 - [x] algo progpow_quai
-- [ ] profile smart mining
-- [ ] benchmark
-- [ ] optimize progpow
-- [ ] optimize kawpow
-- [ ] optimize ethash
-- [ ] optimize autolykosv2
-
+- [x] benchmark Nvidia
+- [ ] benchmark AMD
+- [x] optimize progpow(+derived) Nvidia
+- [ ] optimize progpow(+derived) AMD
+  
 + step3
-- [ ] Use libraries dynamic instead of static
-- [ ] algo kHeavyHash
-- [ ] algo blake3/alephium
-- [ ] algo blake3/decred
-- [ ] algo blake3/karlsen
-- [ ] os RaveOS
-- [ ] os Easy-Mining
-- [ ] profile traiding
+- [ ] profile smart mining
+- [ ] import custom profile in smart mining
+- [ ] ROcm
+- [ ] algo Cuckatoo
+- [ ] Docker miner
   
