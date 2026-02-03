@@ -191,6 +191,7 @@ void stratum::StratumProgPOW::onResponseEthProxy(boost::json::object const& root
     {
         case stratum::ETHPROXY_ID::SUBMITLOGIN:
         {
+            __TRACE();
             ////////////////////////////////////////////////////////////////////
             if (   false == root.contains("error")
                 || true == root.at("error").is_null())
@@ -371,15 +372,22 @@ void stratum::StratumProgPOW::onMiningNotify(
         }
         case stratum::STRATUM_TYPE::ETHPROXY:
         {
+            __TRACE();
             ////////////////////////////////////////////////////////////////////
             auto const& params{ root.at("result").as_array() };
 
             ////////////////////////////////////////////////////////////////////
+            __TRACE();
             std::string const jobID{ common::boostGetString(params, 0) };
+            __TRACE();
             jobInfo.headerHash = algo::toHash256(common::boostGetString(params, 0));
+            __TRACE();
             jobInfo.seedHash = algo::toHash256(common::boostGetString(params, 1));
+            __TRACE();
             jobInfo.boundary = algo::toHash256(common::boostGetString(params, 2));
+            __TRACE();
             std::string const blockNumber{ common::boostGetString(params, 3) };
+            logInfo() << "blockNumber: " << blockNumber;
 
             ////////////////////////////////////////////////////////////////////
             jobInfo.jobID = algo::toHash256(jobID);

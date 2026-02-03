@@ -14,7 +14,13 @@ namespace common
     inline
     char* getEnv(char const* variableName)
     {
+#if defined(WIN32)
+        char* value = nullptr;
+        _dupenv_s(&value, nullptr, variableName);
+        return value;
+#else
         return std::getenv(variableName);
+#endif
     }
 
 

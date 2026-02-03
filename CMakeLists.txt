@@ -76,19 +76,28 @@ if (WIN32)
     endif(CMAKE_SYSTEM_VERSION)
     endmacro(get_WIN32_WINNT)
     get_win32_winnt(WIN32_VERSION)
-    add_definitions(-D_WIN32_WINNT=${WIN32_VERSION})
-    add_definitions(/W4)
-    add_compile_definitions(NOMINMAX)
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-#        add_definitions(/WX)
-    endif()
+    add_compile_definitions(
+        _WIN32_WINNT=${WIN32_VERSION} # Set Windows API version
+        NOMINMAX                      # Disable min/max macros from Windows.h
+    )
+    add_compile_options(
+        /W4 # Warning level 4 (high)
+        /MP # Multi-processor compilation
+    )
 else()
 ################################################################################
 ### CLANG                                                                   ####
 ################################################################################
     set(CMAKE_C_COMPILER "clang-15" CACHE STRING "C compiler" FORCE)
     set(CMAKE_CXX_COMPILER "clang++-15" CACHE STRING "C++ compiler" FORCE)
-    add_compile_options(-W -Wall -Wextra)
+    add_compile_options(
+        -Wall              # Enable common warnings
+        -Wextra            # Enable additional warnings not covered by -Wall
+        -Wshadow           # Warn when variable shadows another
+        -Wdouble-promotion # Warn when float is implicitly promoted to double
+        -Wformat=2         # Strict format string security checks
+        -Wnull-dereference # Warn on potential nullptr dereference
+    )
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(-O0 -g3 -ggdb -v)
     else()
@@ -166,7 +175,6 @@ if (BUILD_NVIDIA)
         ### NVCC FLAGS GENCODE
         list(APPEND CUDA_NVCC_FLAGS
             # ============================================================
-            # 🎮 Gaming / Consumer GPUs
             # ============================================================
 
             "-gencode arch=compute_75,code=sm_75"     # Turing — GTX 1660, RTX 2060, RTX 2080
@@ -178,7 +186,6 @@ if (BUILD_NVIDIA)
             "-gencode arch=compute_121,code=sm_121"   # Blackwell CC 12.1 — RTX 50xx refresh
 
             # ============================================================
-            # 🏢 Professional / Datacenter GPUs
             # ============================================================
 
             "-gencode arch=compute_80,code=sm_80"     # Ampere A100 — A100 40GB / 80GB
@@ -239,10 +246,12 @@ if (BUILD_AMD)
     else()
         set(OpenCL_INCLUDE_DIRS "/usr/local/include")
     endif()
-    add_compile_definitions(CL_HPP_ENABLE_EXCEPTIONS=true)
-    add_compile_definitions(CL_HPP_TARGET_OPENCL_VERSION=300)
-    add_compile_definitions(CL_HPP_MINIMUM_OPENCL_VERSION=200)
-    add_compile_definitions(AMD_ENABLE)
+    add_compile_definitions(
+        CL_HPP_ENABLE_EXCEPTIONS=true     # Enable C++ exceptions in OpenCL C++ wrapper
+        CL_HPP_TARGET_OPENCL_VERSION=300  # Target OpenCL 3.0
+        CL_HPP_MINIMUM_OPENCL_VERSION=200 # Minimum OpenCL 2.0 required
+        AMD_ENABLE                        # Enable AMD-specific features
+    )
 endif()
 
 

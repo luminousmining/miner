@@ -35,8 +35,9 @@ algo::hash256 algo::toHash256(
     std::string const& str)
 {
     algo::hash256 hash{};
-    std::string hex{ str };
-    size_t index{ hex.length() };
+    std::string   hex{ str };
+    size_t        index{ hex.length() };
+    uint64_t      pos{ algo::LEN_HASH_256 - 1 };
 
     if ((hex.length() % 2) != 0)
     {
@@ -44,18 +45,22 @@ algo::hash256 algo::toHash256(
         hex.push_back('0');
     }
 
-    uint64_t pos{ algo::LEN_HASH_256 - 1 };
-
     while (index > 0u)
     {
         std::string strHex;
         strHex += hex.at(index - 2);
         strHex += hex.at(index - 1);
 
-        auto valHex{ std::stoul(strHex, nullptr, 16) };
-        auto byte{ castU8(valHex) };
-
-        hash.ubytes[pos] = byte;
+        if (strHex != "0x")
+        {
+            unsigned long const valHex{ std::stoul(strHex, nullptr, 16) };
+            uint8_t const bits{ castU8(valHex) };
+            hash.ubytes[pos] = bits;
+        }
+        else
+        {
+            hash.ubytes[pos] = 0;
+        }
 
         index -= 2;
         --pos;
