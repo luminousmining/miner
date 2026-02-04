@@ -323,5 +323,12 @@ void benchmark::BenchmarkWorkflow::runAmd()
 
     ///////////////////////////////////////////////////////////////////////////
     currentdeviceType = device::DEVICE_TYPE::AMD;
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdKawpow())
+    {
+        logErr() << "AMD kawpow failed";
+    }
+
 }
 #endif

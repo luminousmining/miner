@@ -5,14 +5,14 @@
 
 #include <algo/fast_mod.hpp>
 #include <algo/hash_utils.hpp>
-#include <benchmark/benchmark.hpp>
+#include #include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/custom.hpp>
 #include <common/error/cuda_error.hpp>
 
 
 
-bool benchmark::Benchmark::runNvidiaEthashLightCache()
+bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
 {
     ///////////////////////////////////////////////////////////////////////////
     uint32_t* lightCache{ nullptr };

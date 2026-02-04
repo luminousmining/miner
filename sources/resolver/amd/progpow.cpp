@@ -340,6 +340,9 @@ bool resolver::ResolverAmdProgPOW::executeSync(
     OPENCL_ER(clKernel.setArg(3u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(4u, *(parameters.resultCache.getBuffer())));
 
+    logInfo() << "blocks: " << blocks;
+    logInfo() << "threads: " << threads;
+
     OPENCL_ER(
         clQueue->enqueueNDRangeKernel(
             clKernel,

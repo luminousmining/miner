@@ -3,11 +3,11 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <benchmark/benchmark.hpp>
+#include #include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 
 
-bool benchmark::Benchmark::runNvidiaKeccak()
+bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
 {
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;

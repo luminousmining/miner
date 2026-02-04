@@ -3,12 +3,12 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <benchmark/benchmark.hpp>
+#include #include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/custom.hpp>
 
 
-bool benchmark::Benchmark::runNvidiaFnv1()
+bool benchmark::BenchmarkWorkflow::runNvidiaFnv1()
 {
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;

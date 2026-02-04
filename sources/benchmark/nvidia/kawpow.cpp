@@ -3,12 +3,12 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <benchmark/benchmark.hpp>
+#include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/custom.hpp>
 
 
-bool benchmark::Benchmark::runNvidiaKawpow()
+bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
 {
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;

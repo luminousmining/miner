@@ -5,12 +5,12 @@
 
 #include <algo/fast_mod.hpp>
 #include <algo/hash_utils.hpp>
-#include <benchmark/benchmark.hpp>
+#include #include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/custom.hpp>
 
 
-bool benchmark::Benchmark::runNvidiaEthash()
+bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
 {
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;

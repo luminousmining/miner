@@ -71,6 +71,13 @@ namespace common
             }
 
             inline
+            bool isValid() const
+            {
+                IS_NULL(buffer);
+                return true;
+            }
+
+            inline
             void free()
             {
                 SAFE_DELETE(buffer);
