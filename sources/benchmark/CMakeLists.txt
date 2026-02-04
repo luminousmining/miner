@@ -1,10 +1,12 @@
 file(GLOB HEADERS "*.hpp")
 file(GLOB SOURCES "*.cpp")
 
-target_sources(${BENCH_EXE} PUBLIC
-${HEADERS}
-${SOURCES}
-)
+if (BUILD_EXE_BENCHMARK)
+    target_sources(${BENCH_EXE} PUBLIC
+        ${HEADERS}
+        ${SOURCES}
+    )
+endif()
 
 set(SOURCES_BENCHMARK ${HEADERS} ${SOURCES} PARENT_SCOPE)
 
@@ -26,6 +28,16 @@ foreach(FILE ${BENCHMARK_FILES})
 endforeach()
 
 add_custom_target(copy_benchmark ALL
-  DEPENDS
+    DEPENDS
     ${OUT_COMMON}/benchmark.py
 )
+
+add_subdirectory(nvidia)
+add_subdirectory(amd)
+add_subdirectory(cuda)
+add_subdirectory(opencl)
+
+set(SOURCES_BENCHMARK_NVIDIA ${SOURCES_BENCHMARK_NVIDIA} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_AMD ${SOURCES_BENCHMARK_AMD} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_CUDA ${SOURCES_BENCHMARK_CUDA} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_OPENCL ${SOURCES_BENCHMARK_OPENCL} PARENT_SCOPE)

@@ -1,7 +1,7 @@
 ################################################################################
 ###  LIB CUDA ETHASH                                                        ####
 ################################################################################
-if (BUILD_NVIDIA)
+if (BUILD_NVIDIA AND BUILD_EXE_MINER)
     cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
         algo/autolykos/cuda/autolykos_v2.cu
         algo/blake3/cuda/blake3.cu
@@ -19,7 +19,7 @@ endif()
 ################################################################################
 ###  LIB CUDA BENCH                                                        ####
 ################################################################################
-if (BUILD_NVIDIA)
+if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
     cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
         benchmark/cuda/autolykos_v2/autolykos_v2_mhssamadani_prehash.cu
         benchmark/cuda/autolykos_v2/autolykos_v2_mhssamadani.cu
@@ -96,29 +96,35 @@ unit_test.cpp
 ################################################################################
 ## LINK UNIT TEST                                                           ####
 ################################################################################
-# Google Test
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-enable_testing()
-include(GoogleTest)
+if (BUILD_EXE_UNIT_TEST)
+    # Google Test
+    include(FetchContent)
+    FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    enable_testing()
+    include(GoogleTest)
 
-add_executable(${UNIT_TEST_EXE})
-#gtest_discover_tests(${UNIT_TEST_EXE})
+    add_executable(${UNIT_TEST_EXE})
+    #gtest_discover_tests(${UNIT_TEST_EXE})
+endif()
 
 ################################################################################
 ###  APP MINER                                                              ####
 ################################################################################
-add_executable(${MINER_EXE})
+if (BUILD_EXE_MINER)
+    add_executable(${MINER_EXE})
+endif()
 
 ################################################################################
 ###  APP BENCHMARK                                                          ####
 ################################################################################
-add_executable(${BENCH_EXE})
+if (BUILD_EXE_BENCHMARK)
+    add_executable(${BENCH_EXE})
+endif()
 
 ################################################################################
 ###  SOURCES                                                                ####
@@ -145,6 +151,10 @@ set(SOURCES_ALGO_PROGPOW ${SOURCES_ALGO_PROGPOW} PARENT_SCOPE)
 set(SOURCES_ALGO_TESTS ${SOURCES_ALGO_TESTS} PARENT_SCOPE)
 set(SOURCES_API ${SOURCES_API} PARENT_SCOPE)
 set(SOURCES_BENCHMARK ${SOURCES_BENCHMARK} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_NVIDIA ${SOURCES_BENCHMARK_NVIDIA} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_AMD ${SOURCES_BENCHMARK_AMD} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_CUDA ${SOURCES_BENCHMARK_CUDA} PARENT_SCOPE)
+set(SOURCES_BENCHMARK_OPENCL ${SOURCES_BENCHMARK_OPENCL} PARENT_SCOPE)
 set(SOURCES_COMMON ${SOURCES_COMMON} PARENT_SCOPE)
 set(SOURCES_COMMON_CLI ${SOURCES_COMMON_CLI} PARENT_SCOPE)
 set(SOURCES_COMMON_ERROR ${SOURCES_COMMON_ERROR} PARENT_SCOPE)
@@ -181,6 +191,10 @@ source_group("algo/progpow" FILES ${SOURCES_ALGO_PROGPOW})
 source_group("algo/tests" FILES ${SOURCES_ALGO_TESTS})
 source_group("api" FILES ${SOURCES_API})
 source_group("benchmark" FILES ${SOURCES_BENCHMARK})
+source_group("benchmark/nvidia" FILES ${SOURCES_BENCHMARK_NVIDIA})
+source_group("benchmark/amd" FILES ${SOURCES_BENCHMARK_AMD})
+source_group("benchmark/cuda" FILES ${SOURCES_BENCHMARK_CUDA})
+source_group("benchmark/opencl" FILES ${SOURCES_BENCHMARK_OPENCL})
 source_group("common" FILES ${SOURCES_COMMON})
 source_group("common/cli" FILES ${SOURCES_COMMON_CLI})
 source_group("common/error" FILES ${SOURCES_COMMON_ERROR})
@@ -206,97 +220,109 @@ source_group("statistical" FILES ${SOURCES_STRATISTICAL})
 ###  LINK LIBRARIES                                                         ####
 ################################################################################
 if (NOT WIN32)
-    target_link_options(${MINER_EXE} PUBLIC -static-libstdc++ -static-libgcc)
-    target_link_options(${BENCH_EXE} PUBLIC -static-libstdc++ -static-libgcc)
-    target_link_options(${UNIT_TEST_EXE} PUBLIC -static-libstdc++ -static-libgcc)
+    if (BUILD_EXE_MINER)
+        target_link_options(${MINER_EXE} PUBLIC -static-libstdc++ -static-libgcc)
+    endif()
+    if (BUILD_EXE_BENCHMARK)
+        target_link_options(${BENCH_EXE} PUBLIC -static-libstdc++ -static-libgcc)
+    endif()
+    if (BUILD_EXE_UNIT_TEST)
+        target_link_options(${UNIT_TEST_EXE} PUBLIC -static-libstdc++ -static-libgcc)
+    endif()
 endif()
 
-target_sources(${MINER_EXE} PUBLIC
-    ${MINER_HEADERS}
-    ${MINER_SOURCES}
-)
+if (BUILD_EXE_MINER)
+    target_sources(${MINER_EXE} PUBLIC
+        ${MINER_HEADERS}
+        ${MINER_SOURCES}
+    )
+    include_directories(${MINER_EXE} PUBLIC
+        ${Boost_INCLUDE_DIR}
+        ${OPENSSL_INCLUDE_DIR}
+        ${OpenCL_INCLUDE_DIRS}
+        ${CUDA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(${MINER_EXE}
+        ${Boost_LIBRARIES}
+        ${OPEN_SSL_LIBRARIES}
+        ${OpenCL_LIBRARIES}
+        ${CUDA_LIBRARY}
+        ${CUDA_LIBRARIES}
+        ${CUDA_NVRTC_LIBRARY}
+        ${CUDA_NVPTX_LIBRARY}
+        ${CUDA_NVRTC_BUILTINS_LIBRARY}
+        ${LIB_CRYPTO_NVIDIA}
+    )
+endif()
 
-target_sources(${BENCH_EXE} PUBLIC
-    ${BENCH_HEADERS}
-    ${BENCH_SOURCES}
-)
+if (BUILD_EXE_BENCHMARK)
+    target_sources(${BENCH_EXE} PUBLIC
+        ${BENCH_HEADERS}
+        ${BENCH_SOURCES}
+    )
+    include_directories(${BENCH_EXE} PUBLIC
+        ${Boost_INCLUDE_DIR}
+        ${OpenCL_INCLUDE_DIRS}
+        ${CUDA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(${BENCH_EXE}
+        ${Boost_LIBRARIES}
+        ${OpenCL_LIBRARIES}
+        ${CUDA_LIBRARY}
+        ${CUDA_LIBRARIES}
+        ${CUDA_NVRTC_LIBRARY}
+        ${CUDA_NVPTX_LIBRARY}
+        ${CUDA_NVRTC_BUILTINS_LIBRARY}
+        ${LIB_BENCH_NVIDIA}
+    )
+endif()
 
-target_sources(${UNIT_TEST_EXE} PUBLIC
-    ${UNIT_TEST_HEADERS}
-    ${UNIT_TEST_SOURCES}
-)
-
-include_directories(${MINER_EXE} PUBLIC
-    ${Boost_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${OpenCL_INCLUDE_DIRS}
-    ${CUDA_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-include_directories(${BENCH_EXE} PUBLIC
-    ${Boost_INCLUDE_DIR}
-    ${OpenCL_INCLUDE_DIRS}
-    ${CUDA_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-include_directories(${UNIT_TEST_EXE} PUBLIC
-    ${Boost_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${OpenCL_INCLUDE_DIRS}
-    ${CUDA_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_link_libraries(${MINER_EXE}
-    ${Boost_LIBRARIES}
-    ${OPEN_SSL_LIBRARIES}
-    ${OpenCL_LIBRARIES}
-    ${CUDA_LIBRARY}
-    ${CUDA_LIBRARIES}
-    ${CUDA_NVRTC_LIBRARY}
-    ${CUDA_NVPTX_LIBRARY}
-    ${CUDA_NVRTC_BUILTINS_LIBRARY}
-    ${LIB_CRYPTO_NVIDIA}
-)
-
-target_link_libraries(${BENCH_EXE}
-    ${Boost_LIBRARIES}
-    ${OpenCL_LIBRARIES}
-    ${CUDA_LIBRARY}
-    ${CUDA_LIBRARIES}
-    ${CUDA_NVRTC_LIBRARY}
-    ${CUDA_NVPTX_LIBRARY}
-    ${CUDA_NVRTC_BUILTINS_LIBRARY}
-    ${LIB_BENCH_NVIDIA}
-)
-
-target_link_libraries(${UNIT_TEST_EXE}
-    gtest_main
-    ${Boost_LIBRARIES}
-    ${OPEN_SSL_LIBRARIES}
-    ${OpenCL_LIBRARIES}
-    ${CUDA_LIBRARY}
-    ${CUDA_LIBRARIES}
-    ${CUDA_NVRTC_LIBRARY}
-    ${CUDA_NVPTX_LIBRARY}
-    ${CUDA_NVRTC_BUILTINS_LIBRARY}
-    ${LIB_CRYPTO_NVIDIA}
-)
+if (BUILD_EXE_UNIT_TEST)
+    target_sources(${UNIT_TEST_EXE} PUBLIC
+        ${UNIT_TEST_HEADERS}
+        ${UNIT_TEST_SOURCES}
+    )
+    include_directories(${UNIT_TEST_EXE} PUBLIC
+        ${Boost_INCLUDE_DIR}
+        ${OPENSSL_INCLUDE_DIR}
+        ${OpenCL_INCLUDE_DIRS}
+        ${CUDA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(${UNIT_TEST_EXE}
+        gtest_main
+        ${Boost_LIBRARIES}
+        ${OPEN_SSL_LIBRARIES}
+        ${OpenCL_LIBRARIES}
+        ${CUDA_LIBRARY}
+        ${CUDA_LIBRARIES}
+        ${CUDA_NVRTC_LIBRARY}
+        ${CUDA_NVPTX_LIBRARY}
+        ${CUDA_NVRTC_BUILTINS_LIBRARY}
+        ${LIB_CRYPTO_NVIDIA}
+    )
+endif()
 
 
 if (UNIX)
-    target_link_libraries(${MINER_EXE}
-        ${GNUTLS_LIBRARIES}
-        "stdc++fs"
-    )
-    target_link_libraries(${BENCH_EXE}
-        ${GNUTLS_LIBRARIES}
-        "stdc++fs"
-    )
-    target_link_libraries(${UNIT_TEST_EXE}
-        ${GNUTLS_LIBRARIES}
-        "stdc++fs"
-    )
+    if (BUILD_EXE_MINER)
+        target_link_libraries(${MINER_EXE}
+            ${GNUTLS_LIBRARIES}
+            "stdc++fs"
+        )
+    endif()
+    if (BUILD_EXE_BENCHMARK)
+        target_link_libraries(${BENCH_EXE}
+            ${GNUTLS_LIBRARIES}
+            "stdc++fs"
+        )
+    endif()
+    if (BUILD_EXE_UNIT_TEST)
+        target_link_libraries(${UNIT_TEST_EXE}
+            ${GNUTLS_LIBRARIES}
+            "stdc++fs"
+        )
+    endif()
 endif()

@@ -31,7 +31,7 @@ namespace common
     inline
     std::string hashrateToString(double hashes, uint32_t unit = 0)
     {
-        while (unit < 7 && hashes > castFloat(1.e3))
+        while (unit < 7u && hashes > 1.e3)
         {
             hashes /= 1.e3;
             ++unit;

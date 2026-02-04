@@ -272,10 +272,10 @@ bool benchmark::Benchmark::initCleanResult64(
 void benchmark::Benchmark::runNvidia()
 {
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
-    if (false == runNvidiaKeccak())
-    {
-        logErr() << "Nvidia Keccak failled!";
-    }
+    // if (false == runNvidiaKeccak())
+    // {
+    //     logErr() << "Nvidia Keccak failled!";
+    // }
     // if (false == runNvidiaFnv1())
     // {
     //     logErr() << "Nvidia Keccak failled!";

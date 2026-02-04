@@ -31,7 +31,7 @@ uint32_t benchmark::getDeviceCount()
 }
 
 
-cl::Device benchmark::getDevice(uint32_t const index)
+std::optional<cl::Device> benchmark::getDevice(uint32_t const index)
 {
     std::vector<cl::Device> cldevices{};
     std::vector<cl::Platform> platforms{};
@@ -53,12 +53,12 @@ cl::Device benchmark::getDevice(uint32_t const index)
             continue;
         }
 
-        size_t const countDevice{ castU32(cldevices.size()) };
+        size_t const countDevice{ cldevices.size() };
         size_t const totalIndex{ currentIndex + countDevice };
-        if (index < totalIndex)
+        if (castSize(index) < totalIndex)
         {
-            size_t const indexBuffer{ totalIndex - index - 1u };
-            auto const& clDevice{ cldevices[indexBuffer] };
+            size_t const indexBuffer{ totalIndex - castSize(index) - castSize(1u) };
+            cl::Device const& clDevice{ cldevices[indexBuffer] };
             logInfo()
                 << "Device ["
                 << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>()
@@ -69,7 +69,7 @@ cl::Device benchmark::getDevice(uint32_t const index)
         currentIndex += cldevices.size();
     }
 
-    return {};
+    return std::nullopt;
 }
 
 
@@ -83,9 +83,14 @@ void benchmark::cleanUpOpenCL(benchmark::PropertiesAmd& properties)
 
 bool benchmark::initializeOpenCL(
         benchmark::PropertiesAmd& properties,
-        uint32_t index)
+        uint32_t const index)
 {
-    properties.clDevice = benchmark::getDevice(index);
+    std::optional<cl::Device> amdDevice{ benchmark::getDevice(index) };
+    if (std::nullopt == amdDevice)
+    {
+        return false;
+    }
+    properties.clDevice = amdDevice->get();
     properties.clContext = cl::Context(properties.clDevice);
     properties.clQueue = cl::CommandQueue(properties.clContext, properties.clDevice);
 

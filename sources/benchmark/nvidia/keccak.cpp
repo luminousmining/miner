@@ -13,8 +13,8 @@ bool benchmark::Benchmark::runNvidiaKeccak()
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const commonLoop{ 1000u };
-    uint32_t const commonThreads{ 512u };
+    uint32_t const commonLoop{ 10u };
+    uint32_t const commonThreads{ 128u };
     uint32_t const commonBlocks{ 1024u };
 
     ////////////////////////////////////////////////////////////////////////////

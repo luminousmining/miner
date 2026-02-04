@@ -450,12 +450,8 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode,c++
 
 *.10x
-bin/
-bin_amd/
-bin_nvidia/
-build/
-build_vs/
 .vscode/
-build_amd/
-build_nvidia/
-build_all/
+bin/
+bin_*/
+build/
+build_*/
