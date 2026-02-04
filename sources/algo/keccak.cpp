@@ -1,3 +1,4 @@
+#include <common/cast.hpp>
 #include <algo/hash.hpp>
 #include <algo/rol.hpp>
 #include <algo/keccak.hpp>
@@ -284,7 +285,7 @@ void algo::keccak(
 
     keccak_f1600(state);
 
-    uint32_t const maxIndex{ hashSize / static_cast<uint32_t const>(wordSize) };
+    uint32_t const maxIndex{ hashSize / castU32(wordSize) };
     for (uint32_t i{ 0u }; i < maxIndex; ++i)
     {
         out[i] = state[i];

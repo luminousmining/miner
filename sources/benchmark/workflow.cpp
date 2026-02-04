@@ -3,14 +3,14 @@
 
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/hash_utils.hpp>
-#include <benchmark/benchmark.hpp>
+#include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/formater_hashrate.hpp>
 #include <common/log/log.hpp>
 #include <common/custom.hpp>
 
 
-benchmark::Benchmark::Benchmark(
+benchmark::BenchmarkWorkflow::BenchmarkWorkflow(
     [[maybe_unused]] bool const nvidia,
     [[maybe_unused]] bool const amd)
 {
@@ -23,24 +23,33 @@ benchmark::Benchmark::Benchmark(
 }
 
 
-void benchmark::Benchmark::initializeDevices(uint32_t const deviceIndex)
+bool benchmark::BenchmarkWorkflow::initializeDevices(uint32_t const deviceIndex)
 {
 #if defined(CUDA_ENABLE)
     if (true == enableNvidia)
     {
-        benchmark::initializeCuda(propertiesNvidia, deviceIndex);
+        if (false == benchmark::initializeCuda(propertiesNvidia, deviceIndex))
+        {
+            logErr() << "Fail to load device NVIDIA";
+            return false;
+        }
     }
 #endif
 #if defined(AMD_ENABLE)
     if (true == enableAmd)
     {
-        benchmark::initializeOpenCL(propertiesAmd, deviceIndex);
+        if (false == benchmark::initializeOpenCL(propertiesAmd, deviceIndex))
+        {
+            logErr() << "Fail to load device AMD";
+            return false;
+        }
     }
 #endif
+    return true;
 }
 
 
-void benchmark::Benchmark::destroyDevices()
+void benchmark::BenchmarkWorkflow::destroyDevices()
 {
 #if defined(CUDA_ENABLE)
     if (true == enableNvidia)
@@ -57,7 +66,7 @@ void benchmark::Benchmark::destroyDevices()
 }
 
 
-void benchmark::Benchmark::run()
+void benchmark::BenchmarkWorkflow::run()
 {
 #if defined(CUDA_ENABLE)
     if (true == enableNvidia)
@@ -75,19 +84,19 @@ void benchmark::Benchmark::run()
 }
 
 
-void benchmark::Benchmark::setMultiplicator(uint32_t const _multiplicator)
+void benchmark::BenchmarkWorkflow::setMultiplicator(uint32_t const _multiplicator)
 {
     multiplicator = _multiplicator;
 }
 
 
-void benchmark::Benchmark::setDivisor(uint32_t const _divisor)
+void benchmark::BenchmarkWorkflow::setDivisor(uint32_t const _divisor)
 {
     divisor = _divisor;
 }
 
 
-void benchmark::Benchmark::setGrid(uint32_t const _threads, uint32_t _blocks)
+void benchmark::BenchmarkWorkflow::setGrid(uint32_t const _threads, uint32_t _blocks)
 {
     threads = _threads;
     blocks = _blocks;
@@ -95,7 +104,7 @@ void benchmark::Benchmark::setGrid(uint32_t const _threads, uint32_t _blocks)
 }
 
 
-void benchmark::Benchmark::startChrono(
+void benchmark::BenchmarkWorkflow::startChrono(
     std::string const& benchName)
 {
     currentBenchName = benchName;
@@ -105,7 +114,7 @@ void benchmark::Benchmark::startChrono(
 }
 
 
-void benchmark::Benchmark::stopChrono(uint32_t const index)
+void benchmark::BenchmarkWorkflow::stopChrono(uint32_t const index)
 {
     ////////////////////////////////////////////////////////////////////////////
     stats.increaseKernelExecuted();
@@ -133,7 +142,7 @@ void benchmark::Benchmark::stopChrono(uint32_t const index)
 }
 
 
-void benchmark::Benchmark::writeReport()
+void benchmark::BenchmarkWorkflow::writeReport()
 {
      boost::json::object root{};
 #if defined(CUDA_ENABLE)
@@ -190,7 +199,7 @@ void benchmark::Benchmark::writeReport()
 }
 
 
-bool benchmark::Benchmark::initCleanResult(
+bool benchmark::BenchmarkWorkflow::initCleanResult(
     [[maybe_unused]] t_result** result)
 {
 #if defined(CUDA_ENABLE)
@@ -208,7 +217,7 @@ bool benchmark::Benchmark::initCleanResult(
 }
 
 
-bool benchmark::Benchmark::initCleanResult32(
+bool benchmark::BenchmarkWorkflow::initCleanResult32(
     [[maybe_unused]] t_result_32** result)
 {
 #if defined(CUDA_ENABLE)
@@ -238,7 +247,7 @@ bool benchmark::Benchmark::initCleanResult32(
 }
 
 
-bool benchmark::Benchmark::initCleanResult64(
+bool benchmark::BenchmarkWorkflow::initCleanResult64(
     [[maybe_unused]] t_result_64** result)
 {
 #if defined(CUDA_ENABLE)
@@ -269,29 +278,35 @@ bool benchmark::Benchmark::initCleanResult64(
 
 
 #if defined(CUDA_ENABLE)
-void benchmark::Benchmark::runNvidia()
+void benchmark::BenchmarkWorkflow::runNvidia()
 {
+    ///////////////////////////////////////////////////////////////////////////
+    logInfo() << "Run benchmark on NVIDIA";
+
+    ///////////////////////////////////////////////////////////////////////////
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
-    // if (false == runNvidiaKeccak())
-    // {
-    //     logErr() << "Nvidia Keccak failled!";
-    // }
-    // if (false == runNvidiaFnv1())
-    // {
-    //     logErr() << "Nvidia Keccak failled!";
-    // }
-    // if (false == runNvidiaEthashLightCache())
-    // {
-    //     logErr() << "Nvidia ETHASH failled!";
-    // }
-    // if (false == runNvidiaEthash())
-    // {
-    //     logErr() << "Nvidia ETHASH failled!";
-    // }
-    // if (false == runNvidiaAutolykosv2())
-    // {
-    //     logErr() << "Nvidia AutolykosV2 failled!";
-    // }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runNvidiaKeccak())
+    {
+        logErr() << "Nvidia Keccak failled!";
+    }
+    if (false == runNvidiaFnv1())
+    {
+        logErr() << "Nvidia Keccak failled!";
+    }
+    if (false == runNvidiaEthashLightCache())
+    {
+        logErr() << "Nvidia ETHASH failled!";
+    }
+    if (false == runNvidiaEthash())
+    {
+        logErr() << "Nvidia ETHASH failled!";
+    }
+    if (false == runNvidiaAutolykosv2())
+    {
+        logErr() << "Nvidia AutolykosV2 failled!";
+    }
     if (false == runNvidiaKawpow())
     {
         logErr() << "Nvidia Kawpow failled!";
@@ -301,8 +316,12 @@ void benchmark::Benchmark::runNvidia()
 
 
 #if defined(AMD_ENABLE)
-void benchmark::Benchmark::runAmd()
+void benchmark::BenchmarkWorkflow::runAmd()
 {
+    ///////////////////////////////////////////////////////////////////////////
+    logInfo() << "Run benchmark on AMD";
+
+    ///////////////////////////////////////////////////////////////////////////
     currentdeviceType = device::DEVICE_TYPE::AMD;
 }
 #endif

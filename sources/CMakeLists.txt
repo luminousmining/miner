@@ -239,20 +239,22 @@ if (BUILD_EXE_MINER)
     include_directories(${MINER_EXE} PUBLIC
         ${Boost_INCLUDE_DIR}
         ${OPENSSL_INCLUDE_DIR}
-        ${OpenCL_INCLUDE_DIRS}
-        ${CUDA_INCLUDE_DIRS}
+        $<$<BOOL:BUILD_AMD>:${OpenCL_INCLUDE_DIRS}>
+        $<$<BOOL:BUILD_NVIDIA>:${CUDA_INCLUDE_DIRS}>
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
     target_link_libraries(${MINER_EXE}
         ${Boost_LIBRARIES}
         ${OPEN_SSL_LIBRARIES}
         ${OpenCL_LIBRARIES}
-        ${CUDA_LIBRARY}
-        ${CUDA_LIBRARIES}
-        ${CUDA_NVRTC_LIBRARY}
-        ${CUDA_NVPTX_LIBRARY}
-        ${CUDA_NVRTC_BUILTINS_LIBRARY}
-        ${LIB_CRYPTO_NVIDIA}
+        $<$<BOOL:BUILD_NVIDIA>:
+            ${CUDA_LIBRARY}
+            ${CUDA_LIBRARIES}
+            ${CUDA_NVRTC_LIBRARY}
+            ${CUDA_NVPTX_LIBRARY}
+            ${CUDA_NVRTC_BUILTINS_LIBRARY}
+            ${LIB_CRYPTO_NVIDIA}
+        >
     )
 endif()
 
@@ -263,19 +265,21 @@ if (BUILD_EXE_BENCHMARK)
     )
     include_directories(${BENCH_EXE} PUBLIC
         ${Boost_INCLUDE_DIR}
-        ${OpenCL_INCLUDE_DIRS}
-        ${CUDA_INCLUDE_DIRS}
+        $<$<BOOL:BUILD_AMD>:${OpenCL_INCLUDE_DIRS}>
+        $<$<BOOL:BUILD_NVIDIA>:${CUDA_INCLUDE_DIRS}>
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
     target_link_libraries(${BENCH_EXE}
         ${Boost_LIBRARIES}
-        ${OpenCL_LIBRARIES}
-        ${CUDA_LIBRARY}
-        ${CUDA_LIBRARIES}
-        ${CUDA_NVRTC_LIBRARY}
-        ${CUDA_NVPTX_LIBRARY}
-        ${CUDA_NVRTC_BUILTINS_LIBRARY}
-        ${LIB_BENCH_NVIDIA}
+        $<$<BOOL:BUILD_AMD>:${OpenCL_LIBRARIES}>
+        $<$<BOOL:BUILD_NVIDIA>:
+            ${CUDA_LIBRARY}
+            ${CUDA_LIBRARIES}
+            ${CUDA_NVRTC_LIBRARY}
+            ${CUDA_NVPTX_LIBRARY}
+            ${CUDA_NVRTC_BUILTINS_LIBRARY}
+            ${LIB_BENCH_NVIDIA}
+        >
     )
 endif()
 
@@ -287,8 +291,8 @@ if (BUILD_EXE_UNIT_TEST)
     include_directories(${UNIT_TEST_EXE} PUBLIC
         ${Boost_INCLUDE_DIR}
         ${OPENSSL_INCLUDE_DIR}
-        ${OpenCL_INCLUDE_DIRS}
-        ${CUDA_INCLUDE_DIRS}
+        $<$<BOOL:BUILD_AMD>:${OpenCL_INCLUDE_DIRS}>
+        $<$<BOOL:BUILD_NVIDIA>:${CUDA_INCLUDE_DIRS}>
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
     target_link_libraries(${UNIT_TEST_EXE}
@@ -296,12 +300,14 @@ if (BUILD_EXE_UNIT_TEST)
         ${Boost_LIBRARIES}
         ${OPEN_SSL_LIBRARIES}
         ${OpenCL_LIBRARIES}
-        ${CUDA_LIBRARY}
-        ${CUDA_LIBRARIES}
-        ${CUDA_NVRTC_LIBRARY}
-        ${CUDA_NVPTX_LIBRARY}
-        ${CUDA_NVRTC_BUILTINS_LIBRARY}
-        ${LIB_CRYPTO_NVIDIA}
+        $<$<BOOL:BUILD_NVIDIA>:
+            ${CUDA_LIBRARY}
+            ${CUDA_LIBRARIES}
+            ${CUDA_NVRTC_LIBRARY}
+            ${CUDA_NVPTX_LIBRARY}
+            ${CUDA_NVRTC_BUILTINS_LIBRARY}
+            ${LIB_CRYPTO_NVIDIA}
+        >
     )
 endif()
 

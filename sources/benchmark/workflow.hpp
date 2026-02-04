@@ -55,7 +55,7 @@ namespace benchmark
         double              perform{ 0.0 };
     };
 
-    struct Benchmark
+    struct BenchmarkWorkflow
     {
     public:
 #if defined(CUDA_ENABLE)
@@ -67,9 +67,9 @@ namespace benchmark
         benchmark::PropertiesAmd    propertiesAmd{};
 #endif
 
-        explicit Benchmark(bool const nvidia,
-                           bool const amd);
-        void initializeDevices(uint32_t const deviceIndex = 0u);
+        explicit BenchmarkWorkflow(bool const nvidia,
+                                   bool const amd);
+        bool initializeDevices(uint32_t const deviceIndex = 0u);
         void destroyDevices();
         void run();
 

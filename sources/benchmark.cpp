@@ -1,14 +1,17 @@
 #include <common/log/log.hpp>
-#include <benchmark/benchmark.hpp>
+#include <benchmark/workflow.hpp>
 
 
 int main()
 {
-    benchmark::Benchmark bench{ true, false };
+    benchmark::BenchmarkWorkflow bench{ true, true };
 
-    logInfo() << "Run Benchmark";
+    logInfo() << "Run Workflow Benchmarks";
 
-    bench.initializeDevices();
+    if (false == bench.initializeDevices())
+    {
+        return 1;
+    }
     bench.run();
 
     return 0;
