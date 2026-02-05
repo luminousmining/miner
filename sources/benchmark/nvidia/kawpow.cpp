@@ -69,6 +69,7 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
     // Kawpowminer implementation
     RUN_BENCH
     (
@@ -86,6 +87,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // Do not share 4096 first item of dag
     RUN_BENCH
     (
@@ -103,6 +106,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     RUN_BENCH
     (
@@ -119,6 +124,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // No unroll loop
     RUN_BENCH
@@ -136,6 +143,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // 64 regs by kernel
     RUN_BENCH
@@ -153,6 +162,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // using __threadfence_block on dag load
     RUN_BENCH
@@ -170,6 +181,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // using __threadfence_block on header initialize
     // using __threadfence_block on dag load
@@ -188,6 +201,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // 1 thread resolve multi nonce
     setMultiplicator(10u);
@@ -206,6 +221,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // 1 thread resolve multi nonce
     // using __threadfence_block on dag load
@@ -225,6 +242,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // header_dag using cache read-only
     RUN_BENCH
@@ -242,6 +261,7 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
     // From: lm6
     // Remove loop by LANES, using only warp parrallelism
     setDivisor(16u);
@@ -260,6 +280,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     )
     BENCH_INIT_RESET_RESULT(result);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Parallele compute
     // share 4096 first item of dag
     // using __threadfence_block on dag load
     // TODO: reduce register

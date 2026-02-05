@@ -174,7 +174,7 @@ void reduce_hash(
         tmp[i] = reg_load(value, i, LANES);
     }
 
-    if (is_same_lane == true)
+    if (true == is_same_lane)
     {
         #pragma unroll
         for (uint32_t i = 0u; i < LANES; ++i)

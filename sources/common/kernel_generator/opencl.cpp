@@ -74,7 +74,10 @@ bool common::KernelGeneratorOpenCL::build(
         compileFlags += " -cl-fast-relaxed-math";
         compileFlags += " -cl-no-signed-zeros";
         compileFlags += " -cl-mad-enable";
+        // TODO: -cl-std=CL3.0
         compileFlags += " -cl-std=CL2.0";
+        // TODO: use 32 or 64 wavefront
+        // compileFlags += " -mwavefrontsize32";
 #if defined(__DEBUG)
         compileFlags += " -O0";
 #else
@@ -108,6 +111,7 @@ bool common::KernelGeneratorOpenCL::build(
     }
     catch (cl::Error const& clErr)
     {
+        logErr() << "Fail to build kernel " << kernelName;
         OPENCL_EXCEPTION_ERROR_SHOW(__FUNCTION__, clErr);
         return false;
     }

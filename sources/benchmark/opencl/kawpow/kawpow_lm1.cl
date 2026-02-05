@@ -154,7 +154,7 @@ void loop_math(
         dag_index += ((lane_id ^ cnt) % LANES);
 
         uint4 const entries = dag[dag_index];
-        sequence_dynamic(header_dag, hash, entries);
+        sequence_dynamic_local(header_dag, hash, entries);
     }
 }
 
