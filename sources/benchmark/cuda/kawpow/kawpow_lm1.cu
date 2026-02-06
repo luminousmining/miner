@@ -48,8 +48,8 @@ void create_seed(
 
     keccak_f800(state);
 
-    *msb = state[0];
-    *lsb = state[1];
+    *lsb = state[0];
+    *msb = state[1];
 }
 
 
@@ -119,8 +119,8 @@ void fill_hash(
 {
     uint4 data;
 
-    data.x = fnv1a(FNV1_OFFSET, lsb);
-    data.y = fnv1a(data.x, msb);
+    data.x = fnv1a(FNV1_OFFSET, msb);
+    data.y = fnv1a(data.x, lsb);
     data.z = fnv1a(data.y, lane_id);
     data.w = fnv1a(data.z, lane_id);
 
@@ -205,7 +205,7 @@ void kernel_kawpow_lm1(
     uint64_t const nonce = startNonce + thread_id;
 
     ////////////////////////////////////////////////////////////////////////
-    create_seed(nonce, state_init, header, &lsb, &msb);
+    create_seed(nonce, state_init, header, &msb, &lsb);
 
     ////////////////////////////////////////////////////////////////////////
     #pragma unroll 1

@@ -121,9 +121,9 @@ void reduce_hash(
     if (true == is_same_lane)
     {
         __attribute__((opencl_unroll_hint))
-        for (uint i = 0; i < LANES; ++i)
+        for (uint i = 0; i < WORK_ITEM_COLLABORATE; ++i)
         {
-            digest[i] = share_fnv1a[worker_group * LANES + i];
+            digest[i] = share_fnv1a[worker_group * WORK_ITEM_COLLABORATE + i];
         }
     }
 }
@@ -141,7 +141,7 @@ void loop_math(
     __attribute__((opencl_unroll_hint(1)))
     for (uint cnt = 0; cnt < COUNT_DAG; ++cnt)
     {
-        uint const lane_cnt = cnt % LANES;
+        uint const lane_cnt = cnt % WORK_ITEM_COLLABORATE;
         if (lane_id == lane_cnt)
         {
             share_hash0[worker_group] = hash[0];
@@ -149,11 +149,33 @@ void loop_math(
         barrier(CLK_LOCAL_MEM_FENCE);
 
         uint dag_index = share_hash0[worker_group];
+        uint fd = dag_index;
         dag_index %= DAG_SIZE;
-        dag_index *= LANES;
-        dag_index += ((lane_id ^ cnt) % LANES);
+        dag_index *= WORK_ITEM_COLLABORATE;
+        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 const entries = dag[dag_index];
+
+        /*
+        if (
+            (lane_id == 0u)
+            && (get_thread_id() == 0u || get_thread_id() == 16u)
+            // && (get_thread_id() <= 31u)
+            && cnt == 0u)
+        {
+            printf("(%u) mix0[%u] fd[%u] dag_index[%u] entries(%u,%u,%u,%u)\n",
+                get_thread_id(),
+                hash[0],
+                fd,
+                dag_index,
+                entries.x,
+                entries.y,
+                entries.z,
+                entries.w
+            );
+        }
+        */
+
         sequence_dynamic_local(header_dag, hash, entries);
     }
 }
@@ -163,7 +185,8 @@ inline
 void fill_hash(
     uint* const hash,
     uint const lane_id,
-    ulong const seed)
+    ulong const seed,
+    uint const l_id)
 {
     uint4 data;
     data.x = fnv1a_u32(FNV1_OFFSET, (uint)seed);
@@ -217,12 +240,12 @@ void kawpow_lm1(
     __local uint share_fnv1a[SHARE_FNV1A_SIZE];
 
     uint state_mix[25];
-    uint hash[REGS];
-    uint digest[LANES];
+    uint digest[16];
+    uint hash[32];
 
-    uint const thread_id = get_global_id(0) + (get_global_id(1) * GROUP_SIZE);
-    uint const lane_id = thread_id % LANES;
-    uint const worker_group = get_global_id(0) / LANES;
+    uint const thread_id = get_thread_id_2d();
+    uint const lane_id = thread_id % WORK_ITEM_COLLABORATE;
+    uint const worker_group = get_global_id(0) / WORK_ITEM_COLLABORATE;
     ulong const nonce = start_nonce + thread_id;
     uint const index_share_seed = get_global_id(0) / BATCH_GROUP_LANE;
 
@@ -231,7 +254,7 @@ void kawpow_lm1(
     ulong const seed = initialize_seed(header, state_mix, nonce);
 
     __attribute__((opencl_unroll_hint(1)))
-    for (uint l_id = 0u; l_id < LANES; ++l_id)
+    for (uint l_id = 0u; l_id < WORK_ITEM_COLLABORATE; ++l_id)
     {
         ///////////////////////////////////////////////////////////////////////
         if (l_id == lane_id)
@@ -244,7 +267,8 @@ void kawpow_lm1(
         ulong const seedShare = share_msb_lsb[index_share_seed];
 
         ////////////////////////////////////////////////////////////////////////
-        fill_hash(hash, lane_id, seedShare);
+        fill_hash(hash, lane_id, seedShare, l_id);
+
         loop_math(dag, share_hash0, header_dag, hash, lane_id, worker_group);
         reduce_hash(
             share_fnv1a,

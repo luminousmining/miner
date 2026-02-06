@@ -5,7 +5,7 @@
 
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/hash_utils.hpp>
-#include #include <benchmark/workflow.hpp>
+#include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
 #include <common/custom.hpp>
 

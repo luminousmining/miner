@@ -5,7 +5,7 @@ void initialize_state(
     ulong const nonce)
 {
     __attribute__((opencl_unroll_hint))
-    for (uint i = 0; i < 8; ++i)
+    for (uint i = 0; i < 8u; ++i)
     {
         state[i] = header[i];
     }
@@ -40,12 +40,13 @@ void fill_hash(
     uint* const restrict hash,
     uint const lane_id,
     uint const lsb,
-    uint const msb)
+    uint const msb,
+    uint const l_id)
 {
     uint4 data;
 
-    data.x = fnv1a_u32(FNV1_OFFSET, lsb);
-    data.y = fnv1a_u32(data.x, msb);
+    data.x = fnv1a_u32(FNV1_OFFSET, msb);
+    data.y = fnv1a_u32(data.x, lsb);
     data.z = fnv1a_u32(data.y, lane_id);
     data.w = fnv1a_u32(data.z, lane_id);
 
@@ -67,16 +68,33 @@ void loop_math(
     for (uint cnt = 0u; cnt < COUNT_DAG; ++cnt)
     {
         uint const mix0 = hash[0];
-        uint dag_index = sub_group_broadcast(mix0, cnt % WAVEFRONT);
+        uint dag_index = reg_load(mix0, cnt % WORK_ITEM_COLLABORATE, WORK_ITEM_COLLABORATE);
+        uint fd = dag_index;
         dag_index %= DAG_SIZE;
-        dag_index *= LANES;
-        dag_index += ((lane_id ^ cnt) % LANES);
+        dag_index *= WORK_ITEM_COLLABORATE;
+        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
-        uint4 entries;
-        entries.x = dag[lane_id];
-        entries.y = dag[lane_id];
-        entries.z = dag[lane_id];
-        entries.w = dag[lane_id];
+        uint4 entries = ((uint4*)dag)[dag_index];
+
+        /*
+        if (
+            (lane_id == 0u)
+            && (get_thread_id() == 0u || get_thread_id() == 16u)
+            // && (get_thread_id() <= 31u)
+            && cnt == 0u)
+        {
+            printf("(%u) mix0[%u] fd[%u] dag_index[%u] entries(%u,%u,%u,%u)\n",
+                get_thread_id(),
+                mix0,
+                fd,
+                dag_index,
+                entries.x,
+                entries.y,
+                entries.z,
+                entries.w
+            );
+        }
+        */
 
         sequence_dynamic(dag, hash, entries);
     }
@@ -97,17 +115,17 @@ void reduce_hash(
         value = fnv1a_u32(value, hash[i]);
     }
 
-    uint tmp[LANES];
+    uint tmp[DIGEST_SIZE];
     __attribute__((opencl_unroll_hint))
-    for (uint i = 0u; i < LANES; ++i)
+    for (uint i = 0u; i < DIGEST_SIZE; ++i)
     {
-        tmp[i] = sub_group_broadcast(value, i);
+        tmp[i] = reg_load(value, i, WORK_ITEM_COLLABORATE);
     }
 
     if (true == is_same_lane)
     {
         __attribute__((opencl_unroll_hint))
-        for (uint i = 0u; i < LANES; ++i)
+        for (uint i = 0u; i < DIGEST_SIZE; ++i)
         {
             digest[i] = tmp[i];
         }
@@ -120,7 +138,7 @@ ulong sha3(
     uint const* const restrict digest_1,
     uint* const restrict digest_2)
 {
-    uint state[25];
+    uint state[STATE_SIZE];
 
     __attribute__((opencl_unroll_hint))
     for (uint i = 0u; i < 8u; ++i)
@@ -181,13 +199,13 @@ void kawpow_lm2(
     __global t_result* const restrict result)
 {
     ///////////////////////////////////////////////////////////////////////////
-    uint state[25];
-    uint hash[REGS];
-    uint digest[LANES];
+    uint state[STATE_SIZE];
+    uint digest[DIGEST_SIZE];
+    uint hash[HASH_SIZE];
 
     ///////////////////////////////////////////////////////////////////////////
-    uint const thread_id = get_global_id(0) + (get_global_id(1) * GROUP_SIZE);
-    uint const lane_id = thread_id % LANES;
+    uint const thread_id = get_thread_id_2d();
+    uint const lane_id = get_sub_group_local_id();
     ulong const nonce = start_nonce + thread_id;
 
     ///////////////////////////////////////////////////////////////////////////
@@ -197,13 +215,18 @@ void kawpow_lm2(
 
     ///////////////////////////////////////////////////////////////////////////
     __attribute__((opencl_unroll_hint(1)))
-    for (uint l_id = 0u; l_id < LANES; ++l_id)
+    for (uint l_id = 0u; l_id < WORK_ITEM_COLLABORATE; ++l_id)
     {
-        uint const lane_lsb = sub_group_broadcast(lsb, l_id);
-        uint const lane_msb = sub_group_broadcast(msb, l_id);
-        fill_hash(hash, lane_id, lane_lsb, lane_msb);
-        loop_math(dag, hash, lane_id);
-        reduce_hash(hash, digest, l_id == lane_id);
+        ///////////////////////////////////////////////////////////////////////
+        uint const lane_msb = reg_load(msb, l_id, WORK_ITEM_COLLABORATE);
+        uint const lane_lsb = reg_load(lsb, l_id, WORK_ITEM_COLLABORATE);
+
+        ///////////////////////////////////////////////////////////////////////
+        fill_hash(hash, lane_id % WORK_ITEM_COLLABORATE, lane_lsb, lane_msb, l_id);
+
+        ///////////////////////////////////////////////////////////////////////
+        loop_math(dag, hash, lane_id % WORK_ITEM_COLLABORATE);
+        reduce_hash(hash, digest, l_id == lane_id % WORK_ITEM_COLLABORATE);
     }
 
     ///////////////////////////////////////////////////////////////////////////

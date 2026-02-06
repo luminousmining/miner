@@ -89,22 +89,27 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     auto benchKawpow = [&](std::string const& kernelName,
                            uint32_t const groupSize,
                            uint32_t const workerGroupCount,
+                           uint32_t const workItemCollaborate,
                            uint32_t const loop) -> bool
     {
         ///////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
 
         ///////////////////////////////////////////////////////////////////////
-        uint32_t const batchGroupLane{ groupSize / algo::progpow::LANES };
+        uint32_t const batchGroupLane{ groupSize / workItemCollaborate };
 
         ///////////////////////////////////////////////////////////////////////
         generator.setKernelName(kernelName);
 
         ///////////////////////////////////////////////////////////////////////
+        generator.addDefine("OCL_DIM", 2);
         generator.addDefine("GROUP_SIZE", groupSize);
-        generator.addDefine("WAVEFRONT", 32u);
         generator.addDefine("REGS", algo::progpow::REGS);
-        generator.addDefine("LANES", algo::progpow::LANES);
+        generator.addDefine("STATE_SIZE", 25u);
+        generator.addDefine("WAVEFRONT", propertiesAmd.clDevice.getInfo<CL_DEVICE_WAVEFRONT_WIDTH_AMD>());
+        generator.addDefine("DIGEST_SIZE", 16u);
+        generator.addDefine("HASH_SIZE", 32u);
+        generator.addDefine("WORK_ITEM_COLLABORATE", workItemCollaborate);
         generator.addDefine("MODULE_CACHE", algo::progpow::MODULE_CACHE);
         generator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
         generator.addDefine("DAG_SIZE", castU32(dagItemsKawpow));
@@ -116,14 +121,18 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         generator.addDefine("MODULE_LOOP", algo::progpow::MODULE_CACHE / (groupSize / 4u));
 
         ///////////////////////////////////////////////////////////////////////
+        generator.addInclude("kernel/common/debug.cl");
+        generator.addInclude("kernel/common/grid.cl");
+        generator.addInclude("kernel/common/cross_lane.cl");
         generator.addInclude("kernel/common/rotate_byte.cl");
         generator.addInclude("kernel/crypto/fnv1.cl");
         generator.addInclude("kernel/crypto/keccak_f800.cl");
         generator.addInclude("kernel/crypto/kiss99.cl");
+        generator.addInclude("kernel/kawpow/sequence_dynamic.cl");
+        generator.addInclude("kernel/kawpow/sequence_dynamic_local.cl");
 
         ///////////////////////////////////////////////////////////////////////
         generator.appendFile("kernel/common/result.cl");
-        generator.appendFile("kernel/kawpow/sequence_dynamic.cl");
         generator.appendFile("kernel/kawpow/" + kernelName + ".cl");
 
         ///////////////////////////////////////////////////////////////////////
@@ -167,8 +176,8 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     ////////////////////////////////////////////////////////////////////////////
     if (true == dagInitialized)
     {
-        benchKawpow("kawpow_lm1", 256u, 1024u, 1u);
-        benchKawpow("kawpow_lm2", 256u, 1024u, 1u);
+        benchKawpow("kawpow_lm1", 256u, 1024u, algo::progpow::LANES, 1u);
+        benchKawpow("kawpow_lm2", 256u, 1024u, algo::progpow::LANES, 1u);
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -244,7 +244,7 @@ if (BUILD_EXE_MINER)
     target_link_libraries(${MINER_EXE}
         ${Boost_LIBRARIES}
         ${OPEN_SSL_LIBRARIES}
-        ${OpenCL_LIBRARIES}
+        $<$<BOOL:BUILD_AMD>:${OpenCL_LIBRARIES}>
         $<$<BOOL:BUILD_NVIDIA>:
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
