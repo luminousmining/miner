@@ -111,6 +111,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         generator.addDefine("HASH_SIZE", 32u);
         generator.addDefine("WORK_ITEM_COLLABORATE", workItemCollaborate);
         generator.addDefine("MODULE_CACHE", algo::progpow::MODULE_CACHE);
+        generator.addDefine("HEADER_ITEM_BY_THREAD", algo::progpow::MODULE_CACHE / groupSize);
         generator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
         generator.addDefine("DAG_SIZE", castU32(dagItemsKawpow));
         generator.addDefine("BATCH_GROUP_LANE", batchGroupLane);
@@ -176,8 +177,9 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     ////////////////////////////////////////////////////////////////////////////
     if (true == dagInitialized)
     {
-        benchKawpow("kawpow_lm1", 256u, 1024u, algo::progpow::LANES, 1u);
-        benchKawpow("kawpow_lm2", 256u, 1024u, algo::progpow::LANES, 1u);
+        benchKawpow("kawpow_lm1", 256u, 1024u, algo::progpow::LANES, 1u); // Parallele + LDS
+        benchKawpow("kawpow_lm2", 256u, 1024u, algo::progpow::LANES, 1u); // Parallel + crosslane
+        benchKawpow("kawpow_lm3", 256u, 1024u, algo::progpow::LANES, 1u); // Parallel + crosslane + LDS header
     }
 
     ////////////////////////////////////////////////////////////////////////////

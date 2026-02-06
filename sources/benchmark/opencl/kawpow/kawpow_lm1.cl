@@ -155,27 +155,6 @@ void loop_math(
         dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 const entries = dag[dag_index];
-
-        /*
-        if (
-            (lane_id == 0u)
-            && (get_thread_id() == 0u || get_thread_id() == 16u)
-            // && (get_thread_id() <= 31u)
-            && cnt == 0u)
-        {
-            printf("(%u) mix0[%u] fd[%u] dag_index[%u] entries(%u,%u,%u,%u)\n",
-                get_thread_id(),
-                hash[0],
-                fd,
-                dag_index,
-                entries.x,
-                entries.y,
-                entries.z,
-                entries.w
-            );
-        }
-        */
-
         sequence_dynamic_local(header_dag, hash, entries);
     }
 }
