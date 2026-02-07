@@ -317,7 +317,7 @@ endif()
 
 if (BUILD_EXE_UNIT_TEST)
 
- target_sources(${UNIT_TEST_EXE} PRIVATE
+    target_sources(${UNIT_TEST_EXE} PRIVATE
         ${UNIT_TEST_HEADERS}
         ${UNIT_TEST_SOURCES}
     )

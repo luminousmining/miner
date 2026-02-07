@@ -1,14 +1,17 @@
+#include <array>
+
 #include <gtest/gtest.h>
 
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
-#include <array>
+
 
 struct EthashTest : public testing::Test
 {
-    std::array<algo::hash256, 10> hashes {
+    std::array<algo::hash256, 10> hashes 
+    {
         /*0*/ algo::toHash256("0000000000000000000000000000000000000000000000000000000000000000"),
         /*1*/ algo::toHash256("290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563"),
         /*2*/ algo::toHash256("a9b0e0c9aca72c07ba06b5bbdae8b8f69e61878301508473379bb4f71807d707"),
