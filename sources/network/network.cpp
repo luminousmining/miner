@@ -64,7 +64,6 @@ bool network::NetworkTCPClient::connect()
                 return false;
             }
 
-            // Connect to the first endpoint
             auto it = endpoints.begin();
             if (it == endpoints.end()) {
                 logErr() << "No endpoints found for " << host << ":" << port;
