@@ -1,7 +1,7 @@
 ################################################################################
 ###  LIB CUDA ETHASH                                                        ####
 ################################################################################
-if (BUILD_NVIDIA AND BUILD_EXE_MINER)
+if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
     cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
         algo/autolykos/cuda/autolykos_v2.cu
         algo/blake3/cuda/blake3.cu
@@ -10,10 +10,12 @@ if (BUILD_NVIDIA AND BUILD_EXE_MINER)
 
     target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
 
-    include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
+    target_include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
+        ${Boost_INCLUDE_DIR}
         ${CUDA_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    
 endif()
 
 ################################################################################
@@ -62,7 +64,8 @@ if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
 
-    include_directories(${LIB_BENCH_NVIDIA} PUBLIC
+    target_include_directories(${LIB_BENCH_NVIDIA} PUBLIC
+        ${Boost_INCLUDE_DIR}
         ${CUDA_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
@@ -230,83 +233,125 @@ if (NOT WIN32)
 endif()
 
 if (BUILD_EXE_MINER)
-    target_sources(${MINER_EXE} PUBLIC
+
+    target_sources(${MINER_EXE} PRIVATE
         ${MINER_HEADERS}
         ${MINER_SOURCES}
     )
-    include_directories(${MINER_EXE} PUBLIC
+
+    target_include_directories(${MINER_EXE} PRIVATE
         ${Boost_INCLUDE_DIR}
-        ${OPENSSL_INCLUDE_DIR}
-        $<$<BOOL:BUILD_AMD>:${OpenCL_INCLUDE_DIRS}>
-        $<$<BOOL:BUILD_NVIDIA>:${CUDA_INCLUDE_DIRS}>
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
-    target_link_libraries(${MINER_EXE}
+
+    target_link_libraries(${MINER_EXE} PRIVATE
         ${Boost_LIBRARIES}
-        ${OPEN_SSL_LIBRARIES}
-        $<$<BOOL:BUILD_AMD>:${OpenCL_LIBRARIES}>
-        $<$<BOOL:BUILD_NVIDIA>:
+    )
+
+    if (BUILD_AMD)
+        target_include_directories(${MINER_EXE} PRIVATE
+            ${OpenCL_INCLUDE_DIRS}
+        )
+        target_link_libraries(${MINER_EXE} PRIVATE
+            ${OpenCL_LIBRARIES}
+        )
+    endif()
+
+    if (BUILD_NVIDIA)
+        target_include_directories(${MINER_EXE} PRIVATE
+            ${CUDA_INCLUDE_DIRS}
+        )
+        target_link_libraries(${MINER_EXE} PRIVATE
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
             ${CUDA_NVRTC_LIBRARY}
             ${CUDA_NVPTX_LIBRARY}
             ${CUDA_NVRTC_BUILTINS_LIBRARY}
             ${LIB_CRYPTO_NVIDIA}
-        >
-    )
+        )
+    endif()
+
 endif()
 
+
 if (BUILD_EXE_BENCHMARK)
-    target_sources(${BENCH_EXE} PUBLIC
+
+    target_sources(${BENCH_EXE} PRIVATE
         ${BENCH_HEADERS}
         ${BENCH_SOURCES}
     )
-    include_directories(${BENCH_EXE} PUBLIC
+
+    target_include_directories(${BENCH_EXE} PRIVATE
         ${Boost_INCLUDE_DIR}
-        $<$<BOOL:BUILD_AMD>:${OpenCL_INCLUDE_DIRS}>
-        $<$<BOOL:BUILD_NVIDIA>:${CUDA_INCLUDE_DIRS}>
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
-    target_link_libraries(${BENCH_EXE}
+
+    target_link_libraries(${BENCH_EXE} PRIVATE
         ${Boost_LIBRARIES}
-        $<$<BOOL:BUILD_AMD>:${OpenCL_LIBRARIES}>
-        $<$<BOOL:BUILD_NVIDIA>:
+    )
+
+    if (BUILD_AMD)
+        target_include_directories(${BENCH_EXE} PRIVATE
+            ${OpenCL_INCLUDE_DIRS}
+        )
+        target_link_libraries(${BENCH_EXE} PRIVATE
+            ${OpenCL_LIBRARIES}
+        )
+    endif()
+
+    if (BUILD_NVIDIA)
+        target_include_directories(${BENCH_EXE} PRIVATE
+            ${CUDA_INCLUDE_DIRS}
+        )
+        target_link_libraries(${BENCH_EXE} PRIVATE
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
             ${CUDA_NVRTC_LIBRARY}
             ${CUDA_NVPTX_LIBRARY}
             ${CUDA_NVRTC_BUILTINS_LIBRARY}
             ${LIB_BENCH_NVIDIA}
-        >
-    )
+        )
+    endif()
+
 endif()
 
 if (BUILD_EXE_UNIT_TEST)
-    target_sources(${UNIT_TEST_EXE} PUBLIC
+
+    target_sources(${UNIT_TEST_EXE} PRIVATE
         ${UNIT_TEST_HEADERS}
         ${UNIT_TEST_SOURCES}
     )
-    include_directories(${UNIT_TEST_EXE} PUBLIC
+
+    target_include_directories(${UNIT_TEST_EXE} PRIVATE
         ${Boost_INCLUDE_DIR}
         ${OPENSSL_INCLUDE_DIR}
-        $<$<BOOL:BUILD_AMD>:${OpenCL_INCLUDE_DIRS}>
-        $<$<BOOL:BUILD_NVIDIA>:${CUDA_INCLUDE_DIRS}>
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
-    target_link_libraries(${UNIT_TEST_EXE}
-        gtest_main
-        ${Boost_LIBRARIES}
-        ${OPEN_SSL_LIBRARIES}
-        ${OpenCL_LIBRARIES}
-        $<$<BOOL:BUILD_NVIDIA>:
+
+    target_link_libraries(${UNIT_TEST_EXE} PRIVATE gtest_main ${Boost_LIBRARIES})
+
+    if (BUILD_AMD)
+        target_include_directories(${UNIT_TEST_EXE} PRIVATE
+            ${OpenCL_INCLUDE_DIRS}
+        )
+        target_link_libraries(${UNIT_TEST_EXE} PRIVATE
+            ${OpenCL_LIBRARIES}
+        )
+    endif()
+
+    if (BUILD_NVIDIA)
+        target_include_directories(${UNIT_TEST_EXE} PRIVATE
+            ${CUDA_INCLUDE_DIRS}
+        )
+        target_link_libraries(${UNIT_TEST_EXE} PRIVATE
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
             ${CUDA_NVRTC_LIBRARY}
             ${CUDA_NVPTX_LIBRARY}
             ${CUDA_NVRTC_BUILTINS_LIBRARY}
             ${LIB_CRYPTO_NVIDIA}
-        >
-    )
+        )
+    endif()
 endif()
 
 

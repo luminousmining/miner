@@ -1,3 +1,5 @@
+#include <array>
+
 #include <gtest/gtest.h>
 
 #include <algo/dag_context.hpp>
@@ -8,7 +10,7 @@
 
 struct EthashTest : public testing::Test
 {
-    std::array<algo::hash256, 10> hashes
+    std::array<algo::hash256, 10> hashes 
     {
         /*0*/ algo::toHash256("0000000000000000000000000000000000000000000000000000000000000000"),
         /*1*/ algo::toHash256("290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563"),
