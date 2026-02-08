@@ -1,4 +1,21 @@
 inline
+void initialize_header(
+    __global uint const* restrict const dag,
+    __local uint * restrict const header_dag,
+    uint const thread_id)
+{
+    __attribute__((opencl_unroll_hint))
+    for (uint i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
+    {
+        uint const index_dag = i * get_local_size(0) + thread_id;
+        uint const item_dag = dag[index_dag];
+        header_dag[index_dag] = item_dag;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+}
+
+
+inline
 void initialize_state(
     __constant uint const* restrict header,
     uint* const restrict state,
@@ -61,26 +78,43 @@ void fill_hash(
 inline
 void loop_math(
     __global uint* const restrict dag,
+    __local uint* const restrict header_dag,
     uint* const restrict hash,
-    uint const lane_id)
+    uint const lane_id,
+uint const l_id)
 {
     __attribute__((opencl_unroll_hint(1)))
     for (uint cnt = 0u; cnt < COUNT_DAG; ++cnt)
     {
         uint const mix0 = hash[0];
         uint dag_index = reg_load(mix0, cnt % WORK_ITEM_COLLABORATE, WORK_ITEM_COLLABORATE);
-        uint fd = dag_index;
         dag_index %= DAG_SIZE;
 
         // TODO: FIX
         // dag_index *= WORK_ITEM_COLLABORATE;
-        // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
+        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
+
+        if (get_thread_id() <= 31u && cnt == 0u && l_id == 0u)
+        {
+            printf("dag[%u] = %u\n", dag_index, dag[dag_index]);
+        }
+
+        // uint const item_x = dag[dag_index * 4u];
+        // uint const item_y = dag[dag_index * 4u + 1];
+        // uint const item_z = dag[dag_index * 4u + 2];
+        // uint const item_w = dag[dag_index * 4u + 3];
+        // if (cnt == 0u && l_id <= 0u && get_thread_id() <= 31u)
+        // {
+        //     PRINT_U32("x", item_x);
+        //     PRINT_U32("y", item_y);
+        //     PRINT_U32("z", item_z);
+        //     PRINT_U32("w", item_w);
+        // }
 
         uint4 entries = ((uint4*)dag)[dag_index];
-        sequence_dynamic(dag, hash, entries);
+        sequence_dynamic_local(header_dag, hash, entries);
     }
 }
-
 
 inline
 void reduce_hash(
@@ -173,12 +207,15 @@ ulong is_valid(
 
 
 __kernel
-void kawpow_lm2(
+void kawpow_lm4(
     __global uint const* const restrict dag,
     __global t_result* const restrict result,
     __constant uint const* const restrict header,
     ulong const start_nonce)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    __local uint header_dag[MODULE_CACHE];
+
     ///////////////////////////////////////////////////////////////////////////
     uint state[STATE_SIZE];
     uint digest[DIGEST_SIZE];
@@ -188,6 +225,9 @@ void kawpow_lm2(
     uint const thread_id = get_thread_id_2d();
     uint const lane_id = get_sub_group_local_id();
     ulong const nonce = start_nonce + thread_id;
+
+    ///////////////////////////////////////////////////////////////////////////
+    initialize_header(dag, header_dag, get_local_id(0));
 
     ///////////////////////////////////////////////////////////////////////////
     initialize_state(header, state, nonce);
@@ -206,7 +246,7 @@ void kawpow_lm2(
         fill_hash(hash, lane_id % WORK_ITEM_COLLABORATE, lane_lsb, lane_msb, l_id);
 
         ///////////////////////////////////////////////////////////////////////
-        loop_math(dag, hash, lane_id % WORK_ITEM_COLLABORATE);
+        loop_math(dag, header_dag, hash, lane_id % WORK_ITEM_COLLABORATE, l_id);
         reduce_hash(hash, digest, l_id == lane_id % WORK_ITEM_COLLABORATE);
     }
 

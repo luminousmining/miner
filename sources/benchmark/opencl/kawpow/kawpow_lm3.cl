@@ -7,7 +7,7 @@ void initialize_header(
     __attribute__((opencl_unroll_hint))
     for (uint i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
     {
-        uint const index_dag = i * GROUP_SIZE + thread_id;
+        uint const index_dag = i * GROUP_SIZE + thread_id; // TODO: mad4
         uint const item_dag = dag[index_dag];
         header_dag[index_dag] = item_dag;
     }
@@ -80,7 +80,8 @@ void loop_math(
     __global uint* const restrict dag,
     __local uint* const restrict header_dag,
     uint* const restrict hash,
-    uint const lane_id)
+    uint const lane_id,
+uint const l_id)
 {
     __attribute__((opencl_unroll_hint(1)))
     for (uint cnt = 0u; cnt < COUNT_DAG; ++cnt)
@@ -89,10 +90,20 @@ void loop_math(
         uint dag_index = reg_load(mix0, cnt % WORK_ITEM_COLLABORATE, WORK_ITEM_COLLABORATE);
         uint fd = dag_index;
         dag_index %= DAG_SIZE;
-        dag_index *= WORK_ITEM_COLLABORATE;
-        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
+
+        // TODO: FIX
+        // dag_index *= WORK_ITEM_COLLABORATE;
+        // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 entries = ((uint4*)dag)[dag_index];
+        if (cnt == 0u && l_id <= 0u && get_thread_id() <= 31u)
+        {
+            // PRINT_U32("x", entries.x);
+            // PRINT_U32("y", entries.y);
+            // PRINT_U32("z", entries.z);
+            // PRINT_U32("w", entries.w);
+        }
+
         sequence_dynamic_local(header_dag, hash, entries);
     }
 }
@@ -190,10 +201,10 @@ ulong is_valid(
 
 __kernel
 void kawpow_lm3(
-    ulong const start_nonce,
-    __constant uint const* const restrict header,
     __global uint const* const restrict dag,
-    __global t_result* const restrict result)
+    __global t_result* const restrict result,
+    __constant uint const* const restrict header,
+    ulong const start_nonce)
 {
     ///////////////////////////////////////////////////////////////////////////
     __local uint header_dag[MODULE_CACHE];
@@ -228,12 +239,14 @@ void kawpow_lm3(
         fill_hash(hash, lane_id % WORK_ITEM_COLLABORATE, lane_lsb, lane_msb, l_id);
 
         ///////////////////////////////////////////////////////////////////////
-        loop_math(dag, header_dag, hash, lane_id % WORK_ITEM_COLLABORATE);
+        loop_math(dag, header_dag, hash, lane_id % WORK_ITEM_COLLABORATE, l_id);
         reduce_hash(hash, digest, l_id == lane_id % WORK_ITEM_COLLABORATE);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     ulong const bytes_result = is_valid(state, digest);
+    PRINT_U32_IF("bytes_result", 0u, bytes_result);
+    PRINT_U32_IF("bytes_result", 16u, bytes_result);
     if (bytes_result <= 0)
     {
         uint const index = atomic_inc(&result->count);

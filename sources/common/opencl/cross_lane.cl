@@ -1,6 +1,7 @@
 
 #if WAVEFRONT == 32
-    inline uint reg_load(
+    inline
+    uint reg_load(
         uint const var,
         uint const lane_target,
         uint const width)
@@ -13,8 +14,24 @@
 
         return (group_id == 0u) ? val_group_0 : val_group_1;
     }
+
+    // inline
+    // uint reg_load(
+    //     uint const var,
+    //     uint const lane_target,
+    //     uint const width)
+    // {
+    //     uint const local_id = get_sub_group_local_id();
+    //     uint const group_id = local_id / width;  // Ou : local_id >> 4 si width=16
+    //     uint const source_lane = group_id * width + lane_target;
+        
+    //     return sub_group_broadcast(var, source_lane);
+    // }
+
+
 #else // WAVEFRONT == 64
-    inline uint reg_load(
+    inline
+    uint reg_load(
         uint const var,
         uint const lane_target,
         uint const width)

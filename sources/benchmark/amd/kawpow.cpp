@@ -19,12 +19,9 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 
     ////////////////////////////////////////////////////////////////////////////
     bool dagInitialized{ false };
+    algo::hash256 const header{};
     uint64_t const dagItems{ 16777213ull };
     uint64_t const dagItemsKawpow{ dagItems / 2ull };
-    auto const header
-    {
-        algo::toHash256("71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb")
-    };
 
     ////////////////////////////////////////////////////////////////////////////
     common::opencl::Buffer<algo::hash1024> dagCache{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
@@ -145,10 +142,10 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 
         ///////////////////////////////////////////////////////////////////////
         auto& clKernel{ generator.clKernel };
-        OPENCL_ER(clKernel.setArg(0u, 0ull));
-        OPENCL_ER(clKernel.setArg(1u, *headerCache.getBuffer()));
-        OPENCL_ER(clKernel.setArg(2u, *dagCache.getBuffer()));
-        OPENCL_ER(clKernel.setArg(3u, *resultCache.getBuffer()));
+        OPENCL_ER(clKernel.setArg(0u, *dagCache.getBuffer()));
+        OPENCL_ER(clKernel.setArg(1u, *resultCache.getBuffer()));
+        OPENCL_ER(clKernel.setArg(2u, *headerCache.getBuffer()));
+        OPENCL_ER(clKernel.setArg(3u, 0ull));
 
         ///////////////////////////////////////////////////////////////////////
         setGrid(groupSize, workerGroupCount);
@@ -180,6 +177,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         benchKawpow("kawpow_lm1", 256u, 1024u, algo::progpow::LANES, 1u); // Parallele + LDS
         benchKawpow("kawpow_lm2", 256u, 1024u, algo::progpow::LANES, 1u); // Parallel + crosslane
         benchKawpow("kawpow_lm3", 256u, 1024u, algo::progpow::LANES, 1u); // Parallel + crosslane + LDS header
+        benchKawpow("kawpow_lm4", 256u, 1024u, algo::progpow::LANES, 1u); // Parallel + crosslane + LDS header
     }
 
     ////////////////////////////////////////////////////////////////////////////
