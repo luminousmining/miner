@@ -55,7 +55,7 @@ void network::NetworkTCPClient::onReceiveAsync(
         if (boost_error::success == ec)
         {
             std::string msg;
-            msg.assign(boost::asio::buffer_cast<const char*>(recvBuffer.data()), bytes);
+            msg.assign(boost::asio::buffers_begin(recvBuffer.data()),boost::asio::buffers_begin(recvBuffer.data()) + bytes);
             recvBuffer.consume(bytes);
 
             if (false == msg.empty())
