@@ -50,15 +50,28 @@ bool network::NetworkTCPClient::connect()
         }
 
         SAFE_DELETE(socketTCP);
-        socketTCP = NEW(boost_socket(ioService, context));
-
+        socketTCP = NEW(boost_socket(ioContext, context));
+        boost_resolver resolver{ ioContext };
         if (true == config.mining.socks5)
         {
-            boost_query       query( host, std::to_string(port) );
-            boost_endpoint    socksEndpoint{ {}, static_cast<boost::asio::ip::port_type>(config.mining.socksPort) };
+        
+            auto endpoints = resolver.resolve(host,std::to_string(port),
+                    boost::asio::ip::tcp::resolver::numeric_service,
+                    ec);
 
-            // DNS resolve is automatically done by the proxy_connect function
-            socks5::proxy_connect(socketTCP->next_layer(), query, socksEndpoint, ec);
+            if (ec) {
+                logErr() << "Cannot resolve " << host << ":" << port;
+                return false;
+            }
+
+            // Connect to the first endpoint
+            auto it = endpoints.begin();
+            if (it == endpoints.end()) {
+                logErr() << "No endpoints found for " << host << ":" << port;
+                return false;
+            }
+
+            boost::asio::connect(socketTCP->next_layer(), endpoints, ec);
 
             if (socks5::result_code::ok != ec)
             {
@@ -68,12 +81,14 @@ bool network::NetworkTCPClient::connect()
         }
         else
         {
-            auto const address{ boost::asio::ip::address::from_string(host, ec) };
+            // from_string is no longer a memeber of boost::asio::ip::address in 1.90.
+            auto const address{ boost::asio::ip::make_address(host, ec) };
             if (boost_error::success != ec)
             {
-                boost_resolver resolver{ ioService };
-                boost_query    query{ host, std::to_string(port) };
-                auto           endpoints{ resolver.resolve(query, ec) };
+
+                auto endpoints = resolver.resolve(host,std::to_string(port),
+                boost_resolve_flags::numeric_service,ec);
+
 
                 if (boost_error::success != ec)
                 {
@@ -128,7 +143,7 @@ bool network::NetworkTCPClient::connect()
     }
 
     runService.interrupt();
-    runService = boost::thread{ boost::bind(&boost::asio::io_service::run, &ioService) };
+    runService = boost::thread{ boost::bind(&boost::asio::io_context::run, &ioContext) };
 
     return true;
 }
