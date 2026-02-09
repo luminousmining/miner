@@ -51,6 +51,7 @@ namespace common
             std::optional<uint32_t>    threads{};
             std::optional<uint32_t>    blocks{};
             std::optional<uint32_t>    internalLoop{};
+            std::optional<uint32_t>    kernelMinimunExecuteNeeded{};
             std::optional<std::string> cudaContext{};
         };
 

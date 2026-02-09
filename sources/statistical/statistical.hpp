@@ -34,7 +34,7 @@ namespace statistical
 
     private:
         common::CHRONO_UNIT chronoUnit{ common::CHRONO_UNIT::US };
-        common::Chrono      chrono;
+        common::Chrono      chrono{};
         double              chronoTime{ common::SEC_TO_US };
         ShareInfo           shares{};
         uint64_t            batchNonce{ 0ull };
