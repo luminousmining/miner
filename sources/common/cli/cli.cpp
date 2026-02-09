@@ -350,6 +350,13 @@ common::Cli::Cli()
             "--internal_loop=1"
         )
         (
+            "internal_kernel_count",
+            value<uint32_t>(),
+            "[OPTIONAL] Set internal loop for kernel. This defines the minimum number of times the kernel must be called to display statistics.\n"
+            "Default is value is 100.\n"
+            "--internal_kernel_count=100"
+        )
+        (
             "cuda_context",
             value<std::string>(),
             "[OPTIONAL] Set CUDA context.\n"

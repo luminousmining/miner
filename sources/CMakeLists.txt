@@ -6,16 +6,20 @@ if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
         algo/autolykos/cuda/autolykos_v2.cu
         algo/blake3/cuda/blake3.cu
         algo/ethash/cuda/ethash.cu
-        algo/progpow/cuda/progpow.cu)
+        algo/progpow/cuda/progpow.cu
+    )
 
-    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
+    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE
+        __LIB_CUDA
+        CUDA_ENABLE
+    )
 
     target_include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
         ${Boost_INCLUDE_DIR}
         ${CUDA_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
-    
+
 endif()
 
 ################################################################################
@@ -103,8 +107,8 @@ if (BUILD_EXE_UNIT_TEST)
     # Google Test
     include(FetchContent)
     FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
@@ -240,11 +244,13 @@ if (BUILD_EXE_MINER)
     )
 
     target_include_directories(${MINER_EXE} PRIVATE
+        ${OPENSSL_INCLUDE_DIR}
         ${Boost_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
     target_link_libraries(${MINER_EXE} PRIVATE
+        ${OPEN_SSL_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 
@@ -252,6 +258,7 @@ if (BUILD_EXE_MINER)
         target_include_directories(${MINER_EXE} PRIVATE
             ${OpenCL_INCLUDE_DIRS}
         )
+
         target_link_libraries(${MINER_EXE} PRIVATE
             ${OpenCL_LIBRARIES}
         )
@@ -261,6 +268,7 @@ if (BUILD_EXE_MINER)
         target_include_directories(${MINER_EXE} PRIVATE
             ${CUDA_INCLUDE_DIRS}
         )
+
         target_link_libraries(${MINER_EXE} PRIVATE
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
@@ -282,11 +290,13 @@ if (BUILD_EXE_BENCHMARK)
     )
 
     target_include_directories(${BENCH_EXE} PRIVATE
+        ${OPENSSL_INCLUDE_DIR}
         ${Boost_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
     target_link_libraries(${BENCH_EXE} PRIVATE
+        ${OPEN_SSL_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 
@@ -294,6 +304,7 @@ if (BUILD_EXE_BENCHMARK)
         target_include_directories(${BENCH_EXE} PRIVATE
             ${OpenCL_INCLUDE_DIRS}
         )
+
         target_link_libraries(${BENCH_EXE} PRIVATE
             ${OpenCL_LIBRARIES}
         )
@@ -303,6 +314,7 @@ if (BUILD_EXE_BENCHMARK)
         target_include_directories(${BENCH_EXE} PRIVATE
             ${CUDA_INCLUDE_DIRS}
         )
+
         target_link_libraries(${BENCH_EXE} PRIVATE
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
@@ -328,12 +340,17 @@ if (BUILD_EXE_UNIT_TEST)
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-    target_link_libraries(${UNIT_TEST_EXE} PRIVATE gtest_main ${Boost_LIBRARIES})
+    target_link_libraries(${UNIT_TEST_EXE} PRIVATE
+        gtest_main
+        ${OPEN_SSL_LIBRARIES}
+        ${Boost_LIBRARIES}
+    )
 
     if (BUILD_AMD)
         target_include_directories(${UNIT_TEST_EXE} PRIVATE
             ${OpenCL_INCLUDE_DIRS}
         )
+
         target_link_libraries(${UNIT_TEST_EXE} PRIVATE
             ${OpenCL_LIBRARIES}
         )
@@ -343,6 +360,7 @@ if (BUILD_EXE_UNIT_TEST)
         target_include_directories(${UNIT_TEST_EXE} PRIVATE
             ${CUDA_INCLUDE_DIRS}
         )
+
         target_link_libraries(${UNIT_TEST_EXE} PRIVATE
             ${CUDA_LIBRARY}
             ${CUDA_LIBRARIES}
@@ -357,19 +375,19 @@ endif()
 
 if (UNIX)
     if (BUILD_EXE_MINER)
-        target_link_libraries(${MINER_EXE}
+        target_link_libraries(${MINER_EXE} PRIVATE
             ${GNUTLS_LIBRARIES}
             "stdc++fs"
         )
     endif()
     if (BUILD_EXE_BENCHMARK)
-        target_link_libraries(${BENCH_EXE}
+        target_link_libraries(${BENCH_EXE} PRIVATE
             ${GNUTLS_LIBRARIES}
             "stdc++fs"
         )
     endif()
     if (BUILD_EXE_UNIT_TEST)
-        target_link_libraries(${UNIT_TEST_EXE}
+        target_link_libraries(${UNIT_TEST_EXE} PRIVATE
             ${GNUTLS_LIBRARIES}
             "stdc++fs"
         )
