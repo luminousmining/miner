@@ -4,7 +4,7 @@
 #include <resolver/resolver.hpp>
 
 
-void resolver::Resolver::swapIndexStrean()
+void resolver::Resolver::swapIndexStream()
 {
     if (0u == currentIndexStream)
     {

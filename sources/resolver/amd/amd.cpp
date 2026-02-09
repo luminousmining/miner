@@ -20,7 +20,8 @@ void resolver::ResolverAmd::setContext(
 void resolver::ResolverAmd::setQueue(
     cl::CommandQueue* const queue)
 {
-    clQueue = queue;
+    clQueue[0] = &queue[0];
+    clQueue[1] = &queue[1];
 }
 
 

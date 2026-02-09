@@ -100,7 +100,7 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     parameters.hostNonce = jobInfo.nonce;
     blake3Search(cuStream[currentIndexStream],
                  parameters,
@@ -109,7 +109,7 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
                  threads);
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     algo::blake3::Result* resultCache { &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
@@ -135,7 +135,7 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
 
     return true;
 }

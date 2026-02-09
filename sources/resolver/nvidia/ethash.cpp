@@ -185,7 +185,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     ethashSearch(cuStream[currentIndexStream],
                  &parameters.resultCache[currentIndexStream],
                  blocks,
@@ -193,7 +193,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
                  jobInfo.nonce);
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
@@ -217,7 +217,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
 
     return true;
 }

@@ -71,7 +71,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     IS_NULL(clContext);
-    IS_NULL(clQueue);
+    IS_NULL(clQueue[currentIndexStream]);
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == updateContext(jobInfo))
@@ -92,8 +92,8 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (   false == parameters.lightCache.alloc(*clContext)
         || false == parameters.dagCache.alloc(*clContext)
-        || false == parameters.headerCache.alloc(clQueue, *clContext)
-        || false == parameters.resultCache.alloc(clQueue, *clContext))
+        || false == parameters.headerCache.alloc(clQueue[currentIndexStream], *clContext)
+        || false == parameters.resultCache.alloc(clQueue[currentIndexStream], *clContext))
     {
         return false;
     }
@@ -101,7 +101,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (false == parameters.lightCache.write(context.lightCache.hash,
                                              context.lightCache.size,
-                                             clQueue))
+                                             clQueue[currentIndexStream]))
     {
         return false;
     }
@@ -140,7 +140,7 @@ bool resolver::ResolverAmdProgPOW::updateConstants(
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const* const header { jobInfo.headerHash.word32 };
-    if (false == parameters.headerCache.setBufferDevice(clQueue, header))
+    if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
         return false;
     }
@@ -193,12 +193,12 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
     uint32_t const maxGroupSize { getMaxGroupSize() };
     uint32_t const threadKernel { castU32(context.dagCache.numberItem) / maxGroupSize };
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernel,
             cl::NullRange,
             cl::NDRange(maxGroupSize, threadKernel, 1),
             cl::NDRange(maxGroupSize, 1,            1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.lightCache.free();
@@ -210,6 +210,9 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
 
 bool resolver::ResolverAmdProgPOW::buildSearch()
 {
+    ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
+
     ////////////////////////////////////////////////////////////////////////////
     algo::progpow::writeMathRandomKernelOpenCL(progpowVersion,
                                                deviceId,
@@ -278,6 +281,12 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     kernelGenerator.addDefine("SHARE_FNV1A_SIZE", maxThreadByGroup);
     kernelGenerator.addDefine("MODULE_CACHE_GROUP", maxThreadByGroup * 4u);
     kernelGenerator.addDefine("MODULE_LOOP", algo::progpow::MODULE_CACHE / (maxThreadByGroup / 4u));
+    kernelGenerator.addDefine("TOTAL_THREADS", getBlocks() * getThreads());
+    if (std::nullopt != config.occupancy.internalLoop)
+    {
+        uint32_t const internalLoop{ *config.occupancy.internalLoop };
+        kernelGenerator.addDefine("INTERNAL_LOOP", internalLoop);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.addInclude("kernel/common/rotate_byte.cl");
@@ -332,27 +341,28 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
 bool resolver::ResolverAmdProgPOW::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ///////////////////////////////////////////////////////////////////////////
     auto& clKernel { kernelGenerator.clKernel };
-
     OPENCL_ER(clKernel.setArg(0u, jobInfo.nonce));
     OPENCL_ER(clKernel.setArg(1u, jobInfo.boundaryU64));
     OPENCL_ER(clKernel.setArg(2u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(4u, *(parameters.resultCache.getBuffer())));
-
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernel,
             cl::NullRange,
             cl::NDRange(blocks, threads, 1),
             cl::NDRange(blocks, 1,       1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
+    ///////////////////////////////////////////////////////////////////////////
     if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
     {
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -360,7 +370,36 @@ bool resolver::ResolverAmdProgPOW::executeSync(
 bool resolver::ResolverAmdProgPOW::executeAsync(
     stratum::StratumJobInfo const& jobInfo)
 {
-    return executeSync(jobInfo);
+    ///////////////////////////////////////////////////////////////////////////
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
+
+    ///////////////////////////////////////////////////////////////////////////
+    swapIndexStream();
+    auto& clKernel { kernelGenerator.clKernel };
+    OPENCL_ER(clKernel.setArg(0u, jobInfo.nonce));
+    OPENCL_ER(clKernel.setArg(1u, jobInfo.boundaryU64));
+    OPENCL_ER(clKernel.setArg(2u, *(parameters.headerCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(3u, *(parameters.dagCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(4u, *(parameters.resultCache.getBuffer())));
+    OPENCL_ER(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
+            clKernel,
+            cl::NullRange,
+            cl::NDRange(blocks, threads, 1),
+            cl::NDRange(blocks, 1,       1)));
+
+    ///////////////////////////////////////////////////////////////////////////
+    swapIndexStream();
+    if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
+    {
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    swapIndexStream();
+
+    ///////////////////////////////////////////////////////////////////////////
+    return true;
 }
 
 
@@ -370,7 +409,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
 {
     algo::progpow::Result data{};
 
-    if (false == parameters.resultCache.getBufferHost(clQueue, &data))
+    if (false == parameters.resultCache.getBufferHost(clQueue[currentIndexStream], &data))
     {
         return false;
     }
@@ -399,7 +438,7 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
             }
         }
 
-        if (false == parameters.resultCache.resetBufferHost(clQueue))
+        if (false == parameters.resultCache.resetBufferHost(clQueue[currentIndexStream]))
         {
             return false;
         }

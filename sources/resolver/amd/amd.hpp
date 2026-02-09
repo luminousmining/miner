@@ -22,7 +22,7 @@ namespace resolver
     protected:
         cl::Context*      clContext{ nullptr };
         cl::Device*       clDevice{ nullptr };
-        cl::CommandQueue* clQueue{ nullptr };
+        cl::CommandQueue* clQueue[2]{ nullptr, nullptr };
 
         void overrideOccupancy(uint32_t const defaultThreads,
                                uint32_t const defaultBlocks) final;

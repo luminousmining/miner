@@ -102,8 +102,8 @@ bool resolver::ResolverAmdEthash::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (   false == parameters.lightCache.alloc(*clContext)
         || false == parameters.dagCache.alloc(*clContext)
-        || false == parameters.headerCache.alloc(clQueue, *clContext)
-        || false == parameters.resultCache.alloc(clQueue, *clContext))
+        || false == parameters.headerCache.alloc(clQueue[currentIndexStream], *clContext)
+        || false == parameters.resultCache.alloc(clQueue[currentIndexStream], *clContext))
     {
         return false;
     }
@@ -111,7 +111,7 @@ bool resolver::ResolverAmdEthash::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (false == parameters.lightCache.write(context.lightCache.hash,
                                              context.lightCache.size,
-                                             clQueue))
+                                             clQueue[currentIndexStream]))
     {
         return false;
     }
@@ -136,7 +136,7 @@ bool resolver::ResolverAmdEthash::updateConstants(
 {
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const* const header { jobInfo.headerHash.word32 };
-    if (false == parameters.headerCache.setBufferDevice(clQueue, header))
+    if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
         return false;
     }
@@ -193,12 +193,12 @@ bool resolver::ResolverAmdEthash::buildDAG()
     uint32_t const maxGroupSize { getMaxGroupSize() };
     uint32_t const threadKernel { castU32(context.dagCache.numberItem) / maxGroupSize };
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernel,
             cl::NullRange,
             cl::NDRange(maxGroupSize, threadKernel, 1),
             cl::NDRange(maxGroupSize, 1,            1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
     parameters.lightCache.free();
@@ -263,12 +263,12 @@ bool resolver::ResolverAmdEthash::executeSync(
     OPENCL_ER(clKernel.setArg(4u, jobInfo.boundaryU64));
 
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernel,
             cl::NullRange,
             cl::NDRange(blocks, threads, 1),
             cl::NDRange(blocks, 1,       1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
     {
@@ -292,7 +292,7 @@ bool resolver::ResolverAmdEthash::getResultCache(
 {
     algo::ethash::Result data{};
 
-    if (false == parameters.resultCache.getBufferHost(clQueue, &data))
+    if (false == parameters.resultCache.getBufferHost(clQueue[currentIndexStream], &data))
     {
         return false;
     }
@@ -314,7 +314,7 @@ bool resolver::ResolverAmdEthash::getResultCache(
             resultShare.nonces[i] = data.nonces[i];
         }
 
-        if (false == parameters.resultCache.resetBufferHost(clQueue))
+        if (false == parameters.resultCache.resetBufferHost(clQueue[currentIndexStream]))
         {
             return false;
         }

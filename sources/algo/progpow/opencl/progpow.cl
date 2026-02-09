@@ -122,60 +122,69 @@ void progpow_search(
     uint const thread_id = get_global_id(0) + (get_global_id(1) * GROUP_SIZE);
     uint const lane_id = thread_id % LANES;
     uint const worker_group = get_global_id(0) / LANES;
-    ulong const nonce = start_nonce + thread_id;
+    ulong nonce = start_nonce + thread_id;
     uint const index_share_seed = get_global_id(0) / BATCH_GROUP_LANE;
 
     ////////////////////////////////////////////////////////////////////////
     initialize_header(dag, header_dag, (thread_id % GROUP_SIZE));
     ulong const seed = initialize_seed(header, state_mix, nonce);
 
+#if defined(INTERNAL_LOOP)
     __attribute__((opencl_unroll_hint(1)))
-    for (uint l_id = 0u; l_id < LANES; ++l_id)
+    for (uint i = 0; i < INTERNAL_LOOP; ++i)
     {
-        ////////////////////////////////////////////////////////////////////////
-        if (l_id == lane_id)
-        {
-            share_msb_lsb[index_share_seed] = seed;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        ////////////////////////////////////////////////////////////////////////
-        ulong const seedShare = share_msb_lsb[index_share_seed];
-
-        ////////////////////////////////////////////////////////////////////////
-        fill_hash(hash, lane_id, seedShare);
-        loop_math(dag, share_hash0, header_dag, hash, lane_id, worker_group);
-        reduce_hash(
-            share_fnv1a,
-            hash,
-            digest,
-            worker_group,
-            l_id == lane_id);
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-#if defined(__KERNEL_PROGPOW)
-    ulong const bytes_result = is_valid(header, digest, seed);
-#else
-    ulong const bytes_result = is_valid(state_mix, digest);
+        nonce += (i * TOTAL_THREADS);
 #endif
-
-    if (bytes_result <= boundary)
-    {
-        uint const index = atomic_inc(&result->count);
-        if (index < MAX_RESULT)
+        __attribute__((opencl_unroll_hint(1)))
+        for (uint l_id = 0u; l_id < LANES; ++l_id)
         {
-            result->found = true;
-            result->nonces[index] = nonce;
+            ////////////////////////////////////////////////////////////////////////
+            if (l_id == lane_id)
+            {
+                share_msb_lsb[index_share_seed] = seed;
+            }
+            barrier(CLK_LOCAL_MEM_FENCE);
 
-            result->hash[index][0] = digest[0];
-            result->hash[index][1] = digest[1];
-            result->hash[index][2] = digest[2];
-            result->hash[index][3] = digest[3];
-            result->hash[index][4] = digest[4];
-            result->hash[index][5] = digest[5];
-            result->hash[index][6] = digest[6];
-            result->hash[index][7] = digest[7];
+            ////////////////////////////////////////////////////////////////////////
+            ulong const seedShare = share_msb_lsb[index_share_seed];
+
+            ////////////////////////////////////////////////////////////////////////
+            fill_hash(hash, lane_id, seedShare);
+            loop_math(dag, share_hash0, header_dag, hash, lane_id, worker_group);
+            reduce_hash(
+                share_fnv1a,
+                hash,
+                digest,
+                worker_group,
+                l_id == lane_id);
         }
+
+        ////////////////////////////////////////////////////////////////////////
+    #if defined(__KERNEL_PROGPOW)
+        ulong const bytes_result = is_valid(header, digest, seed);
+    #else
+        ulong const bytes_result = is_valid(state_mix, digest);
+    #endif
+
+        if (bytes_result <= boundary)
+        {
+            uint const index = atomic_inc(&result->count);
+            if (index < MAX_RESULT)
+            {
+                result->found = true;
+                result->nonces[index] = nonce;
+
+                result->hash[index][0] = digest[0];
+                result->hash[index][1] = digest[1];
+                result->hash[index][2] = digest[2];
+                result->hash[index][3] = digest[3];
+                result->hash[index][4] = digest[4];
+                result->hash[index][5] = digest[5];
+                result->hash[index][6] = digest[6];
+                result->hash[index][7] = digest[7];
+            }
+        }
+#if defined(INTERNAL_LOOP)
     }
+#endif
 }

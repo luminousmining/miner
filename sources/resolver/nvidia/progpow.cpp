@@ -260,7 +260,7 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     kernelGenerator.addDefine("COUNT_DAG", algo::progpow::COUNT_DAG);
     kernelGenerator.addDefine("STATE_LEN", 25u);
     kernelGenerator.addDefine("TOTAL_THREADS", getThreads() * getBlocks());
-    if (std::nullopt != config.occupancy.internalLoop )
+    if (std::nullopt != config.occupancy.internalLoop)
     {
         uint32_t const internalLoop{ *config.occupancy.internalLoop };
         kernelGenerator.addDefine("INTERNAL_LOOP", internalLoop);
@@ -397,7 +397,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     uint64_t nonce{ jobInfo.nonce };
     uint64_t boundary{ jobInfo.boundaryU64 };
     algo::progpow::Result* result{ &parameters.resultCache[currentIndexStream] };
@@ -418,7 +418,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
                          nullptr));
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     algo::progpow::Result* resultCache { &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
@@ -450,7 +450,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
