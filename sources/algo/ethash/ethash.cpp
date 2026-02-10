@@ -71,8 +71,7 @@ void algo::ethash::initializeDagContext(
     uint64_t const dagCountItemsGrowth,
     uint64_t const dagCountItemsInit,
     uint32_t const lightCacheCountItemsGrowth,
-    uint32_t const lightCacheCountItemsInit,
-    bool const buildOnCPU)
+    uint32_t const lightCacheCountItemsInit)
 {
     ////////////////////////////////////////////////////////////////////////////
     context.epoch = castU32(currentEpoch);
@@ -115,12 +114,23 @@ void algo::ethash::initializeDagContext(
         seed = algo::keccak(seed);
     }
     algo::copyHash(context.originalSeedCache, seed);
+}
+
+
+void algo::ethash::buildLightCache(
+    algo::DagContext& context,
+    bool const buildOnCPU)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    algo::hash512 item
+    {
+        algo::keccak<algo::hash512, algo::hash256>(context.originalSeedCache)
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == buildOnCPU)
     {
-        algo::hash512 const hashedSeed{ algo::keccak<algo::hash512, algo::hash256>(seed) };
-        algo::copyHash(context.hashedSeedCache, hashedSeed);
+        algo::copyHash(context.hashedSeedCache, item);
         return;
     }
 
@@ -133,27 +143,12 @@ void algo::ethash::initializeDagContext(
         logErr() << "Cannot alloc context data";
         return;
     }
-
-    ////////////////////////////////////////////////////////////////////////////
     context.lightCache.hash = castPtrHash512(context.data + algo::LEN_HASH_512);
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (true == buildOnCPU)
-    {
-        logInfo() << "Building light cache on CPU";
-        common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
-        buildLightCache(context, seed);
-    }
-}
-
-
-void algo::ethash::buildLightCache(
-    algo::DagContext& context,
-    algo::hash256 const& seed)
-{
-    ////////////////////////////////////////////////////////////////////////////
-    algo::hash512 item{ algo::keccak<algo::hash512, algo::hash256>(seed) };
     context.lightCache.hash[0] = item;
+
+    ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Building light cache on CPU";
+    common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
 
     ////////////////////////////////////////////////////////////////////////////
     for (uint64_t i{ 1ull }; i < context.lightCache.numberItem; ++i)

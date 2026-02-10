@@ -192,7 +192,7 @@ ulong is_valid(
 
 
 __kernel
-void kawpow_lm3(
+void kawpow_lm4(
     __global uint const* const restrict dag,
     __global t_result* const restrict result,
     __constant uint const* const restrict header,

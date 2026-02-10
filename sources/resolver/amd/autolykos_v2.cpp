@@ -25,7 +25,9 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    if (nullptr == clContext || nullptr == clQueue)
+    if (   nullptr == clContext
+        || nullptr == clQueue[0]
+        || nullptr == clQueue[1])
     {
         return false;
     }
@@ -66,9 +68,9 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (   false == parameters.BHashes.alloc(*clContext)
         || false == parameters.dagCache.alloc(*clContext)
-        || false == parameters.boundaryCache.alloc(clQueue, *clContext)
-        || false == parameters.headerCache.alloc(clQueue, *clContext)
-        || false == parameters.resultCache.alloc(clQueue, *clContext))
+        || false == parameters.boundaryCache.alloc(clQueue[currentIndexStream], *clContext)
+        || false == parameters.headerCache.alloc(clQueue[currentIndexStream], *clContext)
+        || false == parameters.resultCache.alloc(clQueue[currentIndexStream], *clContext))
     {
         return false;
     }
@@ -113,14 +115,14 @@ bool resolver::ResolverAmdAutolykosV2::updateConstants(
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const* const boundary { jobInfo.boundary.word32 };
-    if (false == parameters.boundaryCache.setBufferDevice(clQueue, boundary))
+    if (false == parameters.boundaryCache.setBufferDevice(clQueue[currentIndexStream], boundary))
     {
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t const* const header { jobInfo.headerHash.word32 };
-    if (false == parameters.headerCache.setBufferDevice(clQueue, header))
+    if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
         return false;
     }
@@ -183,12 +185,12 @@ bool resolver::ResolverAmdAutolykosV2::fillDAG()
     uint32_t const blockDim { algo::autolykos_v2::AMD_BLOCK_DIM };
     uint32_t globalDimX { ((parameters.hostPeriod / blockDim) + 1) * blockDim };
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernel,
             cl::NullRange,
             cl::NDRange(globalDimX, 1, 1),
             cl::NDRange(blockDim,   1, 1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     return true;
 }
@@ -281,12 +283,12 @@ bool resolver::ResolverAmdAutolykosV2::executeSync(
     OPENCL_ER(clKernel.setArg(3u, parameters.hostNonce));
     OPENCL_ER(clKernel.setArg(4u, parameters.hostPeriod));
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernel,
             cl::NullRange,
             cl::NDRange(maxGroupSizeSearch,                1, 1),
             cl::NDRange(algo::autolykos_v2::AMD_BLOCK_DIM, 1, 1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
     auto& clKernelVerify { kernelGeneratorVerify.clKernel };
@@ -298,12 +300,12 @@ bool resolver::ResolverAmdAutolykosV2::executeSync(
     OPENCL_ER(clKernelVerify.setArg(5u, parameters.hostPeriod));
     OPENCL_ER(clKernelVerify.setArg(6u, parameters.hostHeight));
     OPENCL_ER(
-        clQueue->enqueueNDRangeKernel(
+        clQueue[currentIndexStream]->enqueueNDRangeKernel(
             clKernelVerify,
             cl::NullRange,
             cl::NDRange(maxGroupSizeVerify,                1, 1),
             cl::NDRange(algo::autolykos_v2::AMD_BLOCK_DIM, 1, 1)));
-    OPENCL_ER(clQueue->finish());
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == getResultCache(jobInfo.jobIDStr,
@@ -334,13 +336,13 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     algo::hash256 boundary{};
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == parameters.resultCache.getBufferHost(clQueue, &data))
+    if (false == parameters.resultCache.getBufferHost(clQueue[currentIndexStream], &data))
     {
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == parameters.boundaryCache.getBufferHost(clQueue, boundary.word32))
+    if (false == parameters.boundaryCache.getBufferHost(clQueue[currentIndexStream], boundary.word32))
     {
         return false;
     }
@@ -384,7 +386,7 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
             resultShare.jobId.assign(_jobId);
         }
 
-        if (false == parameters.resultCache.resetBufferHost(clQueue))
+        if (false == parameters.resultCache.resetBufferHost(clQueue[currentIndexStream]))
         {
             return false;
         }

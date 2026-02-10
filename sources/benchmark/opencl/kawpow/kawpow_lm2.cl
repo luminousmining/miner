@@ -71,8 +71,10 @@ void loop_math(
         uint dag_index = reg_load(mix0, cnt % WORK_ITEM_COLLABORATE, WORK_ITEM_COLLABORATE);
         uint fd = dag_index;
         dag_index %= DAG_SIZE;
-        dag_index *= WORK_ITEM_COLLABORATE;
-        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
+
+        // TODO: FIX
+        // dag_index *= WORK_ITEM_COLLABORATE;
+        // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 entries = ((uint4*)dag)[dag_index];
         sequence_dynamic(dag, hash, entries);
@@ -172,10 +174,10 @@ ulong is_valid(
 
 __kernel
 void kawpow_lm2(
-    ulong const start_nonce,
-    __constant uint const* const restrict header,
     __global uint const* const restrict dag,
-    __global t_result* const restrict result)
+    __global t_result* const restrict result,
+    __constant uint const* const restrict header,
+    ulong const start_nonce)
 {
     ///////////////////////////////////////////////////////////////////////////
     uint state[STATE_SIZE];
@@ -210,6 +212,8 @@ void kawpow_lm2(
 
     ///////////////////////////////////////////////////////////////////////////
     ulong const bytes_result = is_valid(state, digest);
+    PRINT_U32_IF("bytes_result", 0u, bytes_result);
+    PRINT_U32_IF("bytes_result", 16u, bytes_result);
     if (bytes_result <= 0)
     {
         uint const index = atomic_inc(&result->count);

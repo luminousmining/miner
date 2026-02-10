@@ -25,8 +25,8 @@ bool resolver::ResolverNvidiaEtchash::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
+    algo::ethash::buildLightCache(context, config.deviceAlgorithm.ethashBuildLightCacheCPU);
 
     ///////////////////////////////////////////////////////////////////////////
     if (   context.lightCache.numberItem == 0ull
