@@ -51,7 +51,6 @@ void common::Dashboard::addLine(std::vector<std::string> const& line)
     for (auto const& value : line)
     {
         common::Dashboard::Line l{ value, value.size() };
-        logInfo() << "line: " << l.value;
         data.emplace_back(std::move(l));
     }
     lines.emplace_back(data);

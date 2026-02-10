@@ -16,6 +16,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Running benchmark NVIDIA Autolykos V2";
+
+    ////////////////////////////////////////////////////////////////////////////
+    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] AUTOLYKOS V2") };
+
+    ////////////////////////////////////////////////////////////////////////////
     t_result_64* result{ nullptr };
     if (false == initCleanResult64(&result))
     {
@@ -149,6 +155,9 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     CU_SAFE_DELETE(headerHash);
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(BHashes);
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboards.emplace_back(dashboard);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

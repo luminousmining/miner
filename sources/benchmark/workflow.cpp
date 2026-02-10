@@ -8,6 +8,7 @@
 #include <common/formater_hashrate.hpp>
 #include <common/log/log.hpp>
 #include <common/custom.hpp>
+#include <common/date.hpp>
 
 
 benchmark::BenchmarkWorkflow::BenchmarkWorkflow(
@@ -118,36 +119,7 @@ void benchmark::BenchmarkWorkflow::startChrono(
 }
 
 
-void benchmark::BenchmarkWorkflow::stopChrono(uint32_t const index)
-{
-    ////////////////////////////////////////////////////////////////////////////
-    stats.increaseKernelExecuted();
-    stats.stop();
-    stats.updateHashrate();
-    double const hashrate{ (stats.getHashrate() * multiplicator) / divisor };
-    logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (index == 0u)
-    {
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    benchmark::Snapshot snapshot{};
-    snapshot.deviceType = currentdeviceType;
-    snapshot.name = currentBenchName;
-    snapshot.threads = threads;
-    snapshot.blocks = blocks;
-    snapshot.perform = hashrate;
-
-    ////////////////////////////////////////////////////////////////////////////
-    snapshots.emplace_back(snapshot);
-}
-
-
 void benchmark::BenchmarkWorkflow::stopChrono(
-    uint32_t const index,
     common::Dashboard& dashboard)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -155,7 +127,7 @@ void benchmark::BenchmarkWorkflow::stopChrono(
     stats.stop();
     stats.updateHashrate();
     double const hashrate{ (stats.getHashrate() * multiplicator) / divisor };
-    logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
+    logDebug() << currentBenchName << ": " << common::hashrateToString(hashrate);
 
     ////////////////////////////////////////////////////////////////////////////
     benchmark::Snapshot snapshot{};
@@ -179,6 +151,25 @@ void benchmark::BenchmarkWorkflow::stopChrono(
             std::to_string(stats.getElapsed())
         }
     );
+}
+
+
+common::Dashboard benchmark::BenchmarkWorkflow::createNewDashboard(
+    std::string const& title)
+{
+    common::Dashboard dashboard{};
+
+    dashboard.setTitle(title);
+
+    dashboard.addColumn("Kernel");
+    dashboard.addColumn("Blocks");
+    dashboard.addColumn("Threads");
+    dashboard.addColumn("Hashrate");
+    dashboard.addColumn("Time");
+
+    dashboard.setDate(common::getDate());
+
+    return dashboard;
 }
 
 

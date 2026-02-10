@@ -13,6 +13,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Running benchmark NVIDIA Keccak";
+
+    ////////////////////////////////////////////////////////////////////////////
+    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] KECCAK") };
+
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t const commonLoop{ 10u };
     uint32_t const commonThreads{ 128u };
     uint32_t const commonBlocks{ 1024u };
@@ -153,6 +159,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
             blocks,
             threads)
     )
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboards.emplace_back(dashboard);
+
     return true;
 }
 
