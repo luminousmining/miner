@@ -96,14 +96,6 @@ uint const l_id)
         // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 entries = ((uint4*)dag)[dag_index];
-        if (cnt == 0u && l_id <= 0u && get_thread_id() <= 31u)
-        {
-            // PRINT_U32("x", entries.x);
-            // PRINT_U32("y", entries.y);
-            // PRINT_U32("z", entries.z);
-            // PRINT_U32("w", entries.w);
-        }
-
         sequence_dynamic_local(header_dag, hash, entries);
     }
 }
