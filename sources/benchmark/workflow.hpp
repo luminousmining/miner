@@ -5,6 +5,7 @@
 #include <benchmark/amd.hpp>
 #include <benchmark/nvidia.hpp>
 #include <benchmark/result.hpp>
+#include <common/dashboard.hpp>
 #include <device/type.hpp>
 #include <statistical/statistical.hpp>
 
@@ -83,6 +84,7 @@ namespace benchmark
         uint32_t                         divisor{ 1u };
         statistical::Statistical         stats{};
         std::vector<benchmark::Snapshot> snapshots{};
+        std::vector<common::Dashboard>   dashboards{};
 
         void writeReport();
 
@@ -91,6 +93,7 @@ namespace benchmark
         void setGrid(uint32_t const _threads, uint32_t _blocks);
         void startChrono(std::string const& benchName);
         void stopChrono(uint32_t const index);
+        void stopChrono(uint32_t const index, common::Dashboard& dashboard);
 
         bool initCleanResult(t_result** result);
         bool initCleanResult32(t_result_32** result);
