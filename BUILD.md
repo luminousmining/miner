@@ -121,6 +121,13 @@ cd boost_1_86_0
 ./b2 debug release
 sudo ./b2 install
 ```
+
+gpu performance api:
+```sh
+wget https://github.com/GPUOpen-Tools/gpu_performance_api/releases/download/v4.3-tag/GPUPerfAPI-Linux-4.3.0.2.tgz
+tar -xvf GPUPerfAPI-Linux-4.3.0.2.tgz
+mv 4_4 gpu_performance_api
+```
   
 # Platforms
   

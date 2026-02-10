@@ -10,14 +10,26 @@
 #include <benchmark/workflow.hpp>
 #include <common/opencl/buffer_wrapper.hpp>
 #include <common/opencl/buffer_mapped.hpp>
-#include <common/custom.hpp>
 #include <common/kernel_generator/opencl.hpp>
+#include <common/custom.hpp>
+#include <common/date.hpp>
 
 
 bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 {
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    common::Dashboard dashboard{};
+    dashboard.setTitle("[AMD] KAWPOW");
+    dashboard.addColumn("Kernel");
+    dashboard.addColumn("Blocks");
+    dashboard.addColumn("Threads");
+    dashboard.addColumn("Hashrate");
+    dashboard.addColumn("Time");
+    dashboard.setDate(common::getDate());
 
     ////////////////////////////////////////////////////////////////////////////
     bool dagInitialized{ false };
@@ -189,7 +201,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
                 )
             );
             OPENCL_ER(propertiesAmd.clQueue.finish());
-            stopChrono(i);
+            stopChrono(i, dashboard);
         }
 
         return true;
@@ -211,6 +223,9 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     dagCache.free();
     headerCache.free();
     resultCache.free();
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboards.emplace_back(dashboard);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

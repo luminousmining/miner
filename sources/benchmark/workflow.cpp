@@ -80,6 +80,10 @@ void benchmark::BenchmarkWorkflow::run()
         runAmd();
     }
 #endif
+    for (auto dashboard : dashboards)
+    {
+        dashboard.show();
+    }
     writeReport();
 }
 
@@ -139,6 +143,42 @@ void benchmark::BenchmarkWorkflow::stopChrono(uint32_t const index)
 
     ////////////////////////////////////////////////////////////////////////////
     snapshots.emplace_back(snapshot);
+}
+
+
+void benchmark::BenchmarkWorkflow::stopChrono(
+    uint32_t const index,
+    common::Dashboard& dashboard)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    stats.increaseKernelExecuted();
+    stats.stop();
+    stats.updateHashrate();
+    double const hashrate{ (stats.getHashrate() * multiplicator) / divisor };
+    logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
+
+    ////////////////////////////////////////////////////////////////////////////
+    benchmark::Snapshot snapshot{};
+    snapshot.deviceType = currentdeviceType;
+    snapshot.name = currentBenchName;
+    snapshot.threads = threads;
+    snapshot.blocks = blocks;
+    snapshot.perform = hashrate;
+
+    ////////////////////////////////////////////////////////////////////////////
+    snapshots.emplace_back(snapshot);
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboard.addLine
+    (
+        {
+            currentBenchName,
+            std::to_string(blocks),
+            std::to_string(threads),
+            common::hashrateToString(hashrate),
+            std::to_string(stats.getElapsed())
+        }
+    );
 }
 
 
@@ -329,6 +369,5 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD kawpow failed";
     }
-
 }
 #endif
