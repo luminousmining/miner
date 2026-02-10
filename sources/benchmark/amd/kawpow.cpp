@@ -30,8 +30,6 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c")
     };
     int32_t const epoch{ algo::ethash::findEpoch(seedHash, algo::ethash::EPOCH_LENGTH) };
-    // uint64_t const dagItems{ 16777213ull };
-    // uint64_t const dagItemsKawpow{ dagItems / 2ull };
 
     ////////////////////////////////////////////////////////////////////////////
     common::opencl::Buffer<algo::hash512> lightCache { CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY };
@@ -57,7 +55,6 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     );
 
     ////////////////////////////////////////////////////////////////////////////
-    // lightCache.setSize(dagContext.lightCache.size);
     dagCache.setSize(dagContext.dagCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,10 +68,6 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     {
         logErr() << "Fail to copy header in cache";
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // lightCache.free();
-
 
     ///////////////////////////////////////////////////////////////////////////
     // Build kernel init_array
