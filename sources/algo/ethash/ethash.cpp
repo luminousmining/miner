@@ -115,12 +115,23 @@ void algo::ethash::initializeDagContext(
         seed = algo::keccak(seed);
     }
     algo::copyHash(context.originalSeedCache, seed);
+}
+
+
+void algo::ethash::buildLightCache(
+    algo::DagContext& context,
+    bool const buildOnCPU)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    algo::hash512 item
+    {
+        algo::keccak<algo::hash512, algo::hash256>(context.originalSeedCache)
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == buildOnCPU)
     {
-        algo::hash512 const hashedSeed{ algo::keccak<algo::hash512, algo::hash256>(seed) };
-        algo::copyHash(context.hashedSeedCache, hashedSeed);
+        algo::copyHash(context.hashedSeedCache, item);
         return;
     }
 
@@ -133,81 +144,12 @@ void algo::ethash::initializeDagContext(
         logErr() << "Cannot alloc context data";
         return;
     }
-
-    ////////////////////////////////////////////////////////////////////////////
     context.lightCache.hash = castPtrHash512(context.data + algo::LEN_HASH_512);
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (true == buildOnCPU)
-    {
-        logInfo() << "Building light cache on CPU";
-        common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
-        buildLightCache(context, seed);
-    }
-}
-
-
-// TODO: Must replace initializeDagContext + ComputeLightCache instead create two function
-void algo::ethash::initializeDagContextLite(
-    algo::DagContext& context,
-    uint64_t const currentEpoch,
-    uint32_t const maxEpoch,
-    uint64_t const dagCountItemsGrowth,
-    uint64_t const dagCountItemsInit,
-    uint32_t const lightCacheCountItemsGrowth,
-    uint32_t const lightCacheCountItemsInit)
-{
-    ////////////////////////////////////////////////////////////////////////////
-    context.epoch = castU32(currentEpoch);
-    if (   castU32(context.epoch) > maxEpoch
-        && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
-    {
-        logErr() << "context.epoch: " << context.epoch << " | maxEpoch: " << maxEpoch;
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    uint64_t epochEIP{ currentEpoch };
-    if (algo::ethash::EIP1099_MAX_EPOCH_NUMBER == maxEpoch)
-    {
-        epochEIP /= 2ull;
-    }
-    else if (algo::ethash::EIP1057_MAX_EPOCH_NUMER == maxEpoch)
-    {
-        epochEIP *= 4ull;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    uint64_t lightCacheNumItemsUpperBound { castU64(epochEIP) };
-    lightCacheNumItemsUpperBound *= lightCacheCountItemsGrowth;
-    lightCacheNumItemsUpperBound += lightCacheCountItemsInit;
-    context.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
-    context.lightCache.size = context.lightCache.numberItem * algo::LEN_HASH_512;
-
-    ////////////////////////////////////////////////////////////////////////////
-    uint64_t numberItemUpperBound{ castU64(epochEIP) };
-    numberItemUpperBound *= dagCountItemsGrowth;
-    numberItemUpperBound += dagCountItemsInit;
-    context.dagCache.numberItem = algo::largestPrime(numberItemUpperBound);
-    context.dagCache.size = context.dagCache.numberItem * algo::LEN_HASH_1024;
-
-    ////////////////////////////////////////////////////////////////////////////
-    algo::hash256 seed{};
-    for (int32_t i{ 0 }; i < context.epoch; ++i)
-    {
-        seed = algo::keccak(seed);
-    }
-    algo::copyHash(context.originalSeedCache, seed);
-}
-
-
-void algo::ethash::buildLightCache(
-    algo::DagContext& context,
-    algo::hash256 const& seed)
-{
-    ////////////////////////////////////////////////////////////////////////////
-    algo::hash512 item{ algo::keccak<algo::hash512, algo::hash256>(seed) };
     context.lightCache.hash[0] = item;
+
+    ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Building light cache on CPU";
+    common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
 
     ////////////////////////////////////////////////////////////////////////////
     for (uint64_t i{ 1ull }; i < context.lightCache.numberItem; ++i)

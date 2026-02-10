@@ -45,7 +45,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 
     ////////////////////////////////////////////////////////////////////////////
     algo::DagContext dagContext{};
-    algo::ethash::initializeDagContextLite
+    algo::ethash::initializeDagContext
     (
         dagContext,
         epoch,

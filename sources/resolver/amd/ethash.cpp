@@ -36,9 +36,10 @@ bool resolver::ResolverAmdEthash::updateContext(
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit,
-        true // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
+        lightCacheCountItemsInit
     );
+    // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
+    algo::ethash::buildLightCache(context, true);
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
