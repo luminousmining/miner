@@ -78,7 +78,8 @@ bool resolver::ResolverAmdEthash::updateMemory(
     {
         return false;
     }
-    if (nullptr == clQueue)
+    if (   nullptr == clQueue[0]
+        || nullptr == clQueue[1])
     {
         return false;
     }

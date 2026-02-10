@@ -7,7 +7,7 @@ void initialize_header(
     __attribute__((opencl_unroll_hint))
     for (uint i = 0u; i < HEADER_ITEM_BY_THREAD; ++i)
     {
-        uint const index_dag = i * get_local_size(0) + thread_id;
+        uint const index_dag = i * GROUP_SIZE + thread_id; // TODO: mad4
         uint const item_dag = dag[index_dag];
         header_dag[index_dag] = item_dag;
     }
@@ -88,33 +88,26 @@ uint const l_id)
     {
         uint const mix0 = hash[0];
         uint dag_index = reg_load(mix0, cnt % WORK_ITEM_COLLABORATE, WORK_ITEM_COLLABORATE);
+        uint fd = dag_index;
         dag_index %= DAG_SIZE;
 
         // TODO: FIX
         // dag_index *= WORK_ITEM_COLLABORATE;
-        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
-
-        if (get_thread_id() <= 31u && cnt == 0u && l_id == 0u)
-        {
-            printf("dag[%u] = %u\n", dag_index, dag[dag_index]);
-        }
-
-        // uint const item_x = dag[dag_index * 4u];
-        // uint const item_y = dag[dag_index * 4u + 1];
-        // uint const item_z = dag[dag_index * 4u + 2];
-        // uint const item_w = dag[dag_index * 4u + 3];
-        // if (cnt == 0u && l_id <= 0u && get_thread_id() <= 31u)
-        // {
-        //     PRINT_U32("x", item_x);
-        //     PRINT_U32("y", item_y);
-        //     PRINT_U32("z", item_z);
-        //     PRINT_U32("w", item_w);
-        // }
+        // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 entries = ((uint4*)dag)[dag_index];
+        if (cnt == 0u && l_id <= 0u && get_thread_id() <= 31u)
+        {
+            // PRINT_U32("x", entries.x);
+            // PRINT_U32("y", entries.y);
+            // PRINT_U32("z", entries.z);
+            // PRINT_U32("w", entries.w);
+        }
+
         sequence_dynamic_local(header_dag, hash, entries);
     }
 }
+
 
 inline
 void reduce_hash(

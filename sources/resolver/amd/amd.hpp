@@ -10,7 +10,6 @@ namespace resolver
     class ResolverAmd : public resolver::Resolver
     {
     public:
-
         virtual ~ResolverAmd() = default;
 
         void setDevice(cl::Device* const device);
