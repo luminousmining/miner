@@ -71,8 +71,7 @@ void algo::ethash::initializeDagContext(
     uint64_t const dagCountItemsGrowth,
     uint64_t const dagCountItemsInit,
     uint32_t const lightCacheCountItemsGrowth,
-    uint32_t const lightCacheCountItemsInit,
-    bool const buildOnCPU)
+    uint32_t const lightCacheCountItemsInit)
 {
     ////////////////////////////////////////////////////////////////////////////
     context.epoch = castU32(currentEpoch);
