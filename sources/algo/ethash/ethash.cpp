@@ -183,8 +183,5 @@ void algo::ethash::buildLightCache(
 
     ////////////////////////////////////////////////////////////////////////////
     context.data = localDagContext.data;
-    for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
-    {
-        algo::copyHash(context.lightCache.hash[i], localDagContext.lightCache.hash[i]);
-    }
+    context.lightCache.hash = localDagContext.lightCache.hash;
 }
