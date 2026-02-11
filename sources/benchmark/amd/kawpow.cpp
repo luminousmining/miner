@@ -60,7 +60,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT
     );
-    algo::ethash::buildLightCache(dagContext, true);
+    algo::ethash::buildLightCache(dagContext);
 
     ////////////////////////////////////////////////////////////////////////////
     dagCache.setSize(dagContext.dagCache.size);

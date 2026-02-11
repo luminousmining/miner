@@ -30,7 +30,7 @@ struct ResolverFiropowNvidiaTest : public testing::Test
 
     ~ResolverFiropowNvidiaTest()
     {
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void initializeJob(uint64_t const nonce)

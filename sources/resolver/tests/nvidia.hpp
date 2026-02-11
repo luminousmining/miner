@@ -9,23 +9,28 @@ namespace resolver
     {
         struct Properties
         {
-            uint32_t       cuIndex { 0u };
+            uint32_t       cuIndex{ 0u };
             CUdevice       cuDevice;
             CUcontext      cuContext{ nullptr };
             cudaStream_t   cuStream{ nullptr };
             cudaDeviceProp cuProperties{};
         };
 
-        inline bool cleanUpCuda()
+        inline
+        bool cleanUpCuda(resolver::tests::Properties& properties)
         {
-            CUDA_ER(cudaDeviceReset());
+            if (nullptr != properties.cuContext)
+            {
+                CUDA_ER(cudaDeviceReset());
+            }
             return true;
         }
 
-        inline bool initializeCuda(resolver::tests::Properties& properties,
+        inline
+        bool initializeCuda(resolver::tests::Properties& properties,
                                    uint32_t const index = 0u)
         {
-            if (false == cleanUpCuda())
+            if (false == cleanUpCuda(properties))
             {
                 return false;
             }

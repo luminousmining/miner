@@ -21,7 +21,6 @@ namespace algo
         uint64_t                    period{ 0ull };
         HashContext<algo::hash512>  lightCache{};
         HashContext<algo::hash1024> dagCache{};
-        algo::hash256               originalSeedCache{};
         algo::hash512               hashedSeedCache{};
     };
 }

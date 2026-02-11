@@ -10,6 +10,10 @@
 #include <common/log/log.hpp>
 
 
+boost::mutex mtxDagContext{};
+algo::DagContext localDagContext{};
+
+
 int32_t algo::ethash::findEpoch(
     algo::hash256 const& seedHash,
     uint32_t const maxEpoch)
@@ -59,8 +63,8 @@ int32_t algo::ethash::findEpoch(
 void algo::ethash::freeDagContext(algo::DagContext& context)
 {
     ////////////////////////////////////////////////////////////////////////////
-    SAFE_DELETE_ARRAY(context.data);
-    context.lightCache.hash = nullptr;
+    SAFE_DELETE_ARRAY(localDagContext.data);
+    localDagContext.lightCache.hash = nullptr;
 }
 
 
@@ -74,11 +78,14 @@ void algo::ethash::initializeDagContext(
     uint32_t const lightCacheCountItemsInit)
 {
     ////////////////////////////////////////////////////////////////////////////
-    context.epoch = castU32(currentEpoch);
-    if (   castU32(context.epoch) > maxEpoch
+    UNIQUE_LOCK(mtxDagContext);
+
+    ////////////////////////////////////////////////////////////////////////////
+    localDagContext.epoch = castU32(currentEpoch);
+    if (   castU32(localDagContext.epoch) > maxEpoch
         && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
     {
-        logErr() << "context.epoch: " << context.epoch << " | maxEpoch: " << maxEpoch;
+        logErr() << "context.epoch: " << localDagContext.epoch << " | maxEpoch: " << maxEpoch;
         return;
     }
 
@@ -97,80 +104,87 @@ void algo::ethash::initializeDagContext(
     uint64_t lightCacheNumItemsUpperBound { castU64(epochEIP) };
     lightCacheNumItemsUpperBound *= lightCacheCountItemsGrowth;
     lightCacheNumItemsUpperBound += lightCacheCountItemsInit;
-    context.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
-    context.lightCache.size = context.lightCache.numberItem * algo::LEN_HASH_512;
+    localDagContext.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
+    localDagContext.lightCache.size = localDagContext.lightCache.numberItem * algo::LEN_HASH_512;
 
     ////////////////////////////////////////////////////////////////////////////
     uint64_t numberItemUpperBound{ castU64(epochEIP) };
     numberItemUpperBound *= dagCountItemsGrowth;
     numberItemUpperBound += dagCountItemsInit;
-    context.dagCache.numberItem = algo::largestPrime(numberItemUpperBound);
-    context.dagCache.size = context.dagCache.numberItem * algo::LEN_HASH_1024;
+    localDagContext.dagCache.numberItem = algo::largestPrime(numberItemUpperBound);
+    localDagContext.dagCache.size = localDagContext.dagCache.numberItem * algo::LEN_HASH_1024;
 
     ////////////////////////////////////////////////////////////////////////////
     algo::hash256 seed{};
-    for (int32_t i{ 0 }; i < context.epoch; ++i)
+    for (int32_t i{ 0 }; i < localDagContext.epoch; ++i)
     {
         seed = algo::keccak(seed);
     }
-    algo::copyHash(context.originalSeedCache, seed);
+
+    ////////////////////////////////////////////////////////////////////////////
+    algo::hash512 seedHash{ algo::keccak<algo::hash512, algo::hash256>(seed) };
+    algo::copyHash(localDagContext.hashedSeedCache, seedHash);
+
+    ////////////////////////////////////////////////////////////////////////////
+    context.epoch = localDagContext.epoch;
+    context.lightCache.numberItem = localDagContext.lightCache.numberItem;
+    context.lightCache.size = localDagContext.lightCache.size;
+    context.dagCache.numberItem = localDagContext.dagCache.numberItem;
+    context.dagCache.size = localDagContext.dagCache.size;
+    algo::copyHash(context.hashedSeedCache, localDagContext.hashedSeedCache);
 }
 
 
 void algo::ethash::buildLightCache(
-    algo::DagContext& context,
-    bool const buildOnCPU)
+    algo::DagContext& context)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::hash512 item
-    {
-        algo::keccak<algo::hash512, algo::hash256>(context.originalSeedCache)
-    };
+    UNIQUE_LOCK(mtxDagContext);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == buildOnCPU)
-    {
-        algo::copyHash(context.hashedSeedCache, item);
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    size_t const dataLength{ algo::LEN_HASH_512 + context.lightCache.size };
-    context.data = NEW_ARRAY(char, dataLength);
-    std::memset(context.data, 0, sizeof(char) * dataLength);
-    if (nullptr == context.data)
+    algo::hash512 item{ localDagContext.hashedSeedCache };
+    size_t const dataLength{ algo::LEN_HASH_512 + localDagContext.lightCache.size };
+    localDagContext.data = NEW_ARRAY(char, dataLength);
+    std::memset(localDagContext.data, 0, sizeof(char) * dataLength);
+    if (nullptr == localDagContext.data)
     {
         logErr() << "Cannot alloc context data";
         return;
     }
-    context.lightCache.hash = castPtrHash512(context.data + algo::LEN_HASH_512);
-    context.lightCache.hash[0] = item;
+    localDagContext.lightCache.hash = castPtrHash512(localDagContext.data + algo::LEN_HASH_512);
 
     ////////////////////////////////////////////////////////////////////////////
     logInfo() << "Building light cache on CPU";
     common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
 
     ////////////////////////////////////////////////////////////////////////////
-    for (uint64_t i{ 1ull }; i < context.lightCache.numberItem; ++i)
+    for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
     {
+        localDagContext.lightCache.hash[i] = item;
         item = algo::keccak(item);
-        context.lightCache.hash[i] = item;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const numberItemu32 { castU32(context.lightCache.numberItem) };
+    uint32_t const numberItemu32{ castU32(localDagContext.lightCache.numberItem) };
     for (uint64_t round{ 0ull }; round < algo::ethash::LIGHT_CACHE_ROUNDS; ++round)
     {
-        for (uint64_t i{ 0ull }; i < context.lightCache.numberItem; ++i)
+        for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
         {
-            uint32_t const fi{ context.lightCache.hash[i].word32[0] % numberItemu32 };
+            uint32_t const fi{ localDagContext.lightCache.hash[i].word32[0] % numberItemu32 };
             uint32_t const si{ (numberItemu32 + (castU32(i) - 1u)) % numberItemu32 };
 
-            algo::hash512 const& firstCache{ context.lightCache.hash[fi] };
-            algo::hash512 const& secondCache{ context.lightCache.hash[si] };
+            algo::hash512 const& firstCache{ localDagContext.lightCache.hash[fi] };
+            algo::hash512 const& secondCache{ localDagContext.lightCache.hash[si] };
 
             algo::hash512 const xored = algo::hashXor(firstCache, secondCache);
-            context.lightCache.hash[i] = algo::keccak(xored);
+            localDagContext.lightCache.hash[i] = algo::keccak(xored);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    context.data = localDagContext.data;
+    for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
+    {
+        algo::copyHash(context.lightCache.hash[i], localDagContext.lightCache.hash[i]);
     }
 }

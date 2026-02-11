@@ -33,7 +33,10 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit
     );
-    algo::ethash::buildLightCache(context, config.deviceAlgorithm.ethashBuildLightCacheCPU);
+    if (true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
+    {
+        algo::ethash::buildLightCache(context);
+    }
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull

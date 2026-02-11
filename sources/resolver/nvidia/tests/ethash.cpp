@@ -40,7 +40,7 @@ struct ResolverEthashNvidiaTest : public testing::Test
 
     ~ResolverEthashNvidiaTest()
     {
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void initializeJob(uint64_t const nonce)

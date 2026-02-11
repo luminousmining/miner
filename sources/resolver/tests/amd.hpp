@@ -17,7 +17,8 @@ namespace resolver
             cl::CommandQueue clQueue{ nullptr };
         };
 
-        inline uint32_t getDeviceCount()
+        inline
+        uint32_t getDeviceCount()
         {
             uint32_t count { 0u };
             std::vector<cl::Device> cldevices{};
@@ -39,7 +40,8 @@ namespace resolver
             return count;
         }
 
-        inline cl::Device getDevice(uint32_t const index)
+        inline
+        cl::Device getDevice(uint32_t const index)
         {
             std::vector<cl::Device> cldevices{};
             std::vector<cl::Platform> platforms{};

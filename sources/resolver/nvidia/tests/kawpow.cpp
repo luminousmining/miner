@@ -45,7 +45,7 @@ struct ResolverKawpowNvidiaTest : public testing::Test
         config.occupancy.blocks = std::nullopt;
 
         ////////////////////////////////////////////////////////////////////////////
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void setOccupancy(

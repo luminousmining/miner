@@ -50,7 +50,10 @@ bool resolver::ResolverMocker::updateMemory(
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit
     );
-    algo::ethash::buildLightCache(context, config.deviceAlgorithm.ethashBuildLightCacheCPU);
+    if (true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
+    {
+        algo::ethash::buildLightCache(context);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     boost::this_thread::sleep_for(WAIT_UPDATE_MEMORY);

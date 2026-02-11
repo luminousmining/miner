@@ -65,7 +65,7 @@ TEST_F(EthashTest, lightCacheBuild)
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit
     );
-    algo::ethash::buildLightCache(context, true);
+    algo::ethash::buildLightCache(context);
 
     // light cache size
     ASSERT_EQ(1411061ull,    context.lightCache.numberItem);

@@ -42,8 +42,7 @@ namespace algo
                                   uint32_t const lightCacheCountItemsGrowth,
                                   uint32_t const lightCacheCountItemsInit);
         void freeDagContext(algo::DagContext& context);
-        void buildLightCache(algo::DagContext& context,
-                             bool const buildOnCPU);
+        void buildLightCache(algo::DagContext& context);
 #endif
     }
 }

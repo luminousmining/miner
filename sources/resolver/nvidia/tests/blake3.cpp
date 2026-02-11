@@ -31,7 +31,7 @@ struct ResolverBlake3NvidiaTest : public testing::Test
 
     ~ResolverBlake3NvidiaTest()
     {
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void initializeJob(uint64_t const nonce)
