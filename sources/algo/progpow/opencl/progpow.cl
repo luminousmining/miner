@@ -34,7 +34,8 @@ void loop_math(
     __local uint* restrict const header_dag,
     uint* restrict const hash,
     uint const lane_id,
-    uint const worker_group)
+    uint const worker_group,
+uint const l_id)
 {
     __attribute__((opencl_unroll_hint(1)))
     for (uint cnt = 0; cnt < COUNT_DAG; ++cnt)
@@ -150,7 +151,7 @@ void progpow_search(
 
             ////////////////////////////////////////////////////////////////////////
             fill_hash(hash, lane_id, seedShare);
-            loop_math(dag, share_hash0, header_dag, hash, lane_id, worker_group);
+            loop_math(dag, share_hash0, header_dag, hash, lane_id, worker_group, l_id);
             reduce_hash(
                 share_fnv1a,
                 hash,

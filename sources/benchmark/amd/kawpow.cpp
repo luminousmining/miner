@@ -7,6 +7,7 @@
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/progpow/progpow.hpp>
+#include <algo/progpow/kawpow.hpp>
 #include <benchmark/workflow.hpp>
 #include <common/opencl/buffer_wrapper.hpp>
 #include <common/opencl/buffer_mapped.hpp>
@@ -38,7 +39,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     int32_t const epoch{ algo::ethash::findEpoch(seedHash, algo::ethash::EPOCH_LENGTH) };
 
     ////////////////////////////////////////////////////////////////////////////
-    common::opencl::Buffer<algo::hash512> lightCache { CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY };
+    common::opencl::Buffer<algo::hash512> lightCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY };
     common::opencl::Buffer<algo::hash1024> dagCache{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
     common::opencl::BufferMapped<uint32_t> headerCache
     {
@@ -59,12 +60,15 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT
     );
+    algo::ethash::buildLightCache(dagContext, true);
 
     ////////////////////////////////////////////////////////////////////////////
     dagCache.setSize(dagContext.dagCache.size);
+    lightCache.setSize(dagContext.lightCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
     dagCache.alloc(propertiesAmd.clContext);
+    lightCache.alloc(propertiesAmd.clContext);
     headerCache.alloc(&propertiesAmd.clQueue, propertiesAmd.clContext);
     resultCache.alloc(&propertiesAmd.clQueue, propertiesAmd.clContext);
 
@@ -74,40 +78,53 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     {
         logErr() << "Fail to copy header in cache";
     }
+    if (false == lightCache.write(dagContext.lightCache.hash,
+                                  dagContext.lightCache.size,
+                                  &propertiesAmd.clQueue))
+    {
+        logErr() << "Fail to copy light cache in cache";
+    }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Build kernel init_array
-    // Initialize dagCache to simulate DAG for KAWPOW
+    // Build DAG KAWPOW
     {
         ///////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
 
         ///////////////////////////////////////////////////////////////////////
-        generator.setKernelName("init_array");
-        generator.appendFile("kernel/common/init_array.cl");
+        generator.setKernelName("ethash_build_dag");
+
+        ///////////////////////////////////////////////////////////////////////
+        generator.addDefine("GROUP_SIZE", 256u);
+        generator.addDefine("DAG_LOOP", algo::kawpow::DAG_ITEM_PARENTS / 4u / 4u);
+
+        ///////////////////////////////////////////////////////////////////////
+        generator.appendFile("kernel/ethash/ethash_dag.cl");
 
         ///////////////////////////////////////////////////////////////////////
         if (true == generator.build(&propertiesAmd.clDevice,
                                     &propertiesAmd.clContext))
         {
-            ///////////////////////////////////////////////////////////////////
-            auto& clKernel{ generator.clKernel };
+            auto& clKernel { generator.clKernel };
             OPENCL_ER(clKernel.setArg(0u, *dagCache.getBuffer()));
-            OPENCL_ER(clKernel.setArg(1u, castU32(dagContext.dagCache.numberItem)));
+            OPENCL_ER(clKernel.setArg(1u, *lightCache.getBuffer()));
+            OPENCL_ER(clKernel.setArg(2u, algo::kawpow::DAG_ITEM_PARENTS));
+            OPENCL_ER(clKernel.setArg(3u, castU32(dagContext.dagCache.numberItem)));
+            OPENCL_ER(clKernel.setArg(4u, castU32(dagContext.lightCache.numberItem)));
 
-            ///////////////////////////////////////////////////////////////////
+            uint32_t const maxGroupSize { 256u };
+            uint32_t const threadKernel { castU32(dagContext.dagCache.numberItem) / maxGroupSize };
             OPENCL_ER(
                 propertiesAmd.clQueue.enqueueNDRangeKernel
                 (
                     clKernel,
                     cl::NullRange,
-                    cl::NDRange(1, 1, 1),
-                    cl::NDRange(1, 1, 1)
+                    cl::NDRange(maxGroupSize, threadKernel, 1),
+                    cl::NDRange(maxGroupSize, 1,            1)
                 )
             );
             OPENCL_ER(propertiesAmd.clQueue.finish());
 
-            ///////////////////////////////////////////////////////////////////
             dagInitialized = true;
         }
     }

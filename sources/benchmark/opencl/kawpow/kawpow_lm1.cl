@@ -150,10 +150,8 @@ void loop_math(
 
         uint dag_index = share_hash0[worker_group];
         dag_index %= DAG_SIZE;
-
-        // TODO: FIX
-        // dag_index *= WORK_ITEM_COLLABORATE;
-        // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
+        dag_index *= WORK_ITEM_COLLABORATE;
+        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 const entries = dag[dag_index];
         sequence_dynamic_local(header_dag, hash, entries);

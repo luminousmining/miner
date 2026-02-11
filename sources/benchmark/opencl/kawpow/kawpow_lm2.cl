@@ -69,12 +69,9 @@ void loop_math(
     {
         uint const mix0 = hash[0];
         uint dag_index = reg_load(mix0, cnt % WORK_ITEM_COLLABORATE, WORK_ITEM_COLLABORATE);
-        uint fd = dag_index;
         dag_index %= DAG_SIZE;
-
-        // TODO: FIX
-        // dag_index *= WORK_ITEM_COLLABORATE;
-        // dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
+        dag_index *= WORK_ITEM_COLLABORATE;
+        dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
 
         uint4 entries = ((uint4*)dag)[dag_index];
         sequence_dynamic(dag, hash, entries);
