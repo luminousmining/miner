@@ -149,7 +149,6 @@ void loop_math(
         barrier(CLK_LOCAL_MEM_FENCE);
 
         uint dag_index = share_hash0[worker_group];
-        uint fd = dag_index;
         dag_index %= DAG_SIZE;
         dag_index *= WORK_ITEM_COLLABORATE;
         dag_index += ((lane_id ^ cnt) % WORK_ITEM_COLLABORATE);
@@ -208,10 +207,10 @@ void initialize_header(
 
 __kernel
 void kawpow_lm1(
-    ulong const start_nonce,
-    __constant uint4 const* const restrict header,
-    __global uint4 const* const restrict dag,
-    __global t_result* const restrict result)
+    __global uint const* const restrict dag,
+    __global t_result* const restrict result,
+    __constant uint const* const restrict header,
+    ulong const start_nonce)
 {
     __local uint header_dag[MODULE_CACHE];
     __local ulong share_msb_lsb[SHARE_SEED_SIZE];
@@ -259,6 +258,8 @@ void kawpow_lm1(
 
     ///////////////////////////////////////////////////////////////////////////
     ulong const bytes_result = is_valid(state_mix, digest);
+    PRINT_U32_IF("bytes_result", 0u, bytes_result);
+    PRINT_U32_IF("bytes_result", 16u, bytes_result);
     if (bytes_result <= 0)
     {
         uint const index = atomic_inc(&result->count);

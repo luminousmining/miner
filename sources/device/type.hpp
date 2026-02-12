@@ -16,4 +16,6 @@ namespace device
 #endif
         UNKNOWN
     };
+
+    constexpr uint8_t MAX_DEVICE_TYPE{ 2 };
 }

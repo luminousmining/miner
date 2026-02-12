@@ -40,17 +40,17 @@ void common::Dashboard::setFooter(
 
 void common::Dashboard::addColumn(std::string const& name)
 {
-    Column col{ name, name.size() };
+    common::Dashboard::Column col{ name, name.size() };
     columns.emplace_back(col);
 }
 
 
 void common::Dashboard::addLine(std::vector<std::string> const& line)
 {
-    std::vector<Line> data;
+    std::vector<common::Dashboard::Line> data;
     for (auto const& value : line)
     {
-        Line l{ value, value.size() };
+        common::Dashboard::Line l{ value, value.size() };
         data.emplace_back(std::move(l));
     }
     lines.emplace_back(data);

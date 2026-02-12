@@ -23,7 +23,7 @@ namespace resolver
         Resolver& operator=(Resolver const&) = delete;
         Resolver& operator=(Resolver&&) = delete;
 
-        void swapIndexStrean();
+        void swapIndexStream();
         void setBlocks(uint32_t const newBlocks);
         void setThreads(uint32_t const newThreads);
         uint32_t getBlocks() const;

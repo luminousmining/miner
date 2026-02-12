@@ -48,6 +48,22 @@ uint32_t common::Cli::getInternalLoop() const
 }
 
 
+uint32_t common::Cli::getMinimunKernelExecuted() const
+{
+    uint32_t kernelMinimunExecuteNeeded{ 100u };
+    if (true == contains("internal_kernel_count"))
+    {
+        kernelMinimunExecuteNeeded = params["internal_kernel_count"].as<uint32_t>();
+        if (0u == kernelMinimunExecuteNeeded)
+        {
+            logErr() << "--internal_kernel_count must be greater than 0, reset to default value: 100";
+            kernelMinimunExecuteNeeded = 100u;
+        }
+    }
+    return kernelMinimunExecuteNeeded;
+}
+
+
 std::string common::Cli::getCudaContext() const
 {
     std::string context{ "auto" };

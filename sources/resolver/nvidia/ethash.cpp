@@ -29,9 +29,9 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit,
-        config.deviceAlgorithm.ethashBuildLightCacheCPU
+        lightCacheCountItemsInit
     );
+    algo::ethash::buildLightCache(context, config.deviceAlgorithm.ethashBuildLightCacheCPU);
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
@@ -89,7 +89,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     if (false == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
         resolverInfo() << "Building light cache on GPU";
-        common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
+        common::ChronoGuard chronoCPU{ "Built light cache", common::CHRONO_UNIT::MS };
         if (false == ethashBuildLightCache(cuStream[currentIndexStream],
                                            parameters.seedCache))
         {
@@ -185,7 +185,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     ethashSearch(cuStream[currentIndexStream],
                  &parameters.resultCache[currentIndexStream],
                  blocks,
@@ -193,7 +193,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
                  jobInfo.nonce);
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
     algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
@@ -217,7 +217,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    swapIndexStrean();
+    swapIndexStream();
 
     return true;
 }

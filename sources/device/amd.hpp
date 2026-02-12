@@ -16,7 +16,7 @@ namespace device
 
     protected:
         cl::Context      clContext{};
-        cl::CommandQueue clQueue{};
+        cl::CommandQueue clQueue[2]{};
 
         bool initialize() final;
         void cleanUp() final;
