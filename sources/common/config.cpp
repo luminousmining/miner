@@ -481,6 +481,13 @@ bool common::Config::loadCli(int argc, char** argv)
         {
             api.port = ApiPort;
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        // TOOL MOCKER
+        ////////////////////////////////////////////////////////////////////////
+#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+        toolConfigs.mockerResolverCount = cli.getMockerResolverCount();
+#endif
     }
     catch(std::exception const& e)
     {

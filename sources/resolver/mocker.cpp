@@ -40,17 +40,21 @@ bool resolver::ResolverMocker::updateMemory(
     uint32_t dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
     uint32_t countCache{ algo::progpow::v_0_9_3::COUNT_CACHE };
     uint32_t countMath{ algo::progpow::v_0_9_3::COUNT_MATH };
-    algo::ethash::initializeDagContext
-    (
-        context,
-        jobInfo.epoch,
-        maxEpoch,
-        dagCountItemsGrowth,
-        dagCountItemsInit,
-        lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
-    );
-    if (true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
+    bool const needBuildLightCache
+    {
+        algo::ethash::initializeDagContext
+        (
+            context,
+            jobInfo.epoch,
+            maxEpoch,
+            dagCountItemsGrowth,
+            dagCountItemsInit,
+            lightCacheCountItemsGrowth,
+            lightCacheCountItemsInit
+        )
+    };
+    if (   true == needBuildLightCache
+        && true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
         algo::ethash::buildLightCache(context);
     }

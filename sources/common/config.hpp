@@ -83,6 +83,15 @@ namespace common
             uint32_t port{ 8080u };
         };
 
+#if defined(TOOLS_ENABLE)
+        struct ToolConfig
+        {
+#if defined(TOOL_MOCKER)
+            std::optional<uint32_t> mockerResolverCount{ 8u };
+#endif
+        };
+#endif
+
         common::PROFILE                profile{ common::PROFILE::STANDARD };
         common::Cli                    cli{};
         LogConfig                      log{};
@@ -97,6 +106,9 @@ namespace common
         PoolConfig                     nvidiaSetting{};
         ApiConfig                      api{};
         CommonConfig                   common{};
+#if defined(TOOLS_ENABLE)
+        ToolConfig                     toolConfigs{};
+#endif
 
         static Config& instance();
         bool load(int argc, char** argv);

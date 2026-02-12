@@ -34,7 +34,7 @@ namespace algo
 #if !defined(__LIB_CUDA)
         int32_t findEpoch(algo::hash256 const& seedHash,
                           uint32_t const maxEpoch);
-        void initializeDagContext(algo::DagContext& context,
+        bool initializeDagContext(algo::DagContext& context,
                                   uint64_t const currentEpoch,
                                   uint32_t const maxEpoch,
                                   uint64_t const dagCountItemsGrowth,

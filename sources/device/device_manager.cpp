@@ -285,14 +285,18 @@ bool device::DeviceManager::initializeStratum(
 #if defined(TOOL_MOCKER)
 bool device::DeviceManager::initializeMocker()
 {
-    for (uint32_t i = 0; i < 100u; ++i)
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
+    for (uint32_t i{ 0u }; i < config.toolConfigs.mockerResolverCount; ++i)
     {
         device::DeviceMocker* device{ NEW(device::DeviceMocker) };
         if (nullptr == device)
         {
             return false;
         }
-        device->id = 1000 + i;
+        device->id = 1000u + i;
         device->deviceType = device::DEVICE_TYPE::MOCKER;
         devices.push_back(device);
     }

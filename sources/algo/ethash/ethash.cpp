@@ -68,7 +68,7 @@ void algo::ethash::freeDagContext(algo::DagContext& context)
 }
 
 
-void algo::ethash::initializeDagContext(
+bool algo::ethash::initializeDagContext(
     algo::DagContext& context,
     uint64_t const currentEpoch,
     uint32_t const maxEpoch,
@@ -81,12 +81,19 @@ void algo::ethash::initializeDagContext(
     UNIQUE_LOCK(mtxDagContext);
 
     ////////////////////////////////////////////////////////////////////////////
+    if (localDagContext.epoch == castU32(currentEpoch))
+    {
+        logInfo() << "Skip epoch: " << currentEpoch;
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     localDagContext.epoch = castU32(currentEpoch);
     if (   castU32(localDagContext.epoch) > maxEpoch
         && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
     {
         logErr() << "context.epoch: " << localDagContext.epoch << " | maxEpoch: " << maxEpoch;
-        return;
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -132,6 +139,10 @@ void algo::ethash::initializeDagContext(
     context.dagCache.numberItem = localDagContext.dagCache.numberItem;
     context.dagCache.size = localDagContext.dagCache.size;
     algo::copyHash(context.hashedSeedCache, localDagContext.hashedSeedCache);
+
+    ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Need build";
+    return true;
 }
 
 
