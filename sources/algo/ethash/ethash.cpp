@@ -93,7 +93,7 @@ void algo::ethash::ContextGenerator::build(
     algo::DagContext& localDagContext{ contexts[algorithm] };
 
     ////////////////////////////////////////////////////////////////////////////
-    if (localDagContext.epoch == castU32(currentEpoch))
+    if (localDagContext.epoch == cast32(currentEpoch))
     {
         copyContext(context, algorithm);
         return;

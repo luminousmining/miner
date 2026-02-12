@@ -133,7 +133,7 @@ bool resolver::ResolverAmdEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::ETHASH);
+    algo::ethash::ContextGenerator::instance().free(algorithm);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

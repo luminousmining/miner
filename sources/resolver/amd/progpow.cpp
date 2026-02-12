@@ -121,7 +121,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::PROGPOW);
+    algo::ethash::ContextGenerator::instance().free(algorithm);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

@@ -114,12 +114,13 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
         }
         chrono.stop();
         resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
         ////////////////////////////////////////////////////////////////////////////
         CU_SAFE_DELETE(parameters.seedCache);
     }
     else
     {
-        algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::PROGPOW);
+        algo::ethash::ContextGenerator::instance().free(algorithm);
     }
 
     ////////////////////////////////////////////////////////////////////////////

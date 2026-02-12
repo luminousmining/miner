@@ -131,7 +131,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     CU_SAFE_DELETE(parameters.lightCache);
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::ETCHASH);
+    algo::ethash::ContextGenerator::instance().free(algorithm);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
