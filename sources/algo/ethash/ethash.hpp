@@ -34,15 +34,16 @@ namespace algo
 #if !defined(__LIB_CUDA)
         int32_t findEpoch(algo::hash256 const& seedHash,
                           uint32_t const maxEpoch);
-        bool initializeDagContext(algo::DagContext& context,
-                                  uint64_t const currentEpoch,
-                                  uint32_t const maxEpoch,
-                                  uint64_t const dagCountItemsGrowth,
-                                  uint64_t const dagCountItemsInit,
-                                  uint32_t const lightCacheCountItemsGrowth,
-                                  uint32_t const lightCacheCountItemsInit);
+        void buildContext(algo::DagContext& context,
+                             uint64_t const currentEpoch,
+                             uint32_t const maxEpoch,
+                             uint64_t const dagCountItemsGrowth,
+                             uint64_t const dagCountItemsInit,
+                             uint32_t const lightCacheCountItemsGrowth,
+                             uint32_t const lightCacheCountItemsInit);
+        void buildLightCacheOnCPU(algo::DagContext& context);
         void freeDagContext(algo::DagContext& context);
-        void buildLightCache(algo::DagContext& context);
+        void copyContext(algo::DagContext& context);
 #endif
     }
 }

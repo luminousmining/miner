@@ -50,7 +50,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 
     ////////////////////////////////////////////////////////////////////////////
     algo::DagContext dagContext{};
-    algo::ethash::initializeDagContext
+    algo::ethash::buildContext
     (
         dagContext,
         epoch,
@@ -60,7 +60,6 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT
     );
-    algo::ethash::buildLightCache(dagContext);
 
     ////////////////////////////////////////////////////////////////////////////
     dagCache.setSize(dagContext.dagCache.size);

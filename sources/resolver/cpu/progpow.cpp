@@ -17,7 +17,7 @@ resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext
+    algo::ethash::buildContext
     (
         context,
         jobInfo.epoch,
@@ -27,8 +27,6 @@ bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& 
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit
     );
-    // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
-    algo::ethash::buildLightCache(context);
 
     if (   0ull == context.lightCache.numberItem
         || 0ull == context.lightCache.size

@@ -68,7 +68,7 @@ void algo::ethash::freeDagContext(algo::DagContext& context)
 }
 
 
-bool algo::ethash::initializeDagContext(
+void algo::ethash::buildContext(
     algo::DagContext& context,
     uint64_t const currentEpoch,
     uint32_t const maxEpoch,
@@ -80,11 +80,15 @@ bool algo::ethash::initializeDagContext(
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxDagContext);
 
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
     ////////////////////////////////////////////////////////////////////////////
     if (localDagContext.epoch == castU32(currentEpoch))
     {
         logInfo() << "Skip epoch: " << currentEpoch;
-        return false;
+        copyContext(context);
+        return;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -93,7 +97,7 @@ bool algo::ethash::initializeDagContext(
         && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
     {
         logErr() << "context.epoch: " << localDagContext.epoch << " | maxEpoch: " << maxEpoch;
-        return false;
+        return;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -133,25 +137,19 @@ bool algo::ethash::initializeDagContext(
     algo::copyHash(localDagContext.hashedSeedCache, seedHash);
 
     ////////////////////////////////////////////////////////////////////////////
-    context.epoch = localDagContext.epoch;
-    context.lightCache.numberItem = localDagContext.lightCache.numberItem;
-    context.lightCache.size = localDagContext.lightCache.size;
-    context.dagCache.numberItem = localDagContext.dagCache.numberItem;
-    context.dagCache.size = localDagContext.dagCache.size;
-    algo::copyHash(context.hashedSeedCache, localDagContext.hashedSeedCache);
+    if (true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
+    {
+        algo::ethash::buildLightCacheOnCPU(context);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
-    logInfo() << "Need build";
-    return true;
+    copyContext(context);
 }
 
 
-void algo::ethash::buildLightCache(
+void algo::ethash::buildLightCacheOnCPU(
     algo::DagContext& context)
 {
-    ////////////////////////////////////////////////////////////////////////////
-    UNIQUE_LOCK(mtxDagContext);
-
     ////////////////////////////////////////////////////////////////////////////
     algo::hash512 item{ localDagContext.hashedSeedCache };
     size_t const dataLength{ algo::LEN_HASH_512 + localDagContext.lightCache.size };
@@ -191,8 +189,19 @@ void algo::ethash::buildLightCache(
             localDagContext.lightCache.hash[i] = algo::keccak(xored);
         }
     }
+}
 
-    ////////////////////////////////////////////////////////////////////////////
+
+void algo::ethash::copyContext(algo::DagContext& context)
+{
+    context.epoch = localDagContext.epoch;
+    context.lightCache.numberItem = localDagContext.lightCache.numberItem;
+    context.lightCache.size = localDagContext.lightCache.size;
+    context.dagCache.numberItem = localDagContext.dagCache.numberItem;
+    context.dagCache.size = localDagContext.dagCache.size;
     context.data = localDagContext.data;
     context.lightCache.hash = localDagContext.lightCache.hash;
+
+    algo::copyHash(context.hashedSeedCache, localDagContext.hashedSeedCache);
 }
+

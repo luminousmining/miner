@@ -18,10 +18,7 @@ resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
 bool resolver::ResolverNvidiaEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
-    ///////////////////////////////////////////////////////////////////////////
-    common::Config& config{ common::Config::instance() };
-
-    algo::ethash::initializeDagContext
+    algo::ethash::buildContext
     (
         context,
         jobInfo.epoch,
@@ -31,10 +28,6 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit
     );
-    if (true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
-    {
-        algo::ethash::buildLightCache(context);
-    }
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull

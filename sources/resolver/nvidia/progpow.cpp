@@ -23,24 +23,18 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
     common::Config& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
-    bool const updated
-    {
-        algo::ethash::initializeDagContext
-        (
-            context,
-            jobInfo.epoch,
-            maxEpoch,
-            dagCountItemsGrowth,
-            dagCountItemsInit,
-            lightCacheCountItemsGrowth,
-            lightCacheCountItemsInit
-        )
-    };
-    if (   true == updated
-        && true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
-    {
-        algo::ethash::buildLightCache(context);
-    }
+    __TRACE_RESOLVER();
+    algo::ethash::buildContext
+    (
+        context,
+        jobInfo.epoch,
+        maxEpoch,
+        dagCountItemsGrowth,
+        dagCountItemsInit,
+        lightCacheCountItemsGrowth,
+        lightCacheCountItemsInit
+    );
+    __TRACE_RESOLVER();
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull

@@ -28,7 +28,7 @@ bool resolver::ResolverAmdEthash::updateContext(
     common::Config& config{ common::Config::instance() };
 
     ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext
+    algo::ethash::buildContext
     (
         context,
         jobInfo.epoch,
@@ -38,8 +38,6 @@ bool resolver::ResolverAmdEthash::updateContext(
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit
     );
-    // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
-    algo::ethash::buildLightCache(context);
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
