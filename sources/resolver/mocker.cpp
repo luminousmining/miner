@@ -52,12 +52,15 @@ bool resolver::ResolverMocker::updateMemory(
     );
 
     ///////////////////////////////////////////////////////////////////////////
-    resolverInfo()
-        << "Update memory force waiting: "
-        << *config.toolConfigs.mockerResolverUpdateMemorySleep
-        << "ms";
-    boost::chrono::milliseconds const ms{ *config.toolConfigs.mockerResolverUpdateMemorySleep };
-    boost::this_thread::sleep_for(ms);
+    if (std::nullopt != config.toolConfigs.mockerResolverUpdateMemorySleep)
+    {
+        resolverInfo()
+            << "Update memory force waiting: "
+            << *config.toolConfigs.mockerResolverUpdateMemorySleep
+            << "ms";
+        boost::chrono::milliseconds const ms{ *config.toolConfigs.mockerResolverUpdateMemorySleep };
+        boost::this_thread::sleep_for(ms);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     return true;

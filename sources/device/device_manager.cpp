@@ -289,16 +289,20 @@ bool device::DeviceManager::initializeMocker()
     common::Config const& config{ common::Config::instance() };
 
     ///////////////////////////////////////////////////////////////////////////
-    for (uint32_t i{ 0u }; i < config.toolConfigs.mockerResolverCount; ++i)
+    if (std::nullopt != config.toolConfigs.mockerResolverCount)
     {
-        device::DeviceMocker* device{ NEW(device::DeviceMocker) };
-        if (nullptr == device)
+        uint32_t const mockerCount{ *config.toolConfigs.mockerResolverCount };
+        for (uint32_t i{ 0u }; i < mockerCount; ++i)
         {
-            return false;
+            device::DeviceMocker* device{ NEW(device::DeviceMocker) };
+            if (nullptr == device)
+            {
+                return false;
+            }
+            device->id = 1000u + i;
+            device->deviceType = device::DEVICE_TYPE::MOCKER;
+            devices.push_back(device);
         }
-        device->id = 1000u + i;
-        device->deviceType = device::DEVICE_TYPE::MOCKER;
-        devices.push_back(device);
     }
     return true;
 }

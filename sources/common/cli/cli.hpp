@@ -91,8 +91,8 @@ namespace common
         bool isCpuEnable() const;
 
 #if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
-        uint32_t getMockerResolverCount() const;
-        uint32_t getMockerResolverUpdateMemorySleep() const;
+        std::optional<uint32_t> getMockerResolverCount() const;
+        std::optional<uint32_t> getMockerResolverUpdateMemorySleep() const;
 #endif
 
         // Device settings custom
