@@ -15,7 +15,7 @@ namespace resolver
     class ResolverAmdAutolykosV2 : public resolver::ResolverAmd
     {
     public:
-        ResolverAmdAutolykosV2() = default;
+        ResolverAmdAutolykosV2();
         ~ResolverAmdAutolykosV2();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;

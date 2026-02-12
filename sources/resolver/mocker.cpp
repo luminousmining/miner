@@ -40,7 +40,7 @@ bool resolver::ResolverMocker::updateMemory(
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::PROGPOW,
+        algorithm,
         context,
         jobInfo.epoch,
         maxEpoch,

@@ -8,6 +8,16 @@
 #include <resolver/amd/progpow.hpp>
 
 
+resolver::ResolverAmdProgPOW::ResolverAmdProgPOW():
+    resolver::ResolverAmd()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::PROGPOW;
+    }
+}
+
+
 resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
 {
     parameters.lightCache.free();
@@ -23,7 +33,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::PROGPOW,
+        algorithm,
         context,
         jobInfo.epoch,
         maxEpoch,

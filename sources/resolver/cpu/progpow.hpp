@@ -14,7 +14,7 @@ namespace resolver
     class ResolverCpuProgPOW : public resolver::ResolverCpu
     {
     public:
-        ResolverCpuProgPOW() = default;
+        ResolverCpuProgPOW();
         virtual ~ResolverCpuProgPOW();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;

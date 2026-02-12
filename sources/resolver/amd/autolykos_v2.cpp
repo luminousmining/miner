@@ -11,6 +11,13 @@
 #include <resolver/amd/autolykos_v2.hpp>
 
 
+resolver::ResolverAmdAutolykosV2::ResolverAmdAutolykosV2():
+    resolver::ResolverAmd()
+{
+    algorithm = algo::ALGORITHM::AUTOLYKOS_V2;
+}
+
+
 resolver::ResolverAmdAutolykosV2::~ResolverAmdAutolykosV2()
 {
     parameters.BHashes.free();

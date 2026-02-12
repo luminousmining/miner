@@ -17,7 +17,7 @@ namespace resolver
     class ResolverAmdProgPOW : public resolver::ResolverAmd
     {
     public:
-        ResolverAmdProgPOW() = default;
+        ResolverAmdProgPOW();
         ~ResolverAmdProgPOW();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;

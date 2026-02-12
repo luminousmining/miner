@@ -11,13 +11,20 @@
 #include <resolver/amd/etchash.hpp>
 
 
+resolver::ResolverAmdEtchash::ResolverAmdEtchash():
+    resolver::ResolverAmdEthash()
+{
+    algorithm = algo::ALGORITHM::ETHASH;
+}
+
+
 bool resolver::ResolverAmdEtchash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::ETCHASH,
+        algorithm,
         context,
         jobInfo.epoch,
         algo::ethash::EIP1099_MAX_EPOCH_NUMBER,

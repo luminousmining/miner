@@ -6,6 +6,16 @@
 #include <resolver/cpu/progpow.hpp>
 
 
+resolver::ResolverCpuProgPOW::ResolverCpuProgPOW():
+    resolver::ResolverCpu()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::PROGPOW;
+    }
+}
+
+
 resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 {
     SAFE_DELETE_ARRAY(parameters.headerCache);
@@ -19,7 +29,7 @@ bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& 
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::PROGPOW,
+        algorithm,
         context,
         jobInfo.epoch,
         maxEpoch,

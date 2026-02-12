@@ -17,7 +17,7 @@ namespace resolver
     class ResolverNvidiaProgPOW : public resolver::ResolverNvidia
     {
     public:
-        ResolverNvidiaProgPOW() = default;
+        ResolverNvidiaProgPOW();
         virtual ~ResolverNvidiaProgPOW();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;

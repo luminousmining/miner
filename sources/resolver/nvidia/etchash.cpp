@@ -9,6 +9,13 @@
 #include <resolver/nvidia/etchash.hpp>
 
 
+resolver::ResolverNvidiaEtchash::ResolverNvidiaEtchash():
+    resolver::ResolverNvidiaEthash()
+{
+    algorithm = algo::ALGORITHM::ETCHASH;
+}
+
+
 bool resolver::ResolverNvidiaEtchash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
@@ -18,7 +25,7 @@ bool resolver::ResolverNvidiaEtchash::updateContext(
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::ETCHASH,
+        algorithm,
         context,
         jobInfo.epoch,
         algo::ethash::EIP1099_MAX_EPOCH_NUMBER,

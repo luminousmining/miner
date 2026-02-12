@@ -9,6 +9,16 @@
 #include <resolver/nvidia/ethash.hpp>
 
 
+resolver::ResolverNvidiaEthash::ResolverNvidiaEthash():
+    resolver::ResolverNvidia()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::ETHASH;
+    }
+}
+
+
 resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
 {
     ethashFreeMemory(parameters);
@@ -24,7 +34,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::ETHASH,
+        algorithm,
         context,
         jobInfo.epoch,
         algo::ethash::MAX_EPOCH_NUMBER,

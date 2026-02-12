@@ -11,6 +11,16 @@
 #include <resolver/amd/ethash.hpp>
 
 
+resolver::ResolverAmdEthash::ResolverAmdEthash():
+    resolver::ResolverAmd()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::ETHASH;
+    }
+}
+
+
 resolver::ResolverAmdEthash::~ResolverAmdEthash()
 {
     parameters.lightCache.free();
@@ -27,7 +37,7 @@ bool resolver::ResolverAmdEthash::updateContext(
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::ETHASH,
+        algorithm,
         context,
         jobInfo.epoch,
         algo::ethash::MAX_EPOCH_NUMBER,

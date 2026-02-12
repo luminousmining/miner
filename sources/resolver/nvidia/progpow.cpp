@@ -10,6 +10,16 @@
 #include <algo/progpow/cuda/progpow.cuh>
 
 
+resolver::ResolverNvidiaProgPOW::ResolverNvidiaProgPOW():
+    resolver::ResolverNvidia()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::PROGPOWQUAI;
+    }
+}
+
+
 resolver::ResolverNvidiaProgPOW::~ResolverNvidiaProgPOW()
 {
     progpowFreeMemory(parameters);
@@ -25,7 +35,7 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build
     (
-        algo::ALGORITHM::PROGPOW,
+        algorithm,
         context,
         jobInfo.epoch,
         maxEpoch,
@@ -109,7 +119,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
     else
     {
-
+        algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::PROGPOW);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -126,9 +136,6 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(parameters.lightCache);
-
-    ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::PROGPOW);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
