@@ -36,7 +36,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     {
         algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c")
     };
-    int32_t const epoch{ algo::ethash::findEpoch(seedHash, algo::ethash::EPOCH_LENGTH) };
+    int32_t const epoch{ algo::ethash::ContextGenerator::instance().findEpoch(seedHash, algo::ethash::EPOCH_LENGTH) };
 
     ////////////////////////////////////////////////////////////////////////////
     common::opencl::Buffer<algo::hash512> lightCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY };
@@ -50,15 +50,17 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 
     ////////////////////////////////////////////////////////////////////////////
     algo::DagContext dagContext{};
-    algo::ethash::buildContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::KAWPOW,
         dagContext,
         epoch,
         algo::ethash::MAX_EPOCH_NUMBER,
         algo::ethash::DAG_COUNT_ITEMS_GROWTH,
         algo::ethash::DAG_COUNT_ITEMS_INIT,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH,
-        algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT
+        algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT,
+        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
 
     ////////////////////////////////////////////////////////////////////////////
@@ -227,7 +229,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::freeDagContext(dagContext);
+    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::KAWPOW);
 
     ////////////////////////////////////////////////////////////////////////////
     dagCache.free();

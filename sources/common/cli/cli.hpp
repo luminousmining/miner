@@ -92,6 +92,7 @@ namespace common
 
 #if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
         uint32_t getMockerResolverCount() const;
+        uint32_t getMockerResolverUpdateMemorySleep() const;
 #endif
 
         // Device settings custom

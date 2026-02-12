@@ -23,19 +23,20 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
     common::Config& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
-    __TRACE_RESOLVER();
-    algo::ethash::buildContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::PROGPOW,
         context,
         jobInfo.epoch,
         maxEpoch,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
-    __TRACE_RESOLVER();
 
+    ////////////////////////////////////////////////////////////////////////////
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
         || context.dagCache.numberItem == 0ull
@@ -53,7 +54,7 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
         return false;
     }
 
-
+    ////////////////////////////////////////////////////////////////////////////
     uint64_t const totalMemoryNeeded{ context.dagCache.size + context.lightCache.size };
     if (   0ull != deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
@@ -65,6 +66,7 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
         return false;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -126,7 +128,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     CU_SAFE_DELETE(parameters.lightCache);
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::freeDagContext(context);
+    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::PROGPOW);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

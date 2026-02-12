@@ -18,17 +18,24 @@ resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
 bool resolver::ResolverNvidiaEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
-    algo::ethash::buildContext
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::ETHASH,
         context,
         jobInfo.epoch,
         algo::ethash::MAX_EPOCH_NUMBER,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
+    ///////////////////////////////////////////////////////////////////////////
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
         || context.dagCache.numberItem == 0ull
@@ -46,6 +53,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
     if (   0ull != deviceMemoryAvailable
         && totalMemoryNeeded >= deviceMemoryAvailable)
@@ -56,6 +64,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -112,7 +121,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     CU_SAFE_DELETE(parameters.lightCache);
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::freeDagContext(context);
+    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::ETCHASH);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

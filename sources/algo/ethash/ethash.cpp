@@ -10,13 +10,16 @@
 #include <common/log/log.hpp>
 
 
-boost::mutex mtxDagContext{};
-algo::DagContext localDagContext{};
+algo::ethash::ContextGenerator& algo::ethash::ContextGenerator::instance()
+{
+    static algo::ethash::ContextGenerator handler{};
+    return handler;
+}
 
 
-int32_t algo::ethash::findEpoch(
+int32_t algo::ethash::ContextGenerator::findEpoch(
     algo::hash256 const& seedHash,
-    uint32_t const maxEpoch)
+    uint32_t const maxEpoch) const
 {
     ////////////////////////////////////////////////////////////////////////////
     static thread_local int32_t       cachedEpochNumber{ 0 };
@@ -60,34 +63,39 @@ int32_t algo::ethash::findEpoch(
 }
 
 
-void algo::ethash::freeDagContext(algo::DagContext& context)
+void algo::ethash::ContextGenerator::free(algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
-    SAFE_DELETE_ARRAY(localDagContext.data);
-    localDagContext.lightCache.hash = nullptr;
+    UNIQUE_LOCK(mtxContexts);
+
+    ////////////////////////////////////////////////////////////////////////////
+    algo::DagContext& context{ contexts[algorithm] };
+    SAFE_DELETE_ARRAY(context.data);
+    context.lightCache.hash = nullptr;
 }
 
 
-void algo::ethash::buildContext(
+void algo::ethash::ContextGenerator::build(
+    algo::ALGORITHM const algorithm,
     algo::DagContext& context,
     uint64_t const currentEpoch,
     uint32_t const maxEpoch,
     uint64_t const dagCountItemsGrowth,
     uint64_t const dagCountItemsInit,
     uint32_t const lightCacheCountItemsGrowth,
-    uint32_t const lightCacheCountItemsInit)
+    uint32_t const lightCacheCountItemsInit,
+    bool const buildOnCPU)
 {
     ////////////////////////////////////////////////////////////////////////////
-    UNIQUE_LOCK(mtxDagContext);
+    UNIQUE_LOCK(mtxContexts);
 
     ///////////////////////////////////////////////////////////////////////////
-    common::Config& config{ common::Config::instance() };
+    algo::DagContext& localDagContext{ contexts[algorithm] };
 
     ////////////////////////////////////////////////////////////////////////////
     if (localDagContext.epoch == castU32(currentEpoch))
     {
-        logInfo() << "Skip epoch: " << currentEpoch;
-        copyContext(context);
+        copyContext(context, algorithm);
         return;
     }
 
@@ -137,19 +145,22 @@ void algo::ethash::buildContext(
     algo::copyHash(localDagContext.hashedSeedCache, seedHash);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == config.deviceAlgorithm.ethashBuildLightCacheCPU)
+    if (true == buildOnCPU)
     {
-        algo::ethash::buildLightCacheOnCPU(context);
+        buildLightCache(algorithm);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    copyContext(context);
+    copyContext(context, algorithm);
 }
 
 
-void algo::ethash::buildLightCacheOnCPU(
-    algo::DagContext& context)
+void algo::ethash::ContextGenerator::buildLightCache(
+    algo::ALGORITHM const algorithm)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    algo::DagContext& localDagContext{ contexts[algorithm] };
+
     ////////////////////////////////////////////////////////////////////////////
     algo::hash512 item{ localDagContext.hashedSeedCache };
     size_t const dataLength{ algo::LEN_HASH_512 + localDagContext.lightCache.size };
@@ -192,8 +203,13 @@ void algo::ethash::buildLightCacheOnCPU(
 }
 
 
-void algo::ethash::copyContext(algo::DagContext& context)
+void algo::ethash::ContextGenerator::copyContext(
+    algo::DagContext& context,
+    algo::ALGORITHM const algorithm)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    algo::DagContext& localDagContext{ contexts[algorithm] };
+
     context.epoch = localDagContext.epoch;
     context.lightCache.numberItem = localDagContext.lightCache.numberItem;
     context.lightCache.size = localDagContext.lightCache.size;
@@ -204,4 +220,3 @@ void algo::ethash::copyContext(algo::DagContext& context)
 
     algo::copyHash(context.hashedSeedCache, localDagContext.hashedSeedCache);
 }
-

@@ -21,18 +21,17 @@ bool resolver::ResolverAmdProgPOW::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    common::Config& config{ common::Config::instance() };
-
-    ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::buildContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::PROGPOW,
         context,
         jobInfo.epoch,
         maxEpoch,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
 
     if (   0ull == context.lightCache.numberItem
@@ -112,7 +111,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::freeDagContext(context);
+    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::PROGPOW);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

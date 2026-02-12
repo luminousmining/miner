@@ -14,4 +14,14 @@ uint32_t common::Cli::getMockerResolverCount() const
 }
 
 
+uint32_t common::Cli::getMockerResolverUpdateMemorySleep() const
+{
+    if (true == contains("tool_mocker_resolver_update_memory_sleep"))
+    {
+        return params["tool_mocker_resolver_update_memory_sleep"].as<uint32_t>();
+    }
+
+    return 1000u;
+}
+
 #endif // TOOLS_ENABLE && TOOL_MOCKER

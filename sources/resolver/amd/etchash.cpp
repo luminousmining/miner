@@ -15,18 +15,17 @@ bool resolver::ResolverAmdEtchash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    common::Config& config{ common::Config::instance() };
-
-    ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::buildContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::ETCHASH,
         context,
         jobInfo.epoch,
         algo::ethash::EIP1099_MAX_EPOCH_NUMBER,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
 
     if (   context.lightCache.numberItem == 0ull

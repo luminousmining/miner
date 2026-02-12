@@ -487,6 +487,7 @@ bool common::Config::loadCli(int argc, char** argv)
         ////////////////////////////////////////////////////////////////////////
 #if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
         toolConfigs.mockerResolverCount = cli.getMockerResolverCount();
+        toolConfigs.mockerResolverUpdateMemorySleep = cli.getMockerResolverUpdateMemorySleep();
 #endif
     }
     catch(std::exception const& e)

@@ -87,7 +87,7 @@ void stratum::StratumEthash::onMiningNotify(
     jobInfo.jobID = algo::toHash256(jobID);
 
     ////////////////////////////////////////////////////////////////////////////
-    int32_t const epoch{ algo::ethash::findEpoch(jobInfo.seedHash, maxEpochNumber) };
+    int32_t const epoch{ algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEpochNumber) };
     if (-1 != epoch)
     {
         jobInfo.epoch = epoch;

@@ -88,6 +88,7 @@ namespace common
         {
 #if defined(TOOL_MOCKER)
             std::optional<uint32_t> mockerResolverCount{ 8u };
+            std::optional<uint32_t> mockerResolverUpdateMemorySleep{ 8u };
 #endif
         };
 #endif

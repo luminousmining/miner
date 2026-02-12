@@ -41,7 +41,7 @@ struct ResolverProgpowQuaiNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("0000000000000000000000000000000000000000000000000000000000000000");
         jobInfo.boundary = algo::toHash256("0000000225c17d04dad2965cc5a02a23e254c0c3f75d9178046aeb27ce1ca574");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow_quai::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow_quai::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::progpow_quai::MAX_PERIOD;
     }
 };

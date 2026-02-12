@@ -340,7 +340,7 @@ void stratum::StratumProgPOW::onMiningNotify(
             }
             else
             {
-                epoch = algo::ethash::findEpoch(jobInfo.seedHash, maxEthashEpoch);
+                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
             }
             if (-1 != epoch)
             {
@@ -413,7 +413,7 @@ void stratum::StratumProgPOW::onMiningNotify(
             }
             else
             {
-                epoch = algo::ethash::findEpoch(jobInfo.seedHash, maxEthashEpoch);
+                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
             }
             if (-1 != epoch)
             {

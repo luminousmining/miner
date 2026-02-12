@@ -16,15 +16,17 @@ bool resolver::ResolverNvidiaEtchash::updateContext(
     common::Config& config{ common::Config::instance() };
 
     ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::buildContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::ETCHASH,
         context,
         jobInfo.epoch,
         algo::ethash::EIP1099_MAX_EPOCH_NUMBER,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        config.deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     ///////////////////////////////////////////////////////////////////////////

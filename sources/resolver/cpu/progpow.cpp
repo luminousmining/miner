@@ -17,15 +17,17 @@ resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::buildContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::PROGPOW,
         context,
         jobInfo.epoch,
         maxEpoch,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        true
     );
 
     if (   0ull == context.lightCache.numberItem
