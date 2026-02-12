@@ -198,6 +198,7 @@ bool progpowBuildDag(
 
     for (uint32_t i{ 0u }; i < dagNumberItems; i += itemByKernel)
     {
+        printf("%u/%u\n", i, dagNumberItems);
         kernelProgpowBuildDag<<<512, 128, 0, stream>>>(i, loop);
         CUDA_ER(cudaStreamSynchronize(stream));
         CUDA_ER(cudaGetLastError());
