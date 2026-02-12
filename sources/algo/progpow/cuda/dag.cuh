@@ -191,14 +191,15 @@ __host__
 bool progpowBuildDag(
     cudaStream_t stream,
     uint32_t const dagItemParents,
-    uint32_t const dagNumberItems)
+    uint32_t const dagNumberItems,
+    uint32_t const deviceID)
 {
     uint32_t const itemByKernel{ 65536u };
     uint32_t const loop{ dagItemParents / 4u / 4u };
 
     for (uint32_t i{ 0u }; i < dagNumberItems; i += itemByKernel)
     {
-        printf("%u/%u\n", i, dagNumberItems);
+        printf("[%u] BUILDING DAG ITEM(%u/%u)\n", deviceID, i, dagNumberItems);
         kernelProgpowBuildDag<<<512, 128, 0, stream>>>(i, loop);
         CUDA_ER(cudaStreamSynchronize(stream));
         CUDA_ER(cudaGetLastError());

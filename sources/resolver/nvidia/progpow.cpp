@@ -117,7 +117,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     chrono.start();
     if (false == progpowBuildDag(cuStream[currentIndexStream],
                                  dagItemParents,
-                                 castU32(context.dagCache.numberItem)))
+                                 castU32(context.dagCache.numberItem), deviceId))
     {
         return false;
     }

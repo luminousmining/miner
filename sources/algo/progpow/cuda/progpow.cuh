@@ -16,4 +16,4 @@ bool progpowUpdateConstants(uint32_t const* const headerSrc,
                             uint32_t* const headerDst);
 bool progpowBuildDag(cudaStream_t stream,
                      uint32_t const dagItemParents,
-                     uint32_t const dagNumberItems);
+                     uint32_t const dagNumberItems, uint32_t const deviceID);
