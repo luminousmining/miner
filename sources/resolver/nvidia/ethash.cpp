@@ -103,6 +103,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (false == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
+        ///////////////////////////////////////////////////////////////////////
         resolverInfo() << "Building light cache on GPU";
         chrono.start();
         if (false == ethashBuildLightCache(cuStream[currentIndexStream],
@@ -112,14 +113,14 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
         }
         chrono.start();
         resolverInfo() << "Built light cache on GPU in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
+        ///////////////////////////////////////////////////////////////////////
+        CU_SAFE_DELETE(parameters.seedCache);
     }
     else
     {
         algo::ethash::ContextGenerator::instance().free(algorithm);
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    CU_SAFE_DELETE(parameters.seedCache);
 
     ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
@@ -147,6 +148,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
 bool resolver::ResolverNvidiaEthash::updateConstants(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t const* const header { jobInfo.headerHash.word32 };
     uint64_t const boundary { jobInfo.boundaryU64 };
     if (false == ethashUpdateConstants(header, boundary))
@@ -157,6 +159,7 @@ bool resolver::ResolverNvidiaEthash::updateConstants(
     ////////////////////////////////////////////////////////////////////////////
     overrideOccupancy(128u, 8192u);
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -164,6 +167,7 @@ bool resolver::ResolverNvidiaEthash::updateConstants(
 bool resolver::ResolverNvidiaEthash::executeSync(
     stratum::StratumJobInfo const& jobInfo)
 {
+    ////////////////////////////////////////////////////////////////////////////
     ethashSearch(cuStream[currentIndexStream],
                  &parameters.resultCache[currentIndexStream],
                  blocks,
@@ -172,6 +176,7 @@ bool resolver::ResolverNvidiaEthash::executeSync(
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
+    ////////////////////////////////////////////////////////////////////////////
     algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
@@ -194,6 +199,7 @@ bool resolver::ResolverNvidiaEthash::executeSync(
         resultCache->count = 0u;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 
@@ -240,6 +246,7 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
 
+    ////////////////////////////////////////////////////////////////////////////
     return true;
 }
 

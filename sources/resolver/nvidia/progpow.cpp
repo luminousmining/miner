@@ -105,6 +105,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     if (false == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
+        ///////////////////////////////////////////////////////////////////////
         resolverInfo() << "Building LightCache on GPU";
         chrono.start();
         if (false == progpowBuildLightCache(cuStream[currentIndexStream],
@@ -114,14 +115,14 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
         }
         chrono.stop();
         resolverInfo() << "Light Cache built on GPU in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
+        ///////////////////////////////////////////////////////////////////////
+        CU_SAFE_DELETE(parameters.seedCache);
     }
     else
     {
         algo::ethash::ContextGenerator::instance().free(algorithm);
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    CU_SAFE_DELETE(parameters.seedCache);
 
     ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
@@ -355,13 +356,15 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
-                         blocks,  1u, 1u,
-                         threads, 1u, 1u,
-                         0u,
-                         cuStream[currentIndexStream],
-                         arguments,
-                         nullptr));
+    CU_ER(
+        cuLaunchKernel(
+            kernelGenerator.cuFunction,
+            blocks,  1u, 1u,
+            threads, 1u, 1u,
+            0u,
+            cuStream[currentIndexStream],
+            arguments,
+            nullptr));
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
@@ -378,13 +381,9 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = result->nonces[i];
-        }
-
-        for (uint32_t i { 0u }; i < count; ++i)
-        {
             for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {
                 resultShare.hash[i][j] = result->hash[i][j];
@@ -420,17 +419,19 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
         &parameters.dagCache,
         &result
     };
-    CU_ER(cuLaunchKernel(kernelGenerator.cuFunction,
-                         blocks,  1u, 1u,
-                         threads, 1u, 1u,
-                         0u,
-                         cuStream[currentIndexStream],
-                         arguments,
-                         nullptr));
+    CU_ER(
+        cuLaunchKernel(
+            kernelGenerator.cuFunction,
+            blocks,  1u, 1u,
+            threads, 1u, 1u,
+            0u,
+            cuStream[currentIndexStream],
+            arguments,
+            nullptr));
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
-    algo::progpow::Result* resultCache { &parameters.resultCache[currentIndexStream] };
+    algo::progpow::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
         uint32_t const count
@@ -443,13 +444,9 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = resultCache->nonces[i];
-        }
-
-        for (uint32_t i { 0u }; i < count; ++i)
-        {
             for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {
                 resultShare.hash[i][j] = resultCache->hash[i][j];
@@ -467,6 +464,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
     return true;
 }
 
+
 void resolver::ResolverNvidiaProgPOW::submit(
     stratum::Stratum* const stratum)
 {
@@ -474,10 +472,10 @@ void resolver::ResolverNvidiaProgPOW::submit(
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
-                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
                     hash[j] = resultShare.hash[i][j];
                 }
@@ -555,10 +553,10 @@ void resolver::ResolverNvidiaProgPOW::submit(
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
-                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
                     hash[j] = resultShare.hash[i][j];
                 }
