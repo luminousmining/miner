@@ -509,6 +509,7 @@ void device::DeviceManager::onUpdateJob(
     UNIQUE_LOCK(mtxJobInfo);
 
     ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
     stratum::StratumJobInfo& jobInfo{ jobInfos[stratumUUID] };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -551,11 +552,14 @@ void device::DeviceManager::onUpdateJob(
     {
         jobInfo.copy(newJobInfo);
         jobInfo.gapNonce /= devices.size();
+        if (true == config.log.showNewJob)
+        {
 #if defined(_DEBUG)
-        logInfo() << jobInfo;
+            logInfo() << jobInfo;
 #else
-        logInfo() << "New Job[" << jobInfo.jobID << "]";
+            logInfo() << "New Job[" << jobInfo.jobID << "]";
 #endif
+        }
         updateDevice(stratumUUID, updateMemory, updateConstants);
     }
 }

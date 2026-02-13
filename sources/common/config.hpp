@@ -76,6 +76,7 @@ namespace common
             common::TYPELOG         level{ common::TYPELOG::__INFO };
             std::string             file{};
             std::optional<uint32_t> intervalHashStats{};
+            bool                    showNewJob{ true };
         };
 
         struct ApiConfig

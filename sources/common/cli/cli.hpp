@@ -49,6 +49,7 @@ namespace common
         std::optional<common::TYPELOG> getLevelLog() const;
         std::optional<std::string>     getLogFilenaName() const;
         std::optional<uint32_t>        getLogIntervalHashStats() const;
+        bool                           isLogNewJob() const;
 
         // Environment
         std::optional<bool>        getEnvironmentCudaLazy() const;
@@ -58,7 +59,7 @@ namespace common
         std::optional<uint32_t>    getEnvironmentGpuSingleAllocPercent() const;
 
         // Common
-         std::optional<double> getPricekWH() const;
+        std::optional<double> getPricekWH() const;
 
         // Pool Connection
         std::optional<std::string> getHost() const;
