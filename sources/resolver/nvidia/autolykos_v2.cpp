@@ -8,6 +8,13 @@
 #include <resolver/nvidia/autolykos_v2.hpp>
 
 
+resolver::ResolverNvidiaAutolykosV2::ResolverNvidiaAutolykosV2():
+    resolver::ResolverNvidia()
+{
+    algorithm = algo::ALGORITHM::AUTOLYKOS_V2;
+}
+
+
 resolver::ResolverNvidiaAutolykosV2::~ResolverNvidiaAutolykosV2()
 {
     autolykosv2FreeMemory(parameters);

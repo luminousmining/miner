@@ -14,7 +14,7 @@ namespace resolver
     class ResolverNvidiaEtchash : public resolver::ResolverNvidiaEthash
     {
     public:
-        ResolverNvidiaEtchash() = default;
+        ResolverNvidiaEtchash();
         ~ResolverNvidiaEtchash() = default;
 
     protected:

@@ -30,7 +30,7 @@ struct ResolverMeowpowNvidiaTest : public testing::Test
 
     ~ResolverMeowpowNvidiaTest()
     {
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void initializeJob(uint64_t const nonce)
@@ -41,7 +41,7 @@ struct ResolverMeowpowNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("cfa3e37c459ebd9b4138bd2141a52d89f6f8f671ecf91456f5a29176eb132fc0");
         jobInfo.boundary = algo::toHash256("0000000500000000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::meowpow::MAX_PERIOD;
     }
 };

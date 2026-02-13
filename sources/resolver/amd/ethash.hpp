@@ -16,7 +16,7 @@ namespace resolver
     class ResolverAmdEthash : public resolver::ResolverAmd
     {
     public:
-        ResolverAmdEthash() = default;
+        ResolverAmdEthash();
         ~ResolverAmdEthash();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;

@@ -6,6 +6,13 @@
 #include <resolver/nvidia/blake3.hpp>
 
 
+resolver::ResolverNvidiaBlake3::ResolverNvidiaBlake3():
+    resolver::ResolverNvidia()
+{
+    algorithm = algo::ALGORITHM::BLAKE3;
+}
+
+
 resolver::ResolverNvidiaBlake3::~ResolverNvidiaBlake3()
 {
     blake3FreeMemory(parameters);

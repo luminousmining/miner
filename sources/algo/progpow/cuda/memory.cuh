@@ -15,6 +15,7 @@ bool progpowFreeMemory(
     CU_SAFE_DELETE(params.dagCache);
     CU_SAFE_DELETE(params.headerCache);
     CU_SAFE_DELETE_HOST(params.resultCache);
+
     return true;
 }
 
@@ -32,11 +33,22 @@ bool progpowInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_ALLOC(&params.seedCache, algo::LEN_HASH_512);
+    if (true == buildLightCacheOnGPU)
+    {
+        CU_ALLOC(&params.seedCache, algo::LEN_HASH_512);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     CU_ALLOC(&params.lightCache, context.lightCache.size);
     CU_ALLOC(&params.dagCache, context.dagCache.size);
     CU_ALLOC(&params.headerCache, sizeof(uint32_t) * algo::LEN_HASH_256_WORD_32);
     CU_ALLOC_HOST(&params.resultCache, sizeof(algo::progpow::Result) * 2u);
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (true == buildLightCacheOnGPU)
+    {
+        IS_NULL(params.seedCache);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);
@@ -49,11 +61,11 @@ bool progpowInitMemory(
     params.resultCache[0].found = false;
     params.resultCache[1].count = 0u;
     params.resultCache[1].found = false;
-    for (uint32_t i{ 0u }; i < 4u; ++i)
+    for (uint32_t i{ 0u }; i < algo::progpow::MAX_RESULT; ++i)
     {
         params.resultCache[0].nonces[i] = 0ull;
         params.resultCache[1].nonces[i] = 0ull;
-        for (uint32_t x{ 0u }; x < 8u; ++x)
+        for (uint32_t x{ 0u }; x < algo::LEN_HASH_256_WORD_32; ++x)
         {
             params.resultCache[0].hash[i][x] = 0u;
             params.resultCache[1].hash[i][x] = 0u;
@@ -118,10 +130,12 @@ bool progpowUpdateConstants(
     uint32_t const* const hostBuffer,
     uint32_t* const deviceBuffer)
 {
-    CUDA_ER(cudaMemcpy(deviceBuffer,
-                       hostBuffer,
-                       algo::LEN_HASH_256_WORD_32 * sizeof(uint32_t),
-                       cudaMemcpyHostToDevice));
+    CUDA_ER(
+        cudaMemcpy(
+            deviceBuffer,
+            hostBuffer,
+            algo::LEN_HASH_256_WORD_32 * sizeof(uint32_t),
+            cudaMemcpyHostToDevice));
 
     return true;
 }

@@ -49,6 +49,7 @@ namespace common
         std::optional<common::TYPELOG> getLevelLog() const;
         std::optional<std::string>     getLogFilenaName() const;
         std::optional<uint32_t>        getLogIntervalHashStats() const;
+        bool                           isLogNewJob() const;
 
         // Environment
         std::optional<bool>        getEnvironmentCudaLazy() const;
@@ -58,7 +59,7 @@ namespace common
         std::optional<uint32_t>    getEnvironmentGpuSingleAllocPercent() const;
 
         // Common
-         std::optional<double> getPricekWH() const;
+        std::optional<double> getPricekWH() const;
 
         // Pool Connection
         std::optional<std::string> getHost() const;
@@ -89,6 +90,11 @@ namespace common
         bool isAmdEnable() const;
 #endif
         bool isCpuEnable() const;
+
+#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+        std::optional<uint32_t> getMockerResolverCount() const;
+        std::optional<uint32_t> getMockerResolverUpdateMemorySleep() const;
+#endif
 
         // Device settings custom
         std::vector<uint32_t> getDevicesDisable() const;

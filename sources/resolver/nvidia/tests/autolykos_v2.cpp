@@ -31,7 +31,7 @@ struct ResolverAutolykosv2NvidiaTest : public testing::Test
 
     ~ResolverAutolykosv2NvidiaTest()
     {
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void initializeJob(uint64_t const nonce)

@@ -281,6 +281,9 @@ endif()
 if (TOOL_MOCKER)
     add_compile_definitions(TOOL_MOCKER)
 endif()
+if (TOOL_TRACE_MEMORY OR TOOL_MOCKER)
+    add_compile_definitions(TOOLS_ENABLE)
+endif()
 
 
 ################################################################################

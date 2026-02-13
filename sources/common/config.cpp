@@ -110,6 +110,9 @@ bool common::Config::loadCli(int argc, char** argv)
             log.intervalHashStats = common::min_limit(*intervalHashStats, 100u);
         }
 
+        logInfo() << "cli.isLogNewJob(): " << cli.isLogNewJob();
+        log.showNewJob = cli.isLogNewJob();
+
         ////////////////////////////////////////////////////////////////////////
         // ENVIRONMENT
         ////////////////////////////////////////////////////////////////////////
@@ -481,6 +484,14 @@ bool common::Config::loadCli(int argc, char** argv)
         {
             api.port = ApiPort;
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        // TOOL MOCKER
+        ////////////////////////////////////////////////////////////////////////
+#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+        toolConfigs.mockerResolverCount = cli.getMockerResolverCount();
+        toolConfigs.mockerResolverUpdateMemorySleep = cli.getMockerResolverUpdateMemorySleep();
+#endif
     }
     catch(std::exception const& e)
     {
