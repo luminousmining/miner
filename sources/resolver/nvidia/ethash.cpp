@@ -104,12 +104,18 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     if (false == config.deviceAlgorithm.ethashBuildLightCacheCPU)
     {
         resolverInfo() << "Building light cache on GPU";
-        common::ChronoGuard chronoCPU{ "Built light cache", common::CHRONO_UNIT::MS };
+        chrono.start();
         if (false == ethashBuildLightCache(cuStream[currentIndexStream],
                                            parameters.seedCache))
         {
             return false;
         }
+        chrono.start();
+        resolverInfo() << "Built light cache on GPU in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+    }
+    else
+    {
+        algo::ethash::ContextGenerator::instance().free(algorithm);
     }
 
     ////////////////////////////////////////////////////////////////////////////

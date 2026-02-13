@@ -69,9 +69,22 @@ void algo::ethash::ContextGenerator::free(algo::ALGORITHM const algorithm)
     UNIQUE_LOCK(mtxContexts);
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::DagContext& context{ contexts[algorithm] };
-    SAFE_DELETE_ARRAY(context.data);
-    context.lightCache.hash = nullptr;
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+
+    ////////////////////////////////////////////////////////////////////////////
+    --contextShare.count;
+    if (0u == contextShare.count)
+    {
+        SAFE_DELETE_ARRAY(contextShare.context.data);
+        contextShare.context.lightCache.hash = nullptr;
+    }
+}
+
+
+algo::ethash::ContextGenerator::DagContextShare& algo::ethash::ContextGenerator::getContext(
+    algo::ALGORITHM const algorithm)
+{
+    return contexts[algorithm];
 }
 
 
@@ -90,7 +103,11 @@ void algo::ethash::ContextGenerator::build(
     UNIQUE_LOCK(mtxContexts);
 
     ///////////////////////////////////////////////////////////////////////////
-    algo::DagContext& localDagContext{ contexts[algorithm] };
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+    algo::DagContext& localDagContext{ contextShare.context };
+
+    ////////////////////////////////////////////////////////////////////////////
+    ++contextShare.count;
 
     ////////////////////////////////////////////////////////////////////////////
     if (localDagContext.epoch == cast32(currentEpoch))
@@ -120,7 +137,7 @@ void algo::ethash::ContextGenerator::build(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t lightCacheNumItemsUpperBound { castU64(epochEIP) };
+    uint64_t lightCacheNumItemsUpperBound{ castU64(epochEIP) };
     lightCacheNumItemsUpperBound *= lightCacheCountItemsGrowth;
     lightCacheNumItemsUpperBound += lightCacheCountItemsInit;
     localDagContext.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
@@ -159,7 +176,8 @@ void algo::ethash::ContextGenerator::buildLightCache(
     algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::DagContext& localDagContext{ contexts[algorithm] };
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+    algo::DagContext& localDagContext{ contextShare.context };
 
     ////////////////////////////////////////////////////////////////////////////
     algo::hash512 item{ localDagContext.hashedSeedCache };
@@ -175,7 +193,7 @@ void algo::ethash::ContextGenerator::buildLightCache(
 
     ////////////////////////////////////////////////////////////////////////////
     logInfo() << "Building light cache on CPU";
-    common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
+    common::ChronoGuard chrono{ "Built light cache on CPU", common::CHRONO_UNIT::MS };
 
     ////////////////////////////////////////////////////////////////////////////
     for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
@@ -208,7 +226,8 @@ void algo::ethash::ContextGenerator::copyContext(
     algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::DagContext& localDagContext{ contexts[algorithm] };
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+    algo::DagContext& localDagContext{ contextShare.context };
 
     context.epoch = localDagContext.epoch;
     context.lightCache.numberItem = localDagContext.lightCache.numberItem;

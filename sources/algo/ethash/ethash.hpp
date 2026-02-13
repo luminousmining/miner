@@ -53,10 +53,16 @@ namespace algo
                        bool const buildOnCPU);
 
         private:
+            struct DagContextShare
+            {
+                uint32_t         count{ 0u };
+                algo::DagContext context;
+            };
             boost::mutex                                mtxContexts{};
-            std::map<algo::ALGORITHM, algo::DagContext> contexts{};
+            std::map<algo::ALGORITHM, DagContextShare> contexts{};
 
             ContextGenerator() = default;
+            DagContextShare& getContext(algo::ALGORITHM const algorithm);
             void buildLightCache(algo::ALGORITHM const algorithm);
             void copyContext(algo::DagContext& context,
                              algo::ALGORITHM const algorithm);

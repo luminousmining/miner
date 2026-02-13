@@ -5,54 +5,60 @@
 
 
 __device__ __forceinline__
-void doCopy(
-    uint4* __restrict__ const dst,
+uint4 doCopy(
     uint4* __restrict__ const src,
-    uint32_t const workerId,
-    uint32_t const laneId)
+    uint32_t const worker_id,
+    uint32_t const lane_id)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    uint4 item;
+
     ////////////////////////////////////////////////////////////////////////////
     #pragma unroll
     for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
     {
-        uint32_t const x{ reg_load(src[i].x, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const y{ reg_load(src[i].y, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const z{ reg_load(src[i].z, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const w{ reg_load(src[i].w, laneId, DAG_PARRALLEL_LANE) };
+        uint4 const tmp_src = src[i];
+        uint32_t const x = reg_load(tmp_src.x, lane_id, DAG_PARRALLEL_LANE);
+        uint32_t const y = reg_load(tmp_src.y, lane_id, DAG_PARRALLEL_LANE);
+        uint32_t const z = reg_load(tmp_src.z, lane_id, DAG_PARRALLEL_LANE);
+        uint32_t const w = reg_load(tmp_src.w, lane_id, DAG_PARRALLEL_LANE);
 
-        if (i == workerId)
+        if (i == worker_id)
         {
-            dst->x = x;
-            dst->y = y;
-            dst->z = z;
-            dst->w = w;
+            item.x = x;
+            item.y = y;
+            item.z = z;
+            item.w = w;
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    return item;
 }
 
 
 __device__ __forceinline__
 void buildItemFromCache(
     uint4* const __restrict__ hash,
-    uint32_t const workerId,
-    uint32_t const cacheIndex)
+    uint32_t const worker_id,
+    uint32_t const cache_index)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const cacheIndexLimit{ (cacheIndex % d_light_number_item) * DAG_HASH_U4_SIZE };
+    uint32_t const cache_index_limit = (cache_index % d_light_number_item) * DAG_HASH_U4_SIZE;
 
     ////////////////////////////////////////////////////////////////////////////
     #pragma unroll
-    for (uint32_t laneId{ 0u }; laneId < DAG_PARRALLEL_LANE; ++laneId)
+    for (uint32_t lane_id = 0u; lane_id < DAG_PARRALLEL_LANE; ++lane_id)
     {
         ////////////////////////////////////////////////////////////////////////
-        uint32_t const tmpCacheIndex{ reg_load(cacheIndexLimit, laneId, DAG_PARRALLEL_LANE) };
-        uint32_t const index{ tmpCacheIndex + workerId };
-        uint4 cache16Bytes = d_light_cache[index];
+        uint32_t const tmp_cache_index = reg_load(cache_index_limit, lane_id, DAG_PARRALLEL_LANE);
+        uint32_t const index = tmp_cache_index + worker_id;
+        uint4 const cache16Bytes = d_light_cache[index];
 
         ////////////////////////////////////////////////////////////////////////
         uint4 cache64Bytes[DAG_HASH_U4_SIZE];
         #pragma unroll
-        for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
+        for (uint32_t i = 0u; i < DAG_HASH_U4_SIZE; ++i)
         {
             cache64Bytes[i].x = reg_load(cache16Bytes.x, i, DAG_PARRALLEL_LANE);
             cache64Bytes[i].y = reg_load(cache16Bytes.y, i, DAG_PARRALLEL_LANE);
@@ -61,10 +67,10 @@ void buildItemFromCache(
         }
 
         ////////////////////////////////////////////////////////////////////////
-        if (laneId == workerId)
+        if (lane_id == worker_id)
         {
             #pragma unroll
-            for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
+            for (uint32_t i = 0u; i < DAG_HASH_U4_SIZE; ++i)
             {
                 fnv1(&hash[i], &cache64Bytes[i]);
             }
@@ -75,29 +81,29 @@ void buildItemFromCache(
 
 __device__ __forceinline__
 void buildItem(
-    bool is_access,
-    uint32_t const workerId,
-    uint32_t const dagIndex,
-    uint32_t const loopIndex,
-    uint32_t const cacheIndex)
+    bool const is_access,
+    uint32_t const worker_id,
+    uint32_t const dag_index,
+    uint32_t const loop_index,
+    uint32_t const cache_index)
 {
     ////////////////////////////////////////////////////////////////////////////
     uint4 hash[DAG_HASH_U4_SIZE];
-    uint32_t const cacheStartIndex{ (cacheIndex % d_light_number_item) * DAG_HASH_U4_SIZE };
+    uint32_t const cache_start_index = (cache_index % d_light_number_item) * DAG_HASH_U4_SIZE;
 
     ////////////////////////////////////////////////////////////////////////////
     #pragma unroll
-    for (uint32_t lane_id{ 0u }; lane_id < DAG_PARRALLEL_LANE; ++lane_id)
+    for (uint32_t lane_id = 0u; lane_id < DAG_PARRALLEL_LANE; ++lane_id)
     {
         ////////////////////////////////////////////////////////////////////////
-        uint32_t const tmpCacheStartIndex{ reg_load(cacheStartIndex, lane_id, DAG_PARRALLEL_LANE) };
-        uint32_t const tmpCacheIndex{ tmpCacheStartIndex + workerId };
-        uint4 const tmp_cache{ d_light_cache[tmpCacheIndex] };
+        uint32_t const tmp_cache_start_index = reg_load(cache_start_index, lane_id, DAG_PARRALLEL_LANE);
+        uint32_t const tmp_cache_index = tmp_cache_start_index + worker_id;
+        uint4 const tmp_cache = d_light_cache[tmp_cache_index];
         uint4 tmp_hash[DAG_HASH_U4_SIZE];
 
         ////////////////////////////////////////////////////////////////////////
         #pragma unroll
-        for (uint32_t i{ 0u }; i < DAG_PARRALLEL_LANE; ++i)
+        for (uint32_t i = 0u; i < DAG_PARRALLEL_LANE; ++i)
         {
             tmp_hash[i].x = reg_load(tmp_cache.x, i, DAG_PARRALLEL_LANE);
             tmp_hash[i].y = reg_load(tmp_cache.y, i, DAG_PARRALLEL_LANE);
@@ -106,10 +112,10 @@ void buildItem(
         }
 
         ////////////////////////////////////////////////////////////////////////
-        if (lane_id == workerId)
+        if (lane_id == worker_id)
         {
             #pragma unroll
-            for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
+            for (uint32_t i = 0u; i < DAG_HASH_U4_SIZE; ++i)
             {
                 hash[i].x = tmp_hash[i].x;
                 hash[i].y = tmp_hash[i].y;
@@ -118,23 +124,23 @@ void buildItem(
             }
         }
     }
-    hash[0].x ^= cacheIndex;
+    hash[0].x ^= cache_index;
 
     ////////////////////////////////////////////////////////////////////////////
     keccak_f1600(hash);
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t j{ 0u };
+    uint32_t j = 0u;
     #pragma unroll
-    for (uint32_t y{ 0u }; y < loopIndex; ++y)
+    for (uint32_t y = 0u; y < loop_index; ++y)
     {
         #pragma unroll
-        for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
+        for (uint32_t i = 0u; i < DAG_HASH_U4_SIZE; ++i)
         {
-            buildItemFromCache(hash, workerId, fnv1(cacheIndex ^ j,        hash[i].x));
-            buildItemFromCache(hash, workerId, fnv1(cacheIndex ^ (j + 1u), hash[i].y));
-            buildItemFromCache(hash, workerId, fnv1(cacheIndex ^ (j + 2u), hash[i].z));
-            buildItemFromCache(hash, workerId, fnv1(cacheIndex ^ (j + 3u), hash[i].w));
+            buildItemFromCache(hash, worker_id, fnv1(cache_index ^ j,        hash[i].x));
+            buildItemFromCache(hash, worker_id, fnv1(cache_index ^ (j + 1u), hash[i].y));
+            buildItemFromCache(hash, worker_id, fnv1(cache_index ^ (j + 2u), hash[i].z));
+            buildItemFromCache(hash, worker_id, fnv1(cache_index ^ (j + 3u), hash[i].w));
 
             j += 4u;
         }
@@ -144,15 +150,14 @@ void buildItem(
     keccak_f1600(hash);
 
     ////////////////////////////////////////////////////////////////////////////
-    uint4 itemHash;
     #pragma unroll
-    for (uint32_t laneId{ 0u }; laneId < DAG_HASH_U4_SIZE; ++laneId)
+    for (uint32_t lane_id = 0u; lane_id < DAG_HASH_U4_SIZE; ++lane_id)
     {
-        doCopy(&itemHash, hash, workerId, laneId);
-        uint32_t const tmpDagIndex{ reg_load(dagIndex, laneId, DAG_PARRALLEL_LANE) };
+        uint4 const itemHash = doCopy(hash, worker_id, lane_id);
+        uint32_t const tmpdag_index = reg_load(dag_index, lane_id, DAG_PARRALLEL_LANE);
         if (true == is_access)
         {
-            uint32_t const index{ tmpDagIndex + workerId };
+            uint32_t const index = tmpdag_index + worker_id;
             d_dag[index] = itemHash;
         }
     }
@@ -161,15 +166,14 @@ void buildItem(
 
 __global__
 void kernelProgpowBuildDag(
-    uint32_t const startIndex,
+    uint32_t const start_index,
     uint32_t const loop)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const threadId{ (blockIdx.x * blockDim.x) + threadIdx.x };
-    uint32_t const workerId{ threadId & 3u };
-    uint32_t const dagAccessWorker{ (threadId / 4u) + startIndex };
-    uint32_t const dagAccessIndex{ threadId + startIndex };
-    uint32_t const dagIndex{ threadId + startIndex };
+    uint32_t const threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
+    uint32_t const worker_id = threadId & 3u;
+    uint32_t const dagAccessWorker = (threadId / 4u) + start_index;
+    uint32_t const dag_index = threadId + start_index;
 
     ////////////////////////////////////////////////////////////////////////////
     if (dagAccessWorker >= d_dag_number_item)
@@ -178,12 +182,12 @@ void kernelProgpowBuildDag(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const cacheIndex{ dagIndex * 2u };
-    uint32_t const dagIndex1{ dagIndex * 8u };
-    uint32_t const dagIndex2{ dagIndex1 + 4u };
-    bool const isAccess{ dagAccessIndex < d_dag_number_item };
-    buildItem(isAccess, workerId, dagIndex1, loop, cacheIndex);
-    buildItem(isAccess, workerId, dagIndex2, loop, cacheIndex + 1u);
+    uint32_t const cache_index{ dag_index * 2u };
+    uint32_t const dag_index_1{ dag_index * 8u };
+    uint32_t const dag_index_2{ dag_index_1 + 4u };
+    bool const isAccess{ dag_index < d_dag_number_item };
+    buildItem(isAccess, worker_id, dag_index_1, loop, cache_index);
+    buildItem(isAccess, worker_id, dag_index_2, loop, cache_index + 1u);
 }
 
 
@@ -191,15 +195,16 @@ __host__
 bool progpowBuildDag(
     cudaStream_t stream,
     uint32_t const dagItemParents,
-    uint32_t const dagNumberItems,
-    uint32_t const deviceID)
+    uint32_t const dagNumberItems)
 {
-    uint32_t const itemByKernel{ 65536u };
-    uint32_t const loop{ dagItemParents / 4u / 4u };
+    uint32_t const threads{ 128u };
+    uint32_t const blocks{ 512u };
+    uint32_t const itemByKernel{ threads * blocks };
+    uint32_t const loop{ dagItemParents / DAG_PARRALLEL_LANE / DAG_HASH_U4_SIZE };
 
     for (uint32_t i{ 0u }; i < dagNumberItems; i += itemByKernel)
     {
-        kernelProgpowBuildDag<<<512, 128, 0, stream>>>(i, loop);
+        kernelProgpowBuildDag<<<blocks, threads, 0, stream>>>(i, loop);
         CUDA_ER(cudaStreamSynchronize(stream));
         CUDA_ER(cudaGetLastError());
     }

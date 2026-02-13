@@ -113,10 +113,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
             return false;
         }
         chrono.stop();
-        resolverInfo() << "Light Cache built in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
-
-        ////////////////////////////////////////////////////////////////////////////
-        CU_SAFE_DELETE(parameters.seedCache);
+        resolverInfo() << "Light Cache built on GPU in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
     }
     else
     {
@@ -124,11 +121,14 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    CU_SAFE_DELETE(parameters.seedCache);
+
+    ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
     chrono.start();
     if (false == progpowBuildDag(cuStream[currentIndexStream],
                                  dagItemParents,
-                                 castU32(context.dagCache.numberItem), deviceId))
+                                 castU32(context.dagCache.numberItem)))
     {
         return false;
     }
