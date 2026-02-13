@@ -15,7 +15,7 @@ uint4 doCopy(
 
     ////////////////////////////////////////////////////////////////////////////
     #pragma unroll
-    for (uint32_t i{ 0u }; i < DAG_HASH_U4_SIZE; ++i)
+    for (uint32_t i = 0u; i < DAG_HASH_U4_SIZE; ++i)
     {
         uint4 const tmp_src = src[i];
         uint32_t const x = reg_load(tmp_src.x, lane_id, DAG_PARRALLEL_LANE);
@@ -182,10 +182,10 @@ void kernelProgpowBuildDag(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const cache_index{ dag_index * 2u };
-    uint32_t const dag_index_1{ dag_index * 8u };
-    uint32_t const dag_index_2{ dag_index_1 + 4u };
-    bool const isAccess{ dag_index < d_dag_number_item };
+    uint32_t const cache_index = dag_index * 2u;
+    uint32_t const dag_index_1 = dag_index * 8u;
+    uint32_t const dag_index_2 = dag_index_1 + 4u;
+    bool const isAccess = dag_index < d_dag_number_item;
     buildItem(isAccess, worker_id, dag_index_1, loop, cache_index);
     buildItem(isAccess, worker_id, dag_index_2, loop, cache_index + 1u);
 }
@@ -197,12 +197,12 @@ bool progpowBuildDag(
     uint32_t const dagItemParents,
     uint32_t const dagNumberItems)
 {
-    uint32_t const threads{ 128u };
-    uint32_t const blocks{ 512u };
-    uint32_t const itemByKernel{ threads * blocks };
-    uint32_t const loop{ dagItemParents / DAG_PARRALLEL_LANE / DAG_HASH_U4_SIZE };
+    uint32_t const threads = 128u;
+    uint32_t const blocks = 512u;
+    uint32_t const itemByKernel = threads * blocks;
+    uint32_t const loop = dagItemParents / DAG_PARRALLEL_LANE / DAG_HASH_U4_SIZE;
 
-    for (uint32_t i{ 0u }; i < dagNumberItems; i += itemByKernel)
+    for (uint32_t i = 0u; i < dagNumberItems; i += itemByKernel)
     {
         kernelProgpowBuildDag<<<blocks, threads, 0, stream>>>(i, loop);
         CUDA_ER(cudaStreamSynchronize(stream));
