@@ -105,3 +105,10 @@ N/A : No default value is set.
 |---------|--------|--------------|-------------|---------|
 | `--sm_wallet` | ✅ | N/A | Assign a wallet with a coin. | `--sm_wallet=COIN:WALLET` |
 | `--sm_pool` | ✅ | N/A | Assign a pool with a coin. | `--sm_pool=COIN@POOL_URL:POOL_PORT` |
+
+
+## Tools Developer
+
+| Parameter | Optional | Default Value | Description | Example |
+|---------|--------|--------------|-------------|---------|
+| `--tool_mocker_resolver_count` | ✅ | 8 | Defines the number of fake devices that will mine / create fake latency. | `--tool_mocker_resolver_count=8` |

@@ -14,7 +14,7 @@ namespace resolver
     class ResolverAmdEtchash : public resolver::ResolverAmdEthash
     {
     public:
-        ResolverAmdEtchash() = default;
+        ResolverAmdEtchash();
         ~ResolverAmdEtchash() = default;
 
     protected:

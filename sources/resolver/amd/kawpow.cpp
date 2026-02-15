@@ -6,11 +6,16 @@
 resolver::ResolverAmdKawPOW::ResolverAmdKawPOW():
     resolver::ResolverAmdProgPOW()
 {
+    ///////////////////////////////////////////////////////////////////////////
+    algorithm = algo::ALGORITHM::KAWPOW;
+
+    ///////////////////////////////////////////////////////////////////////////
     // Ethash
     maxEpoch = algo::ethash::MAX_EPOCH_NUMBER;
     dagCountItemsGrowth = algo::ethash::DAG_COUNT_ITEMS_GROWTH;
     dagCountItemsInit = algo::ethash::DAG_COUNT_ITEMS_INIT;
 
+    ///////////////////////////////////////////////////////////////////////////
     // KawPow
     progpowVersion = algo::progpow::VERSION::KAWPOW;
     dagItemParents = algo::kawpow::DAG_ITEM_PARENTS;

@@ -48,3 +48,14 @@ std::optional<uint32_t> common::Cli::getLogIntervalHashStats() const
 
     return std::nullopt;
 }
+
+
+bool common::Cli::isLogNewJob() const
+{
+    if (true == contains("log_new_job"))
+    {
+        return params["log_new_job"].as<bool>();
+    }
+
+    return true;
+}

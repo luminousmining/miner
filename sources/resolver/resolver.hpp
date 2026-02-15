@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algo/algo_type.hpp>
 #include <stratum/smart_mining.hpp>
 #include <stratum/stratum.hpp>
 #include <stratum/job_info.hpp>
@@ -10,10 +11,11 @@ namespace resolver
     class Resolver
     {
     public:
-        uint32_t    currentIndexStream{ 0u };
-        uint32_t    deviceId{ 0u };
-        std::string jobId{};
-        uint64_t    deviceMemoryAvailable{ 0ull };
+        algo::ALGORITHM algorithm{ algo::ALGORITHM::UNKNOWN };
+        uint32_t        currentIndexStream{ 0u };
+        uint32_t        deviceId{ 0u };
+        std::string     jobId{};
+        uint64_t        deviceMemoryAvailable{ 0ull };
 
         Resolver() = default;
         virtual ~Resolver() = default;

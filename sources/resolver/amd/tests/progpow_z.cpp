@@ -49,7 +49,7 @@ struct ResolverProgpowZAmdTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("0x71a56feffb6f10ea9d76e1a9464eb0abd86e4349ae98fb794923a65b650282a3");
         jobInfo.boundary = algo::toHash256("0x00000002dd01fc067918c87bb22ae2da831babaff47cc1f55b39398a682631f0");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::ethash::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::ethash::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::progpow::v_0_9_2::MAX_PERIOD;
     }
 };

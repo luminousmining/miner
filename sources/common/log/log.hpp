@@ -75,9 +75,6 @@ namespace common
 #define resolverTrace()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__TRACE)   << "Device[" << deviceId << "]: "
 #define resolverDebug()  common::Logger(__FUNCTION__, __LINE__, common::TYPELOG::__DEBUG)   << "Device[" << deviceId << "]: "
 
-#define __TRACE() { logTrace() << __FUNCTION__ << ":" << __LINE__; }
-#define __TRACE_DEVICE()                                                       \
-    {                                                                          \
-        logTrace() << __FUNCTION__ << ":" << __LINE__                          \
-        << ": device[" << id << "]";                                           \
-    }
+#define __TRACE()           { logTrace() << __FUNCTION__ << ":" << __LINE__; }
+#define __TRACE_DEVICE()    { deviceTrace() << __FUNCTION__ << ":" << __LINE__; }
+#define __TRACE_RESOLVER()  { resolverTrace() << __FUNCTION__ << ":" << __LINE__; }

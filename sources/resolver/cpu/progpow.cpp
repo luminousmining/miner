@@ -6,6 +6,16 @@
 #include <resolver/cpu/progpow.hpp>
 
 
+resolver::ResolverCpuProgPOW::ResolverCpuProgPOW():
+    resolver::ResolverCpu()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::PROGPOW;
+    }
+}
+
+
 resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 {
     SAFE_DELETE_ARRAY(parameters.headerCache);
@@ -17,18 +27,18 @@ resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algorithm,
         context,
         jobInfo.epoch,
         maxEpoch,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        true
     );
-    // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
-    algo::ethash::buildLightCache(context, true);
 
     if (   0ull == context.lightCache.numberItem
         || 0ull == context.lightCache.size

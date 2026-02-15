@@ -31,7 +31,12 @@ bool ethashInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_ALLOC(&params.seedCache, algo::LEN_HASH_512);
+    if (true == buildLightCacheOnGPU)
+    {
+        CU_ALLOC(&params.seedCache, algo::LEN_HASH_512);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     CU_ALLOC(&params.lightCache, context.lightCache.size);
     CU_ALLOC(&params.dagCache, context.dagCache.size);
     CU_ALLOC_HOST(&params.resultCache, sizeof(algo::ethash::Result) * 2u);
@@ -48,9 +53,14 @@ bool ethashInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    if (true == buildLightCacheOnGPU)
+    {
+        IS_NULL(params.seedCache);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     IS_NULL(params.lightCache);
     IS_NULL(params.dagCache);
-    IS_NULL(params.seedCache);
     IS_NULL(params.resultCache);
 
     ////////////////////////////////////////////////////////////////////////////

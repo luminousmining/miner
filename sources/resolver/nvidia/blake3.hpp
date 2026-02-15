@@ -14,7 +14,7 @@ namespace resolver
     class ResolverNvidiaBlake3 : public resolver::ResolverNvidia
     {
     public:
-        ResolverNvidiaBlake3() = default;
+        ResolverNvidiaBlake3();
         ~ResolverNvidiaBlake3();
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;

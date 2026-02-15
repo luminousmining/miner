@@ -11,6 +11,16 @@
 #include <resolver/amd/ethash.hpp>
 
 
+resolver::ResolverAmdEthash::ResolverAmdEthash():
+    resolver::ResolverAmd()
+{
+    if (algorithm == algo::ALGORITHM::UNKNOWN)
+    {
+        algorithm = algo::ALGORITHM::ETHASH;
+    }
+}
+
+
 resolver::ResolverAmdEthash::~ResolverAmdEthash()
 {
     parameters.lightCache.free();
@@ -25,21 +35,18 @@ bool resolver::ResolverAmdEthash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    common::Config& config{ common::Config::instance() };
-
-    ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algorithm,
         context,
         jobInfo.epoch,
         algo::ethash::MAX_EPOCH_NUMBER,
         dagCountItemsGrowth,
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
-        lightCacheCountItemsInit
+        lightCacheCountItemsInit,
+        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
-    // TODO: config.deviceAlgorithm.ethashBuildLightCacheCPU
-    algo::ethash::buildLightCache(context, true);
 
     if (   context.lightCache.numberItem == 0ull
         || context.lightCache.size == 0ull
@@ -126,7 +133,7 @@ bool resolver::ResolverAmdEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::freeDagContext(context);
+    algo::ethash::ContextGenerator::instance().free(algorithm);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

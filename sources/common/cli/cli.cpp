@@ -47,6 +47,13 @@ common::Cli::Cli()
             "[OPTIONAL] Set the time interval (in milliseconds) between logs of information about the hashrate.\n"
             "--log_interval_hash=10000"
         )
+        (
+            "log_new_job",
+            value<bool>(),
+            "[OPTIONAL] Show log when receive new job.\n"
+            "Default value is true.\n"
+            "--log_new_job=true"
+        )
 
         // Environment
         (

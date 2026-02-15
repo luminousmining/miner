@@ -45,7 +45,7 @@ struct ResolverKawpowNvidiaTest : public testing::Test
         config.occupancy.blocks = std::nullopt;
 
         ////////////////////////////////////////////////////////////////////////////
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void setOccupancy(
@@ -76,7 +76,7 @@ struct ResolverKawpowNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
         jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::kawpow::MAX_PERIOD;
     }
 };
@@ -88,18 +88,21 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheGPU)
     common::Config& config{ common::Config::instance() };
     config.deviceAlgorithm.ethashBuildLightCacheCPU = false;
 
+    ////////////////////////////////////////////////////////////////////////////
     initializeJob(0xce00000017f87f70);
 
+    ////////////////////////////////////////////////////////////////////////////
     ASSERT_NE(nullptr, resolver.cuStream[0]);
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
+
+    ////////////////////////////////////////////////////////////////////////////
     resolver.submit(&stratum);
-
     ASSERT_FALSE(stratum.paramSubmit.empty());
-
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
+    ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
     EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
@@ -107,18 +110,25 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheGPU)
 
 TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheCPU)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+    config.deviceAlgorithm.ethashBuildLightCacheCPU = true;
+
+    ////////////////////////////////////////////////////////////////////////////
     initializeJob(0xce00000017f87f70);
 
+    ////////////////////////////////////////////////////////////////////////////
     ASSERT_NE(nullptr, resolver.cuStream[0]);
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
+
+    ////////////////////////////////////////////////////////////////////////////
     resolver.submit(&stratum);
-
     ASSERT_FALSE(stratum.paramSubmit.empty());
-
     std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
 
+    ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
     EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
@@ -137,9 +147,9 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceInternalLoop)
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
-    resolver.submit(&stratum);
 
     ////////////////////////////////////////////////////////////////////////////
+    resolver.submit(&stratum);
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
     ////////////////////////////////////////////////////////////////////////////
@@ -162,9 +172,9 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceLittleOccupancy)
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
-    resolver.submit(&stratum);
 
     ////////////////////////////////////////////////////////////////////////////
+    resolver.submit(&stratum);
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
     ////////////////////////////////////////////////////////////////////////////
@@ -186,9 +196,9 @@ TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
-    resolver.submit(&stratum);
 
     ////////////////////////////////////////////////////////////////////////////
+    resolver.submit(&stratum);
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
     ////////////////////////////////////////////////////////////////////////////
@@ -210,6 +220,8 @@ TEST_F(ResolverKawpowNvidiaTest, notFindNonce)
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
     ASSERT_TRUE(resolver.executeSync(jobInfo));
+
+    ////////////////////////////////////////////////////////////////////////////
     resolver.submit(&stratum);
 
     ////////////////////////////////////////////////////////////////////////////

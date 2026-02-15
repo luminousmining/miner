@@ -285,16 +285,24 @@ bool device::DeviceManager::initializeStratum(
 #if defined(TOOL_MOCKER)
 bool device::DeviceManager::initializeMocker()
 {
-    for (uint32_t i = 0; i < 100u; ++i)
+    ///////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (std::nullopt != config.toolConfigs.mockerResolverCount)
     {
-        device::DeviceMocker* device{ NEW(device::DeviceMocker) };
-        if (nullptr == device)
+        uint32_t const mockerCount{ *config.toolConfigs.mockerResolverCount };
+        for (uint32_t i{ 0u }; i < mockerCount; ++i)
         {
-            return false;
+            device::DeviceMocker* device{ NEW(device::DeviceMocker) };
+            if (nullptr == device)
+            {
+                return false;
+            }
+            device->id = 1000u + i;
+            device->deviceType = device::DEVICE_TYPE::MOCKER;
+            devices.push_back(device);
         }
-        device->id = 1000 + i;
-        device->deviceType = device::DEVICE_TYPE::MOCKER;
-        devices.push_back(device);
     }
     return true;
 }
@@ -501,6 +509,7 @@ void device::DeviceManager::onUpdateJob(
     UNIQUE_LOCK(mtxJobInfo);
 
     ////////////////////////////////////////////////////////////////////////////
+    auto const& config{ common::Config::instance() };
     stratum::StratumJobInfo& jobInfo{ jobInfos[stratumUUID] };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -543,11 +552,14 @@ void device::DeviceManager::onUpdateJob(
     {
         jobInfo.copy(newJobInfo);
         jobInfo.gapNonce /= devices.size();
+        if (true == config.log.showNewJob)
+        {
 #if defined(_DEBUG)
-        logInfo() << jobInfo;
+            logInfo() << jobInfo;
 #else
-        logInfo() << "New Job[" << jobInfo.jobID << "]";
+            logInfo() << "New Job[" << jobInfo.jobID << "]";
 #endif
+        }
         updateDevice(stratumUUID, updateMemory, updateConstants);
     }
 }

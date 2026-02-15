@@ -49,7 +49,7 @@ struct ResolverKawpowAmdTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
         jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::kawpow::MAX_PERIOD;
     }
 
