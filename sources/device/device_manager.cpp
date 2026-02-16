@@ -356,7 +356,7 @@ bool device::DeviceManager::initializeNvidia()
         device->pciBus = device->properties.pciBusID;
 
         ////////////////////////////////////////////////////////////////////////////
-        if (false == profilerNvidia.init(device->id, &device->deviceNvml))
+        if (false == profilerNvidia.init(device->cuIndex, &device->deviceNvml))
         {
             device->deviceNvml = nullptr;
             profilerNvidia.valid = false;
@@ -590,7 +590,7 @@ void device::DeviceManager::onShareStatus(
             }
         }
 
-        uint32_t const shareID { (device->id + 1u) * stratum::Stratum::OVERCOM_NONCE };
+        uint32_t const shareID{ (device->id + 1u) * stratum::Stratum::OVERCOM_NONCE };
         if (shareID == requestID)
         {
             device->increaseShare(isValid);

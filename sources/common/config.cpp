@@ -110,7 +110,6 @@ bool common::Config::loadCli(int argc, char** argv)
             log.intervalHashStats = common::min_limit(*intervalHashStats, 100u);
         }
 
-        logInfo() << "cli.isLogNewJob(): " << cli.isLogNewJob();
         log.showNewJob = cli.isLogNewJob();
 
         ////////////////////////////////////////////////////////////////////////
