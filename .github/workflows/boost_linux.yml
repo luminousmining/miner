@@ -52,7 +52,7 @@ jobs:
           ./bootstrap.sh --prefix=${{ github.workspace }}/boost-install
 
           # Build and install libraries
-          ./b2 release
+          ./b2 release -j$(nproc)
           sudo ./b2 install
 
       # ===============================
