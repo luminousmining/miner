@@ -1,0 +1,71 @@
+name: Linux Boost Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      boost_version:
+        description: "Boost version"
+        required: true
+        default: "1.86.0"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+
+    env:
+      BOOST_VERSION: ${{ github.event.inputs.boost_version }}
+      BOOST_DIR: boost_${{ github.event.inputs.boost_version }}
+      BOOST_VERSION_UNDERSCORE: $(echo $BOOST_VERSION | tr '.' '_')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ===============================
+      # Install dependencies
+      # ===============================
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential wget tar
+
+      # ===============================
+      # Download Boost
+      # ===============================
+      - name: Download Boost
+        run: |
+          
+          wget https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz
+          tar -xzf boost_${BOOST_VERSION_UNDERSCORE}.tar.gz
+
+      # ===============================
+      # Build Boost
+      # ===============================
+      - name: Build Boost
+        run: |
+          cd boost_${BOOST_VERSION_UNDERSCORE}
+
+          ./bootstrap.sh --prefix=${{ github.workspace }}/boost-install
+
+          ./b2 \
+            --build-type=complete \
+            variant=release \
+            -j$(nproc)
+
+          ./b2 install
+
+      # ===============================
+      # Verify installation
+      # ===============================
+      - name: Verify Boost
+        run: |
+          ls -la boost-install/lib
+
+      # ===============================
+      # Upload artifact
+      # ===============================
+      - name: Upload Boost artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: boost-${{ env.BOOST_VERSION }}
+          path: boost-install

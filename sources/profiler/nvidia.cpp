@@ -52,7 +52,7 @@ bool profiler::Nvidia::load()
         libModule = dlopen(pathLibNvidiaML.c_str(), RTLD_LAZY);
         if (nullptr != libModule)
         {
-            logInfo() << "Loaded library " << pathLibNvidiaML;
+            logDebug() << "Loaded library " << pathLibNvidiaML;
             break;
         }
     }
@@ -107,8 +107,13 @@ bool profiler::Nvidia::init(
     uint32_t const id,
     nvmlDevice_t* device)
 {
+    if (nullptr == device)
+    {
+        logErr() << "Device is nullptr, cannot init profile nvidia";
+        return false;
+    }
     NVML_ER(nvmlInit());
-    NVML_ER(nvmlDeviceGetHandleByIndex((unsigned int)id, device));
+    NVML_ER(nvmlDeviceGetHandleByIndex(static_cast<unsigned int>(id), device));
     return true;
 }
 
