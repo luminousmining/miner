@@ -55,22 +55,26 @@ bool network::NetworkTCPClient::connect()
         if (true == config.mining.socks5)
         {
         
-            auto endpoints = resolver.resolve(host,std::to_string(port),
-                    boost::asio::ip::tcp::resolver::numeric_service,
-                    ec);
+        boost::asio::ip::address_v4 addr = boost::asio::ip::make_address_v4(config.mining.socksIp || "127.0.0.1");
+        boost_endpoint socksEndpoint{
+            addr,  // your proxy
+            static_cast<boost::asio::ip::port_type>(config.mining.socksPort)
+        };
 
-            if (ec) {
-                logErr() << "Cannot resolve " << host << ":" << port;
-                return false;
-            }
+    
+        auto endpoints = resolver.resolve(host, std::to_string(port), ec);
 
-            auto it = endpoints.begin();
-            if (it == endpoints.end()) {
-                logErr() << "No endpoints found for " << host << ":" << port;
-                return false;
-            }
+        if (ec || endpoints.begin() == endpoints.end())
+        {
+            logErr() << "Cannot resolve " << host << ":" << port;
+            return false;
+        }
 
-            boost::asio::connect(socketTCP->next_layer(), endpoints, ec);
+
+        auto targetEndpoint = *endpoints.begin();
+
+        socks5::proxy_connect(socketTCP->next_layer(), targetEndpoint, socksEndpoint, ec);
+
 
             if (socks5::result_code::ok != ec)
             {
