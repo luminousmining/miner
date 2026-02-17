@@ -127,5 +127,5 @@ std::optional<std::string> common::Cli::getSocksHost() const
     {
         return params["socks_host"].as<std::string>();
     }
-    return "127.0.0.1";
+    return std::nullopt;
 }
