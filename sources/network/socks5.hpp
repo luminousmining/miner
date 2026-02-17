@@ -83,14 +83,8 @@ namespace socks5 {
 
     template <typename Proto> struct core_t {
         using Endpoint = typename Proto::endpoint;
-        using Query    = typename boost::asio::ip::basic_resolver<Proto>::query;
         Endpoint _proxy;
 
-        core_t(Query const& target, Endpoint proxy)
-            : _proxy(proxy)
-            , _request(target)
-        {
-        }
         core_t(Endpoint const& target, Endpoint proxy)
             : _proxy(proxy)
             , _request(target)
@@ -184,7 +178,7 @@ namespace socks5 {
             // constructors
             request_t(Endpoint const& ep) : port(ep.port())
             {
-                auto& addr = ep.address();
+                boost::asio::ip::address addr = ep.address();
                 if (addr.is_v4()) {
                     var_address.type         = addr_type::IPv4;
                     var_address.payload.ipv4 = addr.to_v4().to_bytes();
@@ -192,18 +186,6 @@ namespace socks5 {
                     var_address.type         = addr_type::IPv6;
                     var_address.payload.ipv6 = addr.to_v6().to_bytes();
                 }
-            }
-
-            request_t(Query const& q) : port(std::stoi(q.service_name())) {
-                std::string const domain = q.host_name();
-                var_address.type         = addr_type::Domain;
-
-                auto len = std::min(var_address.payload.domain.max_size() - 1,
-                                    domain.length());
-                assert(len == domain.length() || "domain truncated");
-                var_address.payload.domain[0] = len;
-                std::copy_n(domain.data(), len,
-                            var_address.payload.domain.data() + 1);
             }
 
             auto buffers() const {

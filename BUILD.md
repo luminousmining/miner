@@ -4,7 +4,7 @@
 - cuda 13.1 => Windows
 - cuda 13.1 => Ubuntu
 - OpenSSL 1.1.1
-- boost 1.86.0
+- boost 1.90.0
 - OpenCL 3.0.19
   
 ### Windows
@@ -20,7 +20,7 @@ cuda :
 https://developer.nvidia.com/cuda-13-1-0-download-archive  
   
 boost :  
-https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.zip  
+https://archives.boost.io/release/1.90.0/source/boost_1_90_0.zip  
 ```bat
 bootstrap.bat
 b2.exe debug release
@@ -114,9 +114,9 @@ sudo apt-get -y install cuda-toolkit-13-1
   
 boost :
 ```sh
-wget --no-check-certificate https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
-tar -xvf boost_1_86_0.tar.gz
-cd boost_1_86_0
+wget --no-check-certificate https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz
+tar -xvf boost_1_90_0.tar.gz
+cd boost_1_90_0
 ./bootstrap.sh --prefix=/usr/local
 ./b2 debug release
 sudo ./b2 install

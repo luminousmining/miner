@@ -68,14 +68,14 @@ jobs:
         path: /usr/local/ssl
         key: openssl-1.1.1-ubuntu-22.04-v2
 
-    - name: Cache Boost 1.86.0
+    - name: Cache Boost 1.90.0
       id: cache-boost
       uses: actions/cache@v4
       with:
         path: |
           /usr/local/include/boost
           /usr/local/lib/libboost_*
-        key: boost-1.86.0-ubuntu-22.04-static-v2
+        key: boost-1.90.0-ubuntu-22.04-static-v2
 
     - name: Cache OpenCL 3.0.19
       id: cache-opencl
@@ -159,16 +159,16 @@ jobs:
         echo "✅ OpenSSL 1.1.1 installed successfully"
 
     #==========================================================================
-    # BOOST 1.86.0 INSTALLATION
+    # BOOST 1.90.0 INSTALLATION
     #==========================================================================
 
-    - name: Install Boost 1.86.0
+    - name: Install Boost 1.90.0
       if: steps.cache-boost.outputs.cache-hit != 'true'
       run: |
-        # Download Boost 1.86.0
-        wget --no-check-certificate https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
-        tar -xzf boost_1_86_0.tar.gz
-        cd boost_1_86_0
+        # Download Boost 1.90.0
+        wget --no-check-certificate https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz
+        tar -xzf boost_1_90_0.tar.gz
+        cd boost_1_90_0
 
         # Bootstrap Boost
         ./bootstrap.sh --prefix=/usr/local
@@ -180,9 +180,9 @@ jobs:
         # CLEAN UP BOOST FILES
         cd ..
         echo "🧹 Cleaning up Boost installation files..."
-        sudo rm -rf boost_1_86_0 boost_1_86_0.tar.gz
+        sudo rm -rf boost_1_90_0 boost_1_90_0.tar.gz
 
-        echo "✅ Boost 1.86.0 installed successfully"
+        echo "✅ Boost 1.90.0 installed successfully"
 
     #==========================================================================
     # OPENCL 3.0.19 INSTALLATION
@@ -385,7 +385,7 @@ jobs:
         echo "📦 Platform:    Ubuntu 22.04"
         echo "📦 Build Type:  Release"
         echo "📦 CUDA:        13.1 (Blackwell support)"
-        echo "📦 Boost:       1.86.0"
+        echo "📦 Boost:       1.90.0"
         echo "📦 OpenSSL:     1.1.1"
         echo "📦 OpenCL:      3.0.19"
         echo "📦 Compiler:    Clang 15"
