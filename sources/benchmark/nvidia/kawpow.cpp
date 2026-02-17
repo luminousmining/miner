@@ -14,6 +14,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Running benchmark NVIDIA Kawpow";
+
+    ////////////////////////////////////////////////////////////////////////////
+    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] KAWPOW") };
+
+    ////////////////////////////////////////////////////////////////////////////
     t_result* result{ nullptr };
     if (false == initCleanResult(&result))
     {
@@ -304,6 +310,9 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE(headerHash);
     CU_SAFE_DELETE_HOST(result);
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboards.emplace_back(dashboard);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;

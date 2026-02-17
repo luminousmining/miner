@@ -110,6 +110,8 @@ bool common::Config::loadCli(int argc, char** argv)
             log.intervalHashStats = common::min_limit(*intervalHashStats, 100u);
         }
 
+        log.showNewJob = cli.isLogNewJob();
+
         ////////////////////////////////////////////////////////////////////////
         // ENVIRONMENT
         ////////////////////////////////////////////////////////////////////////
@@ -409,10 +411,12 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const occupancyThreads{ cli.getOccupancyThreads() };
         auto const occupancyBlocks{ cli.getOccupancyBlocks() };
         auto const internalLoop{ cli.getInternalLoop() };
+        auto const kernelMinimunExecuteNeeded{ cli.getMinimunKernelExecuted() };
         auto const cudaContext{ cli.getCudaContext() };
         occupancy.isAuto = isAutoOccupancy;
         occupancy.internalLoop = internalLoop;
         occupancy.cudaContext = cudaContext;
+        occupancy.kernelMinimunExecuteNeeded = kernelMinimunExecuteNeeded;
         if (   0u != occupancyThreads
             || 0u != occupancyBlocks)
         {
@@ -484,6 +488,14 @@ bool common::Config::loadCli(int argc, char** argv)
         {
             api.port = ApiPort;
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        // TOOL MOCKER
+        ////////////////////////////////////////////////////////////////////////
+#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+        toolConfigs.mockerResolverCount = cli.getMockerResolverCount();
+        toolConfigs.mockerResolverUpdateMemorySleep = cli.getMockerResolverUpdateMemorySleep();
+#endif
     }
     catch(std::exception const& e)
     {

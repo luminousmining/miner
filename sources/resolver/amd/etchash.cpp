@@ -11,15 +11,20 @@
 #include <resolver/amd/etchash.hpp>
 
 
+resolver::ResolverAmdEtchash::ResolverAmdEtchash():
+    resolver::ResolverAmdEthash()
+{
+    algorithm = algo::ALGORITHM::ETHASH;
+}
+
+
 bool resolver::ResolverAmdEtchash::updateContext(
     stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    common::Config& config{ common::Config::instance() };
-
-    ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::initializeDagContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algorithm,
         context,
         jobInfo.epoch,
         algo::ethash::EIP1099_MAX_EPOCH_NUMBER,
@@ -27,7 +32,7 @@ bool resolver::ResolverAmdEtchash::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        config.deviceAlgorithm.ethashBuildLightCacheCPU
+        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
 
     if (   context.lightCache.numberItem == 0ull

@@ -5,12 +5,13 @@
 #include <benchmark/amd.hpp>
 #include <benchmark/nvidia.hpp>
 #include <benchmark/result.hpp>
+#include <common/dashboard.hpp>
 #include <device/type.hpp>
 #include <statistical/statistical.hpp>
 
 
 #define RUN_BENCH(name, loopCount, _threads, _blocks, function)                \
-    logInfo() << "================================";                           \
+    logDebug() << "================================";                          \
     setGrid(_threads, _blocks);                                                \
     for (uint32_t i{ 0u }; i < loopCount; ++i)                                 \
     {                                                                          \
@@ -19,11 +20,11 @@
         {                                                                      \
             return false;                                                      \
         }                                                                      \
-        stopChrono(i);                                                         \
+        stopChrono(dashboard);                                                 \
     }                                                                          \
     setMultiplicator(1u);                                                      \
     setDivisor(1u);                                                            \
-    logInfo() << "================================";
+    logDebug() << "================================";
 
 
 #define BENCH_INIT_RESET_RESULT(result)                                        \
@@ -83,14 +84,16 @@ namespace benchmark
         uint32_t                         divisor{ 1u };
         statistical::Statistical         stats{};
         std::vector<benchmark::Snapshot> snapshots{};
+        std::vector<common::Dashboard>   dashboards{};
 
+        common::Dashboard createNewDashboard(std::string const& title);
         void writeReport();
 
         void setMultiplicator(uint32_t const _multiplicator);
         void setDivisor(uint32_t const _divisor);
         void setGrid(uint32_t const _threads, uint32_t _blocks);
         void startChrono(std::string const& benchName);
-        void stopChrono(uint32_t const index);
+        void stopChrono(common::Dashboard& dashboard);
 
         bool initCleanResult(t_result** result);
         bool initCleanResult32(t_result_32** result);

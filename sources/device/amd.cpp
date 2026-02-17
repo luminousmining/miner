@@ -11,7 +11,8 @@ bool device::DeviceAmd::initialize()
     cleanUp();
 
     clContext = cl::Context(clDevice);
-    clQueue = cl::CommandQueue(clContext, clDevice);
+    clQueue[0] = cl::CommandQueue(clContext, clDevice);
+    clQueue[1] = cl::CommandQueue(clContext, clDevice);
 
     resolver::ResolverAmd* const resolverAmd{ dynamic_cast<resolver::ResolverAmd* const>(resolver) };
     if (nullptr == resolverAmd)
@@ -21,7 +22,7 @@ bool device::DeviceAmd::initialize()
 
     resolverAmd->setDevice(&clDevice);
     resolverAmd->setContext(&clContext);
-    resolverAmd->setQueue(&clQueue);
+    resolverAmd->setQueue(clQueue);
 
     return true;
 }

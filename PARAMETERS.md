@@ -97,6 +97,7 @@ N/A : No default value is set.
 | `--blocks` | ✅ | N/A | Set occupancy blocks. | `--blocks=128` |
 | `--occupancy` | ✅ | false | System will define the best occupancy for kernel. | `--occupancy=<true\|false>` |
 | `--internal_loop` | ✅ | 1 | Set internal loop for kernel. | `--internal_loop=1` |
+| `--internal_kernel_count` | ✅ | 1 | Set internal loop for kernel. This defines the minimum number of times the kernel must be called to display statistics | `--internal_kernel_count=1` |
 | `--cuda_context` | ✅ | auto | Set CUDA context. | `--cuda_context=<auto\|blocking\|yield\|spin>` |
 
 ## Smart Mining
@@ -105,3 +106,10 @@ N/A : No default value is set.
 |---------|--------|--------------|-------------|---------|
 | `--sm_wallet` | ✅ | N/A | Assign a wallet with a coin. | `--sm_wallet=COIN:WALLET` |
 | `--sm_pool` | ✅ | N/A | Assign a pool with a coin. | `--sm_pool=COIN@POOL_URL:POOL_PORT` |
+
+
+## Tools Developer
+
+| Parameter | Optional | Default Value | Description | Example |
+|---------|--------|--------------|-------------|---------|
+| `--tool_mocker_resolver_count` | ✅ | 8 | Defines the number of fake devices that will mine / create fake latency. | `--tool_mocker_resolver_count=8` |

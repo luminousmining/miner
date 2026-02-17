@@ -45,7 +45,7 @@ struct ResolverEthashAmdTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("3c77b17f5e89ebc92dc434fd7d631d80e5b522f07c9a452bc735c05c152381a1");
         jobInfo.boundary = algo::toHash256("0000000225c17d04dad2a2a5b11fb33e22c8af8733a66744290d88c89181a499");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::ethash::MAX_EPOCH_NUMBER);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::ethash::MAX_EPOCH_NUMBER);
     }
 };
 

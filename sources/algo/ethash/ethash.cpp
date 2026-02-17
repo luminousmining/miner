@@ -10,9 +10,16 @@
 #include <common/log/log.hpp>
 
 
-int32_t algo::ethash::findEpoch(
+algo::ethash::ContextGenerator& algo::ethash::ContextGenerator::instance()
+{
+    static algo::ethash::ContextGenerator handler{};
+    return handler;
+}
+
+
+int32_t algo::ethash::ContextGenerator::findEpoch(
     algo::hash256 const& seedHash,
-    uint32_t const maxEpoch)
+    uint32_t const maxEpoch) const
 {
     ////////////////////////////////////////////////////////////////////////////
     static thread_local int32_t       cachedEpochNumber{ 0 };
@@ -56,15 +63,33 @@ int32_t algo::ethash::findEpoch(
 }
 
 
-void algo::ethash::freeDagContext(algo::DagContext& context)
+void algo::ethash::ContextGenerator::free(algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
-    SAFE_DELETE_ARRAY(context.data);
-    context.lightCache.hash = nullptr;
+    UNIQUE_LOCK(mtxContexts);
+
+    ////////////////////////////////////////////////////////////////////////////
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+
+    ////////////////////////////////////////////////////////////////////////////
+    --contextShare.count;
+    if (0u == contextShare.count)
+    {
+        SAFE_DELETE_ARRAY(contextShare.context.data);
+        contextShare.context.lightCache.hash = nullptr;
+    }
 }
 
 
-void algo::ethash::initializeDagContext(
+algo::ethash::ContextGenerator::DagContextShare& algo::ethash::ContextGenerator::getContext(
+    algo::ALGORITHM const algorithm)
+{
+    return contexts[algorithm];
+}
+
+
+void algo::ethash::ContextGenerator::build(
+    algo::ALGORITHM const algorithm,
     algo::DagContext& context,
     uint64_t const currentEpoch,
     uint32_t const maxEpoch,
@@ -75,11 +100,28 @@ void algo::ethash::initializeDagContext(
     bool const buildOnCPU)
 {
     ////////////////////////////////////////////////////////////////////////////
-    context.epoch = castU32(currentEpoch);
-    if (   castU32(context.epoch) > maxEpoch
+    UNIQUE_LOCK(mtxContexts);
+
+    ///////////////////////////////////////////////////////////////////////////
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+    algo::DagContext& localDagContext{ contextShare.context };
+
+    ////////////////////////////////////////////////////////////////////////////
+    ++contextShare.count;
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (localDagContext.epoch == cast32(currentEpoch))
+    {
+        copyContext(context, algorithm);
+        return;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    localDagContext.epoch = castU32(currentEpoch);
+    if (   castU32(localDagContext.epoch) > maxEpoch
         && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
     {
-        logErr() << "context.epoch: " << context.epoch << " | maxEpoch: " << maxEpoch;
+        logErr() << "context.epoch: " << localDagContext.epoch << " | maxEpoch: " << maxEpoch;
         return;
     }
 
@@ -95,87 +137,105 @@ void algo::ethash::initializeDagContext(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t lightCacheNumItemsUpperBound { castU64(epochEIP) };
+    uint64_t lightCacheNumItemsUpperBound{ castU64(epochEIP) };
     lightCacheNumItemsUpperBound *= lightCacheCountItemsGrowth;
     lightCacheNumItemsUpperBound += lightCacheCountItemsInit;
-    context.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
-    context.lightCache.size = context.lightCache.numberItem * algo::LEN_HASH_512;
+    localDagContext.lightCache.numberItem = algo::largestPrime(lightCacheNumItemsUpperBound);
+    localDagContext.lightCache.size = localDagContext.lightCache.numberItem * algo::LEN_HASH_512;
 
     ////////////////////////////////////////////////////////////////////////////
     uint64_t numberItemUpperBound{ castU64(epochEIP) };
     numberItemUpperBound *= dagCountItemsGrowth;
     numberItemUpperBound += dagCountItemsInit;
-    context.dagCache.numberItem = algo::largestPrime(numberItemUpperBound);
-    context.dagCache.size = context.dagCache.numberItem * algo::LEN_HASH_1024;
+    localDagContext.dagCache.numberItem = algo::largestPrime(numberItemUpperBound);
+    localDagContext.dagCache.size = localDagContext.dagCache.numberItem * algo::LEN_HASH_1024;
 
     ////////////////////////////////////////////////////////////////////////////
     algo::hash256 seed{};
-    for (int32_t i{ 0 }; i < context.epoch; ++i)
+    for (int32_t i{ 0 }; i < localDagContext.epoch; ++i)
     {
         seed = algo::keccak(seed);
     }
-    algo::copyHash(context.originalSeedCache, seed);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == buildOnCPU)
-    {
-        algo::hash512 const hashedSeed{ algo::keccak<algo::hash512, algo::hash256>(seed) };
-        algo::copyHash(context.hashedSeedCache, hashedSeed);
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    size_t const dataLength{ algo::LEN_HASH_512 + context.lightCache.size };
-    context.data = NEW_ARRAY(char, dataLength);
-    std::memset(context.data, 0, sizeof(char) * dataLength);
-    if (nullptr == context.data)
-    {
-        logErr() << "Cannot alloc context data";
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    context.lightCache.hash = castPtrHash512(context.data + algo::LEN_HASH_512);
+    algo::hash512 seedHash{ algo::keccak<algo::hash512, algo::hash256>(seed) };
+    algo::copyHash(localDagContext.hashedSeedCache, seedHash);
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == buildOnCPU)
     {
-        logInfo() << "Building light cache on CPU";
-        common::ChronoGuard chrono{ "Built light cache", common::CHRONO_UNIT::MS };
-        buildLightCache(context, seed);
+        buildLightCache(algorithm);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    copyContext(context, algorithm);
+}
+
+
+void algo::ethash::ContextGenerator::buildLightCache(
+    algo::ALGORITHM const algorithm)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+    algo::DagContext& localDagContext{ contextShare.context };
+
+    ////////////////////////////////////////////////////////////////////////////
+    algo::hash512 item{ localDagContext.hashedSeedCache };
+    size_t const dataLength{ algo::LEN_HASH_512 + localDagContext.lightCache.size };
+    localDagContext.data = NEW_ARRAY(char, dataLength);
+    std::memset(localDagContext.data, 0, sizeof(char) * dataLength);
+    if (nullptr == localDagContext.data)
+    {
+        logErr() << "Cannot alloc context data";
+        return;
+    }
+    localDagContext.lightCache.hash = castPtrHash512(localDagContext.data + algo::LEN_HASH_512);
+
+    ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Building light cache on CPU";
+    common::ChronoGuard chrono{ "Built light cache on CPU", common::CHRONO_UNIT::MS };
+
+    ////////////////////////////////////////////////////////////////////////////
+    for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
+    {
+        localDagContext.lightCache.hash[i] = item;
+        item = algo::keccak(item);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    uint32_t const numberItemu32{ castU32(localDagContext.lightCache.numberItem) };
+    for (uint64_t round{ 0ull }; round < algo::ethash::LIGHT_CACHE_ROUNDS; ++round)
+    {
+        for (uint64_t i{ 0ull }; i < localDagContext.lightCache.numberItem; ++i)
+        {
+            uint32_t const fi{ localDagContext.lightCache.hash[i].word32[0] % numberItemu32 };
+            uint32_t const si{ (numberItemu32 + (castU32(i) - 1u)) % numberItemu32 };
+
+            algo::hash512 const& firstCache{ localDagContext.lightCache.hash[fi] };
+            algo::hash512 const& secondCache{ localDagContext.lightCache.hash[si] };
+
+            algo::hash512 const xored = algo::hashXor(firstCache, secondCache);
+            localDagContext.lightCache.hash[i] = algo::keccak(xored);
+        }
     }
 }
 
 
-void algo::ethash::buildLightCache(
+void algo::ethash::ContextGenerator::copyContext(
     algo::DagContext& context,
-    algo::hash256 const& seed)
+    algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::hash512 item{ algo::keccak<algo::hash512, algo::hash256>(seed) };
-    context.lightCache.hash[0] = item;
+    algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
+    algo::DagContext& localDagContext{ contextShare.context };
 
-    ////////////////////////////////////////////////////////////////////////////
-    for (uint64_t i{ 1ull }; i < context.lightCache.numberItem; ++i)
-    {
-        item = algo::keccak(item);
-        context.lightCache.hash[i] = item;
-    }
+    context.epoch = localDagContext.epoch;
+    context.lightCache.numberItem = localDagContext.lightCache.numberItem;
+    context.lightCache.size = localDagContext.lightCache.size;
+    context.dagCache.numberItem = localDagContext.dagCache.numberItem;
+    context.dagCache.size = localDagContext.dagCache.size;
+    context.data = localDagContext.data;
+    context.lightCache.hash = localDagContext.lightCache.hash;
 
-    ////////////////////////////////////////////////////////////////////////////
-    uint32_t const numberItemu32 { castU32(context.lightCache.numberItem) };
-    for (uint64_t round{ 0ull }; round < algo::ethash::LIGHT_CACHE_ROUNDS; ++round)
-    {
-        for (uint64_t i{ 0ull }; i < context.lightCache.numberItem; ++i)
-        {
-            uint32_t const fi{ context.lightCache.hash[i].word32[0] % numberItemu32 };
-            uint32_t const si{ (numberItemu32 + (castU32(i) - 1u)) % numberItemu32 };
-
-            algo::hash512 const& firstCache{ context.lightCache.hash[fi] };
-            algo::hash512 const& secondCache{ context.lightCache.hash[si] };
-
-            algo::hash512 const xored = algo::hashXor(firstCache, secondCache);
-            context.lightCache.hash[i] = algo::keccak(xored);
-        }
-    }
+    algo::copyHash(context.hashedSeedCache, localDagContext.hashedSeedCache);
 }

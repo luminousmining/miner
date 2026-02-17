@@ -5,6 +5,9 @@
 resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
     resolver::ResolverNvidiaProgPOW()
 {
+    ///////////////////////////////////////////////////////////////////////////
+    algorithm = algo::ALGORITHM::PROGPOWQUAI;
+
     //Ethash
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
     dagCountItemsGrowth = algo::progpow_quai::DAG_COUNT_ITEMS_GROWTH;

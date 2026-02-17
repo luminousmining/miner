@@ -33,16 +33,16 @@ TEST_F(EthashTest, epoch)
 {
     int32_t const maxEpochNumber { cast32(algo::ethash::MAX_EPOCH_NUMBER) };
 
-    EXPECT_EQ(0,                  algo::ethash::findEpoch(hashes[0], maxEpochNumber));
-    EXPECT_EQ(1,                  algo::ethash::findEpoch(hashes[1], maxEpochNumber));
-    EXPECT_EQ(171,                algo::ethash::findEpoch(hashes[2], maxEpochNumber));
-    EXPECT_EQ(604,                algo::ethash::findEpoch(hashes[3], maxEpochNumber));
-    EXPECT_EQ(588,                algo::ethash::findEpoch(hashes[4], maxEpochNumber));
-    EXPECT_EQ(2048,               algo::ethash::findEpoch(hashes[5], maxEpochNumber));
-    EXPECT_EQ(29998,              algo::ethash::findEpoch(hashes[6], maxEpochNumber));
-    EXPECT_EQ(29999,              algo::ethash::findEpoch(hashes[7], maxEpochNumber));
-    EXPECT_EQ(maxEpochNumber - 1, algo::ethash::findEpoch(hashes[8], maxEpochNumber));
-    EXPECT_EQ(maxEpochNumber,     algo::ethash::findEpoch(hashes[9], maxEpochNumber));
+    EXPECT_EQ(0,                  algo::ethash::ContextGenerator::instance().findEpoch(hashes[0], maxEpochNumber));
+    EXPECT_EQ(1,                  algo::ethash::ContextGenerator::instance().findEpoch(hashes[1], maxEpochNumber));
+    EXPECT_EQ(171,                algo::ethash::ContextGenerator::instance().findEpoch(hashes[2], maxEpochNumber));
+    EXPECT_EQ(604,                algo::ethash::ContextGenerator::instance().findEpoch(hashes[3], maxEpochNumber));
+    EXPECT_EQ(588,                algo::ethash::ContextGenerator::instance().findEpoch(hashes[4], maxEpochNumber));
+    EXPECT_EQ(2048,               algo::ethash::ContextGenerator::instance().findEpoch(hashes[5], maxEpochNumber));
+    EXPECT_EQ(29998,              algo::ethash::ContextGenerator::instance().findEpoch(hashes[6], maxEpochNumber));
+    EXPECT_EQ(29999,              algo::ethash::ContextGenerator::instance().findEpoch(hashes[7], maxEpochNumber));
+    EXPECT_EQ(maxEpochNumber - 1, algo::ethash::ContextGenerator::instance().findEpoch(hashes[8], maxEpochNumber));
+    EXPECT_EQ(maxEpochNumber,     algo::ethash::ContextGenerator::instance().findEpoch(hashes[9], maxEpochNumber));
 }
 
 
@@ -55,8 +55,9 @@ TEST_F(EthashTest, lightCacheBuild)
     uint32_t dagCountItemsGrowth{ algo::ethash::DAG_COUNT_ITEMS_GROWTH };
     uint32_t dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
 
-    algo::ethash::initializeDagContext
+    algo::ethash::ContextGenerator::instance().build
     (
+        algo::ALGORITHM::ETHASH,
         context,
         561ull,
         maxEpoch,
@@ -111,5 +112,5 @@ TEST_F(EthashTest, lightCacheBuild)
     ASSERT_EQ(762008954u,   context.lightCache.hash[1000008].word32[0]);
     ASSERT_EQ(311220328u,   context.lightCache.hash[1000009].word32[0]);
 
-    algo::ethash::freeDagContext(context);
+    algo::ethash::ContextGenerator::instance().free(algo::ALGORITHM::ETHASH);
 }

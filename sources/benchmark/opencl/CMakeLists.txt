@@ -8,6 +8,7 @@ set(BENCHMARK_OPENCL_FILES
     kawpow/kawpow_lm1.cl
     kawpow/kawpow_lm2.cl
     kawpow/kawpow_lm3.cl
+    kawpow/kawpow_lm4.cl
     kawpow/sequence_dynamic.cl
     kawpow/sequence_dynamic_local.cl
 )
@@ -28,6 +29,7 @@ add_custom_target(copy_benchmark_opencl ALL
     ${OUT_COMMON}/kawpow/kawpow_lm1.cl
     ${OUT_COMMON}/kawpow/kawpow_lm2.cl
     ${OUT_COMMON}/kawpow/kawpow_lm3.cl
+    ${OUT_COMMON}/kawpow/kawpow_lm4.cl
     ${OUT_COMMON}/kawpow/sequence_dynamic.cl
     ${OUT_COMMON}/kawpow/sequence_dynamic_local.cl
 )

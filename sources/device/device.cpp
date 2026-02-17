@@ -492,8 +492,9 @@ void device::Device::increaseShare(
 double device::Device::getHashrate()
 {
     uint32_t const executeCount { miningStats.getKernelExecutedCount() };
+    common::Config& config{ common::Config::instance() };
 
-    if (kernelMinimunExecuteNeeded <= executeCount)
+    if (config.occupancy.kernelMinimunExecuteNeeded <= executeCount)
     {
         miningStats.stop();
         miningStats.updateHashrate();

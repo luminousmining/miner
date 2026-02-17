@@ -14,6 +14,12 @@
 
 bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
 {
+    ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Running benchmark NVIDIA Light Cache";
+
+    ////////////////////////////////////////////////////////////////////////////
+    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] Light Cache") };
+
     ///////////////////////////////////////////////////////////////////////////
     uint32_t* lightCache{ nullptr };
     uint32_t* seedCache{ nullptr };
@@ -80,6 +86,9 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
     )
     CUDA_ER(cudaMemset(seedCache, 0, seedCacheSize));
     CUDA_ER(cudaMemset(lightCache, 0, lightCacheSize));
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboards.emplace_back(dashboard);
 
     ///////////////////////////////////////////////////////////////////////////
     return true;

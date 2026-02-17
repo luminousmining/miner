@@ -52,6 +52,7 @@ namespace common
             std::optional<uint32_t>    threads{};
             std::optional<uint32_t>    blocks{};
             std::optional<uint32_t>    internalLoop{};
+            std::optional<uint32_t>    kernelMinimunExecuteNeeded{};
             std::optional<std::string> cudaContext{};
         };
 
@@ -76,12 +77,23 @@ namespace common
             common::TYPELOG         level{ common::TYPELOG::__INFO };
             std::string             file{};
             std::optional<uint32_t> intervalHashStats{};
+            bool                    showNewJob{ true };
         };
 
         struct ApiConfig
         {
             uint32_t port{ 8080u };
         };
+
+#if defined(TOOLS_ENABLE)
+        struct ToolConfig
+        {
+#if defined(TOOL_MOCKER)
+            std::optional<uint32_t> mockerResolverCount{ 8u };
+            std::optional<uint32_t> mockerResolverUpdateMemorySleep{ 8u };
+#endif
+        };
+#endif
 
         common::PROFILE                profile{ common::PROFILE::STANDARD };
         common::Cli                    cli{};
@@ -97,6 +109,9 @@ namespace common
         PoolConfig                     nvidiaSetting{};
         ApiConfig                      api{};
         CommonConfig                   common{};
+#if defined(TOOLS_ENABLE)
+        ToolConfig                     toolConfigs{};
+#endif
 
         static Config& instance();
         bool load(int argc, char** argv);

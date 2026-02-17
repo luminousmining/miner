@@ -8,6 +8,7 @@
 #include <common/formater_hashrate.hpp>
 #include <common/log/log.hpp>
 #include <common/custom.hpp>
+#include <common/date.hpp>
 
 
 benchmark::BenchmarkWorkflow::BenchmarkWorkflow(
@@ -80,6 +81,10 @@ void benchmark::BenchmarkWorkflow::run()
         runAmd();
     }
 #endif
+    for (auto dashboard : dashboards)
+    {
+        dashboard.show();
+    }
     writeReport();
 }
 
@@ -114,20 +119,15 @@ void benchmark::BenchmarkWorkflow::startChrono(
 }
 
 
-void benchmark::BenchmarkWorkflow::stopChrono(uint32_t const index)
+void benchmark::BenchmarkWorkflow::stopChrono(
+    common::Dashboard& dashboard)
 {
     ////////////////////////////////////////////////////////////////////////////
     stats.increaseKernelExecuted();
     stats.stop();
     stats.updateHashrate();
     double const hashrate{ (stats.getHashrate() * multiplicator) / divisor };
-    logInfo() << currentBenchName << ": " << common::hashrateToString(hashrate);
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (index == 0u)
-    {
-        return;
-    }
+    logDebug() << currentBenchName << ": " << common::hashrateToString(hashrate);
 
     ////////////////////////////////////////////////////////////////////////////
     benchmark::Snapshot snapshot{};
@@ -139,6 +139,37 @@ void benchmark::BenchmarkWorkflow::stopChrono(uint32_t const index)
 
     ////////////////////////////////////////////////////////////////////////////
     snapshots.emplace_back(snapshot);
+
+    ////////////////////////////////////////////////////////////////////////////
+    dashboard.addLine
+    (
+        {
+            currentBenchName,
+            std::to_string(blocks),
+            std::to_string(threads),
+            common::hashrateToString(hashrate),
+            std::to_string(stats.getElapsed())
+        }
+    );
+}
+
+
+common::Dashboard benchmark::BenchmarkWorkflow::createNewDashboard(
+    std::string const& title)
+{
+    common::Dashboard dashboard{};
+
+    dashboard.setTitle(title);
+
+    dashboard.addColumn("Kernel");
+    dashboard.addColumn("Blocks");
+    dashboard.addColumn("Threads");
+    dashboard.addColumn("Hashrate");
+    dashboard.addColumn("Time");
+
+    dashboard.setDate(common::getDate());
+
+    return dashboard;
 }
 
 
@@ -329,6 +360,5 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD kawpow failed";
     }
-
 }
 #endif

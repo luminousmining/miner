@@ -30,7 +30,7 @@ struct ResolverFiropowNvidiaTest : public testing::Test
 
     ~ResolverFiropowNvidiaTest()
     {
-        resolver::tests::cleanUpCuda();
+        resolver::tests::cleanUpCuda(properties);
     }
 
     void initializeJob(uint64_t const nonce)
@@ -41,7 +41,7 @@ struct ResolverFiropowNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("ac88bf0324754ae04cffe412accbbd72e534acd928bdcbe95239f660667ae26d");
         jobInfo.boundary = algo::toHash256("00000003fffc0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::findEpoch(jobInfo.seedHash, algo::firopow::EPOCH_LENGTH);
+        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::firopow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
     }
 };

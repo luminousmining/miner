@@ -11,7 +11,6 @@
 #include <algo/progpow/progpow.hpp>
 
 
-static constexpr boost::chrono::milliseconds WAIT_UPDATE_MEMORY{ 40000 };
 static constexpr boost::chrono::milliseconds WAIT_UPDATE_CONSTANT{ 2000 };
 static constexpr boost::chrono::milliseconds WAIT_UPDATE_EXECUTE_SYNC{ 1000 };
 static constexpr boost::chrono::milliseconds WAIT_UPDATE_EXECUTE_ASYNC{ 1000 };
@@ -35,13 +34,13 @@ bool resolver::ResolverMocker::updateMemory(
     uint32_t maxEpoch{ algo::ethash::MAX_EPOCH_NUMBER };
     uint32_t lightCacheCountItemsGrowth{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH };
     uint32_t lightCacheCountItemsInit{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT };
-    uint32_t dagItemParents{ algo::ethash::DAG_ITEM_PARENTS };
     uint32_t dagCountItemsGrowth{ algo::ethash::DAG_COUNT_ITEMS_GROWTH };
     uint32_t dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
-    uint32_t countCache{ algo::progpow::v_0_9_3::COUNT_CACHE };
-    uint32_t countMath{ algo::progpow::v_0_9_3::COUNT_MATH };
-    algo::ethash::initializeDagContext
+
+    ///////////////////////////////////////////////////////////////////////////
+    algo::ethash::ContextGenerator::instance().build
     (
+        algorithm,
         context,
         jobInfo.epoch,
         maxEpoch,
@@ -53,7 +52,15 @@ bool resolver::ResolverMocker::updateMemory(
     );
 
     ///////////////////////////////////////////////////////////////////////////
-    boost::this_thread::sleep_for(WAIT_UPDATE_MEMORY);
+    if (std::nullopt != config.toolConfigs.mockerResolverUpdateMemorySleep)
+    {
+        resolverInfo()
+            << "Update memory force waiting: "
+            << *config.toolConfigs.mockerResolverUpdateMemorySleep
+            << "ms";
+        boost::chrono::milliseconds const ms{ *config.toolConfigs.mockerResolverUpdateMemorySleep };
+        boost::this_thread::sleep_for(ms);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     return true;

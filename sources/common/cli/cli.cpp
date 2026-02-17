@@ -47,6 +47,13 @@ common::Cli::Cli()
             "[OPTIONAL] Set the time interval (in milliseconds) between logs of information about the hashrate.\n"
             "--log_interval_hash=10000"
         )
+        (
+            "log_new_job",
+            value<bool>(),
+            "[OPTIONAL] Show log when receive new job.\n"
+            "Default value is true.\n"
+            "--log_new_job=true"
+        )
 
         // Environment
         (
@@ -354,6 +361,13 @@ common::Cli::Cli()
             "[OPTIONAL] Set internal loop for kernel.\n"
             "Default is value is 1.\n"
             "--internal_loop=1"
+        )
+        (
+            "internal_kernel_count",
+            value<uint32_t>(),
+            "[OPTIONAL] Set internal loop for kernel. This defines the minimum number of times the kernel must be called to display statistics.\n"
+            "Default is value is 100.\n"
+            "--internal_kernel_count=100"
         )
         (
             "cuda_context",
