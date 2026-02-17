@@ -50,30 +50,54 @@ bool network::NetworkTCPClient::connect()
         }
 
         SAFE_DELETE(socketTCP);
-        socketTCP = NEW(boost_socket(ioService, context));
-
+        socketTCP = NEW(boost_socket(ioContext, context));
+        boost_resolver resolver{ ioContext };
         if (true == config.mining.socks5)
         {
-            boost_query       query( host, std::to_string(port) );
-            boost_endpoint    socksEndpoint{ {}, static_cast<boost::asio::ip::port_type>(config.mining.socksPort) };
+        
+        if (config.mining.socksHost)
+        {
+            auto const addr{ boost::asio::ip::make_address(*config.mining.socksHost, ec) };
+            boost_endpoint socksEndpoint{
+                addr,
+                static_cast<boost::asio::ip::port_type>(config.mining.socksPort)
+            };
 
-            // DNS resolve is automatically done by the proxy_connect function
-            socks5::proxy_connect(socketTCP->next_layer(), query, socksEndpoint, ec);
+        
+            auto endpoints { resolver.resolve(host, std::to_string(port), ec) };
 
-            if (socks5::result_code::ok != ec)
+            if (ec || endpoints.begin() == endpoints.end())
             {
-                logErr() << "Cannot connect to " << host << ":" << port << " with SOCKS5 proxy on localhost:" << config.mining.socksPort;
+                logErr() << "Cannot resolve " << host << ":" << port;
                 return false;
             }
+
+
+            auto targetEndpoint = *endpoints.begin();
+
+            socks5::proxy_connect(socketTCP->next_layer(), targetEndpoint, socksEndpoint, ec);
+
+
+                if (socks5::result_code::ok != ec)
+                {
+                    logErr() << "Cannot connect to " << host << ":" << port << " with SOCKS5 proxy on " << *config.mining.socksHost << ":" << config.mining.socksPort;
+                    return false;
+                } 
+        }
+        
+
+
         }
         else
         {
-            auto const address{ boost::asio::ip::address::from_string(host, ec) };
+            // from_string is no longer a memeber of boost::asio::ip::address in 1.90.
+            auto const address{ boost::asio::ip::make_address(host, ec) };
             if (boost_error::success != ec)
             {
-                boost_resolver resolver{ ioService };
-                boost_query    query{ host, std::to_string(port) };
-                auto           endpoints{ resolver.resolve(query, ec) };
+
+                auto endpoints { resolver.resolve(host,std::to_string(port),
+                boost_resolve_flags::numeric_service,ec) };
+
 
                 if (boost_error::success != ec)
                 {
@@ -128,7 +152,7 @@ bool network::NetworkTCPClient::connect()
     }
 
     runService.interrupt();
-    runService = boost::thread{ boost::bind(&boost::asio::io_service::run, &ioService) };
+    runService = boost::thread{ boost::bind(&boost::asio::io_context::run, &ioContext) };
 
     return true;
 }

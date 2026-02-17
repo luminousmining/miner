@@ -20,7 +20,7 @@ namespace network
         // boost alias
         using boost_socket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
         using boost_error = boost::system::errc::errc_t;
-        using boost_query = boost::asio::ip::tcp::resolver::query;
+        using boost_resolve_flags = boost::asio::ip::resolver_base::flags;
         using boost_context = boost::asio::ssl::context;
         using boost_queue = boost::lockfree::queue<std::string*>;
         using boost_resolver = boost::asio::ip::tcp::resolver;
@@ -46,7 +46,7 @@ namespace network
         boost_mutex             rxMutex;
         boost_mutex             txMutex;
         boost_thread            runService;
-        boost::asio::io_service ioService;
+        boost::asio::io_context ioContext;
         boost_queue             tx{ 100 };
         boost_context           context{ boost_context::tlsv12_client };
         boost_socket*           socketTCP{ nullptr };

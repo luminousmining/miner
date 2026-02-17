@@ -37,6 +37,7 @@ namespace common
             bool                  secrureConnect{ false };
             bool                  stale{ false };
             bool                  socks5{ false };
+            std::optional<std::string>     socksHost{ "" };
         };
 
         struct SmartMiningConfig

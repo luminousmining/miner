@@ -230,7 +230,16 @@ bool common::Config::loadCli(int argc, char** argv)
                 mining.socksPort = SocksPort;
             }
         }
+
+        auto const socksHost{ cli.getSocksHost() };
+
+        if (std::nullopt != socksHost)
+        {
+            mining.socksHost = *socksHost;
+        }
         
+        
+
         ////////////////////////////////////////////////////////////////////////
         // RAVEN MINER
         ////////////////////////////////////////////////////////////////////////
