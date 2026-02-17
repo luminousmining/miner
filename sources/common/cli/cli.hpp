@@ -136,6 +136,6 @@ namespace common
 
         // Socks proxy settings
         uint32_t getSocksPort() const;
-        std::string getSocksIp() const;
+        std::optional<std::string> getSocksHost() const;
     };
 }

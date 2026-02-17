@@ -120,11 +120,11 @@ uint32_t common::Cli::getSocksPort() const
     return 9050u;
 }
 
-std::string common::Cli::getSocksIp() const
+std::optional<std::string> common::Cli::getSocksHost() const
 {
-    if (true == contains("socks_ip"))
+    if (true == contains("socks_host"))
     {
-        return params["socks_ip"].as<std::string>();
+        return params["socks_host"].as<std::string>();
     }
     return "127.0.0.1";
 }

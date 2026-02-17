@@ -231,9 +231,13 @@ bool common::Config::loadCli(int argc, char** argv)
             }
         }
 
-        auto const socksIp{ cli.getSocksIp() };
+        auto const socksHost{ cli.getSocksHost() };
 
-        mining.socksIp = socksIp;
+        if (std::nullopt != socksHost)
+        {
+            mining.socksHost = *socksHost;
+        }
+        
         
 
         ////////////////////////////////////////////////////////////////////////
