@@ -60,5 +60,5 @@ jobs:
         if: steps.cuda-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: cuda-13.1.0
+          name: cuda-${{ runner.os }}-13.1.0
           path: cuda-install
