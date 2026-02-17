@@ -64,7 +64,7 @@ bool network::NetworkTCPClient::connect()
             };
 
         
-            auto endpoints = resolver.resolve(host, std::to_string(port), ec);
+            auto endpoints { resolver.resolve(host, std::to_string(port), ec) };
 
             if (ec || endpoints.begin() == endpoints.end())
             {
@@ -95,8 +95,8 @@ bool network::NetworkTCPClient::connect()
             if (boost_error::success != ec)
             {
 
-                auto endpoints = resolver.resolve(host,std::to_string(port),
-                boost_resolve_flags::numeric_service,ec);
+                auto endpoints { resolver.resolve(host,std::to_string(port),
+                boost_resolve_flags::numeric_service,ec) };
 
 
                 if (boost_error::success != ec)
