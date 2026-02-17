@@ -25,19 +25,19 @@ namespace common
 
         struct PoolConfig
         {
-            std::string           host{ "" };
-            stratum::STRATUM_TYPE stratumType{ stratum::STRATUM_TYPE::ETHEREUM_V1 };
-            uint32_t              port{ 0u };
-            uint32_t              retryConnectionCount{ 10 };
-            uint32_t              socksPort{ 0u };
-            std::string           algo{ "" };
-            std::string           workerName{ "" };
-            std::string           wallet{ "" };
-            std::string           password{ "x" };
-            bool                  secrureConnect{ false };
-            bool                  stale{ false };
-            bool                  socks5{ false };
-            std::optional<std::string>     socksHost{ "" };
+            std::string                host{};
+            stratum::STRATUM_TYPE      stratumType{ stratum::STRATUM_TYPE::ETHEREUM_V1 };
+            uint32_t                   port{ 0u };
+            uint32_t                   retryConnectionCount{ 10u };
+            uint32_t                   socksPort{ 0u };
+            std::string                algo{};
+            std::string                workerName{};
+            std::string                wallet{};
+            std::string                password{ "x" };
+            bool                       secrureConnect{ false };
+            bool                       stale{ false };
+            bool                       socks5{ false };
+            std::optional<std::string> socksHost{};
         };
 
         struct SmartMiningConfig

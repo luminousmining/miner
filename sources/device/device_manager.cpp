@@ -401,7 +401,7 @@ bool device::DeviceManager::initializeAmd()
             ////////////////////////////////////////////////////////////////////////////
             device::DeviceAmd* device{ NEW(device::DeviceAmd) };
             device->deviceType = device::DEVICE_TYPE::AMD;
-            device-clDevice = cldevices.at(i);
+            device->clDevice = cldevices.at(i);
             device->id = castU32(devices.size());
 
             ////////////////////////////////////////////////////////////////////////////

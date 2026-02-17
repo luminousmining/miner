@@ -54,39 +54,32 @@ bool network::NetworkTCPClient::connect()
         boost_resolver resolver{ ioContext };
         if (true == config.mining.socks5)
         {
-        
-        if (config.mining.socksHost)
-        {
-            auto const addr{ boost::asio::ip::make_address(*config.mining.socksHost, ec) };
-            boost_endpoint socksEndpoint{
-                addr,
-                static_cast<boost::asio::ip::port_type>(config.mining.socksPort)
-            };
-
-        
-            auto endpoints { resolver.resolve(host, std::to_string(port), ec) };
-
-            if (ec || endpoints.begin() == endpoints.end())
+            if (std::nullopt != config.mining.socksHost)
             {
-                logErr() << "Cannot resolve " << host << ":" << port;
-                return false;
-            }
+                auto const addr{ boost::asio::ip::make_address(*config.mining.socksHost, ec) };
+                boost_endpoint socksEndpoint
+                {
+                    addr,
+                    static_cast<boost::asio::ip::port_type>(config.mining.socksPort)
+                };
 
+                auto endpoints{ resolver.resolve(host, std::to_string(port), ec) };
+                if (   boost_error::success != ec
+                    || endpoints.begin() == endpoints.end())
+                {
+                    logErr() << "Cannot resolve " << host << ":" << port;
+                    return false;
+                }
 
-            auto targetEndpoint = *endpoints.begin();
-
-            socks5::proxy_connect(socketTCP->next_layer(), targetEndpoint, socksEndpoint, ec);
-
+                auto targetEndpoint{ *endpoints.begin() };
+                socks5::proxy_connect(socketTCP->next_layer(), targetEndpoint, socksEndpoint, ec);
 
                 if (socks5::result_code::ok != ec)
                 {
                     logErr() << "Cannot connect to " << host << ":" << port << " with SOCKS5 proxy on " << *config.mining.socksHost << ":" << config.mining.socksPort;
                     return false;
-                } 
-        }
-        
-
-
+                }
+            }
         }
         else
         {
@@ -97,7 +90,6 @@ bool network::NetworkTCPClient::connect()
 
                 auto endpoints { resolver.resolve(host,std::to_string(port),
                 boost_resolve_flags::numeric_service,ec) };
-
 
                 if (boost_error::success != ec)
                 {
