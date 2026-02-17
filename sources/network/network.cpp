@@ -55,7 +55,7 @@ bool network::NetworkTCPClient::connect()
         if (true == config.mining.socks5)
         {
         
-        boost::asio::ip::address_v4 addr = boost::asio::ip::make_address_v4(config.mining.socksIp || "127.0.0.1");
+        boost::asio::ip::address_v4 addr = boost::asio::ip::make_address_v4(config.mining.socksIp);
         boost_endpoint socksEndpoint{
             addr,  // your proxy
             static_cast<boost::asio::ip::port_type>(config.mining.socksPort)
@@ -78,7 +78,7 @@ bool network::NetworkTCPClient::connect()
 
             if (socks5::result_code::ok != ec)
             {
-                logErr() << "Cannot connect to " << host << ":" << port << " with SOCKS5 proxy on localhost:" << config.mining.socksPort;
+                logErr() << "Cannot connect to " << host << ":" << port << " with SOCKS5 proxy on " << config.mining.socksIp << ":" << config.mining.socksPort;
                 return false;
             }
         }
