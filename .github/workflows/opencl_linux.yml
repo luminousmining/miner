@@ -19,15 +19,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: opencl-install
-          key: opencl-${{ runner.os }}-1.1.1w
+          key: opencl-${{ runner.os }}-3.0.19
 
       # ===============================
       # Install build dependencies
       # ===============================
       - name: Install build dependencies
-        if: steps.openssl-cache.outputs.cache-hit != 'true'
+        if: steps.opencl-cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
+          sudo apt-get install -y build-essential cmake git
 
       # ===============================
       # Build OpenCL 3.0.19
@@ -36,18 +37,10 @@ jobs:
         if: steps.opencl-cache.outputs.cache-hit != 'true'
         run: |
           echo "📥 Cloning OpenCL-SDK..."
-          git clone --depth 1 https://github.com/KhronosGroup/OpenCL-SDK.git
+          git clone --depth 1 --branch v2025.07.23 https://github.com/KhronosGroup/OpenCL-SDK.git
           cd OpenCL-SDK
+          git submodule update --init --recursive
 
-          echo "🔄 Fetching tags..."
-          git fetch --all --tags
-          git checkout tags/v2025.07.23
-
-          echo "📦 Initializing submodules..."
-          git submodule init
-          git submodule update
-
-          echo "🏗️ Configuring OpenCL-SDK build..."
           mkdir build
           cd build
 
@@ -59,24 +52,21 @@ jobs:
             -DBUILD_TESTS=OFF \
             -DOPENCL_SDK_BUILD_SAMPLES=OFF \
             -DOPENCL_SDK_TEST_SAMPLES=OFF \
-            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/opencl-install
 
-          echo "🔨 Building and installing OpenCL-SDK..."
-          sudo cmake --build . --target install
+          cmake --build . --config Release --parallel
+          cmake --install .
 
           cd ../..
+          rm -rf OpenCL-SDK
 
-          echo "🧹 Cleaning up OpenCL-SDK sources..."
-          sudo rm -rf OpenCL-SDK
-
-          echo "✅ OpenCL SDK 3.0.19 installed successfully"
+          echo "✅ OpenCL SDK 3.0.19 built successfully"
 
       # ===============================
       # Upload artifact
       # ===============================
       - name: Upload OpenCL artifact
-        if: steps.opencl-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: opencl-${{ runner.os }}-1.1.1w
+          name: opencl-${{ runner.os }}-3.0.19
           path: opencl-install
