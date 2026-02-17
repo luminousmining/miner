@@ -118,7 +118,7 @@ wget --no-check-certificate https://archives.boost.io/release/1.90.0/source/boos
 tar -xvf boost_1_90_0.tar.gz
 cd boost_1_90_0
 ./bootstrap.sh --prefix=/usr/local
-./b2 debug release
+./b2 debug release -j$(nproc)
 sudo ./b2 install
 ```
 
