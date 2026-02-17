@@ -28,6 +28,7 @@ N/A : No default value is set.
 | `--cpu` | ✅ | false | Enable or disable device cpu. | `--cpu=<true\|false>` |
 | `--socks5` | ✅ | false | Enable pool connection through a SOCKS5 proxy server on localhost. | `--socks5=<true\|false>` |
 | `--socks_port` | ✅ | 9050 | The port of the SOCKS5 proxy server on localhost. | `--socks_port=9050` |
+| `--socks_ip` | ✅ | 127.0.0.1 | The ip address of the SOCKS5 proxy server. | `--socks_ip=127.0.0.1` |
 | `--api_port` | ✅ | 8080 | Miner API port. | `--api_port=8080` |
 
 

@@ -57,7 +57,7 @@ bool network::NetworkTCPClient::connect()
         
         boost::asio::ip::address_v4 addr = boost::asio::ip::make_address_v4(config.mining.socksIp);
         boost_endpoint socksEndpoint{
-            addr,  // your proxy
+            addr,
             static_cast<boost::asio::ip::port_type>(config.mining.socksPort)
         };
 

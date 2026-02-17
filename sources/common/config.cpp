@@ -228,7 +228,12 @@ bool common::Config::loadCli(int argc, char** argv)
                 mining.socksPort = SocksPort;
             }
         }
+
+        auto const socksIp{ cli.getSocksIp() };
+
+        mining.socksIp = socksIp;
         
+
         ////////////////////////////////////////////////////////////////////////
         // RAVEN MINER
         ////////////////////////////////////////////////////////////////////////

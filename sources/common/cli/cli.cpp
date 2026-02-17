@@ -165,6 +165,12 @@ common::Cli::Cli()
             "[OPTIONAL] Port of the SOCKS proxy.\n"
             "--socks_port=9050"
         )
+        (
+            "socks_ip",
+            value<std::string>(),
+            "[OPTIONAL] Ip Address of the SOCKS proxy.\n"
+            "--socks_ip=127.0.0.1"
+        )
 
         // Pool Custom
         (
