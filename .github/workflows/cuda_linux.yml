@@ -30,33 +30,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential wget tar
 
-      #==========================================================================
-      # CUDA 13.1 Install
-      #==========================================================================
+      # ===============================
+      # Install CUDA 13.1
+      # ===============================
       - name: Install CUDA
         if: steps.cuda-cache.outputs.cache-hit != 'true'
         run: |
-          # Download CUDA repository pin file
           wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
           sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
 
-          # Download CUDA local installer
           wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/13.1.0/local_installers/cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
 
-          # Install CUDA repository
           sudo dpkg -i cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
           sudo cp /var/cuda-repo-ubuntu2204-13-1-local/cuda-*-keyring.gpg /usr/share/keyrings/
 
-          # Update and install CUDA toolkit
           sudo apt-get update
           sudo apt-get -y install cuda-toolkit-13-1
 
-          # CLEAN UP CUDA FILES
-          echo "🧹 Cleaning up CUDA installation files..."
-          rm -f cuda-repo-ubuntu2204-13-1-local_13.1.0-590.44.01-1_amd64.deb
-          sudo rm -rf /var/cuda-repo-ubuntu2204-13-1-local
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+          # Copy CUDA into workspace folder for cache/artifact
+          mkdir -p cuda-install
+          cp -r /usr/local/cuda-13.1/* cuda-install/
 
           echo "✅ CUDA 13.1 installed successfully"
 
@@ -64,8 +57,8 @@ jobs:
       # Upload artifact
       # ===============================
       - name: Upload CUDA artifact
-        if: steps.boost-cache.outputs.cache-hit != 'true'
+        if: steps.cuda-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: cuda-13.1.0
+          name: cuda-${{ runner.os }}-13.1.0
           path: cuda-install
