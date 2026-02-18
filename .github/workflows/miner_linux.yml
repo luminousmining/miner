@@ -1,4 +1,4 @@
-name: Linux Cuda
+name: Linux Miner
 
 on:
   workflow_dispatch:

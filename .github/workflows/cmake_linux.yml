@@ -1,4 +1,4 @@
-name: Build CMake Linux Artifact
+name: Linux CMake
 
 on:
   workflow_dispatch:
