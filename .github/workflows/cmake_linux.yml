@@ -1,0 +1,38 @@
+name: Build CMake Linux Artifact
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-cmake:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ===============================
+      # Download CMake
+      # ===============================
+      - name: Download CMake 3.26.4
+        run: |
+          wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh
+
+      # ===============================
+      # Install locally (no sudo)
+      # ===============================
+      - name: Install CMake locally
+        run: |
+          mkdir cmake-install
+          sh cmake-3.26.4-linux-x86_64.sh --skip-license --prefix=$PWD/cmake-install
+          rm -f cmake-3.26.4-linux-x86_64.sh
+          ./cmake-install/bin/cmake --version
+
+      # ===============================
+      # Upload artifact
+      # ===============================
+      - name: Upload CMake artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmake-linux-3.26.4
+          path: cmake-install

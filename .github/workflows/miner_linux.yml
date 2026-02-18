@@ -1,0 +1,138 @@
+name: Linux Cuda
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ===============================
+      # Download CMake
+      # ===============================
+      - name: Download CMake
+        uses: actions/download-artifact@v4
+        with:
+          name: cmake-linux-3.26.4
+          path: deps/cmake
+
+      # ===============================
+      # Link CMake PATH
+      # ===============================
+      - name: Add CMake to PATH
+        run: echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
+
+      # ===============================
+      # Download Boost
+      # ===============================
+      - name: Download Boost
+        uses: actions/download-artifact@v4
+        with:
+          name: boost-${{ runner.os }}-1.90.0
+          path: deps/boost
+
+      # ===============================
+      # Install Boost to /usr/local
+      # ===============================
+      - name: Install Boost to /usr/local
+        run: |
+          echo "📦 Installing Boost headers..."
+          sudo cp -r deps/boost/include/* /usr/local/include/
+
+          echo "📦 Installing Boost libraries..."
+          sudo cp -r deps/boost/lib/* /usr/local/lib/
+
+          echo "🔄 Refreshing linker cache..."
+          sudo ldconfig
+
+      # ===============================
+      # Download OpenSSL
+      # ===============================
+      - name: Download OpenSSL
+        uses: actions/download-artifact@v4
+        with:
+          name: openssl-${{ runner.os }}-1.1.1w
+          path: deps/openssl
+
+      # ===============================
+      # Install OpenSSL to /usr/local
+      # ===============================
+      - name: Install OpenSSL to /usr/local
+        run: |
+          echo "📦 Installing OpenSSL headers..."
+          sudo cp -r deps/openssl/include/* /usr/local/include/
+
+          echo "📦 Installing OpenSSL libraries..."
+          sudo cp -r deps/openssl/lib/* /usr/local/lib/
+
+          echo "🔄 Refreshing linker cache..."
+          sudo ldconfig
+
+      # ===============================
+      # Download OpenCL
+      # ===============================
+      - name: Download OpenCL
+        uses: actions/download-artifact@v4
+        with:
+          name: opencl-${{ runner.os }}-3.0.19
+          path: deps/opencl
+
+      # ===============================
+      # Install OpenCL to /usr/local
+      # ===============================
+      - name: Install OpenCL to /usr/local
+        run: |
+          echo "📦 Installing OpenCL headers..."
+          sudo cp -r deps/opencl/include/* /usr/local/include/
+
+          echo "📦 Installing OpenCL libraries..."
+          sudo cp -r deps/opencl/lib/* /usr/local/lib/
+
+          echo "🔄 Refreshing linker cache..."
+          sudo ldconfig
+
+      # ===============================
+      # Install dependencies
+      # ===============================
+      - name: Install build dependencies
+        if: steps.boost-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libstdc++-12-dev \
+            cppcheck \
+            checkinstall \
+            clang-15 \
+            clang++-15 \
+            wget \
+            git \
+            libgnutls28-dev
+
+
+
+      #==========================================================================
+      # Build Miner AMD
+      #==========================================================================
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_EXE_BENCHMARK=OFF \
+            -DBUILD_EXE_UNIT_TEST=OFF \
+            -DBUILD_EXE_MINER=ON \
+            -DBUILD_NVIDIA=OFF \
+            -DBUILD_AMD=ON \
+            -DBUILD_CPU=OFF \
+            -DENABLE_LTO=OFF \
+            -DENABLE_NATIVE=OFF"
+
+          make -j
+        env:
+          CUDA_HOME: /usr/local/cuda-13.1
+          CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+          LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/ssl/lib
