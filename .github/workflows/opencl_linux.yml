@@ -1,0 +1,72 @@
+name: Linux OpenCL
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ===============================
+      # Restore OpenCL cache
+      # ===============================
+      - name: Restore OpenCL cache
+        id: opencl-cache
+        uses: actions/cache@v4
+        with:
+          path: opencl-install
+          key: opencl-${{ runner.os }}-3.0.19
+
+      # ===============================
+      # Install build dependencies
+      # ===============================
+      - name: Install build dependencies
+        if: steps.opencl-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake git
+
+      # ===============================
+      # Build OpenCL 3.0.19
+      # ===============================
+      - name: Build OpenCL 3.0.19
+        if: steps.opencl-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "📥 Cloning OpenCL-SDK..."
+          git clone --depth 1 --branch v2025.07.23 https://github.com/KhronosGroup/OpenCL-SDK.git
+          cd OpenCL-SDK
+          git submodule update --init --recursive
+
+          mkdir build
+          cd build
+
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=OFF \
+            -DBUILD_DOCS=OFF \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_TESTS=OFF \
+            -DOPENCL_SDK_BUILD_SAMPLES=OFF \
+            -DOPENCL_SDK_TEST_SAMPLES=OFF \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/opencl-install
+
+          cmake --build . --config Release --parallel
+          cmake --install .
+
+          cd ../..
+          rm -rf OpenCL-SDK
+
+          echo "✅ OpenCL SDK 3.0.19 built successfully"
+
+      # ===============================
+      # Upload artifact
+      # ===============================
+      - name: Upload OpenCL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencl-${{ runner.os }}-3.0.19
+          path: opencl-install
