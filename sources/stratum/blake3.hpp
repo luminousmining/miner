@@ -16,7 +16,7 @@ namespace stratum
         void onMiningSetExtraNonce(boost::json::object const& root) final;
         void onUnknownMethod(boost::json::object const& root) final;
 
-        void miningSubscribe();
+        void miningSubscribe() override;
         void miningSubmit(uint32_t const deviceId,
                           boost::json::object const& params) final;
     };

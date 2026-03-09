@@ -58,7 +58,7 @@ namespace stratum
         virtual void onMiningNotify(boost::json::object const& root) = 0;
         virtual void onMiningSetDifficulty(boost::json::object const& root) = 0;
 
-        virtual void onConnect();
+        virtual void onConnect() override;
         virtual void onUnknownMethod(boost::json::object const& root);
         virtual void updateJob();
         virtual void miningHello();

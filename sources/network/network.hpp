@@ -52,7 +52,7 @@ namespace network
         boost_socket*           socketTCP{ nullptr };
 
         NetworkTCPClient() = default;
-        ~NetworkTCPClient() = default;
+        virtual ~NetworkTCPClient() = default;
 
         virtual void onConnect() = 0;
         virtual void onReceive(std::string const& message) = 0;

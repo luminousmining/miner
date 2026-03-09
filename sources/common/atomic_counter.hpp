@@ -13,10 +13,10 @@ namespace common
         boost::atomic<T> current{};
         T                last{};
 
-        AtomicCounter(T const value)
+        explicit AtomicCounter(T const value):
+            current(value),
+            last(value)
         {
-            current = value;
-            last = value;
         }
 
         T get() const
