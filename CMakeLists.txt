@@ -22,6 +22,7 @@ option(BUILD_EXE_BENCHMARK "Build benchmark executable" ON)
 ### INTERNAL TOOL
 option(TOOL_TRACE_MEMORY "Tool for develloper, trace memory allocation" OFF)
 option(TOOL_MOCKER "Tool for develloper, insert devices fake" OFF)
+option(TOOL_ANALYZER "Tool for develloper, analyzer source code" OFF)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
@@ -49,9 +50,25 @@ endif()
 ################################################################################
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_CPPCHECK "cppcheck")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+
+################################################################################
+### TOOL ANALYZER                                                           ####
+################################################################################
+if (TOOL_ANALYZER)
+    find_program(CPPCHECK_EXECUTABLE cppcheck)
+    if(CPPCHECK_EXECUTABLE)
+        set(CMAKE_CXX_CPPCHECK
+            ${CPPCHECK_EXECUTABLE}
+            --enable=all
+            --inconclusive
+            --std=c++20
+            --quiet
+        )
+    endif()
+endif()
+
 
 if (WIN32)
 ################################################################################
@@ -318,6 +335,8 @@ message("-- CXX LINKER FLAGS : ${CMAKE_EXE_LINKER_FLAGS}")
 message("-- CXX FLAGS        : ${CMAKE_CXX_FLAGS}")
 message("-- CXX FLAGS D      : ${CMAKE_CXX_FLAGS_DEBUG} ")
 message("-- CXX FLAGS R      : ${CMAKE_CXX_FLAGS_RELEASE}")
+message("*********************************************************************")
+message("-- CPP Checker      : ${CPPCHECK_EXECUTABLE}")
 message("*********************************************************************")
 message("-- Boost Version    : ${Boost_LIB_VERSION}")
 message("-- Boost Include    : ${BOOST_INCLUDEDIR}")
