@@ -3,9 +3,9 @@
 #if !defined(__LIB_CUDA)
 #include <boost/thread.hpp>
 
-#include <algo/hash.hpp>
 #include <algo/algo_type.hpp>
 #include <algo/dag_context.hpp>
+#include <algo/hash.hpp>
 #endif
 
 
@@ -37,35 +37,34 @@ namespace algo
 #if !defined(__LIB_CUDA)
         struct ContextGenerator
         {
-        public:
+          public:
             static ContextGenerator& instance();
-            int32_t findEpoch(algo::hash256 const& seedHash,
-                              uint32_t const maxEpoch) const;
-            void free(algo::ALGORITHM const algorithm);
-            void build(algo::ALGORITHM const algorithm,
-                       algo::DagContext& context,
-                       uint64_t const currentEpoch,
-                       uint32_t const maxEpoch,
-                       uint64_t const dagCountItemsGrowth,
-                       uint64_t const dagCountItemsInit,
-                       uint32_t const lightCacheCountItemsGrowth,
-                       uint32_t const lightCacheCountItemsInit,
-                       bool const buildOnCPU);
+            int32_t                  findEpoch(algo::hash256 const& seedHash, uint32_t const maxEpoch) const;
+            void                     free(algo::ALGORITHM const algorithm);
+            void                     build(
+                                    algo::ALGORITHM const algorithm,
+                                    algo::DagContext&     context,
+                                    uint64_t const        currentEpoch,
+                                    uint32_t const        maxEpoch,
+                                    uint64_t const        dagCountItemsGrowth,
+                                    uint64_t const        dagCountItemsInit,
+                                    uint32_t const        lightCacheCountItemsGrowth,
+                                    uint32_t const        lightCacheCountItemsInit,
+                                    bool const            buildOnCPU);
 
-        private:
+          private:
             struct DagContextShare
             {
                 uint32_t         count{ 0u };
                 algo::DagContext context;
             };
-            boost::mutex                                mtxContexts{};
+            boost::mutex                               mtxContexts{};
             std::map<algo::ALGORITHM, DagContextShare> contexts{};
 
             ContextGenerator() = default;
             DagContextShare& getContext(algo::ALGORITHM const algorithm);
-            void buildLightCache(algo::ALGORITHM const algorithm);
-            void copyContext(algo::DagContext& context,
-                             algo::ALGORITHM const algorithm);
+            void             buildLightCache(algo::ALGORITHM const algorithm);
+            void             copyContext(algo::DagContext& context, algo::ALGORITHM const algorithm);
         };
 #endif
     }

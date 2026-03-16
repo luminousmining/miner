@@ -11,14 +11,14 @@ namespace device
 {
     struct DeviceNvidia : public device::Device
     {
-    public:
+      public:
         uint32_t       cuIndex{ 0u };
         cudaDeviceProp properties;
         CUdevice       cuDevice;
         CUcontext      cuContext{ nullptr };
         cudaStream_t   cuStream[2u]{ nullptr, nullptr };
 
-    protected:
+      protected:
         bool initialize() final;
         void cleanUp() final;
     };

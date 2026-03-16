@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverAmdFiroPOW : public resolver::ResolverAmdProgPOW
     {
-    public:
+      public:
         ResolverAmdFiroPOW();
         ~ResolverAmdFiroPOW() = default;
     };

@@ -1,11 +1,11 @@
 #include <algo/bitwise.hpp>
+#include <algo/ethash/ethash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/keccak.hpp>
 #include <algo/math.hpp>
-#include <algo/ethash/ethash.hpp>
 #include <common/cast.hpp>
-#include <common/config.hpp>
 #include <common/chrono.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 
@@ -17,9 +17,7 @@ algo::ethash::ContextGenerator& algo::ethash::ContextGenerator::instance()
 }
 
 
-int32_t algo::ethash::ContextGenerator::findEpoch(
-    algo::hash256 const& seedHash,
-    uint32_t const maxEpoch) const
+int32_t algo::ethash::ContextGenerator::findEpoch(algo::hash256 const& seedHash, uint32_t const maxEpoch) const
 {
     ////////////////////////////////////////////////////////////////////////////
     static thread_local int32_t       cachedEpochNumber{ 0 };
@@ -81,8 +79,8 @@ void algo::ethash::ContextGenerator::free(algo::ALGORITHM const algorithm)
 }
 
 
-algo::ethash::ContextGenerator::DagContextShare& algo::ethash::ContextGenerator::getContext(
-    algo::ALGORITHM const algorithm)
+algo::ethash::ContextGenerator::DagContextShare&
+algo::ethash::ContextGenerator::getContext(algo::ALGORITHM const algorithm)
 {
     return contexts[algorithm];
 }
@@ -90,21 +88,21 @@ algo::ethash::ContextGenerator::DagContextShare& algo::ethash::ContextGenerator:
 
 void algo::ethash::ContextGenerator::build(
     algo::ALGORITHM const algorithm,
-    algo::DagContext& context,
-    uint64_t const currentEpoch,
-    uint32_t const maxEpoch,
-    uint64_t const dagCountItemsGrowth,
-    uint64_t const dagCountItemsInit,
-    uint32_t const lightCacheCountItemsGrowth,
-    uint32_t const lightCacheCountItemsInit,
-    bool const buildOnCPU)
+    algo::DagContext&     context,
+    uint64_t const        currentEpoch,
+    uint32_t const        maxEpoch,
+    uint64_t const        dagCountItemsGrowth,
+    uint64_t const        dagCountItemsInit,
+    uint32_t const        lightCacheCountItemsGrowth,
+    uint32_t const        lightCacheCountItemsInit,
+    bool const            buildOnCPU)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxContexts);
 
     ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
-    algo::DagContext& localDagContext{ contextShare.context };
+    algo::DagContext&                                localDagContext{ contextShare.context };
 
     ////////////////////////////////////////////////////////////////////////////
     ++contextShare.count;
@@ -118,8 +116,7 @@ void algo::ethash::ContextGenerator::build(
 
     ////////////////////////////////////////////////////////////////////////////
     localDagContext.epoch = castU32(currentEpoch);
-    if (   castU32(localDagContext.epoch) > maxEpoch
-        && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
+    if (castU32(localDagContext.epoch) > maxEpoch && algo::ethash::EIP1057_MAX_EPOCH_NUMER != maxEpoch)
     {
         logErr() << "context.epoch: " << localDagContext.epoch << " | maxEpoch: " << maxEpoch;
         return;
@@ -172,16 +169,15 @@ void algo::ethash::ContextGenerator::build(
 }
 
 
-void algo::ethash::ContextGenerator::buildLightCache(
-    algo::ALGORITHM const algorithm)
+void algo::ethash::ContextGenerator::buildLightCache(algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
-    algo::DagContext& localDagContext{ contextShare.context };
+    algo::DagContext&                                localDagContext{ contextShare.context };
 
     ////////////////////////////////////////////////////////////////////////////
     algo::hash512 item{ localDagContext.hashedSeedCache };
-    size_t const dataLength{ algo::LEN_HASH_512 + localDagContext.lightCache.size };
+    size_t const  dataLength{ algo::LEN_HASH_512 + localDagContext.lightCache.size };
     localDagContext.data = NEW_ARRAY(char, dataLength);
     std::memset(localDagContext.data, 0, sizeof(char) * dataLength);
     if (nullptr == localDagContext.data)
@@ -221,13 +217,11 @@ void algo::ethash::ContextGenerator::buildLightCache(
 }
 
 
-void algo::ethash::ContextGenerator::copyContext(
-    algo::DagContext& context,
-    algo::ALGORITHM const algorithm)
+void algo::ethash::ContextGenerator::copyContext(algo::DagContext& context, algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::DagContextShare& contextShare{ getContext(algorithm) };
-    algo::DagContext& localDagContext{ contextShare.context };
+    algo::DagContext&                                localDagContext{ contextShare.context };
 
     context.epoch = localDagContext.epoch;
     context.lightCache.numberItem = localDagContext.lightCache.numberItem;

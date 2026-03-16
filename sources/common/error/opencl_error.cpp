@@ -3,8 +3,7 @@
 #include <CL/opencl.hpp>
 
 
-char const* openclShowError(
-    cl_int const err)
+char const* openclShowError(cl_int const err)
 {
     switch (err)
     {
@@ -50,7 +49,7 @@ char const* openclShowError(
             return "CL_DEVICE_PARTITION_FAILED";
         case CL_KERNEL_ARG_INFO_NOT_AVAILABLE:
             return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
-#endif  // CL_VERSION_1_2
+#endif // CL_VERSION_1_2
 
         case CL_INVALID_VALUE:
             return "CL_INVALID_VALUE";
@@ -132,21 +131,21 @@ char const* openclShowError(
             return "CL_INVALID_LINKER_OPTIONS";
         case CL_INVALID_DEVICE_PARTITION_COUNT:
             return "CL_INVALID_DEVICE_PARTITION_COUNT";
-#endif  // CL_VERSION_1_2
+#endif // CL_VERSION_1_2
 
 #ifdef CL_VERSION_2_0
         case CL_INVALID_PIPE_SIZE:
             return "CL_INVALID_PIPE_SIZE";
         case CL_INVALID_DEVICE_QUEUE:
             return "CL_INVALID_DEVICE_QUEUE";
-#endif  // CL_VERSION_2_0
+#endif // CL_VERSION_2_0
 
 #ifdef CL_VERSION_2_2
         case CL_INVALID_SPEC_ID:
             return "CL_INVALID_SPEC_ID";
         case CL_MAX_SIZE_RESTRICTION_EXCEEDED:
             return "CL_MAX_SIZE_RESTRICTION_EXCEEDED";
-#endif  // CL_VERSION_2_2
+#endif // CL_VERSION_2_2
     }
 
     return "Unknown CL error encountered";

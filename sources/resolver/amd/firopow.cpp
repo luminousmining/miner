@@ -3,8 +3,7 @@
 #include <resolver/amd/firopow.hpp>
 
 
-resolver::ResolverAmdFiroPOW::ResolverAmdFiroPOW():
-    resolver::ResolverAmdProgPOW()
+resolver::ResolverAmdFiroPOW::ResolverAmdFiroPOW() : resolver::ResolverAmdProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::FIROPOW;

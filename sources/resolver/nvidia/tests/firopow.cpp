@@ -36,12 +36,13 @@ struct ResolverFiropowNvidiaTest : public testing::Test
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
-        jobInfo.blockNumber =  544860ull;
+        jobInfo.blockNumber = 544860ull;
         jobInfo.headerHash = algo::toHash256("23bb6340c5ffcf05c3e2b86503a636b805f7ca6c93d50315971b26b72f461790");
         jobInfo.seedHash = algo::toHash256("ac88bf0324754ae04cffe412accbbd72e534acd928bdcbe95239f660667ae26d");
         jobInfo.boundary = algo::toHash256("00000003fffc0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::firopow::EPOCH_LENGTH);
+        jobInfo.epoch =
+            algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::firopow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
     }
 };
@@ -60,7 +61,7 @@ TEST_F(ResolverFiropowNvidiaTest, findNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("0x0000315900f3f0b8"s, nonceStr);

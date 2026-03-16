@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverAmdKawPOW : public resolver::ResolverAmdProgPOW
     {
-    public:
+      public:
         ResolverAmdKawPOW();
         ~ResolverAmdKawPOW() = default;
     };

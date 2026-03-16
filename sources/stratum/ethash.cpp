@@ -1,8 +1,8 @@
 #include <string>
 
+#include <algo/ethash/ethash.hpp>
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
-#include <algo/ethash/ethash.hpp>
 #include <common/boost_utils.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
@@ -10,24 +10,23 @@
 #include <stratum/ethash.hpp>
 
 
-void stratum::StratumEthash::onResponse(
-    boost::json::object const& root)
+void stratum::StratumEthash::onResponse(boost::json::object const& root)
 {
     auto const miningRequestID{ common::boostJsonGetNumber<uint32_t>(root.at("id")) };
 
-    switch(miningRequestID)
+    switch (miningRequestID)
     {
         case stratum::Stratum::ID_MINING_SUBSCRIBE:
         {
-            if (   false == root.contains("error")
-                || true == root.at("error").is_null())
+            if (false == root.contains("error") || true == root.at("error").is_null())
             {
                 auto result{ root.at("result").as_array() };
                 if (false == result.empty())
                 {
                     std::string extraNonceStr{ result.at(1).as_string().c_str() };
                     setExtraNonce(extraNonceStr);
-                    jobInfo.targetBits = std::strtoul(extraNonceStr.c_str(), nullptr, 16);;
+                    jobInfo.targetBits = std::strtoul(extraNonceStr.c_str(), nullptr, 16);
+                    ;
                     miningAuthorize();
                 }
             }
@@ -39,8 +38,7 @@ void stratum::StratumEthash::onResponse(
         }
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
-            if (   false == root.contains("error")
-                || true == root.at("error").is_null())
+            if (false == root.contains("error") || true == root.at("error").is_null())
             {
                 authenticated = root.at("result").as_bool();
                 if (true == authenticated)
@@ -67,8 +65,7 @@ void stratum::StratumEthash::onResponse(
 }
 
 
-void stratum::StratumEthash::onMiningNotify(
-    boost::json::object const& root)
+void stratum::StratumEthash::onMiningNotify(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxDispatchJob);
@@ -98,18 +95,12 @@ void stratum::StratumEthash::onMiningNotify(
 }
 
 
-void stratum::StratumEthash::onMiningSetDifficulty(
-    boost::json::object const& root)
+void stratum::StratumEthash::onMiningSetDifficulty(boost::json::object const& root)
 {
     boost::json::array const& params(root.at("params").as_array());
-    double const currentDifficulty { common::boostJsonGetNumber<double>(params.at(0)) };
+    double const              currentDifficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
-    double difficulty
-    {
-        currentDifficulty <= 2.0
-            ? currentDifficulty
-            : ((currentDifficulty * 2.0) / 8589934592.0)
-    };
+    double difficulty{ currentDifficulty <= 2.0 ? currentDifficulty : ((currentDifficulty * 2.0) / 8589934592.0) };
 
     difficulty = common::min_limit(difficulty, 0.0001);
     difficulty = common::max_limit(difficulty, 2.0);
@@ -121,18 +112,14 @@ void stratum::StratumEthash::onMiningSetDifficulty(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
-    logInfo()
-        << "Target: "
-        << std::hex << jobInfo.boundaryU64
-        << std::dec << " (" << difficulty << ")";
+    logInfo() << "Target: " << std::hex << jobInfo.boundaryU64 << std::dec << " (" << difficulty << ")";
 }
 
 
-void stratum::StratumEthash::onMiningSetTarget(
-    boost::json::object const& root)
+void stratum::StratumEthash::onMiningSetTarget(boost::json::object const& root)
 {
     boost::json::array const& params(root.at("params").as_array());
-    std::string const boundary{ params.at(0).as_string().c_str() };
+    std::string const         boundary{ params.at(0).as_string().c_str() };
 
     jobInfo.boundary = algo::toHash256(boundary);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
@@ -145,18 +132,15 @@ void stratum::StratumEthash::onMiningSetTarget(
 }
 
 
-void stratum::StratumEthash::onMiningSetExtraNonce(
-    boost::json::object const& root)
+void stratum::StratumEthash::onMiningSetExtraNonce(boost::json::object const& root)
 {
     boost::json::array const& params(root.at("params").as_array());
-    std::string const extraNonceStr{ params.at(0).as_string().c_str() };
+    std::string const         extraNonceStr{ params.at(0).as_string().c_str() };
     setExtraNonce(extraNonceStr);
 }
 
 
-void stratum::StratumEthash::miningSubmit(
-    uint32_t const deviceId,
-    boost::json::array const& params)
+void stratum::StratumEthash::miningSubmit(uint32_t const deviceId, boost::json::array const& params)
 {
     using namespace std::string_literals;
 
@@ -165,8 +149,7 @@ void stratum::StratumEthash::miningSubmit(
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array
-    {
+    root["params"] = boost::json::array{
         wallet + "."s + workerName, // login.workername
         params.at(0),               // JobID
         params.at(1),               // nonce

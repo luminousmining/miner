@@ -1,6 +1,6 @@
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
-#include <common/config.hpp>
 #include <resolver/resolver.hpp>
 
 
@@ -31,7 +31,6 @@ void resolver::Resolver::setThreads(uint32_t const newThreads)
 
 uint32_t resolver::Resolver::getBlocks() const
 {
-    
     return blocks;
 }
 
@@ -42,17 +41,15 @@ uint32_t resolver::Resolver::getThreads() const
 }
 
 
-void resolver::Resolver::updateJobId(
-    std::string const& _jobId)
+void resolver::Resolver::updateJobId(std::string const& _jobId)
 {
     jobId.assign(_jobId);
 }
 
 
-bool resolver::Resolver::isStale(
-    std::string const& _jobId) const
+bool resolver::Resolver::isStale(std::string const& _jobId) const
 {
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     if (false == config.mining.stale)
     {

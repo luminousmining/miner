@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <algo/algo_type.hpp>
-#include <device/type.hpp>
 #include <common/cli/cli.hpp>
 #include <common/profile.hpp>
+#include <device/type.hpp>
 #include <stratum/stratum_type.hpp>
 
 
@@ -17,7 +17,7 @@ namespace common
 {
     struct Config
     {
-    public:
+      public:
         struct CommonConfig
         {
             double priceKWH{ 0.0 };
@@ -42,7 +42,7 @@ namespace common
 
         struct SmartMiningConfig
         {
-            using MapCoinPool = std::unordered_map<std::string/*coin*/, PoolConfig>;
+            using MapCoinPool = std::unordered_map<std::string /*coin*/, PoolConfig>;
             MapCoinPool coinPoolConfig{};
         };
 
@@ -110,19 +110,19 @@ namespace common
         ApiConfig                      api{};
         CommonConfig                   common{};
 #if defined(TOOLS_ENABLE)
-        ToolConfig                     toolConfigs{};
+        ToolConfig toolConfigs{};
 #endif
 
-        static Config& instance();
-        bool load(int argc, char** argv);
-        bool isEnable(uint32_t const deviceId) const;
+        static Config&            instance();
+        bool                      load(int argc, char** argv);
+        bool                      isEnable(uint32_t const deviceId) const;
         std::optional<PoolConfig> getConfigDevice(uint32_t const deviceId) const;
 
         algo::ALGORITHM getAlgorithm() const;
 
-    private:
-        bool loadCli(int argc, char** argv);
-        bool isValidConfig() const;
+      private:
+        bool        loadCli(int argc, char** argv);
+        bool        isValidConfig() const;
         PoolConfig* getOrAddDeviceSettings(uint32_t const deviceId);
     };
 }

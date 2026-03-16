@@ -2,10 +2,10 @@
 
 #include <CL/opencl.hpp>
 
+#include <common/chrono.hpp>
 #include <common/error/opencl_error.hpp>
 #include <common/kernel_generator/opencl.hpp>
 #include <common/log/log.hpp>
-#include <common/chrono.hpp>
 
 
 void common::KernelGeneratorOpenCL::clear()
@@ -17,14 +17,12 @@ void common::KernelGeneratorOpenCL::clear()
 }
 
 
-bool common::KernelGeneratorOpenCL::build(
-    cl::Device* const clDevice,
-    cl::Context* const clContext)
+bool common::KernelGeneratorOpenCL::build(cl::Device* const clDevice, cl::Context* const clContext)
 {
     try
     {
         ////////////////////////////////////////////////////////////////////////
-        std::string fullSource;
+        std::string    fullSource;
         common::Chrono chrono;
 
         ////////////////////////////////////////////////////////////////////////
@@ -91,22 +89,18 @@ bool common::KernelGeneratorOpenCL::build(
 
         ////////////////////////////////////////////////////////////////////////
         chrono.stop();
-        logInfo()
-            << "Build kernel " << kernelName
-            << " in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+        logInfo() << "Build kernel " << kernelName << " in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
 
         ////////////////////////////////////////////////////////////////////////
         sourceCode.clear();
     }
-    catch(cl::BuildError const& clErr)
+    catch (cl::BuildError const& clErr)
     {
         auto const clBuildStatus{ clProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(*clDevice) };
-        logErr()
-            << "(" << __FUNCTION__ << ")"
-            << "{" << openclShowError(clErr.err()) << "}"
-            << " -> " << kernelName
-            << "\n"
-            << clBuildStatus;
+        logErr() << "(" << __FUNCTION__ << ")"
+                 << "{" << openclShowError(clErr.err()) << "}"
+                 << " -> " << kernelName << "\n"
+                 << clBuildStatus;
         return false;
     }
     catch (cl::Error const& clErr)

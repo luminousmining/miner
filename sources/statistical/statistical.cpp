@@ -1,13 +1,12 @@
-#include <common/log/log.hpp>
 #include <common/cast.hpp>
+#include <common/log/log.hpp>
 #include <statistical/statistical.hpp>
 
 
-void statistical::Statistical::setChronoUnit(
-    common::CHRONO_UNIT newUnit)
+void statistical::Statistical::setChronoUnit(common::CHRONO_UNIT newUnit)
 {
     chronoUnit = newUnit;
-    switch(chronoUnit)
+    switch (chronoUnit)
     {
         case common::CHRONO_UNIT::SEC:
         {
@@ -64,8 +63,7 @@ uint32_t statistical::Statistical::getKernelExecutedCount() const
 }
 
 
-void statistical::Statistical::setBatchNonce(
-    uint64_t const newBatchNonce)
+void statistical::Statistical::setBatchNonce(uint64_t const newBatchNonce)
 {
     batchNonce = newBatchNonce;
 }
@@ -81,9 +79,9 @@ void statistical::Statistical::updateHashrate()
 {
     ///////////////////////////////////////////////////////////////////////////
     elapsed = chrono.elapsed(chronoUnit);
-    double const diffTime{ chronoTime / elapsed };
+    double const   diffTime{ chronoTime / elapsed };
     uint64_t const totalNonce{ batchNonce * kernelExecuted };
-    double const values{ totalNonce * diffTime };
+    double const   values{ totalNonce * diffTime };
 
     ///////////////////////////////////////////////////////////////////////////
     if (values > 0.0)

@@ -14,7 +14,7 @@ FastDivisor initFastMod(uint32_t const d)
         return out;
     }
 
-    uint32_t p{ 31u };
+    uint32_t       p{ 31u };
     uint64_t const one{ 1ull };
 
     while ((one << p) < d)
@@ -38,7 +38,7 @@ uint32_t fastMod(FastDivisor const& divisor, uint32_t const value)
     uint32_t const s{ divisor.shift };
 
     uint64_t const mul{ static_cast<uint64_t>(value) * static_cast<uint64_t>(m) };
-    uint32_t q{ static_cast<uint32_t>(mul >> (32u + s)) };
+    uint32_t       q{ static_cast<uint32_t>(mul >> (32u + s)) };
 
     uint32_t r{ value - (q * d) };
 

@@ -1,0 +1,118 @@
+---
+# Clang-tidy configuration for LuminousMiner
+# Based on CODING_STYLE.md
+
+Checks: >
+  -*,
+  readability-identifier-naming,
+  readability-braces-around-statements,
+  readability-implicit-bool-conversion,
+  readability-const-return-type,
+  readability-qualified-auto,
+  modernize-use-default-member-init,
+  modernize-use-nullptr,
+  modernize-use-override,
+  cppcoreguidelines-init-variables,
+  misc-const-correctness,
+  bugprone-use-after-move,
+  bugprone-macro-parentheses,
+  performance-unnecessary-copy-initialization,
+  performance-move-const-arg
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: 'sources/.*'
+
+FormatStyle: file
+
+CheckOptions:
+
+  ############################################################
+  # Naming conventions (CODING_STYLE.md)
+  #   - camelCase    : variables, functions, parameters, members
+  #   - UpperCase    : class, struct, enum, type alias
+  #   - UPPER_CASE   : constexpr, enum constants
+  #   - lower_case   : namespaces
+  ############################################################
+
+  # Namespaces: lowercase
+  - key:   readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  # Classes and structs: UpperCamelCase (PascalCase)
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.StructCase
+    value: CamelCase
+
+  # Enums: UpperCamelCase
+  - key:   readability-identifier-naming.EnumCase
+    value: CamelCase
+
+  # Enum constants: UPPER_CASE
+  - key:   readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+
+  # Type aliases and typedefs: UpperCamelCase
+  - key:   readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key:   readability-identifier-naming.TypedefCase
+    value: CamelCase
+
+  # Functions and methods: camelCase
+  - key:   readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key:   readability-identifier-naming.MethodCase
+    value: camelBack
+
+  # Variables: camelCase
+  - key:   readability-identifier-naming.VariableCase
+    value: camelBack
+  - key:   readability-identifier-naming.LocalVariableCase
+    value: camelBack
+  - key:   readability-identifier-naming.MemberCase
+    value: camelBack
+  - key:   readability-identifier-naming.PrivateMemberCase
+    value: camelBack
+  - key:   readability-identifier-naming.ProtectedMemberCase
+    value: camelBack
+  - key:   readability-identifier-naming.PublicMemberCase
+    value: camelBack
+  - key:   readability-identifier-naming.StaticVariableCase
+    value: camelBack
+
+  # Parameters: camelCase
+  - key:   readability-identifier-naming.ParameterCase
+    value: camelBack
+
+  # Constexpr variables: UPPER_CASE
+  - key:   readability-identifier-naming.ConstexprVariableCase
+    value: UPPER_CASE
+
+  # Template parameters
+  - key:   readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  - key:   readability-identifier-naming.ValueTemplateParameterCase
+    value: UPPER_CASE
+
+  ############################################################
+  # auto: only for iterators and long types
+  ############################################################
+  - key:   readability-qualified-auto.AddConstToQualified
+    value: 'true'
+
+  ############################################################
+  # Member initialization in declaration
+  ############################################################
+  - key:   modernize-use-default-member-init.UseAssignment
+    value: 'false'
+
+  ############################################################
+  # const-correctness
+  ############################################################
+  - key:   misc-const-correctness.TransformValues
+    value: 'true'
+  - key:   misc-const-correctness.TransformReferences
+    value: 'true'
+  - key:   misc-const-correctness.TransformPointersAsValues
+    value: 'false'

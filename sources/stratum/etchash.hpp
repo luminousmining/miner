@@ -9,7 +9,7 @@ namespace stratum
 {
     struct StratumEtchash : public stratum::StratumEthash
     {
-    public:
+      public:
         StratumEtchash();
         ~StratumEtchash() = default;
     };

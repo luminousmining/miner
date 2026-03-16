@@ -31,9 +31,7 @@ void network::NetworkTCPClient::asyncReceive()
 }
 
 
-bool network::NetworkTCPClient::onVerifySSL(
-    [[maybe_unused]] bool preverified,
-    boost_verify_context& ctx)
+bool network::NetworkTCPClient::onVerifySSL([[maybe_unused]] bool preverified, boost_verify_context& ctx)
 {
     auto const* cert{ X509_STORE_CTX_get_current_cert(ctx.native_handle()) };
     if (nullptr == cert)
@@ -46,16 +44,16 @@ bool network::NetworkTCPClient::onVerifySSL(
 }
 
 
-void network::NetworkTCPClient::onReceiveAsync(
-    boost_error_code const& ec,
-    size_t bytes)
+void network::NetworkTCPClient::onReceiveAsync(boost_error_code const& ec, size_t bytes)
 {
     try
     {
         if (boost_error::success == ec)
         {
             std::string msg;
-            msg.assign(boost::asio::buffers_begin(recvBuffer.data()), boost::asio::buffers_begin(recvBuffer.data()) + bytes);
+            msg.assign(
+                boost::asio::buffers_begin(recvBuffer.data()),
+                boost::asio::buffers_begin(recvBuffer.data()) + bytes);
 
             recvBuffer.consume(bytes);
 
@@ -67,37 +65,31 @@ void network::NetworkTCPClient::onReceiveAsync(
         }
         else
         {
-            if (   boost::asio::error::eof == ec
-                || boost::asio::error::connection_aborted == ec
-                || boost::asio::error::connection_reset == ec
-                || boost::asio::error::connection_refused == ec)
+            if (boost::asio::error::eof == ec || boost::asio::error::connection_aborted == ec
+                || boost::asio::error::connection_reset == ec || boost::asio::error::connection_refused == ec)
             {
                 retryConnect();
             }
             else
             {
-                logErr()
-                    << "Error during receiving message: "
-                    << "[" << ec.value() << "] "
-                    << ec.message();
+                logErr() << "Error during receiving message: "
+                         << "[" << ec.value() << "] " << ec.message();
                 disconnect();
             }
         }
     }
-    catch(boost::exception const& e)
+    catch (boost::exception const& e)
     {
         logErr() << diagnostic_information(e);
     }
-    catch(std::exception const& e)
+    catch (std::exception const& e)
     {
         logErr() << e.what();
     }
 }
 
 
-void network::NetworkTCPClient::onSend(
-    boost_error_code const& ec,
-    [[maybe_unused]] size_t const bytes)
+void network::NetworkTCPClient::onSend(boost_error_code const& ec, [[maybe_unused]] size_t const bytes)
 {
     if (boost::system::errc::errc_t::success != ec)
     {

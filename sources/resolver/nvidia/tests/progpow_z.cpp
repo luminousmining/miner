@@ -11,10 +11,10 @@
 
 struct ResolverProgpowZNvidiaTest : public testing::Test
 {
-    stratum::StratumJobInfo             jobInfo{};
-    common::mocker::MockerStratum       stratum{};
-    resolver::tests::Properties         properties{};
-    resolver::ResolverNvidiaProgPOW     resolver{};
+    stratum::StratumJobInfo         jobInfo{};
+    common::mocker::MockerStratum   stratum{};
+    resolver::tests::Properties     properties{};
+    resolver::ResolverNvidiaProgPOW resolver{};
 
     ResolverProgpowZNvidiaTest()
     {
@@ -70,7 +70,7 @@ TEST_F(ResolverProgpowZNvidiaTest, findNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("0x62114e8a70455eef"s, nonceStr);

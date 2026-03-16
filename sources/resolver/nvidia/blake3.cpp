@@ -1,13 +1,12 @@
-#include <algo/hash_utils.hpp>
 #include <algo/blake3/cuda/blake3.cuh>
+#include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <resolver/nvidia/blake3.hpp>
 
 
-resolver::ResolverNvidiaBlake3::ResolverNvidiaBlake3():
-    resolver::ResolverNvidia()
+resolver::ResolverNvidiaBlake3::ResolverNvidiaBlake3() : resolver::ResolverNvidia()
 {
     algorithm = algo::ALGORITHM::BLAKE3;
 }
@@ -19,8 +18,7 @@ resolver::ResolverNvidiaBlake3::~ResolverNvidiaBlake3()
 }
 
 
-bool resolver::ResolverNvidiaBlake3::updateMemory(
-    [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::updateMemory([[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     if (false == blake3InitMemory(parameters))
@@ -33,8 +31,7 @@ bool resolver::ResolverNvidiaBlake3::updateMemory(
 }
 
 
-bool resolver::ResolverNvidiaBlake3::updateConstants(
-    [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::updateConstants([[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     overrideOccupancy(128u, 8192u);
@@ -58,26 +55,18 @@ bool resolver::ResolverNvidiaBlake3::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaBlake3::executeSync(
-    [[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::executeSync([[maybe_unused]] stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
-    blake3Search(cuStream[currentIndexStream],
-                 parameters,
-                 currentIndexStream,
-                 blocks,
-                 threads);
+    blake3Search(cuStream[currentIndexStream], parameters, currentIndexStream, blocks, threads);
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == parameters.resultCache->found)
     {
-        uint32_t const count
-        {
-            common::max_limit(parameters.resultCache->count, algo::blake3::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(parameters.resultCache->count, algo::blake3::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.fromGroup = jobInfo.fromGroup;
@@ -86,7 +75,7 @@ bool resolver::ResolverNvidiaBlake3::executeSync(
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = parameters.resultCache->nonces[i];
         }
@@ -99,8 +88,7 @@ bool resolver::ResolverNvidiaBlake3::executeSync(
 }
 
 
-bool resolver::ResolverNvidiaBlake3::executeAsync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaBlake3::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
@@ -109,21 +97,14 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
     parameters.hostNonce = jobInfo.nonce;
-    blake3Search(cuStream[currentIndexStream],
-                 parameters,
-                 currentIndexStream,
-                 blocks,
-                 threads);
+    blake3Search(cuStream[currentIndexStream], parameters, currentIndexStream, blocks, threads);
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
-    algo::blake3::Result* resultCache { &parameters.resultCache[currentIndexStream] };
+    algo::blake3::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
-        uint32_t const count
-        {
-            common::max_limit(resultCache->count, algo::blake3::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(resultCache->count, algo::blake3::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.fromGroup = jobInfo.fromGroup;
@@ -132,7 +113,7 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = resultCache->nonces[i];
         }
@@ -148,19 +129,18 @@ bool resolver::ResolverNvidiaBlake3::executeAsync(
 }
 
 
-void resolver::ResolverNvidiaBlake3::submit(
-    stratum::Stratum* const stratum)
+void resolver::ResolverNvidiaBlake3::submit(stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                std::string nonceStr { nonceHexa.str() };
+                std::string nonceStr{ nonceHexa.str() };
 
                 while (nonceStr.size() < 48)
                 {
@@ -185,14 +165,13 @@ void resolver::ResolverNvidiaBlake3::submit(
 }
 
 
-void resolver::ResolverNvidiaBlake3::submit(
-    stratum::StratumSmartMining* const stratum)
+void resolver::ResolverNvidiaBlake3::submit(stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];

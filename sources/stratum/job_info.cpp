@@ -2,8 +2,7 @@
 #include <stratum/job_info.hpp>
 
 
-void stratum::StratumJobInfo::copy(
-    stratum::StratumJobInfo const& other)
+void stratum::StratumJobInfo::copy(stratum::StratumJobInfo const& other)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtx);
@@ -18,7 +17,7 @@ void stratum::StratumJobInfo::copy(
     algo::copyHash(coinb2, other.coinb2);
     algo::copyHash(seedHash, other.seedHash);
     algo::copyHash(boundary, other.boundary);
-    for (uint32_t i { 0u }; i < 12u; ++i)
+    for (uint32_t i{ 0u }; i < 12u; ++i)
     {
         algo::copyHash(merkletree[i], other.merkletree[i]);
     }

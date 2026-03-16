@@ -9,7 +9,7 @@ namespace resolver
 {
     struct ResolverMocker : public resolver::Resolver
     {
-    public:
+      public:
         ~ResolverMocker() = default;
 
         bool updateMemory(stratum::StratumJobInfo const& jobInfo) final;
@@ -20,9 +20,8 @@ namespace resolver
         void submit(stratum::StratumSmartMining* const stratum) final;
 
 
-    protected:
-        void overrideOccupancy(uint32_t const defaultThreads,
-                                    uint32_t const defaultBlocks) final;
+      protected:
+        void overrideOccupancy(uint32_t const defaultThreads, uint32_t const defaultBlocks) final;
     };
 }
 

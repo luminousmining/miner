@@ -11,8 +11,7 @@
 #include <device/device_manager.hpp>
 
 
-void api::ServerAPI::setPort(
-    uint32_t const _port)
+void api::ServerAPI::setPort(uint32_t const _port)
 {
     port = _port;
 }
@@ -36,7 +35,7 @@ void api::ServerAPI::loopAccept()
     namespace boost_http = boost::beast::http;
 
     boost_io_context ioContext{};
-    boost_acceptor acceptor{ ioContext, { boost_tcp::v4(), castU16(port) } };
+    boost_acceptor   acceptor{ ioContext, { boost_tcp::v4(), castU16(port) } };
 
     while (true == alive.load(boost::memory_order::relaxed))
     {
@@ -45,7 +44,7 @@ void api::ServerAPI::loopAccept()
         acceptor.accept(socket);
 
         ////////////////////////////////////////////////////////////////////////
-        boost::beast::flat_buffer buffer{};
+        boost::beast::flat_buffer                    buffer{};
         boost_http::request<boost_http::string_body> request{};
         boost_http::read(socket, buffer, request);
 
@@ -59,7 +58,7 @@ void api::ServerAPI::loopAccept()
 
 
 void api::ServerAPI::onMessage(
-    boost_socket& socket,
+    boost_socket&                                                       socket,
     boost::beast::http::request<boost::beast::http::string_body> const& request)
 {
     namespace boost_http = boost::beast::http;
@@ -96,28 +95,20 @@ void api::ServerAPI::onMessage(
 }
 
 
-void api::ServerAPI::onHiveOSGetStats(
-    boost_socket& socket,
-    boost_response& response)
+void api::ServerAPI::onHiveOSGetStats(boost_socket& socket, boost_response& response)
 {
     ////////////////////////////////////////////////////////////////////////////
-    std::string version
-    {
-        std::to_string(common::VERSION_MAJOR)
-        + "."
-        + std::to_string(common::VERSION_MINOR)
-    };
+    std::string version{ std::to_string(common::VERSION_MAJOR) + "." + std::to_string(common::VERSION_MINOR) };
 
     ////////////////////////////////////////////////////////////////////////////
-    boost::json::object root
-    {
-        { "hs", boost::json::array{} },         // array of hashes
-        { "hs_units", "hs" },                   // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs".
+    boost::json::object root{
+        { "hs", boost::json::array{} }, // array of hashes
+        { "hs_units", "hs" }, // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs".
         { "temp", boost::json::array{} },       // array of miner temps
         { "fan", boost::json::array{} },        // array of miner fans
         { "uptime", 0 },                        // seconds elapsed from miner stats
-        { "ver", version },                     // miner version currently run, parsed from it's api or manifest 
-        { "ar", boost::json::array{} },         // Optional: acceped, rejected shares 
+        { "ver", version },                     // miner version currently run, parsed from it's api or manifest
+        { "ar", boost::json::array{} },         // Optional: acceped, rejected shares
         { "algo", "" },                         // Optional: algo used by miner, should one of the exiting in Hive
         { "bus_numbers", boost::json::array{} } // Pci buses array in decimal format. E.g. 0a:00.0 is 10
     };
@@ -128,12 +119,12 @@ void api::ServerAPI::onHiveOSGetStats(
     boost::json::array busNumbers{};
 
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t sharesValid { 0ull };
-    uint64_t sharesInvalid { 0ull };
+    uint64_t    sharesValid{ 0ull };
+    uint64_t    sharesInvalid{ 0ull };
     std::string sharesInvalidGpus{};
 
     ////////////////////////////////////////////////////////////////////////////
-    auto& deviceManager{ device::DeviceManager::instance() };
+    auto&                        deviceManager{ device::DeviceManager::instance() };
     std::vector<device::Device*> devices{ deviceManager.getDevices() };
     for (device::Device* device : devices)
     {
@@ -176,14 +167,12 @@ void api::ServerAPI::onHiveOSGetStats(
 }
 
 
-void api::ServerAPI::onHiveOSGetTotalHashrate(
-    boost_socket& socket,
-    boost_response& response)
+void api::ServerAPI::onHiveOSGetTotalHashrate(boost_socket& socket, boost_response& response)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t totalHashrate{ 0ull };
-    boost::json::object root{};
-    auto& deviceManager{ device::DeviceManager::instance() };
+    uint64_t                     totalHashrate{ 0ull };
+    boost::json::object          root{};
+    auto&                        deviceManager{ device::DeviceManager::instance() };
     std::vector<device::Device*> devices{ deviceManager.getDevices() };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -208,28 +197,20 @@ void api::ServerAPI::onHiveOSGetTotalHashrate(
 }
 
 
-void api::ServerAPI::onWebGetStats(
-    boost_socket& socket,
-    boost_response& response)
+void api::ServerAPI::onWebGetStats(boost_socket& socket, boost_response& response)
 {
     ////////////////////////////////////////////////////////////////////////////
-    std::string version
-    {
-        std::to_string(common::VERSION_MAJOR)
-        + "."
-        + std::to_string(common::VERSION_MINOR)
-    };
+    std::string version{ std::to_string(common::VERSION_MAJOR) + "." + std::to_string(common::VERSION_MINOR) };
 
     ////////////////////////////////////////////////////////////////////////////
-    boost::json::object root
-    {
-        { "hs", boost::json::array{} },         // Hashrates by device (GPU)
-        { "hs_units", "hs" },                   // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs"
-        { "temp", boost::json::array{} },       // Temperature by device (GPU)
-        { "fan", boost::json::array{} },        // Fans speed by device (GPU)
-        { "uptime", 0 },                        // Seconds elapsed from miner stats
-        { "ver", version },                     // Miner version currently run
-        { "shares", boost::json::array{} },     // Acceped and rejected shares
+    boost::json::object root{
+        { "hs", boost::json::array{} }, // Hashrates by device (GPU)
+        { "hs_units", "hs" }, // Optional: units that are uses for hashes array, "hs", "khs", "mhs", ... Default "khs"
+        { "temp", boost::json::array{} },   // Temperature by device (GPU)
+        { "fan", boost::json::array{} },    // Fans speed by device (GPU)
+        { "uptime", 0 },                    // Seconds elapsed from miner stats
+        { "ver", version },                 // Miner version currently run
+        { "shares", boost::json::array{} }, // Acceped and rejected shares
     };
     boost::json::array hs{};
     boost::json::array temp{};
@@ -237,12 +218,12 @@ void api::ServerAPI::onWebGetStats(
     boost::json::array shares{};
 
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t sharesValid { 0ull };
-    uint64_t sharesInvalid { 0ull };
+    uint64_t    sharesValid{ 0ull };
+    uint64_t    sharesInvalid{ 0ull };
     std::string sharesInvalidGpus{};
 
     ////////////////////////////////////////////////////////////////////////////
-    auto& deviceManager{ device::DeviceManager::instance() };
+    auto&                        deviceManager{ device::DeviceManager::instance() };
     std::vector<device::Device*> devices{ deviceManager.getDevices() };
     for (device::Device* device : devices)
     {

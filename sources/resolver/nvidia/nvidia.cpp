@@ -2,12 +2,10 @@
 #include <resolver/nvidia/nvidia.hpp>
 
 
-void resolver::ResolverNvidia::overrideOccupancy(
-    uint32_t const defaultThreads,
-    uint32_t const defaultBlocks)
+void resolver::ResolverNvidia::overrideOccupancy(uint32_t const defaultThreads, uint32_t const defaultBlocks)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
     if (std::nullopt != config.occupancy.threads)
@@ -19,10 +17,8 @@ void resolver::ResolverNvidia::overrideOccupancy(
         }
         else
         {
-            resolverErr()
-                << "Cannot use " << threadsCount
-                << " threads. You must define a multiple of 32."
-                << " Kernel use 256u by default!";
+            resolverErr() << "Cannot use " << threadsCount << " threads. You must define a multiple of 32."
+                          << " Kernel use 256u by default!";
             setThreads(256u);
         }
     }
@@ -42,7 +38,5 @@ void resolver::ResolverNvidia::overrideOccupancy(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    resolverDebug()
-        << "Occupancy - Threads[" << getThreads()
-        << "] Blocks[" << getBlocks() << "]";
+    resolverDebug() << "Occupancy - Threads[" << getThreads() << "] Blocks[" << getBlocks() << "]";
 }

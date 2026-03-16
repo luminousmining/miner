@@ -11,9 +11,9 @@
 
 struct ResolverMeowpowNvidiaTest : public testing::Test
 {
-    stratum::StratumJobInfo        jobInfo{};
-    common::mocker::MockerStratum  stratum{};
-    resolver::tests::Properties    properties{};
+    stratum::StratumJobInfo         jobInfo{};
+    common::mocker::MockerStratum   stratum{};
+    resolver::tests::Properties     properties{};
     resolver::ResolverNvidiaMeowPOW resolver{};
 
     ResolverMeowpowNvidiaTest()
@@ -41,7 +41,8 @@ struct ResolverMeowpowNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("cfa3e37c459ebd9b4138bd2141a52d89f6f8f671ecf91456f5a29176eb132fc0");
         jobInfo.boundary = algo::toHash256("0000000500000000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.epoch =
+            algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::meowpow::MAX_PERIOD;
     }
 };
@@ -60,7 +61,7 @@ TEST_F(ResolverMeowpowNvidiaTest, findNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("0x8071000061a58c77"s, nonceStr);
@@ -80,7 +81,7 @@ TEST_F(ResolverMeowpowNvidiaTest, aroundFindNonce)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("0x8071000061a58c77"s, nonceStr);

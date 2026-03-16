@@ -5,8 +5,7 @@
 #include <resolver/amd/meowpow.hpp>
 
 
-resolver::ResolverAmdMeowPOW::ResolverAmdMeowPOW():
-    resolver::ResolverAmdProgPOW()
+resolver::ResolverAmdMeowPOW::ResolverAmdMeowPOW() : resolver::ResolverAmdProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::MEOWPOW;

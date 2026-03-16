@@ -13,7 +13,7 @@
 bool device::DeviceNvidia::initialize()
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
     cleanUp();
@@ -58,9 +58,7 @@ void device::DeviceNvidia::cleanUp()
     cudaError_t cuCodeError{ cudaDeviceReset() };
     if (cudaSuccess != cuCodeError)
     {
-        logErr()
-            << "cudaDeviceReset() failled: "
-            << cudaGetErrorString(cuCodeError);
+        logErr() << "cudaDeviceReset() failled: " << cudaGetErrorString(cuCodeError);
     }
 }
 #endif

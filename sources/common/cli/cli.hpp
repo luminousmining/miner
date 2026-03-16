@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include <tuple>
 #include <optional>
+#include <tuple>
 
 #include <boost/program_options.hpp>
 
@@ -25,7 +25,7 @@ namespace common
         using customParamStrStrU32 = std::tuple<std::string, std::string, uint32_t>;
         using customTupleStrStrU32 = std::vector<customParamStrStrU32>;
 
-        boost::program_options::variables_map params{};
+        boost::program_options::variables_map       params{};
         boost::program_options::options_description description{ "Options" };
 
         explicit Cli();
@@ -33,16 +33,13 @@ namespace common
         bool parse(int argc, char** argv);
         bool contains(std::string const& key) const;
 
-        std::vector<uint32_t> getCustomMultiParamsU32(std::string const& paramName,
-                                                      std::vector<std::string>& options) const;
-        customTupleU32        getCustomParamsU32(std::string const& paramName, 
-                                                 std::vector<std::string>& options) const;
-        customTupleStr        getCustomParamsStr(std::string const& paramName,
-                                                 std::vector<std::string>& options) const;
-        customTupleStrStr     getCustomParamsStrStr(std::string const& paramName,
-                                                    std::vector<std::string>& options) const;
-        customTupleStrStrU32  getCustomParamsStrStrU32(std::string const& paramName,
-                                                       std::vector<std::string>& options) const;
+        std::vector<uint32_t>
+                       getCustomMultiParamsU32(std::string const& paramName, std::vector<std::string>& options) const;
+        customTupleU32 getCustomParamsU32(std::string const& paramName, std::vector<std::string>& options) const;
+        customTupleStr getCustomParamsStr(std::string const& paramName, std::vector<std::string>& options) const;
+        customTupleStrStr getCustomParamsStrStr(std::string const& paramName, std::vector<std::string>& options) const;
+        customTupleStrStrU32
+             getCustomParamsStrStrU32(std::string const& paramName, std::vector<std::string>& options) const;
         void help() const;
 
         // logger
@@ -91,7 +88,7 @@ namespace common
 #endif
         bool isCpuEnable() const;
 
-#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+#if defined(TOOLS_ENABLE) && defined(TOOL_MOCKER)
         std::optional<uint32_t> getMockerResolverCount() const;
         std::optional<uint32_t> getMockerResolverUpdateMemorySleep() const;
 #endif
@@ -135,7 +132,7 @@ namespace common
         uint32_t getApiPort() const;
 
         // Socks proxy settings
-        uint32_t getSocksPort() const;
+        uint32_t                   getSocksPort() const;
         std::optional<std::string> getSocksHost() const;
     };
 }

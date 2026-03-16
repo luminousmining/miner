@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverAmdMeowPOW : public resolver::ResolverAmdProgPOW
     {
-    public:
+      public:
         ResolverAmdMeowPOW();
         ~ResolverAmdMeowPOW() = default;
     };

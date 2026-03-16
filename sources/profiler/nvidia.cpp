@@ -40,13 +40,10 @@ bool profiler::Nvidia::load()
 #ifdef _WIN32
     libModule = LoadLibrary("nvml.dll");
 #else
-    std::set<std::string> allPathLibNvidiaML
-    {
-        "libnvidia-ml.so.1",
-        "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1",
-        "/usr/lib64/libnvidia-ml.so.1",
-        "/usr/lib/libnvidia-ml.so.1"
-    };
+    std::set<std::string> allPathLibNvidiaML{ "libnvidia-ml.so.1",
+                                              "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1",
+                                              "/usr/lib64/libnvidia-ml.so.1",
+                                              "/usr/lib/libnvidia-ml.so.1" };
     for (auto pathLibNvidiaML : allPathLibNvidiaML)
     {
         libModule = dlopen(pathLibNvidiaML.c_str(), RTLD_LAZY);
@@ -66,10 +63,12 @@ bool profiler::Nvidia::load()
 
     nvmlInit = reinterpret_cast<NVMLInit>(loadFunction("nvmlInit"));
     nvmlShutdown = reinterpret_cast<NVMLShutdown>(loadFunction("nvmlShutdown"));
-    nvmlDeviceGetHandleByIndex = reinterpret_cast<NVMLDeviceGetHandleByIndex>(loadFunction("nvmlDeviceGetHandleByIndex"));
+    nvmlDeviceGetHandleByIndex =
+        reinterpret_cast<NVMLDeviceGetHandleByIndex>(loadFunction("nvmlDeviceGetHandleByIndex"));
     nvmlDeviceGetPowerUsage = reinterpret_cast<NVMLDeviceGetPowerUsage>(loadFunction("nvmlDeviceGetPowerUsage"));
     nvmlDeviceGetClockInfo = reinterpret_cast<NVMLDeviceGetClockInfo>(loadFunction("nvmlDeviceGetClockInfo"));
-    nvmlDeviceGetUtilizationRates = reinterpret_cast<NVMLDeviceGetUtilizationRates>(loadFunction("nvmlDeviceGetUtilizationRates"));
+    nvmlDeviceGetUtilizationRates =
+        reinterpret_cast<NVMLDeviceGetUtilizationRates>(loadFunction("nvmlDeviceGetUtilizationRates"));
     nvmlErrorString = reinterpret_cast<NVMLErrorString>(loadFunction("nvmlErrorString"));
 
     IS_NULL(nvmlInit);
@@ -103,9 +102,7 @@ void profiler::Nvidia::unload()
 }
 
 
-bool profiler::Nvidia::init(
-    uint32_t const id,
-    nvmlDevice_t* device)
+bool profiler::Nvidia::init(uint32_t const id, nvmlDevice_t* device)
 {
     if (nullptr == device)
     {

@@ -2,22 +2,22 @@
 
 #include <CL/opencl.hpp>
 
-#include <common/custom.hpp>
 #include <benchmark/amd.hpp>
-#include <common/log/log.hpp>
 #include <common/cast.hpp>
+#include <common/custom.hpp>
+#include <common/log/log.hpp>
 
 
 uint32_t benchmark::getDeviceCount()
 {
-    uint32_t count { 0u };
-    std::vector<cl::Device> cldevices{};
+    uint32_t                  count{ 0u };
+    std::vector<cl::Device>   cldevices{};
     std::vector<cl::Platform> platforms{};
     cl::Platform::get(&platforms);
 
     for (cl::Platform const& platform : platforms)
     {
-        std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
+        std::string const platformName{ platform.getInfo<CL_PLATFORM_NAME>() };
         if (platformName.find("AMD") == std::string::npos)
         {
             continue;
@@ -33,14 +33,14 @@ uint32_t benchmark::getDeviceCount()
 
 std::optional<cl::Device> benchmark::getDevice(uint32_t const index)
 {
-    std::vector<cl::Device> cldevices{};
+    std::vector<cl::Device>   cldevices{};
     std::vector<cl::Platform> platforms{};
     cl::Platform::get(&platforms);
 
     size_t currentIndex{ 0u };
     for (cl::Platform const& platform : platforms)
     {
-        std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
+        std::string const platformName{ platform.getInfo<CL_PLATFORM_NAME>() };
         if (platformName.find("AMD") == std::string::npos)
         {
             continue;
@@ -57,12 +57,9 @@ std::optional<cl::Device> benchmark::getDevice(uint32_t const index)
         size_t const totalIndex{ currentIndex + countDevice };
         if (castSize(index) < totalIndex)
         {
-            size_t const indexBuffer{ totalIndex - castSize(index) - castSize(1u) };
+            size_t const      indexBuffer{ totalIndex - castSize(index) - castSize(1u) };
             cl::Device const& clDevice{ cldevices[indexBuffer] };
-            logInfo()
-                << "Device ["
-                << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>()
-                << "] selected!";
+            logInfo() << "Device [" << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>() << "] selected!";
             return clDevice;
         }
 
@@ -81,9 +78,7 @@ void benchmark::cleanUpOpenCL(benchmark::PropertiesAmd& properties)
 }
 
 
-bool benchmark::initializeOpenCL(
-        benchmark::PropertiesAmd& properties,
-        uint32_t const index)
+bool benchmark::initializeOpenCL(benchmark::PropertiesAmd& properties, uint32_t const index)
 {
     std::optional<cl::Device> amdDevice{ benchmark::getDevice(index) };
     if (std::nullopt == amdDevice)

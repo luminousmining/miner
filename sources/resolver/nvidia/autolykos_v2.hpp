@@ -2,18 +2,18 @@
 
 #if defined(CUDA_ENABLE)
 
+#include <algo/autolykos/result.hpp>
 #include <algo/dag_context.hpp>
 #include <algo/hash.hpp>
-#include <algo/autolykos/result.hpp>
-#include <resolver/nvidia/nvidia.hpp>
 #include <resolver/nvidia/autolykos_v2_kernel_parameter.hpp>
+#include <resolver/nvidia/nvidia.hpp>
 
 
 namespace resolver
 {
     class ResolverNvidiaAutolykosV2 : public resolver::ResolverNvidia
     {
-    public:
+      public:
         ResolverNvidiaAutolykosV2();
         virtual ~ResolverNvidiaAutolykosV2();
 
@@ -24,8 +24,8 @@ namespace resolver
         void submit(stratum::Stratum* const stratum) final;
         void submit(stratum::StratumSmartMining* const stratum) final;
 
-    protected:
-        algo::autolykos_v2::ResultShare resultShare{};
+      protected:
+        algo::autolykos_v2::ResultShare                  resultShare{};
         resolver::nvidia::autolykos_v2::KernelParameters parameters{};
     };
 }

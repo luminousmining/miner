@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverAmdEvrprogPOW : public resolver::ResolverAmdProgPOW
     {
-    public:
+      public:
         ResolverAmdEvrprogPOW();
         ~ResolverAmdEvrprogPOW() = default;
     };

@@ -1,18 +1,17 @@
 #pragma once
 
-#include <string>
 #include <concepts>
 #include <cstdlib>
+#include <string>
 
 #if defined(WIN32)
-    #include <stdlib.h>
+#include <stdlib.h>
 #endif
 
 
 namespace common
 {
-    inline
-    char* getEnv(char const* variableName)
+    inline char* getEnv(char const* variableName)
     {
 #if defined(WIN32)
         char* value = nullptr;
@@ -24,11 +23,9 @@ namespace common
     }
 
 
-    inline
-    void setVarEnv(std::string const& variable, std::string const& value)
+    inline void setVarEnv(std::string const& variable, std::string const& value)
     {
-        if (   true == variable.empty()
-            || true == value.empty())
+        if (true == variable.empty() || true == value.empty())
         {
             return;
         }

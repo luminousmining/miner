@@ -2,8 +2,8 @@
 
 #include <functional>
 
-#include <boost/thread/mutex.hpp>
 #include <boost/json.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <algo/algo_type.hpp>
 #include <network/network.hpp>
@@ -15,14 +15,13 @@ namespace stratum
 {
     struct StratumSmartMining : network::NetworkTCPClient
     {
-        static constexpr uint32_t ID_MINING_SUBSCRIBE { 1u };
-        static constexpr uint32_t ID_SMART_MINING_SET_PROFILE { 2u };
+        static constexpr uint32_t ID_MINING_SUBSCRIBE{ 1u };
+        static constexpr uint32_t ID_SMART_MINING_SET_PROFILE{ 2u };
 
         using callbackUpdateJob = std::function<void(stratum::StratumJobInfo const&)>;
         using callbackSetAlgorithm = std::function<void(algo::ALGORITHM const)>;
-        using callbackShareStatus = std::function<void(bool const isValid,
-                                                       uint32_t const requestID,
-                                                       uint32_t const stratumUUID)>;
+        using callbackShareStatus =
+            std::function<void(bool const isValid, uint32_t const requestID, uint32_t const stratumUUID)>;
         std::string             workerName{};
         std::string             password{};
         stratum::StratumJobInfo jobInfo{};
@@ -37,10 +36,8 @@ namespace stratum
 
         void onMethod(boost::json::object const& root);
         void onResponse(boost::json::object const& root);
-        void miningSubmit(uint32_t const deviceId,
-                          boost::json::array const& params);
-        void miningSubmit(uint32_t const deviceId,
-                          boost::json::object const& params);
+        void miningSubmit(uint32_t const deviceId, boost::json::array const& params);
+        void miningSubmit(uint32_t const deviceId, boost::json::object const& params);
 
         bool onSmartMiningSetAlgo(boost::json::object const& root);
         bool onSmartMiningSetExtraNonce(boost::json::object const& root);
@@ -48,13 +45,13 @@ namespace stratum
         bool onMiningSetDifficulty(boost::json::object const& root);
         bool onMiningSetTarget(boost::json::object const& root);
 
-    private:
+      private:
         boost::mutex         mtxSubmit;
         callbackSetAlgorithm doSetAlgorithm{ nullptr };
         callbackUpdateJob    doUpdateJob{ nullptr };
         callbackShareStatus  doShareStatus{ nullptr };
 
-        algo::ALGORITHM   currentAlgorithm { algo::ALGORITHM::UNKNOWN };
+        algo::ALGORITHM currentAlgorithm{ algo::ALGORITHM::UNKNOWN };
 
         void subscribe();
         void setProfile();

@@ -1,23 +1,19 @@
-#include <gtest/gtest.h>
-
 #include "algo/fast_mod.hpp"
+
+#include <gtest/gtest.h>
 
 struct FastModTest : public ::testing::Test
 {
-    void compareWithBasicMod(
-        uint32_t const divisor,
-        uint32_t const value)
+    void compareWithBasicMod(uint32_t const divisor, uint32_t const value)
     {
         auto const fd{ initFastMod(divisor) };
         auto const fastResult{ fastMod(fd, value) };
         auto const basicResult{ value % divisor };
 
-        ASSERT_EQ(fastResult, basicResult)
-            << "Mismatch for value=" << value << " divisor=" << divisor
-            << " fast=" << fastResult << " basic=" << basicResult;
+        ASSERT_EQ(fastResult, basicResult) << "Mismatch for value=" << value << " divisor=" << divisor
+                                           << " fast=" << fastResult << " basic=" << basicResult;
     }
 };
-
 
 
 TEST_F(FastModTest, SmallDivisors)
@@ -66,14 +62,7 @@ TEST_F(FastModTest, LargeValues)
 
     for (auto const d : divisors)
     {
-        uint32_t const values[]{
-            0xFFFFFFFF,
-            0xFFFFFFFE,
-            0x80000000,
-            0x7FFFFFFF,
-            0x12345678,
-            0xDEADBEEF
-        };
+        uint32_t const values[]{ 0xFFFFFFFF, 0xFFFFFFFE, 0x80000000, 0x7FFFFFFF, 0x12345678, 0xDEADBEEF };
 
         for (auto const v : values)
         {
@@ -85,12 +74,7 @@ TEST_F(FastModTest, LargeValues)
 
 TEST_F(FastModTest, EthereumDagSizes)
 {
-    uint32_t const dagSizes[]{
-        1073739904,
-        1082130304,
-        1090514816,
-        1098906752
-    };
+    uint32_t const dagSizes[]{ 1073739904, 1082130304, 1090514816, 1098906752 };
 
     for (auto const d : dagSizes)
     {
@@ -99,8 +83,8 @@ TEST_F(FastModTest, EthereumDagSizes)
         for (uint32_t i{ 0 }; i < 100000; ++i)
         {
             uint32_t const v{ i * 12345 };
-            auto const fastResult{ fastMod(fd, v) };
-            auto const basicResult{ v % d };
+            auto const     fastResult{ fastMod(fd, v) };
+            auto const     basicResult{ v % d };
 
             EXPECT_EQ(fastResult, basicResult);
         }

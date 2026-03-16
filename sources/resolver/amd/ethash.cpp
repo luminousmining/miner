@@ -1,18 +1,17 @@
 #include <CL/opencl.hpp>
 
-#include <algo/keccak.hpp>
 #include <algo/ethash/ethash.hpp>
+#include <algo/keccak.hpp>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
-#include <common/log/log.hpp>
 #include <common/error/opencl_error.hpp>
+#include <common/log/log.hpp>
 #include <resolver/amd/ethash.hpp>
 
 
-resolver::ResolverAmdEthash::ResolverAmdEthash():
-    resolver::ResolverAmd()
+resolver::ResolverAmdEthash::ResolverAmdEthash() : resolver::ResolverAmd()
 {
     if (algorithm == algo::ALGORITHM::UNKNOWN)
     {
@@ -27,16 +26,13 @@ resolver::ResolverAmdEthash::~ResolverAmdEthash()
     parameters.dagCache.free();
     parameters.headerCache.free();
     parameters.resultCache.free();
-
 }
 
 
-bool resolver::ResolverAmdEthash::updateContext(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdEthash::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().build
-    (
+    algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
         jobInfo.epoch,
@@ -48,30 +44,26 @@ bool resolver::ResolverAmdEthash::updateContext(
         true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
 
-    if (   context.lightCache.numberItem == 0ull
-        || context.lightCache.size == 0ull
-        || context.dagCache.numberItem == 0ull
+    if (context.lightCache.numberItem == 0ull || context.lightCache.size == 0ull || context.dagCache.numberItem == 0ull
         || context.dagCache.size == 0ull)
     {
-        resolverErr()
-            << "\n"
-            << "=========================================================================" << "\n"
-            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
-            << "context.lightCache.size: " << context.lightCache.size << "\n"
-            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
-            << "context.dagCache.size: " << context.dagCache.size << "\n"
-            << "=========================================================================" << "\n"
-            ;
+        resolverErr() << "\n"
+                      << "========================================================================="
+                      << "\n"
+                      << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+                      << "context.lightCache.size: " << context.lightCache.size << "\n"
+                      << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+                      << "context.dagCache.size: " << context.dagCache.size << "\n"
+                      << "========================================================================="
+                      << "\n";
         return false;
     }
 
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
-    if (   0ull != deviceMemoryAvailable
-        && totalMemoryNeeded >= deviceMemoryAvailable)
+    if (0ull != deviceMemoryAvailable && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        resolverErr()
-            << "Device have not memory size available."
-            << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        resolverErr() << "Device have not memory size available."
+                      << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -79,15 +71,13 @@ bool resolver::ResolverAmdEthash::updateContext(
 }
 
 
-bool resolver::ResolverAmdEthash::updateMemory(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdEthash::updateMemory(stratum::StratumJobInfo const& jobInfo)
 {
     if (nullptr == clContext)
     {
         return false;
     }
-    if (   nullptr == clQueue[0]
-        || nullptr == clQueue[1])
+    if (nullptr == clQueue[0] || nullptr == clQueue[1])
     {
         return false;
     }
@@ -109,8 +99,7 @@ bool resolver::ResolverAmdEthash::updateMemory(
     parameters.dagCache.setSize(context.dagCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.lightCache.alloc(*clContext)
-        || false == parameters.dagCache.alloc(*clContext)
+    if (false == parameters.lightCache.alloc(*clContext) || false == parameters.dagCache.alloc(*clContext)
         || false == parameters.headerCache.alloc(clQueue[currentIndexStream], *clContext)
         || false == parameters.resultCache.alloc(clQueue[currentIndexStream], *clContext))
     {
@@ -118,16 +107,14 @@ bool resolver::ResolverAmdEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == parameters.lightCache.write(context.lightCache.hash,
-                                             context.lightCache.size,
-                                             clQueue[currentIndexStream]))
+    if (false
+        == parameters.lightCache.write(context.lightCache.hash, context.lightCache.size, clQueue[currentIndexStream]))
     {
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == buildDAG()
-        || false == buildSearch())
+    if (false == buildDAG() || false == buildSearch())
     {
         return false;
     }
@@ -140,11 +127,10 @@ bool resolver::ResolverAmdEthash::updateMemory(
 }
 
 
-bool resolver::ResolverAmdEthash::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdEthash::updateConstants(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const* const header { jobInfo.headerHash.word32 };
+    uint32_t const* const header{ jobInfo.headerHash.word32 };
     if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
         return false;
@@ -190,7 +176,7 @@ bool resolver::ResolverAmdEthash::buildDAG()
 
     ////////////////////////////////////////////////////////////////////////////
     // Set kernel parameters
-    auto& clKernel { kernelGenerator.clKernel };
+    auto& clKernel{ kernelGenerator.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, *(parameters.lightCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(2u, algo::ethash::DAG_ITEM_PARENTS));
@@ -199,14 +185,13 @@ bool resolver::ResolverAmdEthash::buildDAG()
 
     ////////////////////////////////////////////////////////////////////////////
     // Run kernel to build DAG
-    uint32_t const maxGroupSize { getMaxGroupSize() };
-    uint32_t const threadKernel { castU32(context.dagCache.numberItem) / maxGroupSize };
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(maxGroupSize, threadKernel, 1),
-            cl::NDRange(maxGroupSize, 1,            1)));
+    uint32_t const maxGroupSize{ getMaxGroupSize() };
+    uint32_t const threadKernel{ castU32(context.dagCache.numberItem) / maxGroupSize };
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(maxGroupSize, threadKernel, 1),
+        cl::NDRange(maxGroupSize, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
@@ -229,11 +214,11 @@ bool resolver::ResolverAmdEthash::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     // defines
-    uint32_t const groupSize { getMaxGroupSize() };
-    uint32_t const laneParallel { 8u };
-    uint32_t const groupParallel { groupSize / laneParallel };
-    uint32_t const lenSeed { 4u };
-    uint32_t const lenState { 25u };
+    uint32_t const groupSize{ getMaxGroupSize() };
+    uint32_t const laneParallel{ 8u };
+    uint32_t const groupParallel{ groupSize / laneParallel };
+    uint32_t const lenSeed{ 4u };
+    uint32_t const lenState{ 25u };
 
     kernelGenerator.addDefine("GROUP_SIZE", groupSize);
     kernelGenerator.addDefine("DAG_NUMBER_ITEM", context.dagCache.numberItem);
@@ -261,22 +246,20 @@ bool resolver::ResolverAmdEthash::buildSearch()
     return true;
 }
 
-bool resolver::ResolverAmdEthash::executeSync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdEthash::executeSync(stratum::StratumJobInfo const& jobInfo)
 {
-    auto& clKernel { kernelGenerator.clKernel };
+    auto& clKernel{ kernelGenerator.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, *(parameters.resultCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(2u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, jobInfo.nonce));
     OPENCL_ER(clKernel.setArg(4u, jobInfo.boundaryU64));
 
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(blocks, threads, 1),
-            cl::NDRange(blocks, 1,       1)));
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(blocks, threads, 1),
+        cl::NDRange(blocks, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize))
@@ -288,16 +271,13 @@ bool resolver::ResolverAmdEthash::executeSync(
 }
 
 
-bool resolver::ResolverAmdEthash::executeAsync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdEthash::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     return executeSync(jobInfo);
 }
 
 
-bool resolver::ResolverAmdEthash::getResultCache(
-    std::string const& _jobId,
-    uint32_t const extraNonceSize)
+bool resolver::ResolverAmdEthash::getResultCache(std::string const& _jobId, uint32_t const extraNonceSize)
 {
     algo::ethash::Result data{};
 
@@ -308,17 +288,14 @@ bool resolver::ResolverAmdEthash::getResultCache(
 
     if (true == data.found)
     {
-        uint32_t const count
-        {
-            common::max_limit(data.count, algo::ethash::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(data.count, algo::ethash::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.count = count;
         resultShare.extraNonceSize = extraNonceSize;
         resultShare.jobId.assign(_jobId);
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = data.nonces[i];
         }
@@ -333,23 +310,18 @@ bool resolver::ResolverAmdEthash::getResultCache(
 }
 
 
-void resolver::ResolverAmdEthash::submit(
-    stratum::Stratum* const stratum)
+void resolver::ResolverAmdEthash::submit(stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize)
-                };
+                boost::json::array params{ resultShare.jobId, nonceHexa.str().substr(resultShare.extraNonceSize) };
 
                 stratum->miningSubmit(deviceId, params);
 
@@ -363,23 +335,18 @@ void resolver::ResolverAmdEthash::submit(
 }
 
 
-void resolver::ResolverAmdEthash::submit(
-    stratum::StratumSmartMining* const stratum)
+void resolver::ResolverAmdEthash::submit(stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize)
-                };
+                boost::json::array params{ resultShare.jobId, nonceHexa.str().substr(resultShare.extraNonceSize) };
 
                 stratum->miningSubmit(deviceId, params);
 

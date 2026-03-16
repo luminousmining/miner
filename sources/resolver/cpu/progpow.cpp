@@ -1,13 +1,12 @@
-#include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
-#include <common/log/log.hpp>
+#include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
 #include <common/config.hpp>
+#include <common/log/log.hpp>
 #include <resolver/cpu/progpow.hpp>
 
 
-resolver::ResolverCpuProgPOW::ResolverCpuProgPOW():
-    resolver::ResolverCpu()
+resolver::ResolverCpuProgPOW::ResolverCpuProgPOW() : resolver::ResolverCpu()
 {
     if (algorithm == algo::ALGORITHM::UNKNOWN)
     {
@@ -27,8 +26,7 @@ resolver::ResolverCpuProgPOW::~ResolverCpuProgPOW()
 bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().build
-    (
+    algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
         jobInfo.epoch,
@@ -37,34 +35,28 @@ bool resolver::ResolverCpuProgPOW::updateContext(stratum::StratumJobInfo const& 
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        true
-    );
+        true);
 
-    if (   0ull == context.lightCache.numberItem
-        || 0ull == context.lightCache.size
-        || 0ull == context.dagCache.numberItem
+    if (0ull == context.lightCache.numberItem || 0ull == context.lightCache.size || 0ull == context.dagCache.numberItem
         || 0ull == context.dagCache.size)
     {
-        resolverErr()
-            << "\n"
-            << "=========================================================================" << "\n"
-            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
-            << "context.lightCache.size: " << context.lightCache.size << "\n"
-            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
-            << "context.dagCache.size: " << context.dagCache.size << "\n"
-            << "=========================================================================" << "\n"
-            ;
+        resolverErr() << "\n"
+                      << "========================================================================="
+                      << "\n"
+                      << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+                      << "context.lightCache.size: " << context.lightCache.size << "\n"
+                      << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+                      << "context.dagCache.size: " << context.dagCache.size << "\n"
+                      << "========================================================================="
+                      << "\n";
         return false;
     }
 
     uint64_t const totalMemoryNeeded{ context.dagCache.size + context.lightCache.size };
-    if (   0ull != deviceMemoryAvailable
-        && totalMemoryNeeded >= deviceMemoryAvailable)
+    if (0ull != deviceMemoryAvailable && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        resolverErr()
-            << "Device have not memory size available."
-            << " Needed " << totalMemoryNeeded
-            << ", memory available " << deviceMemoryAvailable;
+        resolverErr() << "Device have not memory size available."
+                      << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -76,7 +68,7 @@ bool resolver::ResolverCpuProgPOW::updateMemory(stratum::StratumJobInfo const& j
 {
     ////////////////////////////////////////////////////////////////////////////
     if (false == updateContext(jobInfo))
-    { 
+    {
         return false;
     }
 

@@ -3,9 +3,7 @@
 #include <common/log/log.hpp>
 
 
-common::ChronoGuard::ChronoGuard(
-    std::string const& newText,
-    common::CHRONO_UNIT chronoUnit)
+common::ChronoGuard::ChronoGuard(std::string const& newText, common::CHRONO_UNIT chronoUnit)
 {
     text.assign(newText);
     unit = chronoUnit;
@@ -15,38 +13,38 @@ common::ChronoGuard::ChronoGuard(
 
 common::ChronoGuard::~ChronoGuard()
 {
-    std::chrono::system_clock::time_point const tmEnd { std::chrono::system_clock::now() };
+    std::chrono::system_clock::time_point const tmEnd{ std::chrono::system_clock::now() };
 
     switch (unit)
     {
         case common::CHRONO_UNIT::SEC:
         {
-            auto const elapsed { castSec(tmEnd - tmStart) };
+            auto const elapsed{ castSec(tmEnd - tmStart) };
             logInfo() << text << " in " << elapsed.count() << "s";
             break;
         }
         case common::CHRONO_UNIT::MS:
         {
-            auto const elapsed { castMs(tmEnd - tmStart) };
-            logInfo() << text << " in "  << elapsed.count() << "ms";
+            auto const elapsed{ castMs(tmEnd - tmStart) };
+            logInfo() << text << " in " << elapsed.count() << "ms";
             break;
         }
         case common::CHRONO_UNIT::US:
         {
-            auto const elapsed { castUs(tmEnd - tmStart) };
-            logInfo() << text << " in "  << elapsed.count() << "us";
+            auto const elapsed{ castUs(tmEnd - tmStart) };
+            logInfo() << text << " in " << elapsed.count() << "us";
             break;
         }
         case common::CHRONO_UNIT::NS:
         {
-            auto const elapsed { castNs(tmEnd - tmStart) };
-            logInfo() << text << " in "  << elapsed.count() << "ns";
+            auto const elapsed{ castNs(tmEnd - tmStart) };
+            logInfo() << text << " in " << elapsed.count() << "ns";
             break;
         }
         default:
         {
-            auto const elapsed { castMs(tmEnd - tmStart) };
-            logInfo() << text << " in "  << elapsed.count() << "ms";
+            auto const elapsed{ castMs(tmEnd - tmStart) };
+            logInfo() << text << " in " << elapsed.count() << "ms";
             break;
         }
     }
@@ -65,8 +63,7 @@ void common::Chrono::stop()
 }
 
 
-uint64_t common::Chrono::elapsed(
-    common::CHRONO_UNIT unit) const
+uint64_t common::Chrono::elapsed(common::CHRONO_UNIT unit) const
 {
     switch (unit)
     {

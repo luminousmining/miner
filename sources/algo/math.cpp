@@ -1,8 +1,7 @@
 #include <algo/math.hpp>
 
 
-bool algo::isOddPrime(
-    uint64_t const number)
+bool algo::isOddPrime(uint64_t const number)
 {
     for (uint64_t d{ 3u }; (d * d) <= number; d += 2)
     {
@@ -16,8 +15,7 @@ bool algo::isOddPrime(
 }
 
 
-uint64_t algo::largestPrime(
-    uint64_t number)
+uint64_t algo::largestPrime(uint64_t number)
 {
     if (2 > number)
     {

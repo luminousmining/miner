@@ -3,18 +3,18 @@
 #if defined(CUDA_ENABLE)
 
 #include <algo/dag_context.hpp>
-#include <algo/hash.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <algo/ethash/result.hpp>
-#include <resolver/nvidia/nvidia.hpp>
+#include <algo/hash.hpp>
 #include <resolver/nvidia/ethash_kernel_parameter.hpp>
+#include <resolver/nvidia/nvidia.hpp>
 
 
 namespace resolver
 {
     class ResolverNvidiaEthash : public resolver::ResolverNvidia
     {
-    public:
+      public:
         ResolverNvidiaEthash();
         ~ResolverNvidiaEthash();
 
@@ -25,10 +25,10 @@ namespace resolver
         void submit(stratum::Stratum* const stratum) final;
         void submit(stratum::StratumSmartMining* const stratum) final;
 
-    protected:
-        algo::ethash::ResultShare resultShare{};
+      protected:
+        algo::ethash::ResultShare                  resultShare{};
         resolver::nvidia::ethash::KernelParameters parameters{};
-        algo::DagContext context{};
+        algo::DagContext                           context{};
 
         uint32_t lightCacheCountItemsGrowth{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH };
         uint32_t lightCacheCountItemsInit{ algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT };

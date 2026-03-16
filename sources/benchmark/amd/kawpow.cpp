@@ -6,13 +6,13 @@
 #include <algo/ethash/ethash.hpp>
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
-#include <algo/progpow/progpow.hpp>
 #include <algo/progpow/kawpow.hpp>
+#include <algo/progpow/progpow.hpp>
 #include <benchmark/workflow.hpp>
-#include <common/opencl/buffer_wrapper.hpp>
-#include <common/opencl/buffer_mapped.hpp>
-#include <common/kernel_generator/opencl.hpp>
 #include <common/custom.hpp>
+#include <common/kernel_generator/opencl.hpp>
+#include <common/opencl/buffer_mapped.hpp>
+#include <common/opencl/buffer_wrapper.hpp>
 
 
 bool benchmark::BenchmarkWorkflow::runAmdKawpow()
@@ -27,31 +27,23 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     common::Dashboard dashboard{ createNewDashboard("[AMD] KAWPOW") };
 
     ////////////////////////////////////////////////////////////////////////////
-    bool dagInitialized{ false };
-    algo::hash256 const headerHash
-    {
-        algo::toHash256("71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb")
-    };
-    algo::hash256 const seedHash
-    {
-        algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c")
-    };
+    bool                dagInitialized{ false };
+    algo::hash256 const headerHash{ algo::toHash256(
+        "71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb") };
+    algo::hash256 const seedHash{ algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c") };
     int32_t const epoch{ algo::ethash::ContextGenerator::instance().findEpoch(seedHash, algo::ethash::EPOCH_LENGTH) };
 
     ////////////////////////////////////////////////////////////////////////////
-    common::opencl::Buffer<algo::hash512> lightCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY };
+    common::opencl::Buffer<algo::hash512>  lightCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY };
     common::opencl::Buffer<algo::hash1024> dagCache{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
-    common::opencl::BufferMapped<uint32_t> headerCache
-    {
-        CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-        algo::LEN_HASH_256
-    };
+    common::opencl::BufferMapped<uint32_t> headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+                                                            | CL_MEM_ALLOC_HOST_PTR,
+                                                        algo::LEN_HASH_256 };
     common::opencl::BufferMapped<t_result> resultCache{ CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR };
 
     ////////////////////////////////////////////////////////////////////////////
     algo::DagContext dagContext{};
-    algo::ethash::ContextGenerator::instance().build
-    (
+    algo::ethash::ContextGenerator::instance().build(
         algo::ALGORITHM::KAWPOW,
         dagContext,
         epoch,
@@ -74,14 +66,11 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     resultCache.alloc(&propertiesAmd.clQueue, propertiesAmd.clContext);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == headerCache.setBufferDevice(&propertiesAmd.clQueue,
-                                             (uint32_t*)headerHash.word32))
+    if (false == headerCache.setBufferDevice(&propertiesAmd.clQueue, (uint32_t*)headerHash.word32))
     {
         logErr() << "Fail to copy header in cache";
     }
-    if (false == lightCache.write(dagContext.lightCache.hash,
-                                  dagContext.lightCache.size,
-                                  &propertiesAmd.clQueue))
+    if (false == lightCache.write(dagContext.lightCache.hash, dagContext.lightCache.size, &propertiesAmd.clQueue))
     {
         logErr() << "Fail to copy light cache in cache";
     }
@@ -103,27 +92,22 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         generator.appendFile("kernel/ethash/ethash_dag.cl");
 
         ///////////////////////////////////////////////////////////////////////
-        if (true == generator.build(&propertiesAmd.clDevice,
-                                    &propertiesAmd.clContext))
+        if (true == generator.build(&propertiesAmd.clDevice, &propertiesAmd.clContext))
         {
-            auto& clKernel { generator.clKernel };
+            auto& clKernel{ generator.clKernel };
             OPENCL_ER(clKernel.setArg(0u, *dagCache.getBuffer()));
             OPENCL_ER(clKernel.setArg(1u, *lightCache.getBuffer()));
             OPENCL_ER(clKernel.setArg(2u, algo::kawpow::DAG_ITEM_PARENTS));
             OPENCL_ER(clKernel.setArg(3u, castU32(dagContext.dagCache.numberItem)));
             OPENCL_ER(clKernel.setArg(4u, castU32(dagContext.lightCache.numberItem)));
 
-            uint32_t const maxGroupSize { 256u };
-            uint32_t const threadKernel { castU32(dagContext.dagCache.numberItem) / maxGroupSize };
-            OPENCL_ER(
-                propertiesAmd.clQueue.enqueueNDRangeKernel
-                (
-                    clKernel,
-                    cl::NullRange,
-                    cl::NDRange(maxGroupSize, threadKernel, 1),
-                    cl::NDRange(maxGroupSize, 1,            1)
-                )
-            );
+            uint32_t const maxGroupSize{ 256u };
+            uint32_t const threadKernel{ castU32(dagContext.dagCache.numberItem) / maxGroupSize };
+            OPENCL_ER(propertiesAmd.clQueue.enqueueNDRangeKernel(
+                clKernel,
+                cl::NullRange,
+                cl::NDRange(maxGroupSize, threadKernel, 1),
+                cl::NDRange(maxGroupSize, 1, 1)));
             OPENCL_ER(propertiesAmd.clQueue.finish());
 
             dagInitialized = true;
@@ -132,10 +116,10 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
 
     ///////////////////////////////////////////////////////////////////////////
     auto benchKawpow = [&](std::string const& kernelName,
-                           uint32_t const loop,
-                           uint32_t const groupSize,
-                           uint32_t const workerGroupCount,
-                           uint32_t const workItemCollaborate) -> bool
+                           uint32_t const     loop,
+                           uint32_t const     groupSize,
+                           uint32_t const     workerGroupCount,
+                           uint32_t const     workItemCollaborate) -> bool
     {
         ///////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
@@ -182,8 +166,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         generator.appendFile("kernel/kawpow/" + kernelName + ".cl");
 
         ///////////////////////////////////////////////////////////////////////
-        if (false == generator.build(&propertiesAmd.clDevice,
-                                     &propertiesAmd.clContext))
+        if (false == generator.build(&propertiesAmd.clDevice, &propertiesAmd.clContext))
         {
             return false;
         }
@@ -202,16 +185,11 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
         for (uint32_t i{ 0u }; i < loop; ++i)
         {
             startChrono(kernelName);
-            OPENCL_ER
-            (
-                propertiesAmd.clQueue.enqueueNDRangeKernel
-                (
-                    clKernel,
-                    cl::NullRange,
-                    cl::NDRange(groupSize, workerGroupCount, 1),
-                    cl::NDRange(groupSize, 1, 1)
-                )
-            );
+            OPENCL_ER(propertiesAmd.clQueue.enqueueNDRangeKernel(
+                clKernel,
+                cl::NullRange,
+                cl::NDRange(groupSize, workerGroupCount, 1),
+                cl::NDRange(groupSize, 1, 1)));
             OPENCL_ER(propertiesAmd.clQueue.finish());
             stopChrono(dashboard);
         }

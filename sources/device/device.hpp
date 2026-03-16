@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
-#include <boost/thread.hpp>
 #include <boost/atomic/atomic.hpp>
+#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <algo/algo_type.hpp>
@@ -12,10 +12,10 @@
 #include <device/type.hpp>
 #include <network/network.hpp>
 #include <profiler/nvidia.hpp>
+#include <resolver/resolver.hpp>
 #include <statistical/statistical.hpp>
 #include <stratum/smart_mining.hpp>
 #include <stratum/stratum.hpp>
-#include <resolver/resolver.hpp>
 
 
 namespace device
@@ -32,15 +32,15 @@ namespace device
 
     struct Device
     {
-    public:
+      public:
         uint32_t            id{ 0u };
-        uint32_t            pciBus { 0u };
-        device::DEVICE_TYPE deviceType { device::DEVICE_TYPE::UNKNOWN };
-        algo::ALGORITHM     algorithm { algo::ALGORITHM::UNKNOWN };
-        uint32_t            stratumUUID { 0u };
+        uint32_t            pciBus{ 0u };
+        device::DEVICE_TYPE deviceType{ device::DEVICE_TYPE::UNKNOWN };
+        algo::ALGORITHM     algorithm{ algo::ALGORITHM::UNKNOWN };
+        uint32_t            stratumUUID{ 0u };
         uint64_t            memoryAvailable{ 0ull };
 #if defined(CUDA_ENABLE)
-        nvmlDevice_t        deviceNvml{ nullptr };
+        nvmlDevice_t deviceNvml{ nullptr };
 #endif
 
         Device() = default;
@@ -51,24 +51,22 @@ namespace device
         Device& operator=(Device const&) = delete;
         Device& operator=(Device&&) = delete;
 
-        void run();
-        void setStratum(stratum::Stratum* const newStratum);
-        void setStratumSmartMining(stratum::StratumSmartMining* const newStratum);
-        void setAlgorithm(algo::ALGORITHM newAlgorithm);
-        void cleanJob();
-        void kill(device::KILL_STATE const state);
-        bool isAlive() const;
-        bool isComputing() const;
-        void update(bool const memory,
-                    bool const constants,
-                    stratum::StratumJobInfo const& newJobInfo);
-        void increaseShare(bool const isValid);
-        double getHashrate();
+        void              run();
+        void              setStratum(stratum::Stratum* const newStratum);
+        void              setStratumSmartMining(stratum::StratumSmartMining* const newStratum);
+        void              setAlgorithm(algo::ALGORITHM newAlgorithm);
+        void              cleanJob();
+        void              kill(device::KILL_STATE const state);
+        bool              isAlive() const;
+        bool              isComputing() const;
+        void              update(bool const memory, bool const constants, stratum::StratumJobInfo const& newJobInfo);
+        void              increaseShare(bool const isValid);
+        double            getHashrate();
         stratum::Stratum* getStratum();
-        stratum::StratumSmartMining* getStratumSmartMining();
+        stratum::StratumSmartMining*        getStratumSmartMining();
         statistical::Statistical::ShareInfo getShare();
 
-    protected:
+      protected:
         statistical::Statistical miningStats{};
         resolver::Resolver*      resolver{ nullptr };
 
@@ -81,7 +79,7 @@ namespace device
         void updateBatchNonce();
         void submit(common::PROFILE const profile);
 
-    private:
+      private:
         struct AtomicSynchronizer
         {
             common::AtomicCounter<uint64_t> job{ 0ull };

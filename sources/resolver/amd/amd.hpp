@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverAmd : public resolver::Resolver
     {
-    public:
+      public:
         virtual ~ResolverAmd() = default;
 
         void setDevice(cl::Device* const device);
@@ -18,12 +18,11 @@ namespace resolver
 
         uint32_t getMaxGroupSize() const;
 
-    protected:
+      protected:
         cl::Context*      clContext{ nullptr };
         cl::Device*       clDevice{ nullptr };
         cl::CommandQueue* clQueue[2]{ nullptr, nullptr };
 
-        void overrideOccupancy(uint32_t const defaultThreads,
-                               uint32_t const defaultBlocks) final;
+        void overrideOccupancy(uint32_t const defaultThreads, uint32_t const defaultBlocks) final;
     };
 }

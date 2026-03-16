@@ -1,17 +1,15 @@
 #include <cmath>
 
-#include <boost/multiprecision/cpp_int.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include <algo/hash_utils.hpp>
-
 #include <common/log/log.hpp>
 
 
-uint64_t algo::toUINT64(
-    algo::hash256 const& hash)
+uint64_t algo::toUINT64(algo::hash256 const& hash)
 {
-    std::string hex{};
+    std::string       hex{};
     std::string const hashHex{ algo::toHex(hash) };
     for (uint32_t i{ 0u }; i < 16u; ++i)
     {
@@ -22,8 +20,7 @@ uint64_t algo::toUINT64(
 }
 
 
-algo::hash256 algo::toHash256(
-    uint8_t const* bytes)
+algo::hash256 algo::toHash256(uint8_t const* bytes)
 {
     algo::hash256 hash{};
     memcpy(&hash, bytes, algo::LEN_HASH_256);
@@ -31,8 +28,7 @@ algo::hash256 algo::toHash256(
 }
 
 
-algo::hash256 algo::toHash256(
-    std::string const& str)
+algo::hash256 algo::toHash256(std::string const& str)
 {
     algo::hash256 hash{};
     std::string   hex{ str };
@@ -54,7 +50,7 @@ algo::hash256 algo::toHash256(
         if (strHex != "0x")
         {
             unsigned long const valHex{ std::stoul(strHex, nullptr, 16) };
-            uint8_t const bits{ castU8(valHex) };
+            uint8_t const       bits{ castU8(valHex) };
             hash.ubytes[pos] = bits;
         }
         else
@@ -70,13 +66,12 @@ algo::hash256 algo::toHash256(
 }
 
 
-algo::hash256 algo::toHash256(
-    double const valueOriginal)
+algo::hash256 algo::toHash256(double const valueOriginal)
 {
     using namespace boost::multiprecision;
     using BigInteger = boost::multiprecision::cpp_int;
 
-    static BigInteger const base { "0xffff0000000000000000000000000000000000000000000000000000" };
+    static BigInteger const base{ "0xffff0000000000000000000000000000000000000000000000000000" };
 
     BigInteger product{};
 
@@ -92,8 +87,8 @@ algo::hash256 algo::toHash256(
         product = base * idiff;
 
         std::string const stringDifficulty{ boost::lexical_cast<std::string>(value) };
-        size_t const lengthDifficulty { stringDifficulty.length() };
-        size_t const offset { stringDifficulty.find('.') };
+        size_t const      lengthDifficulty{ stringDifficulty.length() };
+        size_t const      offset{ stringDifficulty.find('.') };
 
         if (offset != std::string::npos)
         {
@@ -129,10 +124,7 @@ algo::hash256 algo::toHash256(
 
     // Normalize to 64 chars hex with "0x" prefix
     std::stringstream ss;
-    ss  << std::setw(64)
-        << std::setfill('0')
-        << std::hex
-        << product;
+    ss << std::setw(64) << std::setfill('0') << std::hex << product;
 
     std::string target{ ss.str() };
     boost::algorithm::to_lower(target);
@@ -159,17 +151,13 @@ algo::hash256 algo::toHash256_v2(double const valueOriginal)
     using namespace boost::multiprecision;
     using BigInteger = cpp_int;
 
-    static BigInteger const base{
-        "0xffff0000000000000000000000000000000000000000000000000000"
-    };
+    static BigInteger const base{ "0xffff0000000000000000000000000000000000000000000000000000" };
 
     BigInteger product{};
 
     if (valueOriginal == 0.0)
     {
-        product = BigInteger(
-            "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-        );
+        product = BigInteger("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     }
     else
     {
@@ -184,16 +172,13 @@ algo::hash256 algo::toHash256_v2(double const valueOriginal)
         if (fracPart > 0.0)
         {
             constexpr std::uint64_t scale = 1'000'000'000'000'000'000ULL;
-            BigInteger frac = static_cast<std::uint64_t>(fracPart * scale);
+            BigInteger              frac = static_cast<std::uint64_t>(fracPart * scale);
             product += (base * frac) / scale;
         }
     }
 
     std::stringstream ss;
-    ss << std::setw(64)
-       << std::setfill('0')
-       << std::hex
-       << product;
+    ss << std::setw(64) << std::setfill('0') << std::hex << product;
 
     std::string target = ss.str();
     boost::algorithm::to_lower(target);
@@ -202,12 +187,11 @@ algo::hash256 algo::toHash256_v2(double const valueOriginal)
 }
 
 
-algo::hash1024 algo::toHash1024(
-    std::string const& str)
+algo::hash1024 algo::toHash1024(std::string const& str)
 {
     algo::hash1024 hash{};
-    std::string hex{ str };
-    int64_t index{ cast64(hex.length()) };
+    std::string    hex{ str };
+    int64_t        index{ cast64(hex.length()) };
 
     if ((hex.length() % 2) != 0)
     {
@@ -224,7 +208,7 @@ algo::hash1024 algo::toHash1024(
         strHex += hex.at(index - 1);
 
         uint32_t const valHex{ castU32(std::stoul(strHex, nullptr, 16)) };
-        uint8_t const byte{ castU8(valHex) };
+        uint8_t const  byte{ castU8(valHex) };
 
         hash.ubytes[pos] = byte;
 

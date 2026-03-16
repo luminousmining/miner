@@ -4,12 +4,8 @@
 #include <common/custom.hpp>
 
 
-
-algo::Kiss99Properties algo::progpow::initializeRound(
-    uint64_t const period,
-    int32_t* const dst,
-    int32_t* const src,
-    uint32_t const regs)
+algo::Kiss99Properties
+algo::progpow::initializeRound(uint64_t const period, int32_t* const dst, int32_t* const src, uint32_t const regs)
 {
     ////////////////////////////////////////////////////////////////////////////
     algo::Kiss99Properties data{};
@@ -23,7 +19,7 @@ algo::Kiss99Properties algo::progpow::initializeRound(
     {
         dst[i] = i;
     }
-    for (uint32_t i{ 0u }; i <regs; ++i)
+    for (uint32_t i{ 0u }; i < regs; ++i)
     {
         src[i] = i;
     }

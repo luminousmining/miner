@@ -1,15 +1,14 @@
-#include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
+#include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
-#include <common/log/log.hpp>
 #include <common/error/opencl_error.hpp>
+#include <common/log/log.hpp>
 #include <resolver/amd/progpow.hpp>
 
 
-resolver::ResolverAmdProgPOW::ResolverAmdProgPOW():
-    resolver::ResolverAmd()
+resolver::ResolverAmdProgPOW::ResolverAmdProgPOW() : resolver::ResolverAmd()
 {
     if (algorithm == algo::ALGORITHM::UNKNOWN)
     {
@@ -27,12 +26,10 @@ resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
 }
 
 
-bool resolver::ResolverAmdProgPOW::updateContext(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().build
-    (
+    algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
         jobInfo.epoch,
@@ -44,30 +41,26 @@ bool resolver::ResolverAmdProgPOW::updateContext(
         true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
     );
 
-    if (   0ull == context.lightCache.numberItem
-        || 0ull == context.lightCache.size
-        || 0ull == context.dagCache.numberItem
+    if (0ull == context.lightCache.numberItem || 0ull == context.lightCache.size || 0ull == context.dagCache.numberItem
         || 0ull == context.dagCache.size)
     {
-        resolverErr()
-            << "\n"
-            << "=========================================================================" << "\n"
-            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
-            << "context.lightCache.size: " << context.lightCache.size << "\n"
-            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
-            << "context.dagCache.size: " << context.dagCache.size << "\n"
-            << "=========================================================================" << "\n"
-            ;
+        resolverErr() << "\n"
+                      << "========================================================================="
+                      << "\n"
+                      << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+                      << "context.lightCache.size: " << context.lightCache.size << "\n"
+                      << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+                      << "context.dagCache.size: " << context.dagCache.size << "\n"
+                      << "========================================================================="
+                      << "\n";
         return false;
     }
 
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
-    if (   0ull != deviceMemoryAvailable
-        && totalMemoryNeeded >= deviceMemoryAvailable)
+    if (0ull != deviceMemoryAvailable && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        resolverErr()
-            << "Device have not memory size available."
-                << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        resolverErr() << "Device have not memory size available."
+                      << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -75,8 +68,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(
 }
 
 
-bool resolver::ResolverAmdProgPOW::updateMemory(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdProgPOW::updateMemory(stratum::StratumJobInfo const& jobInfo)
 {
     IS_NULL(clContext);
     IS_NULL(clQueue[currentIndexStream]);
@@ -98,8 +90,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     parameters.dagCache.setSize(context.dagCache.size);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.lightCache.alloc(*clContext)
-        || false == parameters.dagCache.alloc(*clContext)
+    if (false == parameters.lightCache.alloc(*clContext) || false == parameters.dagCache.alloc(*clContext)
         || false == parameters.headerCache.alloc(clQueue[currentIndexStream], *clContext)
         || false == parameters.resultCache.alloc(clQueue[currentIndexStream], *clContext))
     {
@@ -107,9 +98,8 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == parameters.lightCache.write(context.lightCache.hash,
-                                             context.lightCache.size,
-                                             clQueue[currentIndexStream]))
+    if (false
+        == parameters.lightCache.write(context.lightCache.hash, context.lightCache.size, clQueue[currentIndexStream]))
     {
         return false;
     }
@@ -128,8 +118,7 @@ bool resolver::ResolverAmdProgPOW::updateMemory(
 }
 
 
-bool resolver::ResolverAmdProgPOW::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdProgPOW::updateConstants(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     if (currentPeriod != jobInfo.period)
@@ -147,7 +136,7 @@ bool resolver::ResolverAmdProgPOW::updateConstants(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const* const header { jobInfo.headerHash.word32 };
+    uint32_t const* const header{ jobInfo.headerHash.word32 };
     if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
         return false;
@@ -189,7 +178,7 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
 
     ////////////////////////////////////////////////////////////////////////////
     // Set kernel parameters
-    auto& clKernel { kernelGenerator.clKernel };
+    auto& clKernel{ kernelGenerator.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, *(parameters.lightCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(2u, dagItemParents));
@@ -198,14 +187,13 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
 
     ////////////////////////////////////////////////////////////////////////////
     // Run kernel to build DAG
-    uint32_t const maxGroupSize { getMaxGroupSize() };
-    uint32_t const threadKernel { castU32(context.dagCache.numberItem) / maxGroupSize };
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(maxGroupSize, threadKernel, 1),
-            cl::NDRange(maxGroupSize, 1,            1)));
+    uint32_t const maxGroupSize{ getMaxGroupSize() };
+    uint32_t const threadKernel{ castU32(context.dagCache.numberItem) / maxGroupSize };
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(maxGroupSize, threadKernel, 1),
+        cl::NDRange(maxGroupSize, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
@@ -222,13 +210,14 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     auto const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::writeMathRandomKernelOpenCL(progpowVersion,
-                                               deviceId,
-                                               currentPeriod,
-                                               countCache,
-                                               countMath,
-                                               regs,
-                                               moduleSource);
+    algo::progpow::writeMathRandomKernelOpenCL(
+        progpowVersion,
+        deviceId,
+        currentPeriod,
+        countCache,
+        countMath,
+        regs,
+        moduleSource);
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.clear();
@@ -274,8 +263,8 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const maxThreadByGroup { getMaxGroupSize() };
-    uint32_t const batchGroupLane { getMaxGroupSize() / algo::progpow::LANES };
+    uint32_t const maxThreadByGroup{ getMaxGroupSize() };
+    uint32_t const batchGroupLane{ getMaxGroupSize() / algo::progpow::LANES };
     kernelGenerator.addDefine("GROUP_SIZE", maxThreadByGroup);
     kernelGenerator.addDefine("MAX_RESULT", 4u);
     kernelGenerator.addDefine("REGS", regs);
@@ -304,31 +293,38 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
-    std::string const fileSequenceMathPeriod
-    {
-        "kernel/progpow/sequence_math_random"s
-        + "_"s + std::to_string(deviceId)
-        + "_"s + std::to_string(currentPeriod)
-        + ".cl"s
-    };
-    std::string kernelDerived{};
+    std::string const fileSequenceMathPeriod{ "kernel/progpow/sequence_math_random"s + "_"s + std::to_string(deviceId)
+                                              + "_"s + std::to_string(currentPeriod) + ".cl"s };
+    std::string       kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_4:     kernelDerived.assign("progpow_functions.cl"); break;
-        case algo::progpow::VERSION::KAWPOW:      kernelDerived.assign("kawpow_functions.cl"); break;
-        case algo::progpow::VERSION::MEOWPOW:     kernelDerived.assign("meowpow_functions.cl"); break;
-        case algo::progpow::VERSION::FIROPOW:     kernelDerived.assign("firopow_functions.cl"); break;
-        case algo::progpow::VERSION::EVRPROGPOW:  kernelDerived.assign("evrprogpow_functions.cl"); break;
-        case algo::progpow::VERSION::PROGPOWQUAI: kernelDerived.assign("progpow_functions.cl"); break;
+        case algo::progpow::VERSION::V_0_9_2: /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_3: /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_4:
+            kernelDerived.assign("progpow_functions.cl");
+            break;
+        case algo::progpow::VERSION::KAWPOW:
+            kernelDerived.assign("kawpow_functions.cl");
+            break;
+        case algo::progpow::VERSION::MEOWPOW:
+            kernelDerived.assign("meowpow_functions.cl");
+            break;
+        case algo::progpow::VERSION::FIROPOW:
+            kernelDerived.assign("firopow_functions.cl");
+            break;
+        case algo::progpow::VERSION::EVRPROGPOW:
+            kernelDerived.assign("evrprogpow_functions.cl");
+            break;
+        case algo::progpow::VERSION::PROGPOWQUAI:
+            kernelDerived.assign("progpow_functions.cl");
+            break;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.appendLine("#pragma OPENCL EXTENSION cl_khr_fp16 : enable");
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
+    if (false == kernelGenerator.appendFile("kernel/progpow/progpow_result.cl")
         || false == kernelGenerator.appendFile("kernel/progpow/" + kernelDerived)
         || false == kernelGenerator.appendFile(fileSequenceMathPeriod)
         || false == kernelGenerator.appendFile("kernel/progpow/progpow.cl"))
@@ -346,22 +342,20 @@ bool resolver::ResolverAmdProgPOW::buildSearch()
     return true;
 }
 
-bool resolver::ResolverAmdProgPOW::executeSync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdProgPOW::executeSync(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
-    auto& clKernel { kernelGenerator.clKernel };
+    auto& clKernel{ kernelGenerator.clKernel };
     OPENCL_ER(clKernel.setArg(0u, jobInfo.nonce));
     OPENCL_ER(clKernel.setArg(1u, jobInfo.boundaryU64));
     OPENCL_ER(clKernel.setArg(2u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(4u, *(parameters.resultCache.getBuffer())));
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(blocks, threads, 1),
-            cl::NDRange(blocks, 1,       1)));
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(blocks, threads, 1),
+        cl::NDRange(blocks, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ///////////////////////////////////////////////////////////////////////////
@@ -375,26 +369,24 @@ bool resolver::ResolverAmdProgPOW::executeSync(
 }
 
 
-bool resolver::ResolverAmdProgPOW::executeAsync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdProgPOW::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ///////////////////////////////////////////////////////////////////////////
     swapIndexStream();
-    auto& clKernel { kernelGenerator.clKernel };
+    auto& clKernel{ kernelGenerator.clKernel };
     OPENCL_ER(clKernel.setArg(0u, jobInfo.nonce));
     OPENCL_ER(clKernel.setArg(1u, jobInfo.boundaryU64));
     OPENCL_ER(clKernel.setArg(2u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(4u, *(parameters.resultCache.getBuffer())));
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(blocks, threads, 1),
-            cl::NDRange(blocks, 1,       1)));
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(blocks, threads, 1),
+        cl::NDRange(blocks, 1, 1)));
 
     ///////////////////////////////////////////////////////////////////////////
     swapIndexStream();
@@ -411,9 +403,7 @@ bool resolver::ResolverAmdProgPOW::executeAsync(
 }
 
 
-bool resolver::ResolverAmdProgPOW::getResultCache(
-    std::string const& _jobId,
-    uint32_t const extraNonceSize)
+bool resolver::ResolverAmdProgPOW::getResultCache(std::string const& _jobId, uint32_t const extraNonceSize)
 {
     algo::progpow::Result data{};
 
@@ -424,23 +414,20 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
 
     if (true == data.found)
     {
-        uint32_t const count
-        {
-            common::max_limit(data.count , algo::progpow::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(data.count, algo::progpow::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.count = count;
         resultShare.jobId.assign(_jobId);
         resultShare.extraNonceSize = extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = data.nonces[i];
         }
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
-            for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+            for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
             {
                 resultShare.hash[i][j] = data.hash[i][j];
             }
@@ -456,33 +443,29 @@ bool resolver::ResolverAmdProgPOW::getResultCache(
 }
 
 
-void resolver::ResolverAmdProgPOW::submit(
-    stratum::Stratum* const stratum)
+void resolver::ResolverAmdProgPOW::submit(stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
-                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                switch(stratum->stratumType)
+                switch (stratum->stratumType)
                 {
                     case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -491,12 +474,9 @@ void resolver::ResolverAmdProgPOW::submit(
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << std::hex << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str().substr(resultShare.extraNonceSize),
-                            stratum->workerID
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str().substr(resultShare.extraNonceSize),
+                                                   stratum->workerID };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -504,18 +484,10 @@ void resolver::ResolverAmdProgPOW::submit(
                     case stratum::STRATUM_TYPE::ETHPROXY:
                     {
                         std::stringstream nonceHexa;
-                        nonceHexa
-                            << "0x"
-                            << std::hex
-                            << std::setfill('0')
-                            << std::setw(16)
-                            << resultShare.nonces[i];
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
 
-                        boost::json::array params
-                        {
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -532,33 +504,29 @@ void resolver::ResolverAmdProgPOW::submit(
 }
 
 
-void resolver::ResolverAmdProgPOW::submit(
-    stratum::StratumSmartMining* const stratum)
+void resolver::ResolverAmdProgPOW::submit(stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 uint32_t hash[algo::LEN_HASH_256_WORD_32]{};
-                for (uint32_t j { 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
+                for (uint32_t j{ 0u }; j < algo::LEN_HASH_256_WORD_32; ++j)
                 {
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                switch(stratum->stratumPool->stratumType)
+                switch (stratum->stratumPool->stratumType)
                 {
                     case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -567,12 +535,9 @@ void resolver::ResolverAmdProgPOW::submit(
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << std::hex << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str().substr(resultShare.extraNonceSize),
-                            stratum->stratumPool->workerID
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str().substr(resultShare.extraNonceSize),
+                                                   stratum->stratumPool->workerID };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -580,18 +545,10 @@ void resolver::ResolverAmdProgPOW::submit(
                     case stratum::STRATUM_TYPE::ETHPROXY:
                     {
                         std::stringstream nonceHexa;
-                        nonceHexa
-                            << "0x"
-                            << std::hex
-                            << std::setfill('0')
-                            << std::setw(16)
-                            << resultShare.nonces[i];
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
 
-                        boost::json::array params
-                        {
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;

@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverNvidiaFiroPOW : public resolver::ResolverNvidiaProgPOW
     {
-    public:
+      public:
         ResolverNvidiaFiroPOW();
         ~ResolverNvidiaFiroPOW() = default;
     };

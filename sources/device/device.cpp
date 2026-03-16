@@ -1,10 +1,9 @@
+#include <common/cast.hpp>
 #include <common/chrono.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
-#include <common/cast.hpp>
 #include <common/log/log.hpp>
 #include <device/device.hpp>
-#include <resolver/mocker.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
 #include <resolver/amd/etchash.hpp>
 #include <resolver/amd/ethash.hpp>
@@ -12,8 +11,9 @@
 #include <resolver/amd/firopow.hpp>
 #include <resolver/amd/kawpow.hpp>
 #include <resolver/amd/meowpow.hpp>
-#include <resolver/amd/progpow_quai.hpp>
 #include <resolver/amd/progpow.hpp>
+#include <resolver/amd/progpow_quai.hpp>
+#include <resolver/mocker.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/blake3.hpp>
 #include <resolver/nvidia/etchash.hpp>
@@ -22,15 +22,14 @@
 #include <resolver/nvidia/firopow.hpp>
 #include <resolver/nvidia/kawpow.hpp>
 #include <resolver/nvidia/meowpow.hpp>
-#include <resolver/nvidia/progpow_quai.hpp>
 #include <resolver/nvidia/progpow.hpp>
+#include <resolver/nvidia/progpow_quai.hpp>
 
 
-void device::Device::setAlgorithm(
-    algo::ALGORITHM newAlgorithm)
+void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
 #if defined(TOOL_MOCKER)
@@ -373,65 +372,56 @@ void device::Device::setAlgorithm(
 }
 
 
-void device::Device::setStratum(
-    stratum::Stratum* const newStratum)
+void device::Device::setStratum(stratum::Stratum* const newStratum)
 {
     stratum = newStratum;
 }
 
 
-void device::Device::setStratumSmartMining(
-    stratum::StratumSmartMining* const newStratum)
+void device::Device::setStratumSmartMining(stratum::StratumSmartMining* const newStratum)
 {
     stratumSmartMining = newStratum;
 }
 
 
-void device::Device::kill(
-    device::KILL_STATE const state)
+void device::Device::kill(device::KILL_STATE const state)
 {
     switch (state)
     {
         case device::KILL_STATE::ALGORITH_UNDEFINED:
         {
-            deviceWarn()
-                << "device[" << id << "] " << "Killed by code " << castU32(state)
-                << " ALGORITH_UNDEFINED";
+            deviceWarn() << "device[" << id << "] "
+                         << "Killed by code " << castU32(state) << " ALGORITH_UNDEFINED";
             break;
         }
         case device::KILL_STATE::RESOLVER_NULLPTR:
         {
-            deviceWarn()
-                << "device[" << id << "] " << "Killed by code " << castU32(state)
-                << " RESOLVER_NULLPTR";
+            deviceWarn() << "device[" << id << "] "
+                         << "Killed by code " << castU32(state) << " RESOLVER_NULLPTR";
             break;
         }
         case device::KILL_STATE::UPDATE_MEMORY_FAIL:
         {
-            deviceWarn()
-                << "device[" << id << "] " << "Killed by code " << castU32(state)
-                << " UPDATE_MEMORY_FAIL";
+            deviceWarn() << "device[" << id << "] "
+                         << "Killed by code " << castU32(state) << " UPDATE_MEMORY_FAIL";
             break;
         }
         case device::KILL_STATE::UPDATE_CONSTANT_FAIL:
         {
-            deviceWarn()
-                << "device[" << id << "] " << "Killed by code " << castU32(state)
-                << " UPDATE_CONSTANT_FAIL";
+            deviceWarn() << "device[" << id << "] "
+                         << "Killed by code " << castU32(state) << " UPDATE_CONSTANT_FAIL";
             break;
         }
         case device::KILL_STATE::KERNEL_EXECUTE_FAIL:
         {
-            deviceWarn()
-                << "device[" << id << "] " << "Killed by code " << castU32(state)
-                << " KERNEL_EXECUTE_FAIL";
+            deviceWarn() << "device[" << id << "] "
+                         << "Killed by code " << castU32(state) << " KERNEL_EXECUTE_FAIL";
             break;
         }
         case device::KILL_STATE::DISABLE:
         {
-            deviceWarn()
-                << "device[" << id << "] " << "Killed by code " << castU32(state)
-                << " DISABLE";
+            deviceWarn() << "device[" << id << "] "
+                         << "Killed by code " << castU32(state) << " DISABLE";
             break;
         }
     }
@@ -451,10 +441,7 @@ bool device::Device::isComputing() const
 }
 
 
-void device::Device::update(
-    bool const memory,
-    bool const constants,
-    stratum::StratumJobInfo const& newJobInfo)
+void device::Device::update(bool const memory, bool const constants, stratum::StratumJobInfo const& newJobInfo)
 {
     nextjobInfo.copy(newJobInfo);
     nextjobInfo.nonce += (nextjobInfo.gapNonce * id);
@@ -471,8 +458,7 @@ void device::Device::update(
 }
 
 
-void device::Device::increaseShare(
-    bool const isValid)
+void device::Device::increaseShare(bool const isValid)
 {
     statistical::Statistical::ShareInfo& info{ miningStats.getShares() };
     ++info.total;
@@ -491,7 +477,7 @@ void device::Device::increaseShare(
 
 double device::Device::getHashrate()
 {
-    uint32_t const executeCount { miningStats.getKernelExecutedCount() };
+    uint32_t const  executeCount{ miningStats.getKernelExecutedCount() };
     common::Config& config{ common::Config::instance() };
 
     if (config.occupancy.kernelMinimunExecuteNeeded <= executeCount)
@@ -552,17 +538,16 @@ bool device::Device::updateJob()
 {
     ////////////////////////////////////////////////////////////////////////////
     common::Chrono chrono{};
-    bool const needUpdateJob{ synchronizer.job.isEqual() == false ? true : false };
-    bool const needUpdateConstant{ synchronizer.constant.isEqual() == false ? true : false };
-    bool const needUpdateMemory{ synchronizer.memory.isEqual() == false ? true : false };
+    bool const     needUpdateJob{ synchronizer.job.isEqual() == false ? true : false };
+    bool const     needUpdateConstant{ synchronizer.constant.isEqual() == false ? true : false };
+    bool const     needUpdateMemory{ synchronizer.memory.isEqual() == false ? true : false };
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == needUpdateJob)
     {
         return false;
     }
-    if (   false == needUpdateConstant
-        && false == needUpdateMemory)
+    if (false == needUpdateConstant && false == needUpdateMemory)
     {
         return false;
     }
@@ -573,8 +558,7 @@ bool device::Device::updateJob()
     uint64_t const currentAtomicMemory{ synchronizer.memory.get() };
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   nextjobInfo.epoch != currentJobInfo.epoch
-        || nextjobInfo.period != currentJobInfo.period)
+    if (nextjobInfo.epoch != currentJobInfo.epoch || nextjobInfo.period != currentJobInfo.period)
     {
         miningStats.reset();
     }
@@ -629,7 +613,7 @@ bool device::Device::updateJob()
 void device::Device::updateBatchNonce()
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
     uint32_t internalLoop{ 1u };
@@ -648,7 +632,7 @@ void device::Device::updateBatchNonce()
 void device::Device::loopDoWork()
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
     if (false == config.isEnable(id))
     {
         kill(device::KILL_STATE::DISABLE);
@@ -677,8 +661,7 @@ void device::Device::loopDoWork()
 
     ////////////////////////////////////////////////////////////////////////////
     deviceDebug() << "Start working!";
-    while (   true == isAlive()
-           && nullptr != resolver)
+    while (true == isAlive() && nullptr != resolver)
     {
         // Check and update the job.
         // Do not compute directly after update device.
@@ -714,7 +697,7 @@ void device::Device::loopDoWork()
 void device::Device::submit(common::PROFILE const profile)
 {
     ////////////////////////////////////////////////////////////////////////////
-    switch(profile)
+    switch (profile)
     {
         case common::PROFILE::STANDARD:
         {

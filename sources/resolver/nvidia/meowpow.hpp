@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverNvidiaMeowPOW : public resolver::ResolverNvidiaProgPOW
     {
-    public:
+      public:
         ResolverNvidiaMeowPOW();
         ~ResolverNvidiaMeowPOW() = default;
     };

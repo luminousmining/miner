@@ -10,24 +10,19 @@
 
 static void welcome()
 {
-    logCustom()
-        << common::COLOR_YELLOW << "LuminousMiner v"
-        << std::to_string(common::VERSION_MAJOR)
-        << "."
-        << std::to_string(common::VERSION_MINOR);
+    logCustom() << common::COLOR_YELLOW << "LuminousMiner v" << std::to_string(common::VERSION_MAJOR) << "."
+                << std::to_string(common::VERSION_MINOR);
 }
 
 
-int main(
-    int const argc,
-    char** argv)
+int main(int const argc, char** argv)
 {
     try
     {
         ////////////////////////////////////////////////////////////////////////
         device::DeviceManager& deviceManager{ device::DeviceManager::instance() };
-        common::Config& config{ common::Config::instance() };
-        api::ServerAPI serverAPI{};
+        common::Config&        config{ common::Config::instance() };
+        api::ServerAPI         serverAPI{};
 
         ////////////////////////////////////////////////////////////////////////
         welcome();
@@ -60,7 +55,7 @@ int main(
             deviceManager.connectToSmartMining();
         }
     }
-    catch(std::exception const& e)
+    catch (std::exception const& e)
     {
         logErr() << e.what();
         return 1;

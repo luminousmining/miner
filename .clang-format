@@ -1,0 +1,131 @@
+---
+Language: Cpp
+Standard: c++20
+BasedOnStyle: LLVM
+
+# Column limit: 120 columns
+ColumnLimit: 120
+
+# Indentation
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+IndentPPDirectives: None
+NamespaceIndentation: All
+
+# Braces - Allman style (braces on new lines)
+BreakBeforeBraces: Allman
+BraceWrapping:
+  AfterClass:            true
+  AfterControlStatement: Always
+  AfterEnum:             true
+  AfterFunction:         true
+  AfterNamespace:        true
+  AfterStruct:           true
+  AfterUnion:            true
+  BeforeCatch:           true
+  BeforeElse:            true
+  IndentBraces:          false
+  SplitEmptyFunction:    false
+  SplitEmptyRecord:      false
+  SplitEmptyNamespace:   false
+
+# Empty lines
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Pointer and reference alignment: char** var (attached to type)
+PointerAlignment: Left
+ReferenceAlignment: Left
+DerivePointerAlignment: false
+
+# Qualifier (const) on the right: int const var, char const* const var
+QualifierAlignment: Right
+
+# Braced initialization:
+#   numberItem{ 0ull }  -> no space before {, space inside { }
+SpaceBeforeCpp11BracedList: false
+Cpp11BracedListStyle: false
+
+# Template: template<typename T> (no space between template and <>)
+SpaceAfterTemplateKeyword: false
+
+# Function parameters: when wrapping is needed, always break after (
+# and put each argument on its own line (closing ) stays with last arg)
+#
+# .cpp (long qualified name):
+#   void ns::Class::method(
+#       Type arg1,
+#       Type arg2)
+#
+# .hpp (short name, fits on one line):
+#   void method(Type arg1, Type arg2);
+#
+AlignAfterOpenBracket: AlwaysBreak
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# Short constructs: always expand
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Empty
+
+# Line breaks
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+
+# Alignment
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: true
+AlignOperands: Align
+AlignTrailingComments: true
+
+# Macro backslash alignment at right edge of ColumnLimit
+AlignEscapedNewlines: Right
+
+# Namespace: do not add/fix end-of-namespace comments
+FixNamespaceComments: false
+
+# Spaces
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInAngles: Never
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Includes: STL (1) -> third-party (2) -> internal (3)
+# Matches CODING_STYLE.md: "Order include: STL, third party, internal"
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # 1. STL / C standard library: single lowercase word, no path separator, no extension
+  - Regex:        '^<[a-z_]+>$'
+    Priority:     1
+    SortPriority: 1
+  # 3. Internal project headers (angle brackets)
+  - Regex:        '^<(algo|api|benchmark|common|device|network|profiler|resolver|statistical|stratum)/'
+    Priority:     3
+    SortPriority: 3
+  # 3. Internal project headers (double quotes, used in test files)
+  - Regex:        '^"(algo|api|benchmark|common|device|network|profiler|resolver|statistical|stratum)/'
+    Priority:     3
+    SortPriority: 3
+  # 2. Third-party / system (boost, cuda, gtest, opencl, etc.) - everything else
+  - Regex:        '^[<"]'
+    Priority:     2
+    SortPriority: 2

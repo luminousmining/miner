@@ -11,13 +11,13 @@ namespace common
 {
     struct KernelGeneratorOpenCL : common::KernelGenerator
     {
-    public:
+      public:
         cl::Kernel clKernel{};
 
         void clear() final;
-        bool build(cl::Device* const clDevice,
-                   cl::Context* const clContext);
-    private:
+        bool build(cl::Device* const clDevice, cl::Context* const clContext);
+
+      private:
         cl::Program clProgram{};
     };
 }

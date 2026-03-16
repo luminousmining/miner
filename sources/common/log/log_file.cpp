@@ -17,7 +17,7 @@ bool common::LoggerFile::isOpen() const
 
 void common::LoggerFile::openFilename()
 {
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     if (false == config.log.file.empty())
     {
@@ -30,8 +30,7 @@ void common::LoggerFile::openFilename()
 }
 
 
-void common::LoggerFile::write(
-    std::string const& message)
+void common::LoggerFile::write(std::string const& message)
 {
     fd.write(message.c_str(), message.size());
     fd.write("\n", 1);

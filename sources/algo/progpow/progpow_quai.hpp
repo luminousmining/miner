@@ -4,8 +4,8 @@
 #include <sstream>
 
 #if !defined(__LIB_CUDA)
-#include <algo/hash.hpp>
 #include <algo/crypto/kiss99.hpp>
+#include <algo/hash.hpp>
 #endif
 
 
@@ -17,7 +17,8 @@ namespace algo
         constexpr uint32_t DAG_ITEM_PARENTS{ 512u };
         constexpr uint32_t EPOCH_LENGTH{ 388800u };
         constexpr uint64_t LIGHT_CACHE_GROWTH{ 1ull << 21 };
-        constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_GROWTH{ algo::progpow_quai::LIGHT_CACHE_GROWTH / algo::LEN_HASH_512 };
+        constexpr uint64_t LIGHT_CACHE_COUNT_ITEMS_GROWTH{ algo::progpow_quai::LIGHT_CACHE_GROWTH
+                                                           / algo::LEN_HASH_512 };
         constexpr uint64_t DAG_INIT_SIZE{ 1ull << 32 };
         constexpr uint32_t DAG_GROWTH{ 1ull << 26 };
         constexpr uint64_t DAG_COUNT_ITEMS_INIT{ algo::progpow_quai::DAG_INIT_SIZE / algo::LEN_HASH_1024 };
@@ -30,34 +31,38 @@ namespace algo
 
         namespace nvidia
         {
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
 
         namespace amd
         {
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
     }
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 namespace algo
 {
-    bool isOddPrime(uint64_t number);
+    bool     isOddPrime(uint64_t number);
     uint64_t largestPrime(uint64_t number);
 
     template<typename T>

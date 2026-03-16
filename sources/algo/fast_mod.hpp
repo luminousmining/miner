@@ -14,4 +14,4 @@ struct alignas(16) FastDivisor
 
 
 FastDivisor initFastMod(uint32_t const d);
-uint32_t fastMod(FastDivisor const& divisor, uint32_t const value);
+uint32_t    fastMod(FastDivisor const& divisor, uint32_t const value);

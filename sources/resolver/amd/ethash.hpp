@@ -3,9 +3,9 @@
 #if defined(AMD_ENABLE)
 
 #include <algo/dag_context.hpp>
-#include <algo/hash.hpp>
 #include <algo/ethash/ethash.hpp>
 #include <algo/ethash/result.hpp>
+#include <algo/hash.hpp>
 #include <common/kernel_generator/opencl.hpp>
 #include <resolver/amd/amd.hpp>
 #include <resolver/amd/ethash_kernel_parameter.hpp>
@@ -15,7 +15,7 @@ namespace resolver
 {
     class ResolverAmdEthash : public resolver::ResolverAmd
     {
-    public:
+      public:
         ResolverAmdEthash();
         ~ResolverAmdEthash();
 
@@ -26,7 +26,7 @@ namespace resolver
         void submit(stratum::Stratum* const stratum) final;
         void submit(stratum::StratumSmartMining* const stratum) final;
 
-    protected:
+      protected:
         algo::ethash::ResultShare               resultShare{};
         resolver::amd::ethash::KernelParameters parameters{};
         algo::DagContext                        context{};
@@ -41,8 +41,7 @@ namespace resolver
 
         bool buildDAG();
         bool buildSearch();
-        bool getResultCache(std::string const& _jobId,
-                            uint32_t const extraNonceSize);
+        bool getResultCache(std::string const& _jobId, uint32_t const extraNonceSize);
     };
 }
 

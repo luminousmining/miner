@@ -3,8 +3,7 @@
 #include <stratum/meowpow.hpp>
 
 
-stratum::StratumMeowPOW::StratumMeowPOW() :
-    stratum::StratumProgPOW()
+stratum::StratumMeowPOW::StratumMeowPOW() : stratum::StratumProgPOW()
 {
     maxPeriod = algo::meowpow::MAX_PERIOD;
     maxEpochLength = algo::progpow::EPOCH_LENGTH;

@@ -6,13 +6,13 @@ namespace common
 {
     struct LoggerFile
     {
-    public:
+      public:
         static LoggerFile& instance();
-        bool isOpen() const;
-        void openFilename();
-        void write(std::string const& message);
+        bool               isOpen() const;
+        void               openFilename();
+        void               write(std::string const& message);
 
-    private:
+      private:
         std::ofstream fd;
     };
 }

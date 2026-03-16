@@ -9,7 +9,7 @@ namespace stratum
 {
     struct StratumProgpowZ : public stratum::StratumProgPOW
     {
-    public:
+      public:
         StratumProgpowZ();
         ~StratumProgpowZ() = default;
     };

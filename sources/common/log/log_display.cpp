@@ -1,6 +1,6 @@
 #if defined(_WIN32)
-#include <windows.h>
 #include <wincrypt.h>
+#include <windows.h>
 #endif
 
 #include <iostream>
@@ -40,24 +40,34 @@ void common::LoggerDisplay::print(common::LogInfo const& info)
 {
     try
     {
-        switch(info.typeLog)
+        switch (info.typeLog)
         {
-            case TYPELOG::__CUSTOM:                                       break;
-            case TYPELOG::__INFO:    std::cout << common::COLOR_DEFAULT;  break;
-            case TYPELOG::__WARNING: std::cout << common::COLOR_GREEN;    break;
-            case TYPELOG::__ERROR:   std::cout << common::COLOR_RED;      break;
-            case TYPELOG::__TRACE:   std::cout << common::COLOR_MAGENTA;  break;
-            case TYPELOG::__DEBUG:   std::cout << common::COLOR_PURPLE;   break;
-            default:                 std::cout << common::COLOR_DEFAULT;  break;
+            case TYPELOG::__CUSTOM:
+                break;
+            case TYPELOG::__INFO:
+                std::cout << common::COLOR_DEFAULT;
+                break;
+            case TYPELOG::__WARNING:
+                std::cout << common::COLOR_GREEN;
+                break;
+            case TYPELOG::__ERROR:
+                std::cout << common::COLOR_RED;
+                break;
+            case TYPELOG::__TRACE:
+                std::cout << common::COLOR_MAGENTA;
+                break;
+            case TYPELOG::__DEBUG:
+                std::cout << common::COLOR_PURPLE;
+                break;
+            default:
+                std::cout << common::COLOR_DEFAULT;
+                break;
         }
 
-        std::cout
-           << info.message
-           << "\n"
-           << COLOR_DEFAULT;
+        std::cout << info.message << "\n" << COLOR_DEFAULT;
         std::cout.flush();
     }
-    catch(...)
+    catch (...)
     {
         // nothing
     }

@@ -1,8 +1,7 @@
 #include <algo/crypto/kiss99.hpp>
 
 
-uint32_t algo::kiss99(
-    algo::Kiss99Properties& data)
+uint32_t algo::kiss99(algo::Kiss99Properties& data)
 {
     data.z = (36969u * (data.z & 0xffff)) + (data.z >> 16);
     data.w = (18000u * (data.w & 0xffff)) + (data.w >> 16);

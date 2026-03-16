@@ -2,13 +2,12 @@
 
 #include <memory>
 
-
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/json.hpp>
 #include <boost/lockfree/queue.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <boost/thread.hpp>
 
 
@@ -16,7 +15,7 @@ namespace network
 {
     struct NetworkTCPClient
     {
-    public:
+      public:
         // boost alias
         using boost_socket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
         using boost_error = boost::system::errc::errc_t;
@@ -62,7 +61,7 @@ namespace network
         void send(char const* data, std::size_t size);
         void send(boost::json::object const& object);
 
-    private:
+      private:
         void retryConnect();
         void shutdown();
         void disconnect();

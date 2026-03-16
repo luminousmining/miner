@@ -1,4 +1,4 @@
-#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+#if defined(TOOLS_ENABLE) && defined(TOOL_MOCKER)
 
 #include <common/cli/cli.hpp>
 

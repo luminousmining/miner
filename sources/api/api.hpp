@@ -15,7 +15,7 @@ namespace api
 {
     struct ServerAPI
     {
-    public:
+      public:
         using boost_error_code = boost::beast::error_code;
         using boost_address = boost::asio::ip::address;
         using boost_io_context = boost::asio::io_context;
@@ -30,25 +30,21 @@ namespace api
         using boost_request = boost::beast::http::request<boost::beast::http::string_body>;
         using boost_response = boost::beast::http::response<boost::beast::http::string_body>;
 
-        uint32_t        port{ 0u };
-        boost_address   address{};
+        uint32_t      port{ 0u };
+        boost_address address{};
 
         boost_thread      threadDoAccept{};
         boost_mutex       mtx{};
-        boost_atomic_bool alive { false };
+        boost_atomic_bool alive{ false };
 
         void setPort(uint32_t const _port);
         bool bind();
         void loopAccept();
 
-    private:
-        void onMessage(boost_socket& socket,
-                       boost_request const& request);
-        void onHiveOSGetStats(boost_socket& socket,
-                              boost_response& response);
-        void onHiveOSGetTotalHashrate(boost_socket& socket,
-                                      boost_response& response);
-        void onWebGetStats(boost_socket& socket,
-                           boost_response& response);
+      private:
+        void onMessage(boost_socket& socket, boost_request const& request);
+        void onHiveOSGetStats(boost_socket& socket, boost_response& response);
+        void onHiveOSGetTotalHashrate(boost_socket& socket, boost_response& response);
+        void onWebGetStats(boost_socket& socket, boost_response& response);
     };
 }

@@ -1,14 +1,13 @@
-#include <common/custom.hpp>
 #include <common/config.hpp>
+#include <common/custom.hpp>
 #include <common/log/log.hpp>
 #include <stratum/stratums.hpp>
 
 
-stratum::Stratum* stratum::NewStratum(
-    algo::ALGORITHM const algorithm)
+stratum::Stratum* stratum::NewStratum(algo::ALGORITHM const algorithm)
 {
-    stratum::Stratum* stratum { nullptr };
-    auto const& config{ common::Config::instance() };
+    stratum::Stratum* stratum{ nullptr };
+    auto const&       config{ common::Config::instance() };
 
     switch (algorithm)
     {
@@ -86,7 +85,7 @@ stratum::Stratum* stratum::NewStratum(
 
     stratum->stratumType = config.mining.stratumType;
 
-    switch(stratum->stratumType)
+    switch (stratum->stratumType)
     {
         case stratum::STRATUM_TYPE::ETHEREUM_V1:
         {

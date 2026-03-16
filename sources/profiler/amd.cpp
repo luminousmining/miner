@@ -53,13 +53,17 @@ bool profiler::Amd::load()
 
     adlMainControlCreate = reinterpret_cast<ADL_MAIN_CONTROL_CREATE>(loadFunction("ADL_Main_Control_Create"));
     adlMainControlDestroy = reinterpret_cast<ADL_MAIN_CONTROL_DESTROY>(loadFunction("ADL_Main_Control_Destroy"));
-    adlOverdrive5CurrentActivityGet = reinterpret_cast<ADL_PM_ACTIVITY_GET>(loadFunction("ADL_Overdrive5_CurrentActivity_Get"));
+    adlOverdrive5CurrentActivityGet =
+        reinterpret_cast<ADL_PM_ACTIVITY_GET>(loadFunction("ADL_Overdrive5_CurrentActivity_Get"));
 
     IS_NULL(adlMainControlCreate);
     IS_NULL(adlMainControlDestroy);
     IS_NULL(adlOverdrive5CurrentActivityGet);
 
-    auto cbAdlControlCreate{ [](int) -> void* { return malloc(1); } };
+    auto cbAdlControlCreate{ [](int) -> void*
+                             {
+                                 return malloc(1);
+                             } };
     if (ADL_OK != adlMainControlCreate(cbAdlControlCreate, 1))
     {
         return false;

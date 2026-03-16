@@ -5,7 +5,7 @@ std::string stratum::toString(stratum::STRATUM_TYPE const stratumType)
 {
     using namespace std::string_literals;
 
-    switch(stratumType)
+    switch (stratumType)
     {
         case stratum::STRATUM_TYPE::ETHEREUM_V1:
         {

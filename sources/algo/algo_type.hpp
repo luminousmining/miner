@@ -24,6 +24,6 @@ namespace algo
         MAX_SIZE = algo::ALGORITHM::UNKNOWN
     };
 
-    std::string toString(algo::ALGORITHM const algorithm);
+    std::string     toString(algo::ALGORITHM const algorithm);
     algo::ALGORITHM toEnum(std::string const& algorithm);
 }

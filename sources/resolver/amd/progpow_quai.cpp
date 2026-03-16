@@ -2,14 +2,13 @@
 #include <resolver/amd/progpow_quai.hpp>
 
 
-resolver::ResolverAmdProgpowQuai::ResolverAmdProgpowQuai():
-    resolver::ResolverAmdProgPOW()
+resolver::ResolverAmdProgpowQuai::ResolverAmdProgpowQuai() : resolver::ResolverAmdProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::PROGPOWQUAI;
 
     ///////////////////////////////////////////////////////////////////////////
-    //Ethash
+    // Ethash
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
     dagCountItemsGrowth = algo::progpow_quai::DAG_COUNT_ITEMS_GROWTH;
     dagCountItemsInit = algo::progpow_quai::DAG_COUNT_ITEMS_INIT;

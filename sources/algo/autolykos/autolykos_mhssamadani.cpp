@@ -1,10 +1,10 @@
 #include <openssl/bn.h>
 #include <openssl/ec.h>
-#include <openssl/pem.h>
 #include <openssl/evp.h>
-#include <openssl/sha.h>
 #include <openssl/hmac.h>
 #include <openssl/opensslv.h>
+#include <openssl/pem.h>
+#include <openssl/sha.h>
 
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/bitwise.hpp>
@@ -19,24 +19,23 @@ constexpr uint32_t IncreaseStart{ 600u * 1024u };
 constexpr uint32_t IncreaseEnd{ 4198400u };
 constexpr uint32_t IncreasePeriodForN{ 50u * 1024u };
 
-#define ERROR_OPENSSL      "OpenSSL"
+#define ERROR_OPENSSL "OpenSSL"
 
-#define CALL(func, name)                                                       \
-do                                                                             \
-{                                                                              \
-    if (!(func))                                                               \
-    {                                                                          \
-        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
-        exit(EXIT_FAILURE);                                                    \
-    }                                                                          \
-}                                                                              \
-while (0)
+#define CALL(func, name)                                                                                               \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(func))                                                                                                   \
+        {                                                                                                              \
+            fprintf(stderr, "ERROR:  " name " failed at %s: %d\n", __FILE__, __LINE__);                                \
+            exit(EXIT_FAILURE);                                                                                        \
+        }                                                                                                              \
+    } while (0)
 
 
 // BLAKE2b-256 hash state context
 struct ctx_t
 {
-    uint8_t b[algo::autolykos_v2::BUF_SIZE_8];
+    uint8_t  b[algo::autolykos_v2::BUF_SIZE_8];
     uint64_t h[8];
     uint64_t t[2];
     uint32_t c;
@@ -46,233 +45,228 @@ struct ctx_t
 #define ROTR64(x, y) (((x) >> (y)) ^ ((x) << (64 - (y))))
 
 // G mixing function
-#define B2B_G(v, a, b, c, d, x, y)                                             \
-{                                                                              \
-    ((uint64_t *)(v))[a] += ((uint64_t *)(v))[b] + x;                          \
-    ((uint64_t *)(v))[d]                                                       \
-        = ROTR64(((uint64_t *)(v))[d] ^ ((uint64_t *)(v))[a], 32);             \
-    ((uint64_t *)(v))[c] += ((uint64_t *)(v))[d];                              \
-    ((uint64_t *)(v))[b]                                                       \
-        = ROTR64(((uint64_t *)(v))[b] ^ ((uint64_t *)(v))[c], 24);             \
-    ((uint64_t *)(v))[a] += ((uint64_t *)(v))[b] + y;                          \
-    ((uint64_t *)(v))[d]                                                       \
-        = ROTR64(((uint64_t *)(v))[d] ^ ((uint64_t *)(v))[a], 16);             \
-    ((uint64_t *)(v))[c] += ((uint64_t *)(v))[d];                              \
-    ((uint64_t *)(v))[b]                                                       \
-        = ROTR64(((uint64_t *)(v))[b] ^ ((uint64_t *)(v))[c], 63);             \
-}
+#define B2B_G(v, a, b, c, d, x, y)                                                                                     \
+    {                                                                                                                  \
+        ((uint64_t*)(v))[a] += ((uint64_t*)(v))[b] + x;                                                                \
+        ((uint64_t*)(v))[d] = ROTR64(((uint64_t*)(v))[d] ^ ((uint64_t*)(v))[a], 32);                                   \
+        ((uint64_t*)(v))[c] += ((uint64_t*)(v))[d];                                                                    \
+        ((uint64_t*)(v))[b] = ROTR64(((uint64_t*)(v))[b] ^ ((uint64_t*)(v))[c], 24);                                   \
+        ((uint64_t*)(v))[a] += ((uint64_t*)(v))[b] + y;                                                                \
+        ((uint64_t*)(v))[d] = ROTR64(((uint64_t*)(v))[d] ^ ((uint64_t*)(v))[a], 16);                                   \
+        ((uint64_t*)(v))[c] += ((uint64_t*)(v))[d];                                                                    \
+        ((uint64_t*)(v))[b] = ROTR64(((uint64_t*)(v))[b] ^ ((uint64_t*)(v))[c], 63);                                   \
+    }
 
 // mixing rounds
-#define B2B_MIX(v, m)                                                          \
-{                                                                              \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 1]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[ 3]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[ 5]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 6], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 8], ((uint64_t *)(m))[ 9]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[10], ((uint64_t *)(m))[11]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[12], ((uint64_t *)(m))[13]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[14], ((uint64_t *)(m))[15]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[14], ((uint64_t *)(m))[10]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[ 8]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 9], ((uint64_t *)(m))[15]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[13], ((uint64_t *)(m))[ 6]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 1], ((uint64_t *)(m))[12]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 2]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[11], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[ 3]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[11], ((uint64_t *)(m))[ 8]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[12], ((uint64_t *)(m))[ 0]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[ 2]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[15], ((uint64_t *)(m))[13]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[10], ((uint64_t *)(m))[14]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 3], ((uint64_t *)(m))[ 6]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 7], ((uint64_t *)(m))[ 1]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 9], ((uint64_t *)(m))[ 4]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 7], ((uint64_t *)(m))[ 9]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 3], ((uint64_t *)(m))[ 1]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[13], ((uint64_t *)(m))[12]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[11], ((uint64_t *)(m))[14]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[ 6]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[10]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[ 0]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[15], ((uint64_t *)(m))[ 8]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 9], ((uint64_t *)(m))[ 0]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[ 4]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[10], ((uint64_t *)(m))[15]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[14], ((uint64_t *)(m))[ 1]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[11], ((uint64_t *)(m))[12]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 6], ((uint64_t *)(m))[ 8]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 3], ((uint64_t *)(m))[13]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[12]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 6], ((uint64_t *)(m))[10]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[11]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 8], ((uint64_t *)(m))[ 3]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[13]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 7], ((uint64_t *)(m))[ 5]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[15], ((uint64_t *)(m))[14]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 1], ((uint64_t *)(m))[ 9]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[12], ((uint64_t *)(m))[ 5]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 1], ((uint64_t *)(m))[15]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[14], ((uint64_t *)(m))[13]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[10]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 6], ((uint64_t *)(m))[ 3]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 9], ((uint64_t *)(m))[ 2]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 8], ((uint64_t *)(m))[11]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[13], ((uint64_t *)(m))[11]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 7], ((uint64_t *)(m))[14]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[12], ((uint64_t *)(m))[ 1]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 3], ((uint64_t *)(m))[ 9]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[ 0]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[15], ((uint64_t *)(m))[ 4]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 8], ((uint64_t *)(m))[ 6]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[10]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 6], ((uint64_t *)(m))[15]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[14], ((uint64_t *)(m))[ 9]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[11], ((uint64_t *)(m))[ 3]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 8]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[12], ((uint64_t *)(m))[ 2]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[13], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 1], ((uint64_t *)(m))[ 4]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[10], ((uint64_t *)(m))[ 5]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[10], ((uint64_t *)(m))[ 2]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 8], ((uint64_t *)(m))[ 4]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 7], ((uint64_t *)(m))[ 6]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 1], ((uint64_t *)(m))[ 5]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[15], ((uint64_t *)(m))[11]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 9], ((uint64_t *)(m))[14]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[ 3], ((uint64_t *)(m))[12]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[13], ((uint64_t *)(m))[ 0]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 1]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 2], ((uint64_t *)(m))[ 3]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[ 5]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[ 6], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 8], ((uint64_t *)(m))[ 9]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[10], ((uint64_t *)(m))[11]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[12], ((uint64_t *)(m))[13]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[14], ((uint64_t *)(m))[15]);      \
-                                                                               \
-    B2B_G(v, 0, 4,  8, 12, ((uint64_t *)(m))[14], ((uint64_t *)(m))[10]);      \
-    B2B_G(v, 1, 5,  9, 13, ((uint64_t *)(m))[ 4], ((uint64_t *)(m))[ 8]);      \
-    B2B_G(v, 2, 6, 10, 14, ((uint64_t *)(m))[ 9], ((uint64_t *)(m))[15]);      \
-    B2B_G(v, 3, 7, 11, 15, ((uint64_t *)(m))[13], ((uint64_t *)(m))[ 6]);      \
-    B2B_G(v, 0, 5, 10, 15, ((uint64_t *)(m))[ 1], ((uint64_t *)(m))[12]);      \
-    B2B_G(v, 1, 6, 11, 12, ((uint64_t *)(m))[ 0], ((uint64_t *)(m))[ 2]);      \
-    B2B_G(v, 2, 7,  8, 13, ((uint64_t *)(m))[11], ((uint64_t *)(m))[ 7]);      \
-    B2B_G(v, 3, 4,  9, 14, ((uint64_t *)(m))[ 5], ((uint64_t *)(m))[ 3]);      \
-}
+#define B2B_MIX(v, m)                                                                                                  \
+    {                                                                                                                  \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[1]);                                               \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[2], ((uint64_t*)(m))[3]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[4], ((uint64_t*)(m))[5]);                                              \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[6], ((uint64_t*)(m))[7]);                                              \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[8], ((uint64_t*)(m))[9]);                                              \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[10], ((uint64_t*)(m))[11]);                                            \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[12], ((uint64_t*)(m))[13]);                                             \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[14], ((uint64_t*)(m))[15]);                                             \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[14], ((uint64_t*)(m))[10]);                                             \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[4], ((uint64_t*)(m))[8]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[9], ((uint64_t*)(m))[15]);                                             \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[13], ((uint64_t*)(m))[6]);                                             \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[1], ((uint64_t*)(m))[12]);                                             \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[2]);                                              \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[11], ((uint64_t*)(m))[7]);                                              \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[5], ((uint64_t*)(m))[3]);                                               \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[11], ((uint64_t*)(m))[8]);                                              \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[12], ((uint64_t*)(m))[0]);                                              \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[5], ((uint64_t*)(m))[2]);                                              \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[15], ((uint64_t*)(m))[13]);                                            \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[10], ((uint64_t*)(m))[14]);                                            \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[3], ((uint64_t*)(m))[6]);                                              \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[7], ((uint64_t*)(m))[1]);                                               \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[9], ((uint64_t*)(m))[4]);                                               \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[7], ((uint64_t*)(m))[9]);                                               \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[3], ((uint64_t*)(m))[1]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[13], ((uint64_t*)(m))[12]);                                            \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[11], ((uint64_t*)(m))[14]);                                            \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[2], ((uint64_t*)(m))[6]);                                              \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[5], ((uint64_t*)(m))[10]);                                             \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[4], ((uint64_t*)(m))[0]);                                               \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[15], ((uint64_t*)(m))[8]);                                              \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[9], ((uint64_t*)(m))[0]);                                               \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[5], ((uint64_t*)(m))[7]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[2], ((uint64_t*)(m))[4]);                                              \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[10], ((uint64_t*)(m))[15]);                                            \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[14], ((uint64_t*)(m))[1]);                                             \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[11], ((uint64_t*)(m))[12]);                                            \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[6], ((uint64_t*)(m))[8]);                                               \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[3], ((uint64_t*)(m))[13]);                                              \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[2], ((uint64_t*)(m))[12]);                                              \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[6], ((uint64_t*)(m))[10]);                                              \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[0], ((uint64_t*)(m))[11]);                                             \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[8], ((uint64_t*)(m))[3]);                                              \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[4], ((uint64_t*)(m))[13]);                                             \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[7], ((uint64_t*)(m))[5]);                                              \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[15], ((uint64_t*)(m))[14]);                                             \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[1], ((uint64_t*)(m))[9]);                                               \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[12], ((uint64_t*)(m))[5]);                                              \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[1], ((uint64_t*)(m))[15]);                                              \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[14], ((uint64_t*)(m))[13]);                                            \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[4], ((uint64_t*)(m))[10]);                                             \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[0], ((uint64_t*)(m))[7]);                                              \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[6], ((uint64_t*)(m))[3]);                                              \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[9], ((uint64_t*)(m))[2]);                                               \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[8], ((uint64_t*)(m))[11]);                                              \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[13], ((uint64_t*)(m))[11]);                                             \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[7], ((uint64_t*)(m))[14]);                                              \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[12], ((uint64_t*)(m))[1]);                                             \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[3], ((uint64_t*)(m))[9]);                                              \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[5], ((uint64_t*)(m))[0]);                                              \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[15], ((uint64_t*)(m))[4]);                                             \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[8], ((uint64_t*)(m))[6]);                                               \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[2], ((uint64_t*)(m))[10]);                                              \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[6], ((uint64_t*)(m))[15]);                                              \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[14], ((uint64_t*)(m))[9]);                                              \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[11], ((uint64_t*)(m))[3]);                                             \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[0], ((uint64_t*)(m))[8]);                                              \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[12], ((uint64_t*)(m))[2]);                                             \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[13], ((uint64_t*)(m))[7]);                                             \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[1], ((uint64_t*)(m))[4]);                                               \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[10], ((uint64_t*)(m))[5]);                                              \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[10], ((uint64_t*)(m))[2]);                                              \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[8], ((uint64_t*)(m))[4]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[7], ((uint64_t*)(m))[6]);                                              \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[1], ((uint64_t*)(m))[5]);                                              \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[15], ((uint64_t*)(m))[11]);                                            \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[9], ((uint64_t*)(m))[14]);                                             \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[3], ((uint64_t*)(m))[12]);                                              \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[13], ((uint64_t*)(m))[0]);                                              \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[1]);                                               \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[2], ((uint64_t*)(m))[3]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[4], ((uint64_t*)(m))[5]);                                              \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[6], ((uint64_t*)(m))[7]);                                              \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[8], ((uint64_t*)(m))[9]);                                              \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[10], ((uint64_t*)(m))[11]);                                            \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[12], ((uint64_t*)(m))[13]);                                             \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[14], ((uint64_t*)(m))[15]);                                             \
+                                                                                                                       \
+        B2B_G(v, 0, 4, 8, 12, ((uint64_t*)(m))[14], ((uint64_t*)(m))[10]);                                             \
+        B2B_G(v, 1, 5, 9, 13, ((uint64_t*)(m))[4], ((uint64_t*)(m))[8]);                                               \
+        B2B_G(v, 2, 6, 10, 14, ((uint64_t*)(m))[9], ((uint64_t*)(m))[15]);                                             \
+        B2B_G(v, 3, 7, 11, 15, ((uint64_t*)(m))[13], ((uint64_t*)(m))[6]);                                             \
+        B2B_G(v, 0, 5, 10, 15, ((uint64_t*)(m))[1], ((uint64_t*)(m))[12]);                                             \
+        B2B_G(v, 1, 6, 11, 12, ((uint64_t*)(m))[0], ((uint64_t*)(m))[2]);                                              \
+        B2B_G(v, 2, 7, 8, 13, ((uint64_t*)(m))[11], ((uint64_t*)(m))[7]);                                              \
+        B2B_G(v, 3, 4, 9, 14, ((uint64_t*)(m))[5], ((uint64_t*)(m))[3]);                                               \
+    }
 
 // initialization vector
-#define B2B_IV(v)                                                              \
-{                                                                              \
-    ((uint64_t *)(v))[0] = 0x6A09E667F3BCC908;                                 \
-    ((uint64_t *)(v))[1] = 0xBB67AE8584CAA73B;                                 \
-    ((uint64_t *)(v))[2] = 0x3C6EF372FE94F82B;                                 \
-    ((uint64_t *)(v))[3] = 0xA54FF53A5F1D36F1;                                 \
-    ((uint64_t *)(v))[4] = 0x510E527FADE682D1;                                 \
-    ((uint64_t *)(v))[5] = 0x9B05688C2B3E6C1F;                                 \
-    ((uint64_t *)(v))[6] = 0x1F83D9ABFB41BD6B;                                 \
-    ((uint64_t *)(v))[7] = 0x5BE0CD19137E2179;                                 \
-}
+#define B2B_IV(v)                                                                                                      \
+    {                                                                                                                  \
+        ((uint64_t*)(v))[0] = 0x6A09E667F3BCC908;                                                                      \
+        ((uint64_t*)(v))[1] = 0xBB67AE8584CAA73B;                                                                      \
+        ((uint64_t*)(v))[2] = 0x3C6EF372FE94F82B;                                                                      \
+        ((uint64_t*)(v))[3] = 0xA54FF53A5F1D36F1;                                                                      \
+        ((uint64_t*)(v))[4] = 0x510E527FADE682D1;                                                                      \
+        ((uint64_t*)(v))[5] = 0x9B05688C2B3E6C1F;                                                                      \
+        ((uint64_t*)(v))[6] = 0x1F83D9ABFB41BD6B;                                                                      \
+        ((uint64_t*)(v))[7] = 0x5BE0CD19137E2179;                                                                      \
+    }
 
 // blake2b initialization
-#define B2B_INIT(ctx, aux)                                                     \
-{                                                                              \
-    ((uint64_t *)(aux))[0] = ((ctx_t *)(ctx))->h[0];                           \
-    ((uint64_t *)(aux))[1] = ((ctx_t *)(ctx))->h[1];                           \
-    ((uint64_t *)(aux))[2] = ((ctx_t *)(ctx))->h[2];                           \
-    ((uint64_t *)(aux))[3] = ((ctx_t *)(ctx))->h[3];                           \
-    ((uint64_t *)(aux))[4] = ((ctx_t *)(ctx))->h[4];                           \
-    ((uint64_t *)(aux))[5] = ((ctx_t *)(ctx))->h[5];                           \
-    ((uint64_t *)(aux))[6] = ((ctx_t *)(ctx))->h[6];                           \
-    ((uint64_t *)(aux))[7] = ((ctx_t *)(ctx))->h[7];                           \
-                                                                               \
-    B2B_IV(aux + 8);                                                           \
-                                                                               \
-    ((uint64_t *)(aux))[12] ^= ((ctx_t *)(ctx))->t[0];                         \
-    ((uint64_t *)(aux))[13] ^= ((ctx_t *)(ctx))->t[1];                         \
-}
+#define B2B_INIT(ctx, aux)                                                                                             \
+    {                                                                                                                  \
+        ((uint64_t*)(aux))[0] = ((ctx_t*)(ctx))->h[0];                                                                 \
+        ((uint64_t*)(aux))[1] = ((ctx_t*)(ctx))->h[1];                                                                 \
+        ((uint64_t*)(aux))[2] = ((ctx_t*)(ctx))->h[2];                                                                 \
+        ((uint64_t*)(aux))[3] = ((ctx_t*)(ctx))->h[3];                                                                 \
+        ((uint64_t*)(aux))[4] = ((ctx_t*)(ctx))->h[4];                                                                 \
+        ((uint64_t*)(aux))[5] = ((ctx_t*)(ctx))->h[5];                                                                 \
+        ((uint64_t*)(aux))[6] = ((ctx_t*)(ctx))->h[6];                                                                 \
+        ((uint64_t*)(aux))[7] = ((ctx_t*)(ctx))->h[7];                                                                 \
+                                                                                                                       \
+        B2B_IV(aux + 8);                                                                                               \
+                                                                                                                       \
+        ((uint64_t*)(aux))[12] ^= ((ctx_t*)(ctx))->t[0];                                                               \
+        ((uint64_t*)(aux))[13] ^= ((ctx_t*)(ctx))->t[1];                                                               \
+    }
 
 // blake2b mixing
-#define B2B_FINAL(ctx, aux)                                                    \
-{                                                                              \
-    ((uint64_t *)(aux))[16] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 0];         \
-    ((uint64_t *)(aux))[17] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 1];         \
-    ((uint64_t *)(aux))[18] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 2];         \
-    ((uint64_t *)(aux))[19] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 3];         \
-    ((uint64_t *)(aux))[20] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 4];         \
-    ((uint64_t *)(aux))[21] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 5];         \
-    ((uint64_t *)(aux))[22] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 6];         \
-    ((uint64_t *)(aux))[23] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 7];         \
-    ((uint64_t *)(aux))[24] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 8];         \
-    ((uint64_t *)(aux))[25] = ((uint64_t *)(((ctx_t *)(ctx))->b))[ 9];         \
-    ((uint64_t *)(aux))[26] = ((uint64_t *)(((ctx_t *)(ctx))->b))[10];         \
-    ((uint64_t *)(aux))[27] = ((uint64_t *)(((ctx_t *)(ctx))->b))[11];         \
-    ((uint64_t *)(aux))[28] = ((uint64_t *)(((ctx_t *)(ctx))->b))[12];         \
-    ((uint64_t *)(aux))[29] = ((uint64_t *)(((ctx_t *)(ctx))->b))[13];         \
-    ((uint64_t *)(aux))[30] = ((uint64_t *)(((ctx_t *)(ctx))->b))[14];         \
-    ((uint64_t *)(aux))[31] = ((uint64_t *)(((ctx_t *)(ctx))->b))[15];         \
-                                                                               \
-    B2B_MIX(aux, aux + 16);                                                    \
-                                                                               \
-    ((ctx_t *)(ctx))->h[0] ^= ((uint64_t *)(aux))[0] ^ ((uint64_t *)(aux))[ 8];\
-    ((ctx_t *)(ctx))->h[1] ^= ((uint64_t *)(aux))[1] ^ ((uint64_t *)(aux))[ 9];\
-    ((ctx_t *)(ctx))->h[2] ^= ((uint64_t *)(aux))[2] ^ ((uint64_t *)(aux))[10];\
-    ((ctx_t *)(ctx))->h[3] ^= ((uint64_t *)(aux))[3] ^ ((uint64_t *)(aux))[11];\
-    ((ctx_t *)(ctx))->h[4] ^= ((uint64_t *)(aux))[4] ^ ((uint64_t *)(aux))[12];\
-    ((ctx_t *)(ctx))->h[5] ^= ((uint64_t *)(aux))[5] ^ ((uint64_t *)(aux))[13];\
-    ((ctx_t *)(ctx))->h[6] ^= ((uint64_t *)(aux))[6] ^ ((uint64_t *)(aux))[14];\
-    ((ctx_t *)(ctx))->h[7] ^= ((uint64_t *)(aux))[7] ^ ((uint64_t *)(aux))[15];\
-}
+#define B2B_FINAL(ctx, aux)                                                                                            \
+    {                                                                                                                  \
+        ((uint64_t*)(aux))[16] = ((uint64_t*)(((ctx_t*)(ctx))->b))[0];                                                 \
+        ((uint64_t*)(aux))[17] = ((uint64_t*)(((ctx_t*)(ctx))->b))[1];                                                 \
+        ((uint64_t*)(aux))[18] = ((uint64_t*)(((ctx_t*)(ctx))->b))[2];                                                 \
+        ((uint64_t*)(aux))[19] = ((uint64_t*)(((ctx_t*)(ctx))->b))[3];                                                 \
+        ((uint64_t*)(aux))[20] = ((uint64_t*)(((ctx_t*)(ctx))->b))[4];                                                 \
+        ((uint64_t*)(aux))[21] = ((uint64_t*)(((ctx_t*)(ctx))->b))[5];                                                 \
+        ((uint64_t*)(aux))[22] = ((uint64_t*)(((ctx_t*)(ctx))->b))[6];                                                 \
+        ((uint64_t*)(aux))[23] = ((uint64_t*)(((ctx_t*)(ctx))->b))[7];                                                 \
+        ((uint64_t*)(aux))[24] = ((uint64_t*)(((ctx_t*)(ctx))->b))[8];                                                 \
+        ((uint64_t*)(aux))[25] = ((uint64_t*)(((ctx_t*)(ctx))->b))[9];                                                 \
+        ((uint64_t*)(aux))[26] = ((uint64_t*)(((ctx_t*)(ctx))->b))[10];                                                \
+        ((uint64_t*)(aux))[27] = ((uint64_t*)(((ctx_t*)(ctx))->b))[11];                                                \
+        ((uint64_t*)(aux))[28] = ((uint64_t*)(((ctx_t*)(ctx))->b))[12];                                                \
+        ((uint64_t*)(aux))[29] = ((uint64_t*)(((ctx_t*)(ctx))->b))[13];                                                \
+        ((uint64_t*)(aux))[30] = ((uint64_t*)(((ctx_t*)(ctx))->b))[14];                                                \
+        ((uint64_t*)(aux))[31] = ((uint64_t*)(((ctx_t*)(ctx))->b))[15];                                                \
+                                                                                                                       \
+        B2B_MIX(aux, aux + 16);                                                                                        \
+                                                                                                                       \
+        ((ctx_t*)(ctx))->h[0] ^= ((uint64_t*)(aux))[0] ^ ((uint64_t*)(aux))[8];                                        \
+        ((ctx_t*)(ctx))->h[1] ^= ((uint64_t*)(aux))[1] ^ ((uint64_t*)(aux))[9];                                        \
+        ((ctx_t*)(ctx))->h[2] ^= ((uint64_t*)(aux))[2] ^ ((uint64_t*)(aux))[10];                                       \
+        ((ctx_t*)(ctx))->h[3] ^= ((uint64_t*)(aux))[3] ^ ((uint64_t*)(aux))[11];                                       \
+        ((ctx_t*)(ctx))->h[4] ^= ((uint64_t*)(aux))[4] ^ ((uint64_t*)(aux))[12];                                       \
+        ((ctx_t*)(ctx))->h[5] ^= ((uint64_t*)(aux))[5] ^ ((uint64_t*)(aux))[13];                                       \
+        ((ctx_t*)(ctx))->h[6] ^= ((uint64_t*)(aux))[6] ^ ((uint64_t*)(aux))[14];                                       \
+        ((ctx_t*)(ctx))->h[7] ^= ((uint64_t*)(aux))[7] ^ ((uint64_t*)(aux))[15];                                       \
+    }
 
 // blake2b intermediate mixing procedure on host
-#define HOST_B2B_H(ctx, aux)                                                   \
-{                                                                              \
-    ((ctx_t *)(ctx))->t[0] += algo::autolykos_v2::BUF_SIZE_8;                  \
-    ((ctx_t *)(ctx))->t[1] += 1 - !(((ctx_t *)(ctx))->t[0] < algo::autolykos_v2::BUF_SIZE_8); \
-                                                                               \
-    B2B_INIT(ctx, aux);                                                        \
-    B2B_FINAL(ctx, aux);                                                       \
-                                                                               \
-    ((ctx_t *)(ctx))->c = 0;                                                   \
-}
+#define HOST_B2B_H(ctx, aux)                                                                                           \
+    {                                                                                                                  \
+        ((ctx_t*)(ctx))->t[0] += algo::autolykos_v2::BUF_SIZE_8;                                                       \
+        ((ctx_t*)(ctx))->t[1] += 1 - !(((ctx_t*)(ctx))->t[0] < algo::autolykos_v2::BUF_SIZE_8);                        \
+                                                                                                                       \
+        B2B_INIT(ctx, aux);                                                                                            \
+        B2B_FINAL(ctx, aux);                                                                                           \
+                                                                                                                       \
+        ((ctx_t*)(ctx))->c = 0;                                                                                        \
+    }
 
 // blake2b intermediate mixing procedure on host
-#define HOST_B2B_H_LAST(ctx, aux)                                              \
-{                                                                              \
-    ((ctx_t *)(ctx))->t[0] += ((ctx_t *)(ctx))->c;                             \
-    ((ctx_t *)(ctx))->t[1]                                                     \
-        += 1 - !(((ctx_t *)(ctx))->t[0] < ((ctx_t *)(ctx))->c);                \
-                                                                               \
-    while (((ctx_t *)(ctx))->c < algo::autolykos_v2::BUF_SIZE_8)               \
-    {                                                                          \
-        ((ctx_t *)(ctx))->b[((ctx_t *)(ctx))->c++] = 0;                        \
-    }                                                                          \
-                                                                               \
-    B2B_INIT(ctx, aux);                                                        \
-                                                                               \
-    ((uint64_t *)(aux))[14] = ~((uint64_t *)(aux))[14];                        \
-                                                                               \
-    B2B_FINAL(ctx, aux);                                                       \
-}
+#define HOST_B2B_H_LAST(ctx, aux)                                                                                      \
+    {                                                                                                                  \
+        ((ctx_t*)(ctx))->t[0] += ((ctx_t*)(ctx))->c;                                                                   \
+        ((ctx_t*)(ctx))->t[1] += 1 - !(((ctx_t*)(ctx))->t[0] < ((ctx_t*)(ctx))->c);                                    \
+                                                                                                                       \
+        while (((ctx_t*)(ctx))->c < algo::autolykos_v2::BUF_SIZE_8)                                                    \
+        {                                                                                                              \
+            ((ctx_t*)(ctx))->b[((ctx_t*)(ctx))->c++] = 0;                                                              \
+        }                                                                                                              \
+                                                                                                                       \
+        B2B_INIT(ctx, aux);                                                                                            \
+                                                                                                                       \
+        ((uint64_t*)(aux))[14] = ~((uint64_t*)(aux))[14];                                                              \
+                                                                                                                       \
+        B2B_FINAL(ctx, aux);                                                                                           \
+    }
 
 
 static uint32_t calcN(uint32_t const Hblock)
 {
     uint32_t const headerHeight{ algo::be::uint32(Hblock) };
-    uint32_t newN{ algo::autolykos_v2::EPOCH_MIN };
+    uint32_t       newN{ algo::autolykos_v2::EPOCH_MIN };
     if (headerHeight < IncreaseStart)
     {
         newN = algo::autolykos_v2::EPOCH_MIN;
@@ -293,10 +287,7 @@ static uint32_t calcN(uint32_t const Hblock)
 }
 
 
-static void LittleEndianToHexStr(
-    uint8_t const* in,
-    uint32_t const inlen,
-    char* out)
+static void LittleEndianToHexStr(uint8_t const* in, uint32_t const inlen, char* out)
 {
     uint8_t dig;
 
@@ -304,10 +295,7 @@ static void LittleEndianToHexStr(
     {
         dig = (uint8_t)(in[i >> 1] >> ((i & 1) << 2)) & 0xF;
 
-        out[(inlen << 1) - i - 1] =
-            (dig <= 9)
-            ? (char)dig + '0'
-            : (char)dig + 'A' - 0xA;
+        out[(inlen << 1) - i - 1] = (dig <= 9) ? (char)dig + '0' : (char)dig + 'A' - 0xA;
     }
 
     out[inlen << 1] = '\0';
@@ -316,17 +304,14 @@ static void LittleEndianToHexStr(
 }
 
 
-static void BigEndianToHexStr(
-    const uint8_t * in,
-    const uint32_t inlen,
-    char * out)
+static void BigEndianToHexStr(uint8_t const* in, const uint32_t inlen, char* out)
 {
     uint8_t dig;
 
     for (uint8_t i{ 0 }; i < inlen << 1; ++i)
     {
         dig = (uint8_t)(in[i >> 1] >> (!(i & 1) << 2)) & 0xF;
-        out[i] = (dig <= 9)? (char)dig + '0': (char)dig + 'A' - 0xA;
+        out[i] = (dig <= 9) ? (char)dig + '0' : (char)dig + 'A' - 0xA;
     }
 
     out[inlen << 1] = '\0';
@@ -335,35 +320,25 @@ static void BigEndianToHexStr(
 }
 
 
-static void HexStrToBigEndian(
-    char const* in,
-    uint32_t const inlen,
-    uint8_t* out,
-    uint32_t const outlen)
+static void HexStrToBigEndian(char const* in, uint32_t const inlen, uint8_t* out, uint32_t const outlen)
 {
     memset(out, 0, outlen);
 
     for (uint8_t i = (outlen << 1) - inlen; i < (outlen << 1); ++i)
     {
-        out[i >> 1]
-            |= (((in[i] >= 'A')
-            ?  in[i] - 'A' + 0xA
-            : in[i] - '0') & 0xF)
-            << ((!(i & 1)) << 2);
+        out[i >> 1] |= (((in[i] >= 'A') ? in[i] - 'A' + 0xA : in[i] - '0') & 0xF) << ((!(i & 1)) << 2);
     }
 
     return;
 }
 
 
-static void Blake2b256(
-    char const* in,
-    int const len,
-    uint8_t * output,
-    char* outstr)
+static void Blake2b256(char const* in, int const len, uint8_t* output, char* outstr)
 {
-    ctx_t ctx{};
-    uint64_t aux[32]{0,};
+    ctx_t    ctx{};
+    uint64_t aux[32]{
+        0,
+    };
 
     //====================================================================//
     //  Initialize context
@@ -379,7 +354,10 @@ static void Blake2b256(
     //====================================================================//
     for (int i = 0; i < len; ++i)
     {
-        if (ctx.c == 128) { HOST_B2B_H(&ctx, aux); }
+        if (ctx.c == 128)
+        {
+            HOST_B2B_H(&ctx, aux);
+        }
 
         ctx.b[ctx.c++] = (uint8_t)(in[i]);
     }
@@ -393,12 +371,9 @@ static void Blake2b256(
 }
 
 
-static void hashFn(
-    const char * in,
-    const int len,
-    uint8_t * output)
+static void hashFn(char const* in, int const len, uint8_t* output)
 {
-    char *skstr = new char[len * 3];
+    char* skstr = new char[len * 3];
     Blake2b256(in, len, output, skstr);
 
     uint8_t beHash[PK_SIZE_8];
@@ -410,14 +385,10 @@ static void hashFn(
 }
 
 
-static void GenIdex(
-    char const* in,
-    int const len,
-    uint32_t* index,
-    uint64_t const N_LEN)
+static void GenIdex(char const* in, int const len, uint32_t* index, uint64_t const N_LEN)
 {
     uint8_t sk[NUM_SIZE_8 * 2];
-    char skstr[NUM_SIZE_4 + 10];
+    char    skstr[NUM_SIZE_4 + 10];
 
     memset(sk, 0, NUM_SIZE_8 * 2);
     memset(skstr, 0, NUM_SIZE_4);
@@ -433,11 +404,15 @@ static void GenIdex(
     memcpy(sk + NUM_SIZE_8, beH, NUM_SIZE_8);
 
     uint32_t tmpInd[32];
-    int sliceIndex = 0;
+    int      sliceIndex = 0;
     for (uint32_t k{ 0u }; k < algo::autolykos_v2::K_LEN; k++)
     {
-        uint8_t tmp[4]{0,};
-        uint8_t tmp2[4]{0,};
+        uint8_t tmp[4]{
+            0,
+        };
+        uint8_t tmp2[4]{
+            0,
+        };
         memcpy(tmp, sk + sliceIndex, 4);
         memcpy(&tmpInd[k], sk + sliceIndex, 4);
         tmp2[0] = tmp[3];
@@ -457,11 +432,19 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     uint64_t const baseNonce,
     uint32_t const baseHeight)
 {
-    uint8_t nonce[algo::autolykos_v2::NONCE_SIZE_8]{0,};
-    char n_str[algo::autolykos_v2::NONCE_SIZE_8]{0,};
+    uint8_t nonce[algo::autolykos_v2::NONCE_SIZE_8]{
+        0,
+    };
+    char n_str[algo::autolykos_v2::NONCE_SIZE_8]{
+        0,
+    };
 
-    uint8_t height[HEIGHT_SIZE]{0,};
-    char h_str[HEIGHT_SIZE]{0,};
+    uint8_t height[HEIGHT_SIZE]{
+        0,
+    };
+    char h_str[HEIGHT_SIZE]{
+        0,
+    };
 
     *(uint64_t*)nonce = baseNonce;
     *(uint32_t*)height = baseHeight;
@@ -485,11 +468,11 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     uint8_t m_n[NUM_SIZE_8 + algo::autolykos_v2::NONCE_SIZE_8];
     memcpy(m_n, header.ubytes, NUM_SIZE_8);
     memcpy(m_n + NUM_SIZE_8, beN, algo::autolykos_v2::NONCE_SIZE_8);
-    hashFn((const char *)m_n, NUM_SIZE_8 + algo::autolykos_v2::NONCE_SIZE_8, (uint8_t *)h1);
+    hashFn((char const*)m_n, NUM_SIZE_8 + algo::autolykos_v2::NONCE_SIZE_8, (uint8_t*)h1);
 
     ///////////////////////////////////////////////////////////////////////////
     uint64_t h2;
-    char tmpL1[8];
+    char     tmpL1[8];
     tmpL1[0] = h1[31];
     tmpL1[1] = h1[30];
     tmpL1[2] = h1[29];
@@ -502,25 +485,27 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
 
     ///////////////////////////////////////////////////////////////////////////
     uint32_t HH;
-    memcpy(&HH,beH,HEIGHT_SIZE);
+    memcpy(&HH, beH, HEIGHT_SIZE);
     uint32_t const N_LEN{ calcN(HH) };
     uint32_t const h3{ (uint32_t)(h2 % N_LEN) };
 
     ///////////////////////////////////////////////////////////////////////////
-    uint8_t iii[4]{0,};
-    iii[0] = ((char *)(&h3))[3];
-    iii[1] = ((char *)(&h3))[2];
-    iii[2] = ((char *)(&h3))[1];
-    iii[3] = ((char *)(&h3))[0];
+    uint8_t iii[4]{
+        0,
+    };
+    iii[0] = ((char*)(&h3))[3];
+    iii[1] = ((char*)(&h3))[2];
+    iii[2] = ((char*)(&h3))[1];
+    iii[3] = ((char*)(&h3))[0];
 
     ///////////////////////////////////////////////////////////////////////////
     unsigned long long CONST_MESS[CONST_MES_SIZE_8 / 8];
-    uint32_t const tr{ sizeof(unsigned long long) };
+    uint32_t const     tr{ sizeof(unsigned long long) };
     for (uint32_t i{ 0u }; i < CONST_MES_SIZE_8 / tr; i++)
     {
         unsigned long long tmp = i;
-        uint8_t tmp2[8];
-        uint8_t tmp1[8];
+        uint8_t            tmp2[8];
+        uint8_t            tmp1[8];
         memcpy(tmp1, &tmp, tr);
         tmp2[0] = tmp1[7];
         tmp2[1] = tmp1[6];
@@ -534,8 +519,12 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    uint8_t i_h_M[HEIGHT_SIZE + HEIGHT_SIZE + CONST_MES_SIZE_8]{0,};
-    uint8_t ff[NUM_SIZE_8 - 1]{0,};
+    uint8_t i_h_M[HEIGHT_SIZE + HEIGHT_SIZE + CONST_MES_SIZE_8]{
+        0,
+    };
+    uint8_t ff[NUM_SIZE_8 - 1]{
+        0,
+    };
     memcpy(i_h_M, iii, HEIGHT_SIZE);
     memcpy(i_h_M + HEIGHT_SIZE, beH, HEIGHT_SIZE);
     memcpy(i_h_M + HEIGHT_SIZE + HEIGHT_SIZE, CONST_MESS, CONST_MES_SIZE_8);
@@ -543,17 +532,25 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     memcpy(ff, h1 + 1, NUM_SIZE_8 - 1);
 
     ///////////////////////////////////////////////////////////////////////////
-    uint8_t seed[NUM_SIZE_8 - 1 + NUM_SIZE_8 + algo::autolykos_v2::NONCE_SIZE_8]{0,};
+    uint8_t seed[NUM_SIZE_8 - 1 + NUM_SIZE_8 + algo::autolykos_v2::NONCE_SIZE_8]{
+        0,
+    };
     memcpy(seed, ff, NUM_SIZE_8 - 1);
     memcpy(seed + NUM_SIZE_8 - 1, header.ubytes, NUM_SIZE_8);
     memcpy(seed + NUM_SIZE_8 - 1 + NUM_SIZE_8, beN, algo::autolykos_v2::NONCE_SIZE_8);
 
     ///////////////////////////////////////////////////////////////////////////
-    uint32_t index[algo::autolykos_v2::K_LEN]{0,};
+    uint32_t index[algo::autolykos_v2::K_LEN]{
+        0,
+    };
     GenIdex((char const*)seed, NUM_SIZE_8 - 1 + NUM_SIZE_8 + algo::autolykos_v2::NONCE_SIZE_8, index, N_LEN);
 
     ///////////////////////////////////////////////////////////////////////////
-    uint8_t ret[32][NUM_SIZE_8]{{0,},};
+    uint8_t ret[32][NUM_SIZE_8]{
+        {
+            0,
+        },
+    };
     int const ll{ sizeof(uint32_t) + CONST_MES_SIZE_8 + PK_SIZE_8 + NUM_SIZE_8 + PK_SIZE_8 };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -565,13 +562,13 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     CALL(BN_dec2bn(&bigres, "0"), ERROR_OPENSSL);
 
     ///////////////////////////////////////////////////////////////////////////
-    int rep = 0;
-    int off = 0;
-    uint8_t tmp[NUM_SIZE_8 - 1];
-    uint8_t tmp2[4];
-    uint8_t tmp1[4];
+    int           rep = 0;
+    int           off = 0;
+    uint8_t       tmp[NUM_SIZE_8 - 1];
+    uint8_t       tmp2[4];
+    uint8_t       tmp1[4];
     unsigned char f[32];
-    uint8_t Hinput[sizeof(uint32_t) + CONST_MES_SIZE_8 + PK_SIZE_8 + NUM_SIZE_8 + PK_SIZE_8];
+    uint8_t       Hinput[sizeof(uint32_t) + CONST_MES_SIZE_8 + PK_SIZE_8 + NUM_SIZE_8 + PK_SIZE_8];
     memset(f, 0, 32);
     for (rep = 0; rep < 32; rep++)
     {

@@ -7,11 +7,10 @@ namespace resolver
 {
     struct ResolverCpu : public resolver::Resolver
     {
-    public:
+      public:
         virtual ~ResolverCpu() = default;
 
-    protected:
-        void overrideOccupancy(uint32_t const defaultThreads,
-                               uint32_t const defaultBlocks) final;
+      protected:
+        void overrideOccupancy(uint32_t const defaultThreads, uint32_t const defaultBlocks) final;
     };
 }

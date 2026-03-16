@@ -1,6 +1,6 @@
-#include <algo/keccak.hpp>
-#include <algo/ethash/ethash.hpp>
 #include <algo/ethash/cuda/ethash.cuh>
+#include <algo/ethash/ethash.hpp>
+#include <algo/keccak.hpp>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
 #include <common/config.hpp>
@@ -9,8 +9,7 @@
 #include <resolver/nvidia/ethash.hpp>
 
 
-resolver::ResolverNvidiaEthash::ResolverNvidiaEthash():
-    resolver::ResolverNvidia()
+resolver::ResolverNvidiaEthash::ResolverNvidiaEthash() : resolver::ResolverNvidia()
 {
     if (algorithm == algo::ALGORITHM::UNKNOWN)
     {
@@ -25,15 +24,13 @@ resolver::ResolverNvidiaEthash::~ResolverNvidiaEthash()
 }
 
 
-bool resolver::ResolverNvidiaEthash::updateContext(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaEthash::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
     common::Config& config{ common::Config::instance() };
 
     ///////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().build
-    (
+    algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
         jobInfo.epoch,
@@ -42,35 +39,30 @@ bool resolver::ResolverNvidiaEthash::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        config.deviceAlgorithm.ethashBuildLightCacheCPU
-    );
+        config.deviceAlgorithm.ethashBuildLightCacheCPU);
 
     ///////////////////////////////////////////////////////////////////////////
-    if (   context.lightCache.numberItem == 0ull
-        || context.lightCache.size == 0ull
-        || context.dagCache.numberItem == 0ull
+    if (context.lightCache.numberItem == 0ull || context.lightCache.size == 0ull || context.dagCache.numberItem == 0ull
         || context.dagCache.size == 0ull)
     {
-        resolverErr()
-            << "\n"
-            << "=========================================================================" << "\n"
-            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
-            << "context.lightCache.size: " << context.lightCache.size << "\n"
-            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
-            << "context.dagCache.size: " << context.dagCache.size << "\n"
-            << "=========================================================================" << "\n"
-            ;
+        resolverErr() << "\n"
+                      << "========================================================================="
+                      << "\n"
+                      << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+                      << "context.lightCache.size: " << context.lightCache.size << "\n"
+                      << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+                      << "context.dagCache.size: " << context.dagCache.size << "\n"
+                      << "========================================================================="
+                      << "\n";
         return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     uint64_t const totalMemoryNeeded{ (context.dagCache.size + context.lightCache.size) };
-    if (   0ull != deviceMemoryAvailable
-        && totalMemoryNeeded >= deviceMemoryAvailable)
+    if (0ull != deviceMemoryAvailable && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        resolverErr()
-            << "Device have not memory size available."
-            << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        resolverErr() << "Device have not memory size available."
+                      << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -79,11 +71,10 @@ bool resolver::ResolverNvidiaEthash::updateContext(
 }
 
 
-bool resolver::ResolverNvidiaEthash::updateMemory(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaEthash::updateMemory(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Chrono chrono{};
+    common::Chrono  chrono{};
     common::Config& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -93,9 +84,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == ethashInitMemory(context,
-                                  parameters,
-                                  !config.deviceAlgorithm.ethashBuildLightCacheCPU))
+    if (false == ethashInitMemory(context, parameters, !config.deviceAlgorithm.ethashBuildLightCacheCPU))
     {
         return false;
     }
@@ -106,8 +95,7 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
         ///////////////////////////////////////////////////////////////////////
         resolverInfo() << "Building light cache on GPU";
         chrono.start();
-        if (false == ethashBuildLightCache(cuStream[currentIndexStream],
-                                           parameters.seedCache))
+        if (false == ethashBuildLightCache(cuStream[currentIndexStream], parameters.seedCache))
         {
             return false;
         }
@@ -125,9 +113,11 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
     chrono.start();
-    if (false == ethashBuildDag(cuStream[currentIndexStream],
-                                algo::ethash::DAG_ITEM_PARENTS,
-                                castU32(context.dagCache.numberItem)))
+    if (false
+        == ethashBuildDag(
+            cuStream[currentIndexStream],
+            algo::ethash::DAG_ITEM_PARENTS,
+            castU32(context.dagCache.numberItem)))
     {
         return false;
     }
@@ -145,12 +135,11 @@ bool resolver::ResolverNvidiaEthash::updateMemory(
 }
 
 
-bool resolver::ResolverNvidiaEthash::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaEthash::updateConstants(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const* const header { jobInfo.headerHash.word32 };
-    uint64_t const boundary { jobInfo.boundaryU64 };
+    uint32_t const* const header{ jobInfo.headerHash.word32 };
+    uint64_t const        boundary{ jobInfo.boundaryU64 };
     if (false == ethashUpdateConstants(header, boundary))
     {
         return false;
@@ -164,15 +153,15 @@ bool resolver::ResolverNvidiaEthash::updateConstants(
 }
 
 
-bool resolver::ResolverNvidiaEthash::executeSync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaEthash::executeSync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    ethashSearch(cuStream[currentIndexStream],
-                 &parameters.resultCache[currentIndexStream],
-                 blocks,
-                 threads,
-                 jobInfo.nonce);
+    ethashSearch(
+        cuStream[currentIndexStream],
+        &parameters.resultCache[currentIndexStream],
+        blocks,
+        threads,
+        jobInfo.nonce);
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
@@ -180,17 +169,14 @@ bool resolver::ResolverNvidiaEthash::executeSync(
     algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
-        uint32_t const count
-        {
-            common::max_limit(resultCache->count, algo::ethash::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(resultCache->count, algo::ethash::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.count = count;
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = resultCache->nonces[i];
         }
@@ -204,8 +190,7 @@ bool resolver::ResolverNvidiaEthash::executeSync(
 }
 
 
-bool resolver::ResolverNvidiaEthash::executeAsync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaEthash::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
@@ -213,28 +198,26 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
-    ethashSearch(cuStream[currentIndexStream],
-                 &parameters.resultCache[currentIndexStream],
-                 blocks,
-                 threads,
-                 jobInfo.nonce);
+    ethashSearch(
+        cuStream[currentIndexStream],
+        &parameters.resultCache[currentIndexStream],
+        blocks,
+        threads,
+        jobInfo.nonce);
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
     algo::ethash::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
-        uint32_t const count
-        {
-            common::max_limit(resultCache->count, algo::ethash::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(resultCache->count, algo::ethash::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.count = count;
         resultShare.jobId = jobInfo.jobIDStr;
         resultShare.extraNonceSize = jobInfo.extraNonceSize;
 
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             resultShare.nonces[i] = resultCache->nonces[i];
         }
@@ -251,23 +234,18 @@ bool resolver::ResolverNvidiaEthash::executeAsync(
 }
 
 
-void resolver::ResolverNvidiaEthash::submit(
-    stratum::Stratum* const stratum)
+void resolver::ResolverNvidiaEthash::submit(stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize)
-                };
+                boost::json::array params{ resultShare.jobId, nonceHexa.str().substr(resultShare.extraNonceSize) };
 
                 stratum->miningSubmit(deviceId, params);
 
@@ -282,23 +260,18 @@ void resolver::ResolverNvidiaEthash::submit(
 }
 
 
-void resolver::ResolverNvidiaEthash::submit(
-    stratum::StratumSmartMining* const stratum)
+void resolver::ResolverNvidiaEthash::submit(stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize)
-                };
+                boost::json::array params{ resultShare.jobId, nonceHexa.str().substr(resultShare.extraNonceSize) };
 
                 stratum->miningSubmit(deviceId, params);
 

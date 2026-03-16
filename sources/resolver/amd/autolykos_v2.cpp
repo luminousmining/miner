@@ -1,8 +1,8 @@
 #include <CL/opencl.hpp>
 
+#include <algo/autolykos/autolykos.hpp>
 #include <algo/bitwise.hpp>
 #include <algo/keccak.hpp>
-#include <algo/autolykos/autolykos.hpp>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
 #include <common/custom.hpp>
@@ -11,8 +11,7 @@
 #include <resolver/amd/autolykos_v2.hpp>
 
 
-resolver::ResolverAmdAutolykosV2::ResolverAmdAutolykosV2():
-    resolver::ResolverAmd()
+resolver::ResolverAmdAutolykosV2::ResolverAmdAutolykosV2() : resolver::ResolverAmd()
 {
     algorithm = algo::ALGORITHM::AUTOLYKOS_V2;
 }
@@ -28,13 +27,10 @@ resolver::ResolverAmdAutolykosV2::~ResolverAmdAutolykosV2()
 }
 
 
-bool resolver::ResolverAmdAutolykosV2::updateMemory(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdAutolykosV2::updateMemory(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    if (   nullptr == clContext
-        || nullptr == clQueue[0]
-        || nullptr == clQueue[1])
+    if (nullptr == clContext || nullptr == clQueue[0] || nullptr == clQueue[1])
     {
         return false;
     }
@@ -45,19 +41,13 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t const totalMemoryNeeded
+    uint64_t const totalMemoryNeeded{ algo::LEN_HASH_256 + parameters.hostDagItemCount * algo::LEN_HASH_256
+                                      + algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256
+                                      + sizeof(algo::autolykos_v2::Result) };
+    if (0ull != deviceMemoryAvailable && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-          algo::LEN_HASH_256
-        + parameters.hostDagItemCount * algo::LEN_HASH_256
-        + algo::autolykos_v2::NONCES_PER_ITER * algo::LEN_HASH_256
-        + sizeof(algo::autolykos_v2::Result)
-    };
-    if (   0ull != deviceMemoryAvailable
-        && totalMemoryNeeded >= deviceMemoryAvailable)
-    {
-        resolverErr()
-            << "Device have not memory size available."
-            << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        resolverErr() << "Device have not memory size available."
+                      << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -73,8 +63,7 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
     parameters.dagCache.setCapacity(parameters.hostDagItemCount);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == parameters.BHashes.alloc(*clContext)
-        || false == parameters.dagCache.alloc(*clContext)
+    if (false == parameters.BHashes.alloc(*clContext) || false == parameters.dagCache.alloc(*clContext)
         || false == parameters.boundaryCache.alloc(clQueue[currentIndexStream], *clContext)
         || false == parameters.headerCache.alloc(clQueue[currentIndexStream], *clContext)
         || false == parameters.resultCache.alloc(clQueue[currentIndexStream], *clContext))
@@ -91,8 +80,7 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
         }
     }
 
-    if (   false == kernelGeneratorSearch.isBuilt()
-        || false == kernelGeneratorVerify.isBuilt())
+    if (false == kernelGeneratorSearch.isBuilt() || false == kernelGeneratorVerify.isBuilt())
     {
         if (false == buildSearch())
         {
@@ -111,8 +99,7 @@ bool resolver::ResolverAmdAutolykosV2::updateMemory(
 }
 
 
-bool resolver::ResolverAmdAutolykosV2::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdAutolykosV2::updateConstants(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
@@ -121,14 +108,14 @@ bool resolver::ResolverAmdAutolykosV2::updateConstants(
     parameters.hostDagItemCount = castU32(jobInfo.period);
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const* const boundary { jobInfo.boundary.word32 };
+    uint32_t const* const boundary{ jobInfo.boundary.word32 };
     if (false == parameters.boundaryCache.setBufferDevice(clQueue[currentIndexStream], boundary))
     {
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const* const header { jobInfo.headerHash.word32 };
+    uint32_t const* const header{ jobInfo.headerHash.word32 };
     if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
         return false;
@@ -152,7 +139,7 @@ bool resolver::ResolverAmdAutolykosV2::buildDAG()
     kernelGeneratorDAG.setKernelName("autolykos_v2_build_dag");
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == kernelGeneratorDAG.appendFile("kernel/common/rotate_byte.cl")
+    if (false == kernelGeneratorDAG.appendFile("kernel/common/rotate_byte.cl")
         || false == kernelGeneratorDAG.appendFile("kernel/crypto/blake2b_compress.cl")
         || false == kernelGeneratorDAG.appendFile("kernel/autolykos/autolykos_v2_dag.cl"))
     {
@@ -172,8 +159,7 @@ bool resolver::ResolverAmdAutolykosV2::buildDAG()
 
 bool resolver::ResolverAmdAutolykosV2::buildSearch()
 {
-    if (   false == buildKernelSearch()
-        || false == buildKernelVerify())
+    if (false == buildKernelSearch() || false == buildKernelVerify())
     {
         return false;
     }
@@ -185,18 +171,17 @@ bool resolver::ResolverAmdAutolykosV2::buildSearch()
 bool resolver::ResolverAmdAutolykosV2::fillDAG()
 {
     ////////////////////////////////////////////////////////////////////////////
-    auto& clKernel { kernelGeneratorDAG.clKernel };
+    auto& clKernel{ kernelGeneratorDAG.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, parameters.hostHeight));
     OPENCL_ER(clKernel.setArg(2u, parameters.hostPeriod));
-    uint32_t const blockDim { algo::autolykos_v2::AMD_BLOCK_DIM };
-    uint32_t globalDimX { ((parameters.hostPeriod / blockDim) + 1) * blockDim };
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(globalDimX, 1, 1),
-            cl::NDRange(blockDim,   1, 1)));
+    uint32_t const blockDim{ algo::autolykos_v2::AMD_BLOCK_DIM };
+    uint32_t       globalDimX{ ((parameters.hostPeriod / blockDim) + 1) * blockDim };
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(globalDimX, 1, 1),
+        cl::NDRange(blockDim, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     return true;
@@ -219,7 +204,7 @@ bool resolver::ResolverAmdAutolykosV2::buildKernelSearch()
     kernelGeneratorSearch.addDefine("NUM_SIZE_32", algo::autolykos_v2::NUM_SIZE_32);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == kernelGeneratorSearch.appendFile("kernel/autolykos/autolykos_v2_result.cl")
+    if (false == kernelGeneratorSearch.appendFile("kernel/autolykos/autolykos_v2_result.cl")
         || false == kernelGeneratorSearch.appendFile("kernel/common/rotate_byte.cl")
         || false == kernelGeneratorSearch.appendFile("kernel/crypto/blake2b.cl")
         || false == kernelGeneratorSearch.appendFile("kernel/autolykos/autolykos_v2_var_global.cl")
@@ -256,7 +241,7 @@ bool resolver::ResolverAmdAutolykosV2::buildKernelVerify()
     kernelGeneratorVerify.addDefine("NUM_SIZE_8", algo::autolykos_v2::NUM_SIZE_8);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == kernelGeneratorVerify.appendFile("kernel/autolykos/autolykos_v2_result.cl")
+    if (false == kernelGeneratorVerify.appendFile("kernel/autolykos/autolykos_v2_result.cl")
         || false == kernelGeneratorVerify.appendFile("kernel/common/rotate_byte.cl")
         || false == kernelGeneratorVerify.appendFile("kernel/crypto/blake2b.cl")
         || false == kernelGeneratorVerify.appendFile("kernel/autolykos/autolykos_v2_var_global.cl")
@@ -276,29 +261,27 @@ bool resolver::ResolverAmdAutolykosV2::buildKernelVerify()
 }
 
 
-bool resolver::ResolverAmdAutolykosV2::executeSync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdAutolykosV2::executeSync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     parameters.hostNonce = jobInfo.nonce;
 
     ////////////////////////////////////////////////////////////////////////////
-    auto& clKernel { kernelGeneratorSearch.clKernel };
+    auto& clKernel{ kernelGeneratorSearch.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(2u, *(parameters.BHashes.getBuffer())));
     OPENCL_ER(clKernel.setArg(3u, parameters.hostNonce));
     OPENCL_ER(clKernel.setArg(4u, parameters.hostPeriod));
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernel,
-            cl::NullRange,
-            cl::NDRange(maxGroupSizeSearch,                1, 1),
-            cl::NDRange(algo::autolykos_v2::AMD_BLOCK_DIM, 1, 1)));
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernel,
+        cl::NullRange,
+        cl::NDRange(maxGroupSizeSearch, 1, 1),
+        cl::NDRange(algo::autolykos_v2::AMD_BLOCK_DIM, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
-    auto& clKernelVerify { kernelGeneratorVerify.clKernel };
+    auto& clKernelVerify{ kernelGeneratorVerify.clKernel };
     OPENCL_ER(clKernelVerify.setArg(0u, *(parameters.boundaryCache.getBuffer())));
     OPENCL_ER(clKernelVerify.setArg(1u, *(parameters.dagCache.getBuffer())));
     OPENCL_ER(clKernelVerify.setArg(2u, *(parameters.BHashes.getBuffer())));
@@ -306,18 +289,15 @@ bool resolver::ResolverAmdAutolykosV2::executeSync(
     OPENCL_ER(clKernelVerify.setArg(4u, parameters.hostNonce));
     OPENCL_ER(clKernelVerify.setArg(5u, parameters.hostPeriod));
     OPENCL_ER(clKernelVerify.setArg(6u, parameters.hostHeight));
-    OPENCL_ER(
-        clQueue[currentIndexStream]->enqueueNDRangeKernel(
-            clKernelVerify,
-            cl::NullRange,
-            cl::NDRange(maxGroupSizeVerify,                1, 1),
-            cl::NDRange(algo::autolykos_v2::AMD_BLOCK_DIM, 1, 1)));
+    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
+        clKernelVerify,
+        cl::NullRange,
+        cl::NDRange(maxGroupSizeVerify, 1, 1),
+        cl::NDRange(algo::autolykos_v2::AMD_BLOCK_DIM, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == getResultCache(jobInfo.jobIDStr,
-                                jobInfo.extraNonceSize,
-                                jobInfo.extraNonce2Size))
+    if (false == getResultCache(jobInfo.jobIDStr, jobInfo.extraNonceSize, jobInfo.extraNonce2Size))
     {
         return false;
     }
@@ -327,8 +307,7 @@ bool resolver::ResolverAmdAutolykosV2::executeSync(
 }
 
 
-bool resolver::ResolverAmdAutolykosV2::executeAsync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverAmdAutolykosV2::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     return executeSync(jobInfo);
 }
@@ -336,11 +315,11 @@ bool resolver::ResolverAmdAutolykosV2::executeAsync(
 
 bool resolver::ResolverAmdAutolykosV2::getResultCache(
     std::string const& _jobId,
-    uint32_t const extraNonceSize,
-    uint32_t const extraNonce2Size)
+    uint32_t const     extraNonceSize,
+    uint32_t const     extraNonce2Size)
 {
     algo::autolykos_v2::Result data{};
-    algo::hash256 boundary{};
+    algo::hash256              boundary{};
 
     ////////////////////////////////////////////////////////////////////////////
     if (false == parameters.resultCache.getBufferHost(clQueue[currentIndexStream], &data))
@@ -357,25 +336,17 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
     ////////////////////////////////////////////////////////////////////////////
     if (true == data.found)
     {
-        uint32_t const count
-        {
-            common::max_limit(data.count, algo::autolykos_v2::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(data.count, algo::autolykos_v2::MAX_RESULT) };
 
         uint32_t indexValidNonce{ 0u };
-        for (uint32_t i { 0u }; i < count; ++i)
+        for (uint32_t i{ 0u }; i < count; ++i)
         {
             auto const nonce{ data.nonces[i] };
-            auto const isValid
-            {
-                algo::autolykos_v2::mhssamadani::isValidShare
-                (
-                    parameters.hostHeader,
-                    boundary,
-                    nonce,
-                    parameters.hostHeight
-                )
-            };
+            auto const isValid{ algo::autolykos_v2::mhssamadani::isValidShare(
+                parameters.hostHeader,
+                boundary,
+                nonce,
+                parameters.hostHeight) };
             resolverDebug() << "test nonce[" << std::hex << nonce << "] is " << std::boolalpha << isValid;
             if (true == isValid)
             {
@@ -404,30 +375,25 @@ bool resolver::ResolverAmdAutolykosV2::getResultCache(
 }
 
 
-void resolver::ResolverAmdAutolykosV2::submit(
-    stratum::Stratum* const stratum)
+void resolver::ResolverAmdAutolykosV2::submit(stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize),
-                    nonceHexa.str()
-                };
+                boost::json::array params{ resultShare.jobId,
+                                           nonceHexa.str().substr(resultShare.extraNonceSize),
+                                           nonceHexa.str() };
 
                 stratum->miningSubmit(deviceId, params);
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
     }
 
@@ -436,30 +402,25 @@ void resolver::ResolverAmdAutolykosV2::submit(
 }
 
 
-void resolver::ResolverAmdAutolykosV2::submit(
-    stratum::StratumSmartMining* const stratum)
+void resolver::ResolverAmdAutolykosV2::submit(stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {
         if (false == isStale(resultShare.jobId))
         {
-            for (uint32_t i { 0u }; i < resultShare.count; ++i)
+            for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
                 nonceHexa << std::hex << resultShare.nonces[i];
 
-                boost::json::array params
-                {
-                    resultShare.jobId,
-                    nonceHexa.str().substr(resultShare.extraNonceSize),
-                    nonceHexa.str()
-                };
+                boost::json::array params{ resultShare.jobId,
+                                           nonceHexa.str().substr(resultShare.extraNonceSize),
+                                           nonceHexa.str() };
 
                 stratum->miningSubmit(deviceId, params);
 
                 resultShare.nonces[i] = 0ull;
             }
-
         }
     }
 

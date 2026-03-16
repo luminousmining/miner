@@ -260,8 +260,8 @@ loopDoWork()
 Each GPU has two streams (CUDA) or two command queues (OpenCL). This avoids stalling the GPU:
 
 ```
-Iteration N:   [Kernel on stream 0] ──────────┐
-Iteration N+1: [Kernel on stream 1] ──────────┼──► GPU runs concurrently
+Iteration N:   [Kernel on stream 0]  ──────────┐
+Iteration N+1: [Kernel on stream 1]  ──────────┼──► GPU runs concurrently
                                                │
 Read results:  [Read stream 0 result] ◄────────┘   (stream 0 already done)
 ```

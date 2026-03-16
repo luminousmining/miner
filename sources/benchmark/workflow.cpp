@@ -1,19 +1,18 @@
-#include <boost/json.hpp>
 #include <fstream>
+
+#include <boost/json.hpp>
 
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/hash_utils.hpp>
-#include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
-#include <common/formater_hashrate.hpp>
-#include <common/log/log.hpp>
+#include <benchmark/workflow.hpp>
 #include <common/custom.hpp>
 #include <common/date.hpp>
+#include <common/formater_hashrate.hpp>
+#include <common/log/log.hpp>
 
 
-benchmark::BenchmarkWorkflow::BenchmarkWorkflow(
-    [[maybe_unused]] bool const nvidia,
-    [[maybe_unused]] bool const amd)
+benchmark::BenchmarkWorkflow::BenchmarkWorkflow([[maybe_unused]] bool const nvidia, [[maybe_unused]] bool const amd)
 {
 #if defined(CUDA_ENABLE)
     enableNvidia = nvidia;
@@ -109,8 +108,7 @@ void benchmark::BenchmarkWorkflow::setGrid(uint32_t const _threads, uint32_t _bl
 }
 
 
-void benchmark::BenchmarkWorkflow::startChrono(
-    std::string const& benchName)
+void benchmark::BenchmarkWorkflow::startChrono(std::string const& benchName)
 {
     currentBenchName = benchName;
     stats.setChronoUnit(common::CHRONO_UNIT::US);
@@ -119,8 +117,7 @@ void benchmark::BenchmarkWorkflow::startChrono(
 }
 
 
-void benchmark::BenchmarkWorkflow::stopChrono(
-    common::Dashboard& dashboard)
+void benchmark::BenchmarkWorkflow::stopChrono(common::Dashboard& dashboard)
 {
     ////////////////////////////////////////////////////////////////////////////
     stats.increaseKernelExecuted();
@@ -141,21 +138,15 @@ void benchmark::BenchmarkWorkflow::stopChrono(
     snapshots.emplace_back(snapshot);
 
     ////////////////////////////////////////////////////////////////////////////
-    dashboard.addLine
-    (
-        {
-            currentBenchName,
-            std::to_string(blocks),
-            std::to_string(threads),
-            common::hashrateToString(hashrate),
-            std::to_string(stats.getElapsed())
-        }
-    );
+    dashboard.addLine({ currentBenchName,
+                        std::to_string(blocks),
+                        std::to_string(threads),
+                        common::hashrateToString(hashrate),
+                        std::to_string(stats.getElapsed()) });
 }
 
 
-common::Dashboard benchmark::BenchmarkWorkflow::createNewDashboard(
-    std::string const& title)
+common::Dashboard benchmark::BenchmarkWorkflow::createNewDashboard(std::string const& title)
 {
     common::Dashboard dashboard{};
 
@@ -175,12 +166,12 @@ common::Dashboard benchmark::BenchmarkWorkflow::createNewDashboard(
 
 void benchmark::BenchmarkWorkflow::writeReport()
 {
-     boost::json::object root{};
+    boost::json::object root{};
 #if defined(CUDA_ENABLE)
-     boost::json::array nvidia{};
+    boost::json::array nvidia{};
 #endif
 #if defined(AMD_ENABLE)
-     boost::json::array amd{};
+    boost::json::array amd{};
 #endif
 
     for (auto const& snapshot : snapshots)
@@ -190,7 +181,7 @@ void benchmark::BenchmarkWorkflow::writeReport()
         data["threads"] = snapshot.threads;
         data["blocks"] = snapshot.blocks;
         data["perform"] = snapshot.perform;
-        switch(snapshot.deviceType)
+        switch (snapshot.deviceType)
         {
 #if defined(CUDA_ENABLE)
             case device::DEVICE_TYPE::NVIDIA:
@@ -219,7 +210,7 @@ void benchmark::BenchmarkWorkflow::writeReport()
 #if defined(AMD_ENABLE)
     root["amd"] = amd;
 #endif
-    
+
     std::ofstream output{ "benchmark.json" };
     if (output.is_open())
     {
@@ -230,8 +221,7 @@ void benchmark::BenchmarkWorkflow::writeReport()
 }
 
 
-bool benchmark::BenchmarkWorkflow::initCleanResult(
-    [[maybe_unused]] t_result** result)
+bool benchmark::BenchmarkWorkflow::initCleanResult([[maybe_unused]] t_result** result)
 {
 #if defined(CUDA_ENABLE)
     if (nullptr == *result)
@@ -248,8 +238,7 @@ bool benchmark::BenchmarkWorkflow::initCleanResult(
 }
 
 
-bool benchmark::BenchmarkWorkflow::initCleanResult32(
-    [[maybe_unused]] t_result_32** result)
+bool benchmark::BenchmarkWorkflow::initCleanResult32([[maybe_unused]] t_result_32** result)
 {
 #if defined(CUDA_ENABLE)
     if (nullptr == *result)
@@ -278,8 +267,7 @@ bool benchmark::BenchmarkWorkflow::initCleanResult32(
 }
 
 
-bool benchmark::BenchmarkWorkflow::initCleanResult64(
-    [[maybe_unused]] t_result_64** result)
+bool benchmark::BenchmarkWorkflow::initCleanResult64([[maybe_unused]] t_result_64** result)
 {
 #if defined(CUDA_ENABLE)
     if (nullptr == *result)

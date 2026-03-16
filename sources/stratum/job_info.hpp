@@ -15,21 +15,21 @@ namespace stratum
         boost::mutex mtx{};
 
         // Common
-        int32_t        epoch{ -1 };
-        algo::hash256  jobID{};
-        algo::hash256  headerHash{};
-        algo::hash256  seedHash{};
-        algo::hash256  boundary{};
-        uint64_t       nonce{ 0ull };
-        uint64_t       startNonce{ 0ull };
-        uint64_t       extraNonce{ 0ull };
-        uint64_t       gapNonce{ 0x1ull };
-        uint64_t       blockNumber{ 0ull };
-        uint64_t       period{ 0ull };
-        uint64_t       boundaryU64{ 0ull };
-        uint32_t       targetBits{ 0u };
-        bool           cleanJob{ false };
-        std::string    jobIDStr{};
+        int32_t       epoch{ -1 };
+        algo::hash256 jobID{};
+        algo::hash256 headerHash{};
+        algo::hash256 seedHash{};
+        algo::hash256 boundary{};
+        uint64_t      nonce{ 0ull };
+        uint64_t      startNonce{ 0ull };
+        uint64_t      extraNonce{ 0ull };
+        uint64_t      gapNonce{ 0x1ull };
+        uint64_t      blockNumber{ 0ull };
+        uint64_t      period{ 0ull };
+        uint64_t      boundaryU64{ 0ull };
+        uint32_t      targetBits{ 0u };
+        bool          cleanJob{ false };
+        std::string   jobIDStr{};
 
         // SHA56
         algo::hash1024 coinb1{};
@@ -37,14 +37,14 @@ namespace stratum
         algo::hash256  merkletree[12]{};
 
         // ETHASH && PROGPOW
-        uint32_t       extraNonceSize{ 0u };
-        uint32_t       extraNonce2Size{ 0u };
+        uint32_t extraNonceSize{ 0u };
+        uint32_t extraNonce2Size{ 0u };
 
         // BLAKE3
         algo::hash3072 headerBlob{};
         algo::hash256  targetBlob{};
-        uint32_t       fromGroup { 0u };
-        uint32_t       toGroup { 0u };
+        uint32_t       fromGroup{ 0u };
+        uint32_t       toGroup{ 0u };
 
         StratumJobInfo(StratumJobInfo&& obj) = delete;
         StratumJobInfo(StratumJobInfo const& obj) = delete;

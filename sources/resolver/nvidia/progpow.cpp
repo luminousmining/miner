@@ -1,17 +1,15 @@
-#include <algo/hash_utils.hpp>
 #include <algo/ethash/ethash.hpp>
-#include <common/error/cuda_error.hpp>
+#include <algo/hash_utils.hpp>
+#include <algo/progpow/cuda/progpow.cuh>
 #include <common/cast.hpp>
 #include <common/chrono.hpp>
 #include <common/config.hpp>
+#include <common/error/cuda_error.hpp>
 #include <common/log/log.hpp>
 #include <resolver/nvidia/progpow.hpp>
 
-#include <algo/progpow/cuda/progpow.cuh>
 
-
-resolver::ResolverNvidiaProgPOW::ResolverNvidiaProgPOW():
-    resolver::ResolverNvidia()
+resolver::ResolverNvidiaProgPOW::ResolverNvidiaProgPOW() : resolver::ResolverNvidia()
 {
     if (algorithm == algo::ALGORITHM::UNKNOWN)
     {
@@ -26,15 +24,13 @@ resolver::ResolverNvidiaProgPOW::~ResolverNvidiaProgPOW()
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::updateContext(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
     common::Config& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::ethash::ContextGenerator::instance().build
-    (
+    algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
         jobInfo.epoch,
@@ -43,36 +39,30 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        config.deviceAlgorithm.ethashBuildLightCacheCPU
-    );
+        config.deviceAlgorithm.ethashBuildLightCacheCPU);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   context.lightCache.numberItem == 0ull
-        || context.lightCache.size == 0ull
-        || context.dagCache.numberItem == 0ull
+    if (context.lightCache.numberItem == 0ull || context.lightCache.size == 0ull || context.dagCache.numberItem == 0ull
         || context.dagCache.size == 0ull)
     {
-        resolverErr()
-            << "\n"
-            << "=========================================================================" << "\n"
-            << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
-            << "context.lightCache.size: " << context.lightCache.size << "\n"
-            << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
-            << "context.dagCache.size: " << context.dagCache.size << "\n"
-            << "=========================================================================" << "\n"
-            ;
+        resolverErr() << "\n"
+                      << "========================================================================="
+                      << "\n"
+                      << "context.lightCache.numberItem: " << context.lightCache.numberItem << "\n"
+                      << "context.lightCache.size: " << context.lightCache.size << "\n"
+                      << "context.dagCache.numberItem: " << context.dagCache.numberItem << "\n"
+                      << "context.dagCache.size: " << context.dagCache.size << "\n"
+                      << "========================================================================="
+                      << "\n";
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     uint64_t const totalMemoryNeeded{ context.dagCache.size + context.lightCache.size };
-    if (   0ull != deviceMemoryAvailable
-        && totalMemoryNeeded >= deviceMemoryAvailable)
+    if (0ull != deviceMemoryAvailable && totalMemoryNeeded >= deviceMemoryAvailable)
     {
-        resolverErr()
-            << "Device have not memory size available."
-            << " Needed " << totalMemoryNeeded
-            << ", memory available " << deviceMemoryAvailable;
+        resolverErr() << "Device have not memory size available."
+                      << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
         return false;
     }
 
@@ -81,11 +71,10 @@ bool resolver::ResolverNvidiaProgPOW::updateContext(
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::updateMemory(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaProgPOW::updateMemory(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Chrono chrono{};
+    common::Chrono  chrono{};
     common::Config& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -95,9 +84,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == progpowInitMemory(context,
-                                   parameters,
-                                   !config.deviceAlgorithm.ethashBuildLightCacheCPU))
+    if (false == progpowInitMemory(context, parameters, !config.deviceAlgorithm.ethashBuildLightCacheCPU))
     {
         return false;
     }
@@ -108,8 +95,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
         ///////////////////////////////////////////////////////////////////////
         resolverInfo() << "Building LightCache on GPU";
         chrono.start();
-        if (false == progpowBuildLightCache(cuStream[currentIndexStream],
-                                            parameters.seedCache))
+        if (false == progpowBuildLightCache(cuStream[currentIndexStream], parameters.seedCache))
         {
             return false;
         }
@@ -127,9 +113,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
     ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
     chrono.start();
-    if (false == progpowBuildDag(cuStream[currentIndexStream],
-                                 dagItemParents,
-                                 castU32(context.dagCache.numberItem)))
+    if (false == progpowBuildDag(cuStream[currentIndexStream], dagItemParents, castU32(context.dagCache.numberItem)))
     {
         return false;
     }
@@ -144,8 +128,7 @@ bool resolver::ResolverNvidiaProgPOW::updateMemory(
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::updateConstants(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaProgPOW::updateConstants(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     auto const& config{ common::Config::instance() };
@@ -169,9 +152,7 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
             }
 
             ///////////////////////////////////////////////////////////////////
-            if (true == kernelGenerator.occupancy(cuDevice,
-                                                  getThreads(),
-                                                  getBlocks()))
+            if (true == kernelGenerator.occupancy(cuDevice, getThreads(), getBlocks()))
             {
                 setThreads(kernelGenerator.maxThreads);
                 setBlocks(kernelGenerator.maxBlocks);
@@ -192,12 +173,10 @@ bool resolver::ResolverNvidiaProgPOW::updateConstants(
                 return false;
             }
         }
-
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == progpowUpdateConstants(jobInfo.headerHash.word32,
-                                        parameters.headerCache))
+    if (false == progpowUpdateConstants(jobInfo.headerHash.word32, parameters.headerCache))
     {
         return false;
     }
@@ -212,13 +191,14 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     auto const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
-    algo::progpow::writeMathRandomKernelCuda(progpowVersion,
-                                             deviceId,
-                                             currentPeriod,
-                                             countCache,
-                                             countMath,
-                                             regs,
-                                             moduleSource);
+    algo::progpow::writeMathRandomKernelCuda(
+        progpowVersion,
+        deviceId,
+        currentPeriod,
+        countCache,
+        countMath,
+        regs,
+        moduleSource);
 
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.clear();
@@ -261,7 +241,7 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const dagSize { castU32(context.dagCache.numberItem / 2ull) };
+    uint32_t const dagSize{ castU32(context.dagCache.numberItem / 2ull) };
     kernelGenerator.addDefine("LANES", algo::progpow::LANES);
     kernelGenerator.addDefine("REGS", regs);
     kernelGenerator.addDefine("MODULE_CACHE", algo::progpow::MODULE_CACHE);
@@ -284,26 +264,33 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
 
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
-    std::string const fileSequenceMathPeriod
-    {
-        "kernel/progpow/sequence_math_random"s
-        + "_"s + std::to_string(deviceId)
-        + "_"s + std::to_string(currentPeriod)
-        + ".cuh"s
-    };
-    std::string kernelDerived{};
+    std::string const fileSequenceMathPeriod{ "kernel/progpow/sequence_math_random"s + "_"s + std::to_string(deviceId)
+                                              + "_"s + std::to_string(currentPeriod) + ".cuh"s };
+    std::string       kernelDerived{};
     switch (progpowVersion)
     {
-        case algo::progpow::VERSION::V_0_9_2:     /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_3:     /* algo::progpow::VERSION::V_0_9_4 */
-        case algo::progpow::VERSION::V_0_9_4:     kernelDerived.assign("progpow_functions.cuh"); break;
-        case algo::progpow::VERSION::KAWPOW:      kernelDerived.assign("kawpow_functions.cuh"); break;
-        case algo::progpow::VERSION::MEOWPOW:     kernelDerived.assign("meowpow_functions.cuh"); break;
-        case algo::progpow::VERSION::FIROPOW:     kernelDerived.assign("firopow_functions.cuh"); break;
-        case algo::progpow::VERSION::EVRPROGPOW:  kernelDerived.assign("evrprogpow_functions.cuh"); break;
-        case algo::progpow::VERSION::PROGPOWQUAI: kernelDerived.assign("progpow_functions.cuh"); break;
+        case algo::progpow::VERSION::V_0_9_2: /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_3: /* algo::progpow::VERSION::V_0_9_4 */
+        case algo::progpow::VERSION::V_0_9_4:
+            kernelDerived.assign("progpow_functions.cuh");
+            break;
+        case algo::progpow::VERSION::KAWPOW:
+            kernelDerived.assign("kawpow_functions.cuh");
+            break;
+        case algo::progpow::VERSION::MEOWPOW:
+            kernelDerived.assign("meowpow_functions.cuh");
+            break;
+        case algo::progpow::VERSION::FIROPOW:
+            kernelDerived.assign("firopow_functions.cuh");
+            break;
+        case algo::progpow::VERSION::EVRPROGPOW:
+            kernelDerived.assign("evrprogpow_functions.cuh");
+            break;
+        case algo::progpow::VERSION::PROGPOWQUAI:
+            kernelDerived.assign("progpow_functions.cuh");
+            break;
     }
-    if (   false == kernelGenerator.appendFile("kernel/common/be_u32.cuh")
+    if (false == kernelGenerator.appendFile("kernel/common/be_u32.cuh")
         || false == kernelGenerator.appendFile("kernel/common/be_u64.cuh")
         || false == kernelGenerator.appendFile("kernel/common/get_lane_id.cuh")
         || false == kernelGenerator.appendFile("kernel/common/register.cuh")
@@ -328,9 +315,7 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
     IS_NULL(cuProperties);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.build(deviceId,
-                                       castU32(cuProperties->major),
-                                       castU32(cuProperties->minor)))
+    if (false == kernelGenerator.build(deviceId, castU32(cuProperties->major), castU32(cuProperties->minor)))
     {
         return false;
     }
@@ -339,42 +324,34 @@ bool resolver::ResolverNvidiaProgPOW::buildSearch()
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::executeSync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaProgPOW::executeSync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t nonce{ jobInfo.nonce };
-    uint64_t boundary{ jobInfo.boundaryU64 };
+    uint64_t               nonce{ jobInfo.nonce };
+    uint64_t               boundary{ jobInfo.boundaryU64 };
     algo::progpow::Result* result{ &parameters.resultCache[currentIndexStream] };
-    void* arguments[]
-    {
-        &nonce,
-        &boundary,
-        &parameters.headerCache,
-        &parameters.dagCache,
-        &result
-    };
+    void*                  arguments[]{ &nonce, &boundary, &parameters.headerCache, &parameters.dagCache, &result };
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_ER(
-        cuLaunchKernel(
-            kernelGenerator.cuFunction,
-            blocks,  1u, 1u,
-            threads, 1u, 1u,
-            0u,
-            cuStream[currentIndexStream],
-            arguments,
-            nullptr));
+    CU_ER(cuLaunchKernel(
+        kernelGenerator.cuFunction,
+        blocks,
+        1u,
+        1u,
+        threads,
+        1u,
+        1u,
+        0u,
+        cuStream[currentIndexStream],
+        arguments,
+        nullptr));
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == result->found)
     {
-        uint32_t const count
-        {
-            common::max_limit(result->count, algo::progpow::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(result->count, algo::progpow::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.count = count;
@@ -399,8 +376,7 @@ bool resolver::ResolverNvidiaProgPOW::executeSync(
 }
 
 
-bool resolver::ResolverNvidiaProgPOW::executeAsync(
-    stratum::StratumJobInfo const& jobInfo)
+bool resolver::ResolverNvidiaProgPOW::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
@@ -408,36 +384,29 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
-    uint64_t nonce{ jobInfo.nonce };
-    uint64_t boundary{ jobInfo.boundaryU64 };
+    uint64_t               nonce{ jobInfo.nonce };
+    uint64_t               boundary{ jobInfo.boundaryU64 };
     algo::progpow::Result* result{ &parameters.resultCache[currentIndexStream] };
-    void* arguments[]
-    {
-        &nonce,
-        &boundary,
-        &parameters.headerCache,
-        &parameters.dagCache,
-        &result
-    };
-    CU_ER(
-        cuLaunchKernel(
-            kernelGenerator.cuFunction,
-            blocks,  1u, 1u,
-            threads, 1u, 1u,
-            0u,
-            cuStream[currentIndexStream],
-            arguments,
-            nullptr));
+    void*                  arguments[]{ &nonce, &boundary, &parameters.headerCache, &parameters.dagCache, &result };
+    CU_ER(cuLaunchKernel(
+        kernelGenerator.cuFunction,
+        blocks,
+        1u,
+        1u,
+        threads,
+        1u,
+        1u,
+        0u,
+        cuStream[currentIndexStream],
+        arguments,
+        nullptr));
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
     algo::progpow::Result* resultCache{ &parameters.resultCache[currentIndexStream] };
     if (true == resultCache->found)
     {
-        uint32_t const count
-        {
-            common::max_limit(resultCache->count, algo::progpow::MAX_RESULT)
-        };
+        uint32_t const count{ common::max_limit(resultCache->count, algo::progpow::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.count = count;
@@ -465,8 +434,7 @@ bool resolver::ResolverNvidiaProgPOW::executeAsync(
 }
 
 
-void resolver::ResolverNvidiaProgPOW::submit(
-    stratum::Stratum* const stratum)
+void resolver::ResolverNvidiaProgPOW::submit(stratum::Stratum* const stratum)
 {
     if (true == resultShare.found)
     {
@@ -480,23 +448,15 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                switch(stratum->stratumType)
+                switch (stratum->stratumType)
                 {
                     case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
-                        nonceHexa
-                            << "0x"
-                            << std::hex
-                            << std::setfill('0')
-                            << std::setw(16)
-                            << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -505,12 +465,9 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << std::hex << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str().substr(resultShare.extraNonceSize),
-                            stratum->workerID
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str().substr(resultShare.extraNonceSize),
+                                                   stratum->workerID };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -518,18 +475,10 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     case stratum::STRATUM_TYPE::ETHPROXY:
                     {
                         std::stringstream nonceHexa;
-                        nonceHexa
-                            << "0x"
-                            << std::hex
-                            << std::setfill('0')
-                            << std::setw(16)
-                            << resultShare.nonces[i];
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
 
-                        boost::json::array params
-                        {
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -546,8 +495,7 @@ void resolver::ResolverNvidiaProgPOW::submit(
 }
 
 
-void resolver::ResolverNvidiaProgPOW::submit(
-    stratum::StratumSmartMining* const stratum)
+void resolver::ResolverNvidiaProgPOW::submit(stratum::StratumSmartMining* const stratum)
 {
     if (true == resultShare.found)
     {
@@ -561,18 +509,15 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     hash[j] = resultShare.hash[i][j];
                 }
 
-                switch(stratum->stratumPool->stratumType)
+                switch (stratum->stratumPool->stratumType)
                 {
                     case stratum::STRATUM_TYPE::ETHEREUM_V1:
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -581,12 +526,9 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << std::hex << resultShare.nonces[i];
-                        boost::json::array params
-                        {
-                            resultShare.jobId,
-                            nonceHexa.str().substr(resultShare.extraNonceSize),
-                            stratum->stratumPool->workerID
-                        };
+                        boost::json::array params{ resultShare.jobId,
+                                                   nonceHexa.str().substr(resultShare.extraNonceSize),
+                                                   stratum->stratumPool->workerID };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -594,18 +536,10 @@ void resolver::ResolverNvidiaProgPOW::submit(
                     case stratum::STRATUM_TYPE::ETHPROXY:
                     {
                         std::stringstream nonceHexa;
-                        nonceHexa
-                            << "0x"
-                            << std::hex
-                            << std::setfill('0')
-                            << std::setw(16)
-                            << resultShare.nonces[i];
+                        nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
 
-                        boost::json::array params
-                        {
-                            nonceHexa.str(),
-                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
-                        };
+                        boost::json::array params{ nonceHexa.str(),
+                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
 
                         stratum->miningSubmit(deviceId, params);
                         break;

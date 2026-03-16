@@ -18,34 +18,38 @@ namespace algo
 
         namespace nvidia
         {
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
 
         namespace amd
         {
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
     }
 }

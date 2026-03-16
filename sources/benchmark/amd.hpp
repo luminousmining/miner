@@ -6,8 +6,8 @@
 
 #include <CL/opencl.hpp>
 
-#include <common/log/log.hpp>
 #include <common/cast.hpp>
+#include <common/log/log.hpp>
 
 
 namespace benchmark
@@ -19,10 +19,9 @@ namespace benchmark
         cl::CommandQueue clQueue{ nullptr };
     };
 
-    uint32_t getDeviceCount();
+    uint32_t                  getDeviceCount();
     std::optional<cl::Device> getDevice(uint32_t const index);
-    void cleanUpOpenCL(benchmark::PropertiesAmd& properties);
-    bool initializeOpenCL(benchmark::PropertiesAmd& properties,
-                          uint32_t const index = 0u);
+    void                      cleanUpOpenCL(benchmark::PropertiesAmd& properties);
+    bool                      initializeOpenCL(benchmark::PropertiesAmd& properties, uint32_t const index = 0u);
 }
 #endif

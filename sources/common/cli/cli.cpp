@@ -22,416 +22,299 @@ common::Cli::Cli()
 {
     using namespace boost::program_options;
 
-    description.add_options()
-        (
-            "help",
-            "Help screen."
-        )
+    description.add_options()("help", "Help screen.")
 
         // Logger
-        (
-            "level_log",
-            value<std::string>(),
-            "[OPTIONAL] Set level of log.\n"
-            "--level_log=<debug|info|error|warning>"
-        )
-        (
+        ("level_log",
+         value<std::string>(),
+         "[OPTIONAL] Set level of log.\n"
+         "--level_log=<debug|info|error|warning>")(
             "log_file",
             value<std::string>(),
             "[OPTIONAL] Set path to write log.\n"
-            "--log_file=PATH"
-        )
-        (
+            "--log_file=PATH")(
             "log_interval_hash",
             value<uint32_t>(),
             "[OPTIONAL] Set the time interval (in milliseconds) between logs of information about the hashrate.\n"
-            "--log_interval_hash=10000"
-        )
-        (
+            "--log_interval_hash=10000")(
             "log_new_job",
             value<bool>(),
             "[OPTIONAL] Show log when receive new job.\n"
             "Default value is true.\n"
-            "--log_new_job=true"
-        )
+            "--log_new_job=true")
 
         // Environment
-        (
-            "env_cuda_lazy",
-            value<bool>(),
-            "[OPTIONAL] Set var env CUDA_MODULE_LOADING\n"
-            "true: CUDA_MODULE_LOADING=LAZY\n"
-            "false: CUDA_MODULE_LOADING=EAGER\n"
-            "--env_cuda_lazy=false"
-        )
-        (
+        ("env_cuda_lazy",
+         value<bool>(),
+         "[OPTIONAL] Set var env CUDA_MODULE_LOADING\n"
+         "true: CUDA_MODULE_LOADING=LAZY\n"
+         "false: CUDA_MODULE_LOADING=EAGER\n"
+         "--env_cuda_lazy=false")(
             "env_cuda_device_order",
             value<std::string>(),
             "[OPTIONAL] Set var env CUDA_DEVICE_ORDE <PCI_BUS_ID|FASTEST_FIRST>\n"
-            "--env_cuda_device_order=PCI_BUS_ID"
-        )
-        (
+            "--env_cuda_device_order=PCI_BUS_ID")(
             "env_gpu_heap_size",
             value<uint32_t>(),
             "[OPTIONAL] Set var env GPU_MAX_HEAP_SIZE\n"
             "Default value is GPU_MAX_HEAP_SIZE=100\n"
             "--env_gpu_heap_size=100"
 
-        )
-        (
+            )(
             "env_gpu_max_alloc_percent",
             value<uint32_t>(),
             "[OPTIONAL] Set var env GPU_MAX_ALLOC_PERCENT\n"
             "Default value is GPU_MAX_ALLOC_PERCENT=100\n"
-            "--env_gpu_max_alloc_percent=100"
-        )
-        (
+            "--env_gpu_max_alloc_percent=100")(
             "env_gpu_single_alloc_percent",
             value<uint32_t>(),
             "[OPTIONAL] Set var env GPU_SINGLE_ALLOC_PERCENT\n"
             "Default value is GPU_SINGLE_ALLOC_PERCENT=100\n"
-            "--env_gpu_single_alloc_percent=100"
-        )
+            "--env_gpu_single_alloc_percent=100")
 
         // Common
-        (
-            "price_kwh",
-            value<double>(),
-            "[OPTIONAL] Set the price of elec (kWh).\n"
-            "--price_kwh=0.5"
-        )
+        ("price_kwh",
+         value<double>(),
+         "[OPTIONAL] Set the price of elec (kWh).\n"
+         "--price_kwh=0.5")
 
         // Pool Connection
-        (
-            "host",
-            value<std::string>(),
-            "[MANDATORY] Hostname of the pool.\n"
-            "--host=\"ethw.2miners.com\""
-        )
-        (
+        ("host",
+         value<std::string>(),
+         "[MANDATORY] Hostname of the pool.\n"
+         "--host=\"ethw.2miners.com\"")(
             "stratum",
             value<std::string>(),
             "[OPTIONAL] Stratum type.\n"
             "Default value is v1.\n"
-            "--stratum=<v1|v2|proxy>"
-        )
-        (
+            "--stratum=<v1|v2|proxy>")(
             "port",
             value<uint32_t>(),
             "[MANDATORY] Port of the pool.\n"
-            "--port=2020"
-        )
-        (
+            "--port=2020")(
             "wallet",
             value<std::string>(),
             "[MANDATORY] Wallet address.\n"
-            "-wallet=\"WALLET\""
-        )
-        (
+            "-wallet=\"WALLET\"")(
             "algo",
             value<std::string>(),
             "[MANDATORY] <ethash>\n"
-            "--algo=\"ethash\""
-        )
-        (
+            "--algo=\"ethash\"")(
             "workername",
             value<std::string>(),
             "[MANDATORY] Name of the rig.\n"
-            "--workername=\"MyWorkerName\""
-        )
-        (
+            "--workername=\"MyWorkerName\"")(
             "password",
             value<std::string>(),
             "[OPTIONAL] Account password.\n"
-            "--password=\"MyPassword\""
-        )
-        (
+            "--password=\"MyPassword\"")(
             "ssl",
             value<bool>(),
             "[OPTIONAL] Enable or not the SSL.\n"
             "Default value is false.\n"
-            "--ssl=<true|false>."
-        )
-        (
+            "--ssl=<true|false>.")(
             "stale",
             value<bool>(),
             "[OPTIONAL] Enable stale share.\n"
             "Default value is false.\n"
-            "--stale=<true|false>"
-        )
-        (
+            "--stale=<true|false>")(
             "socks5",
             value<bool>(),
             "[OPTIONAL] Enable SOCKS5 proxy.\n"
             "Default value is false.\n"
-            "--socks5=<true|false>."
-        )
-        (
+            "--socks5=<true|false>.")(
             "socks_port",
             value<uint32_t>(),
             "[OPTIONAL] Port of the SOCKS proxy.\n"
-            "--socks_port=9050"
-        )
-        (
+            "--socks_port=9050")(
             "socks_host",
             value<std::string>(),
             "[OPTIONAL] Host Address of the SOCKS proxy.\n"
-            "--socks_host=127.0.0.1"
-        )
+            "--socks_host=127.0.0.1")
 
         // Pool Custom
-        (
-            "rm_rvn_btc",
-            value<std::string>(),
-            "[OPTIONAL] Mining on ravenminer RVN with BTC wallet\n"
-            "--rm_rvn_btc=WALLET"
-        )
-        (
+        ("rm_rvn_btc",
+         value<std::string>(),
+         "[OPTIONAL] Mining on ravenminer RVN with BTC wallet\n"
+         "--rm_rvn_btc=WALLET")(
             "rm_rvn_eth",
             value<std::string>(),
             "[OPTIONAL] Mining on ravenminer RVN with ETH wallet\n"
-            "--rm_rvn_eth=WALLET"
-        )
-        (
+            "--rm_rvn_eth=WALLET")(
             "rm_rvn_ltc",
             value<std::string>(),
             "[OPTIONAL] Mining on ravenminer RVN with LTC wallet\n"
-            "--rm_rvn_ltc=WALLET"
-        )
-        (
+            "--rm_rvn_ltc=WALLET")(
             "rm_rvn_bch",
             value<std::string>(),
             "[OPTIONAL] Mining on ravenminer RVN with BCH wallet\n"
-            "--rm_rvn_bch=WALLET"
-        )
-        (
+            "--rm_rvn_bch=WALLET")(
             "rm_rvn_ada",
             value<std::string>(),
             "[OPTIONAL] Mining on ravenminer RVN with ADA wallet\n"
-            "--rm_rvn_ada=WALLET"
-        )
-        (
+            "--rm_rvn_ada=WALLET")(
             "rm_rvn_dodge",
             value<std::string>(),
             "[OPTIONAL] Mining on ravenminer RVN with DODGE wallet\n"
-            "--rm_rvn_dodge=WALLET"
-        )
-        (
+            "--rm_rvn_dodge=WALLET")(
             "rm_rvn_matic",
             value<std::string>(),
             "[OPTIONAL] Mining on ravenminer RVN with MATIC wallet\n"
-            "--rm_rvn_matic=WALLET"
-        )
+            "--rm_rvn_matic=WALLET")
 
         // Device settings common
-        (
-            "nvidia",
-            value<bool>(),
-            "[OPTIONAL] Enable or disable device nvidia.\n"
-            "Default value is true.\n"
-            "--nvidia=<true|false>"
-        )
-        (
+        ("nvidia",
+         value<bool>(),
+         "[OPTIONAL] Enable or disable device nvidia.\n"
+         "Default value is true.\n"
+         "--nvidia=<true|false>")(
             "amd",
             value<bool>(),
             "[OPTIONAL] Enable or disable device amd.\n"
             "Default value is true.\n"
-            "--amd=<true|false>"
-        )
-        (
+            "--amd=<true|false>")(
             "cpu",
             value<bool>(),
             "[OPTIONAL] Enable or disable device cpu.\n"
             "Default value is false.\n"
-            "--cpu=<true|false>"
-        )
+            "--cpu=<true|false>")
 
         // AMD setting
-        (
-            "amd_host",
-            value<bool>(),
-            "[OPTIONAL] Set defaut hostname of pool for all gpu AMD.\n"
-            "If defined, the parameters amd_port and amd_algo must be defined.\n"
-            "--amd_host=\"ethw.2miners.com\""
-        )
-        (
+        ("amd_host",
+         value<bool>(),
+         "[OPTIONAL] Set defaut hostname of pool for all gpu AMD.\n"
+         "If defined, the parameters amd_port and amd_algo must be defined.\n"
+         "--amd_host=\"ethw.2miners.com\"")(
             "amd_port",
             value<uint32_t>(),
             "[OPTIONAL] Set port of the pool for all gpu AMD.\n"
             "If defined, the parameters amd_host and amd_algo must be defined.\n"
-            "--amd_port=2020"
-        )
-        (
+            "--amd_port=2020")(
             "amd_algo",
             value<std::string>(),
             "[MANDATORY] <ethash>\n"
             "If defined, the parameters amd_host and amd_port must be defined.\n"
-            "--amd_algo=\"ethash\""
-        )
+            "--amd_algo=\"ethash\"")
 
         // NVIDIA setting
-        (
-            "nvidia_host",
-            value<bool>(),
-            "[OPTIONAL] Set defaut hostname of pool for all gpu NVIDIA.\n"
-            "If defined, the parameters nvidia_port and nvidia_algo must be defined.\n"
-            "--nvidia_host=\"ethw.2miners.com\""
-        )
-        (
+        ("nvidia_host",
+         value<bool>(),
+         "[OPTIONAL] Set defaut hostname of pool for all gpu NVIDIA.\n"
+         "If defined, the parameters nvidia_port and nvidia_algo must be defined.\n"
+         "--nvidia_host=\"ethw.2miners.com\"")(
             "nvidia_port",
             value<uint32_t>(),
             "[OPTIONAL] Set port of the pool for all gpu NVIDIA.\n"
             "If defined, the parameters nvidia_host and nvidia_algo must be defined.\n"
-            "--nvidia_port=2020"
-        )
-        (
+            "--nvidia_port=2020")(
             "nvidia_algo",
             value<std::string>(),
             "[MANDATORY] <ethash>\n"
             "If defined, the parameters nvidia_host and nvidia_port must be defined.\n"
-            "--nvidia_algo=\"ethash\""
-        )
+            "--nvidia_algo=\"ethash\"")
 
         // Device setting custom
-        (
-            "devices_disable",
-            value<std::vector<std::string>>(&optionDeviceEnable)->multitoken(),
-            "[OPTIONAL] List device disable.\n"
-            "--devices_disable=0,1"
-        )
-        (
+        ("devices_disable",
+         value<std::vector<std::string>>(&optionDeviceEnable)->multitoken(),
+         "[OPTIONAL] List device disable.\n"
+         "--devices_disable=0,1")(
             "device_pool",
             value<std::vector<std::string>>(&optionDevicePool)->multitoken(),
             "[OPTIONAL] Define hostname pool for custom device.\n"
-            "--device_pool=0:ethw.2miners.com"
-        )
-        (
+            "--device_pool=0:ethw.2miners.com")(
             "device_port",
             value<std::vector<std::string>>(&optionDevicePort)->multitoken(),
             "[OPTIONAL] Define port for custom device.\n"
-            "--device_pool=0:2020"
-        )
-        (
+            "--device_pool=0:2020")(
             "device_password",
             value<std::vector<std::string>>(&optionDevicePassword)->multitoken(),
             "[OPTIONAL] Define password for custom device.\n"
-            "--device_password=0:MyPassword"
-        )
-        (
+            "--device_password=0:MyPassword")(
             "device_algo",
             value<std::vector<std::string>>(&optionDeviceAlgorithm)->multitoken(),
             "[OPTIONAL] Define algorithm for custom device.\n"
-            "--device_pool=0:kawpow"
-        )
-        (
+            "--device_pool=0:kawpow")(
             "device_wallet",
             value<std::vector<std::string>>(&optionDeviceWallet)->multitoken(),
             "[OPTIONAL] Define wallet for custom device.\n"
-            "--device_pool=0:WALLET"
-        )
-        (
+            "--device_pool=0:WALLET")(
             "device_workername",
             value<std::vector<std::string>>(&optionDeviceWorkerName)->multitoken(),
             "[OPTIONAL] Define workername for custom device.\n"
-            "--device_workername=0:MyWorkerName"
-        )
+            "--device_workername=0:MyWorkerName")
 
         // Kernel
-        (
-            "threads",
-            value<uint32_t>(),
-            "[OPTIONAL] Set occupancy threads.\n"
-            "--threads=128"
-        )
-        (
+        ("threads",
+         value<uint32_t>(),
+         "[OPTIONAL] Set occupancy threads.\n"
+         "--threads=128")(
             "blocks",
             value<uint32_t>(),
             "[OPTIONAL] Set occupancy blocks.\n"
-            "--blocks=128"
-        )
-        (
+            "--blocks=128")(
             "occupancy",
             value<bool>(),
             "[OPTIONAL] System will define the best occupancy for kernel.\n"
-            "--occupancy=true|false"
-        )
-        (
+            "--occupancy=true|false")(
             "internal_loop",
             value<uint32_t>(),
             "[OPTIONAL] Set internal loop for kernel.\n"
             "Default is value is 1.\n"
-            "--internal_loop=1"
-        )
-        (
+            "--internal_loop=1")(
             "internal_kernel_count",
             value<uint32_t>(),
-            "[OPTIONAL] Set internal loop for kernel. This defines the minimum number of times the kernel must be called to display statistics.\n"
+            "[OPTIONAL] Set internal loop for kernel. This defines the minimum number of times the kernel must be "
+            "called to display statistics.\n"
             "Default is value is 100.\n"
-            "--internal_kernel_count=100"
-        )
-        (
+            "--internal_kernel_count=100")(
             "cuda_context",
             value<std::string>(),
             "[OPTIONAL] Set CUDA context.\n"
             "Default value is auto\n"
-            "--cuda_context=<auto|blocking|yield|spin>"
-        )
+            "--cuda_context=<auto|blocking|yield|spin>")
 
         // Algorithm
-        (
-            "ethash_light_cache_cpu",
-            value<bool>(),
-            "[OPTIONAL] Light Cache will be build from CPU or GPU.\n"
-            "Default value is true for CPU.\n"
-            "--ethash_light_cache_cpu=true"
-        )
+        ("ethash_light_cache_cpu",
+         value<bool>(),
+         "[OPTIONAL] Light Cache will be build from CPU or GPU.\n"
+         "Default value is true for CPU.\n"
+         "--ethash_light_cache_cpu=true")
 
         // smart mining
-        (
-            "sm_wallet",
-            value<std::vector<std::string>>(&optionSmartMiningWallet)->multitoken(),
-            "[OPTIONAL] assign a wallet with a coin.\n"
-            "--sm_wallet=COIN:WALLET"
-        )
-        (
+        ("sm_wallet",
+         value<std::vector<std::string>>(&optionSmartMiningWallet)->multitoken(),
+         "[OPTIONAL] assign a wallet with a coin.\n"
+         "--sm_wallet=COIN:WALLET")(
             "sm_pool",
             value<std::vector<std::string>>(&optionSmartMiningPool)->multitoken(),
             "[OPTIONAL] assign a pool with a coin.\n"
-            "--sm_pool=COIN@POOL_URL:POOL_PORT"
-        )
+            "--sm_pool=COIN@POOL_URL:POOL_PORT")
 
         // api setting
-        (
-            "api_port",
-            value<uint32_t>(),
-            "[OPTIONAL] Set port of the api.\n"
-            "--api_port=8080"
-        )
-        ;
+        ("api_port",
+         value<uint32_t>(),
+         "[OPTIONAL] Set port of the api.\n"
+         "--api_port=8080");
 }
 
 
-bool common::Cli::parse(
-    int argc,
-    char** argv)
+bool common::Cli::parse(int argc, char** argv)
 {
     try
     {
         using namespace boost::program_options;
 
-        command_line_parser parser{argc, argv};
-        parser
-            .options(description)
+        command_line_parser parser{ argc, argv };
+        parser.options(description)
             .allow_unregistered()
-            .style(
-                command_line_style::default_style | command_line_style::allow_slash_for_short);
+            .style(command_line_style::default_style | command_line_style::allow_slash_for_short);
 
         parsed_options parsed_options{ parser.run() };
 
         store(parsed_options, params);
         notify(params);
     }
-    catch(boost::exception const& e)
+    catch (boost::exception const& e)
     {
         logErr() << diagnostic_information(e);
         return false;
@@ -441,17 +324,15 @@ bool common::Cli::parse(
 }
 
 
-bool common::Cli::contains(
-    std::string const& key) const
+bool common::Cli::contains(std::string const& key) const
 {
     auto const& it{ params.find(key) };
     return (it != params.end());
 }
 
 
-common::Cli::customTupleU32 common::Cli::getCustomParamsU32(
-    std::string const& paramName,
-    std::vector<std::string>& options) const
+common::Cli::customTupleU32
+common::Cli::getCustomParamsU32(std::string const& paramName, std::vector<std::string>& options) const
 {
     customTupleU32 values;
 
@@ -466,10 +347,10 @@ common::Cli::customTupleU32 common::Cli::getCustomParamsU32(
                 continue;
             }
 
-            uint32_t const index{ castU32(std::atoi(id_value.substr(0, pos).c_str())) };
-            std::string const subStr { id_value.substr(pos + 1, id_value.size() - 1) };
+            uint32_t const    index{ castU32(std::atoi(id_value.substr(0, pos).c_str())) };
+            std::string const subStr{ id_value.substr(pos + 1, id_value.size() - 1) };
 
-            uint32_t value { 0u };
+            uint32_t value{ 0u };
             if (subStr == "true" || subStr == "True" || subStr == "TRUE")
             {
                 value = 1;
@@ -491,15 +372,14 @@ common::Cli::customTupleU32 common::Cli::getCustomParamsU32(
 }
 
 
-std::vector<uint32_t> common::Cli::getCustomMultiParamsU32(
-    std::string const& paramName,
-    std::vector<std::string>& options) const
+std::vector<uint32_t>
+common::Cli::getCustomMultiParamsU32(std::string const& paramName, std::vector<std::string>& options) const
 {
     std::vector<uint32_t> values{};
 
     if (true == contains(paramName))
     {
-        size_t pos { 0u };
+        size_t pos{ 0u };
 
         for (std::string flags : options)
         {
@@ -521,9 +401,8 @@ std::vector<uint32_t> common::Cli::getCustomMultiParamsU32(
 }
 
 
-common::Cli::customTupleStr common::Cli::getCustomParamsStr(
-    std::string const& paramName,
-    std::vector<std::string>& options) const
+common::Cli::customTupleStr
+common::Cli::getCustomParamsStr(std::string const& paramName, std::vector<std::string>& options) const
 {
     customTupleStr values;
 
@@ -538,8 +417,8 @@ common::Cli::customTupleStr common::Cli::getCustomParamsStr(
                 continue;
             }
 
-            uint32_t const index{ castU32(std::atoi(id_value.substr(0, pos).c_str())) };
-            std::string const subStr { id_value.substr(pos + 1, id_value.size() - 1) };
+            uint32_t const    index{ castU32(std::atoi(id_value.substr(0, pos).c_str())) };
+            std::string const subStr{ id_value.substr(pos + 1, id_value.size() - 1) };
 
             customParamStr customParams{ index, subStr };
             values.emplace_back(customParams);
@@ -549,9 +428,8 @@ common::Cli::customTupleStr common::Cli::getCustomParamsStr(
 }
 
 
-common::Cli::customTupleStrStr common::Cli::getCustomParamsStrStr(
-    std::string const& paramName,
-    std::vector<std::string>& options) const
+common::Cli::customTupleStrStr
+common::Cli::getCustomParamsStrStr(std::string const& paramName, std::vector<std::string>& options) const
 {
     customTupleStrStr values;
 
@@ -578,9 +456,8 @@ common::Cli::customTupleStrStr common::Cli::getCustomParamsStrStr(
 }
 
 
-common::Cli::customTupleStrStrU32 common::Cli::getCustomParamsStrStrU32(
-    std::string const& paramName,
-    std::vector<std::string>& options) const
+common::Cli::customTupleStrStrU32
+common::Cli::getCustomParamsStrStrU32(std::string const& paramName, std::vector<std::string>& options) const
 {
     customTupleStrStrU32 values;
 
@@ -604,11 +481,11 @@ common::Cli::customTupleStrStrU32 common::Cli::getCustomParamsStrStrU32(
                 logErr() << "missing ':' [" << left.c_str() << "]";
                 continue;
             }
-            std::string const leftLeft { left.substr(0, pos) };
-            std::string const leftRight { left.substr(pos + 1, left.size() - 1) };
-            uint32_t const valueLeftRight { castU32(std::atoi(leftRight.c_str())) };
+            std::string const leftLeft{ left.substr(0, pos) };
+            std::string const leftRight{ left.substr(pos + 1, left.size() - 1) };
+            uint32_t const    valueLeftRight{ castU32(std::atoi(leftRight.c_str())) };
 
-            customParamStrStrU32 customParams { right, leftLeft, valueLeftRight };
+            customParamStrStrU32 customParams{ right, leftLeft, valueLeftRight };
             values.emplace_back(customParams);
         }
     }

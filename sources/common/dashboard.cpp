@@ -27,9 +27,7 @@ void common::Dashboard::setTitle(std::string const& newTitle)
 }
 
 
-void common::Dashboard::setFooter(
-    std::string const& key,
-    std::string const& value)
+void common::Dashboard::setFooter(std::string const& key, std::string const& value)
 {
     footer.clear();
     footer += key;
@@ -159,7 +157,7 @@ void common::Dashboard::show()
 
     // Draw the last line
     addPrefix(ss);
-    auto const width{ totalSize + 1};
+    auto const width{ totalSize + 1 };
     for (auto i{ 0ul }; i < width; ++i)
     {
         ss << "=";

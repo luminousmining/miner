@@ -20,28 +20,28 @@ namespace common
 
     class ChronoGuard
     {
-    public:
+      public:
         ChronoGuard(std::string const& text, common::CHRONO_UNIT unit);
         ~ChronoGuard();
 
-    private:
-        std::string text{};
-        common::CHRONO_UNIT unit{ common::CHRONO_UNIT::SEC };
+      private:
+        std::string                           text{};
+        common::CHRONO_UNIT                   unit{ common::CHRONO_UNIT::SEC };
         std::chrono::system_clock::time_point tmStart{};
     };
 
 
     class Chrono
     {
-    public:
+      public:
         Chrono() = default;
         ~Chrono() = default;
 
-        void start();
-        void stop();
+        void     start();
+        void     stop();
         uint64_t elapsed(common::CHRONO_UNIT unit) const;
 
-    private:
+      private:
         std::chrono::system_clock::time_point tmStart{};
         std::chrono::system_clock::time_point tmEnd{};
     };

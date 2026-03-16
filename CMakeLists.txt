@@ -54,6 +54,34 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 ################################################################################
+### TOOL FORMAT                                                             ####
+################################################################################
+find_program(CLANG_FORMAT_EXECUTABLE
+    NAMES clang-format-15 clang-format
+)
+if(CLANG_FORMAT_EXECUTABLE)
+    add_custom_target(format
+        COMMAND ${CMAKE_COMMAND}
+            -DCLANG_FORMAT=${CLANG_FORMAT_EXECUTABLE}
+            -DSOURCES_DIR=${CMAKE_CURRENT_SOURCE_DIR}/sources
+            -DFIX=ON
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/clang_format.cmake
+        COMMENT "Running clang-format on sources..."
+        VERBATIM
+    )
+    add_custom_target(format-check
+        COMMAND ${CMAKE_COMMAND}
+            -DCLANG_FORMAT=${CLANG_FORMAT_EXECUTABLE}
+            -DSOURCES_DIR=${CMAKE_CURRENT_SOURCE_DIR}/sources
+            -DFIX=OFF
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/clang_format.cmake
+        COMMENT "Checking clang-format on sources..."
+        VERBATIM
+    )
+endif()
+
+
+################################################################################
 ### TOOL ANALYZER                                                           ####
 ################################################################################
 if (TOOL_ANALYZER)
@@ -66,6 +94,19 @@ if (TOOL_ANALYZER)
             --std=c++20
             --quiet
         )
+    endif()
+
+    find_program(CLANG_TIDY_EXECUTABLE
+        NAMES clang-tidy-15 clang-tidy
+    )
+    if(CLANG_TIDY_EXECUTABLE)
+        set(CMAKE_CXX_CLANG_TIDY
+            ${CLANG_TIDY_EXECUTABLE}
+            --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy
+        )
+        message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXECUTABLE}")
+    else()
+        message(WARNING "clang-tidy not found, skipping")
     endif()
 endif()
 
@@ -337,6 +378,7 @@ message("-- CXX FLAGS D      : ${CMAKE_CXX_FLAGS_DEBUG} ")
 message("-- CXX FLAGS R      : ${CMAKE_CXX_FLAGS_RELEASE}")
 message("*********************************************************************")
 message("-- CPP Checker      : ${CPPCHECK_EXECUTABLE}")
+message("-- Clang Tidy       : ${CLANG_TIDY_EXECUTABLE}")
 message("*********************************************************************")
 message("-- Boost Version    : ${Boost_LIB_VERSION}")
 message("-- Boost Include    : ${BOOST_INCLUDEDIR}")
@@ -381,6 +423,10 @@ message("*********************************************************************")
 message("*********************************************************************")
 message("-- TOOL_TRACE_MEMORY : ${TOOL_TRACE_MEMORY}")
 message("-- TOOL_MOCKER       : ${TOOL_MOCKER}")
+message("-- TOOL_ANALYZER:    : ${TOOL_ANALYZER}")
+if (TOOL_ANALYZER)
+message("-- CLANG FORMAT      : ${CLANG_FORMAT_EXECUTABLE}")
+endif()
 message("*********************************************************************")
 message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LIBRAIRES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 if (BUILD_EXE_MINER)

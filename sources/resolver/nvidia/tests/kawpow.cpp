@@ -3,9 +3,9 @@
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/progpow/kawpow.hpp>
+#include <common/config.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
-#include <common/config.hpp>
 #include <resolver/nvidia/kawpow.hpp>
 #include <resolver/tests/nvidia.hpp>
 
@@ -76,7 +76,8 @@ struct ResolverKawpowNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("7c4fb8a5d141973b69b521ce76b0dc50f0d2834d817c7f8310a6ab5becc6bb0c");
         jobInfo.boundary = algo::toHash256("00000000ffff0000000000000000000000000000000000000000000000000000");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
+        jobInfo.epoch =
+            algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::progpow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::kawpow::MAX_PERIOD;
     }
 };
@@ -100,7 +101,7 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheGPU)
     ////////////////////////////////////////////////////////////////////////////
     resolver.submit(&stratum);
     ASSERT_FALSE(stratum.paramSubmit.empty());
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
@@ -126,7 +127,7 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceWithLightCacheCPU)
     ////////////////////////////////////////////////////////////////////////////
     resolver.submit(&stratum);
     ASSERT_FALSE(stratum.paramSubmit.empty());
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
@@ -178,7 +179,7 @@ TEST_F(ResolverKawpowNvidiaTest, findNonceLittleOccupancy)
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
     ////////////////////////////////////////////////////////////////////////////
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
     using namespace std::string_literals;
     EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }
@@ -202,7 +203,7 @@ TEST_F(ResolverKawpowNvidiaTest, aroundFindNonce)
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
     ////////////////////////////////////////////////////////////////////////////
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
     using namespace std::string_literals;
     EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
 }

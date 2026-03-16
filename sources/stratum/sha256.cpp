@@ -11,12 +11,11 @@
 #include <stratum/sha256.hpp>
 
 
-void stratum::StratumSha256::onResponse(
-    boost::json::object const& root)
+void stratum::StratumSha256::onResponse(boost::json::object const& root)
 {
     auto const miningRequestID{ common::boostJsonGetNumber<uint32_t>(root.at("id")) };
 
-    switch(miningRequestID)
+    switch (miningRequestID)
     {
         case stratum::Stratum::ID_MINING_SUBSCRIBE:
         {
@@ -28,7 +27,7 @@ void stratum::StratumSha256::onResponse(
                     for (auto const& methods : result.at(0).as_array())
                     {
                         using namespace std::string_literals;
-                        std::string const method { methods.at(0).as_string().c_str() };
+                        std::string const method{ methods.at(0).as_string().c_str() };
                         if ("mining.notify"s == method)
                         {
                             sessionId.assign(methods.at(1).as_string().c_str());
@@ -76,8 +75,7 @@ void stratum::StratumSha256::onResponse(
 }
 
 
-void stratum::StratumSha256::onMiningNotify(
-    boost::json::object const& root)
+void stratum::StratumSha256::onMiningNotify(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxDispatchJob);
@@ -85,7 +83,7 @@ void stratum::StratumSha256::onMiningNotify(
     ////////////////////////////////////////////////////////////////////////////
     boost::json::array const& params(root.at("params").as_array());
 
-    std::string jobId { params.at(0).as_string().c_str() };
+    std::string jobId{ params.at(0).as_string().c_str() };
     jobInfo.headerHash = algo::toHash256(params.at(1).as_string().c_str());
     jobInfo.coinb1 = algo::toHash1024(params.at(2).as_string().c_str());
     jobInfo.coinb2 = algo::toHash<algo::hash2048>(params.at(3).as_string().c_str());
@@ -97,9 +95,9 @@ void stratum::StratumSha256::onMiningNotify(
 
     jobInfo.jobIDStr.assign(jobId);
     jobInfo.jobID = algo::toHash256(jobId);
-    for (size_t i { 0u }; i < merkletree.size(); ++i)
+    for (size_t i{ 0u }; i < merkletree.size(); ++i)
     {
-        auto const& hash { merkletree.at(i) };
+        auto const& hash{ merkletree.at(i) };
         jobInfo.merkletree[i] = algo::toHash256(hash.as_string().c_str());
     }
 
@@ -108,13 +106,12 @@ void stratum::StratumSha256::onMiningNotify(
 }
 
 
-void stratum::StratumSha256::onMiningSetDifficulty(
-    boost::json::object const& root)
+void stratum::StratumSha256::onMiningSetDifficulty(boost::json::object const& root)
 {
     // boost::json::array const& params(root.at("params").as_array());
 
     // TODO : SHA256
-    //double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
+    // double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     logInfo() << "Target: " << std::hex << jobInfo.boundaryU64;
 }
@@ -122,13 +119,8 @@ void stratum::StratumSha256::onMiningSetDifficulty(
 
 void stratum::StratumSha256::miningSubscribe()
 {
-    auto const softwareName
-    {
-        "luminousminer/"
-        + std::to_string(common::VERSION_MAJOR)
-        + "."
-        + std::to_string(common::VERSION_MINOR)
-    };
+    auto const softwareName{ "luminousminer/" + std::to_string(common::VERSION_MAJOR) + "."
+                             + std::to_string(common::VERSION_MINOR) };
 
     boost::json::object root;
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
@@ -139,17 +131,14 @@ void stratum::StratumSha256::miningSubscribe()
 }
 
 
-void stratum::StratumSha256::miningSubmit(
-    uint32_t const deviceId,
-    boost::json::array const& params)
+void stratum::StratumSha256::miningSubmit(uint32_t const deviceId, boost::json::array const& params)
 {
     UNIQUE_LOCK(mtxSubmit);
 
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array
-    {
+    root["params"] = boost::json::array{
         wallet + "." + workerName,              // login.workername
         params.at(0),                           // JobID
         params.at(1),                           // nonce

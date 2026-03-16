@@ -11,7 +11,7 @@ namespace stratum
 {
     struct StratumProgPOW : public stratum::Stratum
     {
-    public:
+      public:
         void onResponse(boost::json::object const& root) override;
         void onMiningNotify(boost::json::object const& root) override;
         void onMiningSetDifficulty(boost::json::object const& root) final;
@@ -19,18 +19,16 @@ namespace stratum
         void onMiningSetExtraNonce(boost::json::object const& root) final;
         void onMiningSet(boost::json::object const& root) final;
 
-        void miningSubmit(uint32_t const deviceId,
-                          boost::json::array const& params) override;
+        void miningSubmit(uint32_t const deviceId, boost::json::array const& params) override;
 
-    protected:
-        uint32_t maxPeriod { algo::progpow::v_0_9_2::MAX_PERIOD };
-        uint32_t maxEthashEpoch { algo::ethash::EPOCH_LENGTH };
-        uint32_t maxEpochLength { algo::progpow::EPOCH_LENGTH };
+      protected:
+        uint32_t maxPeriod{ algo::progpow::v_0_9_2::MAX_PERIOD };
+        uint32_t maxEthashEpoch{ algo::ethash::EPOCH_LENGTH };
+        uint32_t maxEpochLength{ algo::progpow::EPOCH_LENGTH };
 
-    private:
+      private:
         void onResponseEthereumV1(boost::json::object const& root);
         void onResponseEthereumV2(boost::json::object const& root);
         void onResponseEthProxy(boost::json::object const& root);
     };
 }
-

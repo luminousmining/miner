@@ -1,6 +1,5 @@
 #include <string>
 
-
 #include <algo/algo_type.hpp>
 #include <common/config.hpp>
 #include <common/date.hpp>
@@ -12,11 +11,11 @@
 
 void device::DeviceManager::loopStatistical()
 {
-    std::string host{};
-    common::Dashboard boardMining{};
-    common::Dashboard boardDevice{};
-    stratum::Stratum* stratum{ nullptr };
-    common::Config const& config{ common::Config::instance() };
+    std::string                 host{};
+    common::Dashboard           boardMining{};
+    common::Dashboard           boardDevice{};
+    stratum::Stratum*           stratum{ nullptr };
+    common::Config const&       config{ common::Config::instance() };
     boost::chrono::milliseconds interval{ device::DeviceManager::WAITING_HASH_STATS };
 
     ////////////////////////////////////////////////////////////////////////
@@ -66,16 +65,15 @@ void device::DeviceManager::loopStatistical()
         for (device::Device* const device : devices)
         {
             ///////////////////////////////////////////////////////////////////
-            if (   nullptr == device
-                || false == device->isAlive())
+            if (nullptr == device || false == device->isAlive())
             {
                 continue;
             }
- 
+
             ///////////////////////////////////////////////////////////////////
             if (common::PROFILE::STANDARD == config.profile)
             {
-                auto const& itStratum { stratums.find(device->id) };
+                auto const& itStratum{ stratums.find(device->id) };
                 if (itStratum != stratums.end())
                 {
                     stratum = itStratum->second;
@@ -97,7 +95,7 @@ void device::DeviceManager::loopStatistical()
             }
 
             ///////////////////////////////////////////////////////////////////
-            auto const hashrate{ device->getHashrate() };
+            auto const                          hashrate{ device->getHashrate() };
             statistical::Statistical::ShareInfo shareInfo{ device->getShare() };
 
             ///////////////////////////////////////////////////////////////////
@@ -122,15 +120,15 @@ void device::DeviceManager::loopStatistical()
 
 
 void device::DeviceManager::showMiningStats(
-    common::Dashboard& board,
-    device::Device* const device,
-    double const hashrate,
-    std::string const& host,
+    common::Dashboard&                         board,
+    device::Device* const                      device,
+    double const                               hashrate,
+    std::string const&                         host,
     statistical::Statistical::ShareInfo const& shareInfo)
 {
     ///////////////////////////////////////////////////////////////////
     std::string deviceType{ "UNKNOWN" };
-    switch(device->deviceType)
+    switch (device->deviceType)
     {
 #if defined(CUDA_ENABLE)
         case device::DEVICE_TYPE::NVIDIA:
@@ -161,41 +159,36 @@ void device::DeviceManager::showMiningStats(
     }
 
     ///////////////////////////////////////////////////////////////////
-    board.addLine
-    (
-        {
-            deviceType,
-            std::to_string(device->id),
-            std::to_string(device->pciBus),
-            algo::toString(device->algorithm),
-            host,
-            common::hashrateToString(hashrate),
-            std::to_string(shareInfo.valid),
-            std::to_string(shareInfo.invalid)
-        }
-    );
+    board.addLine({ deviceType,
+                    std::to_string(device->id),
+                    std::to_string(device->pciBus),
+                    algo::toString(device->algorithm),
+                    host,
+                    common::hashrateToString(hashrate),
+                    std::to_string(shareInfo.valid),
+                    std::to_string(shareInfo.invalid) });
 }
 
 
 void device::DeviceManager::showDeviceStats(
-    common::Dashboard& board,
+    common::Dashboard&    board,
     device::Device* const device,
-    double const hashrate)
+    double const          hashrate)
 {
     ///////////////////////////////////////////////////////////////////
     common::Config& config{ common::Config::instance() };
 
     ///////////////////////////////////////////////////////////////////
-    double power{ 0.0 };
-    double hashByPower{ 0.0 };
+    double   power{ 0.0 };
+    double   hashByPower{ 0.0 };
     uint32_t coreClock{ 0u };
     uint32_t memoryClock{ 0u };
     uint32_t utilizationPercent{ 0u };
-    double cost{ 0.0 };
+    double   cost{ 0.0 };
 
     ///////////////////////////////////////////////////////////////////
     std::string deviceType{ "UNKNOWN" };
-    switch(device->deviceType)
+    switch (device->deviceType)
     {
 #if defined(CUDA_ENABLE)
         case device::DEVICE_TYPE::NVIDIA:
@@ -226,13 +219,12 @@ void device::DeviceManager::showDeviceStats(
     }
 
     ///////////////////////////////////////////////////////////////////
-    switch(device->deviceType)
+    switch (device->deviceType)
     {
 #if defined(CUDA_ENABLE)
         case device::DEVICE_TYPE::NVIDIA:
         {
-            if (   nullptr != device->deviceNvml
-                && true == profilerNvidia.valid)
+            if (nullptr != device->deviceNvml && true == profilerNvidia.valid)
             {
                 power = profilerNvidia.getPowerUsage(device->deviceNvml);
                 coreClock = profilerNvidia.getCoreClock(device->deviceNvml);
@@ -277,18 +269,13 @@ void device::DeviceManager::showDeviceStats(
     }
 
     ///////////////////////////////////////////////////////////////////
-    board.addLine
-    (
-        {
-            deviceType,
-            std::to_string(device->id),
-            std::to_string(device->pciBus),
-            common::doubleToString(power),
-            std::to_string(coreClock),
-            std::to_string(memoryClock),
-            std::to_string(utilizationPercent),
-            common::hashrateToString(hashByPower),
-            common::doubleToString(cost)
-        }
-    );
+    board.addLine({ deviceType,
+                    std::to_string(device->id),
+                    std::to_string(device->pciBus),
+                    common::doubleToString(power),
+                    std::to_string(coreClock),
+                    std::to_string(memoryClock),
+                    std::to_string(utilizationPercent),
+                    common::hashrateToString(hashByPower),
+                    common::doubleToString(cost) });
 }

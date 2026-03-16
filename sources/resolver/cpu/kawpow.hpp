@@ -7,7 +7,7 @@ namespace resolver
 {
     class ResolverCpuKawPOW : public resolver::ResolverCpuProgPOW
     {
-    public:
+      public:
         ResolverCpuKawPOW();
         ~ResolverCpuKawPOW() = default;
     };

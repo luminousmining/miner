@@ -3,8 +3,7 @@
 #include <resolver/amd/evrprogpow.hpp>
 
 
-resolver::ResolverAmdEvrprogPOW::ResolverAmdEvrprogPOW():
-    resolver::ResolverAmdProgPOW()
+resolver::ResolverAmdEvrprogPOW::ResolverAmdEvrprogPOW() : resolver::ResolverAmdProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::EVRPROGPOW;

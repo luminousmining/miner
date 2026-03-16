@@ -3,8 +3,7 @@
 #include <resolver/nvidia/firopow.hpp>
 
 
-resolver::ResolverNvidiaFiroPOW::ResolverNvidiaFiroPOW():
-    resolver::ResolverNvidiaProgPOW()
+resolver::ResolverNvidiaFiroPOW::ResolverNvidiaFiroPOW() : resolver::ResolverNvidiaProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::FIROPOW;

@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverAmdProgpowQuai : public resolver::ResolverAmdProgPOW
     {
-    public:
+      public:
         ResolverAmdProgpowQuai();
         ~ResolverAmdProgpowQuai() = default;
     };

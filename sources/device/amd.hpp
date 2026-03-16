@@ -11,10 +11,10 @@ namespace device
 {
     struct DeviceAmd : public device::Device
     {
-    public:
+      public:
         cl::Device clDevice;
 
-    protected:
+      protected:
         cl::Context      clContext{};
         cl::CommandQueue clQueue[2]{};
 

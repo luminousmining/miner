@@ -5,11 +5,10 @@
 
 #include <algo/fast_mod.hpp>
 #include <algo/hash_utils.hpp>
-#include <benchmark/workflow.hpp>
 #include <benchmark/cuda/kernels.hpp>
+#include <benchmark/workflow.hpp>
 #include <common/custom.hpp>
 #include <common/error/cuda_error.hpp>
-
 
 
 bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
@@ -21,8 +20,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
     common::Dashboard dashboard{ createNewDashboard("[NVIDIA] Light Cache") };
 
     ///////////////////////////////////////////////////////////////////////////
-    uint32_t* lightCache{ nullptr };
-    uint32_t* seedCache{ nullptr };
+    uint32_t*      lightCache{ nullptr };
+    uint32_t*      seedCache{ nullptr };
     uint64_t const lightCacheNumber{ 1409017ull };
     uint64_t const lightCacheSize{ 90177088ull };
     uint32_t const seedCacheSize{ algo::LEN_HASH_512_WORD_32 * sizeof(uint32_t) };
@@ -55,35 +54,23 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
 
     ///////////////////////////////////////////////////////////////////////////
     // Split kernel
-    RUN_BENCH
-    (
+    RUN_BENCH(
         "ethash_build_light_cache_lm2",
         commonLoop,
         lightCacheNumber,
         1u,
-        etash_light_cache_lm2(
-            propertiesNvidia.cuStream,
-            lightCache,
-            seedCache,
-            lightCacheNumber)
-    )
+        etash_light_cache_lm2(propertiesNvidia.cuStream, lightCache, seedCache, lightCacheNumber))
     CUDA_ER(cudaMemset(seedCache, 0, seedCacheSize));
     CUDA_ER(cudaMemset(lightCache, 0, lightCacheSize));
 
     ///////////////////////////////////////////////////////////////////////////
     // TODO: Parallelize this kernel
-    RUN_BENCH
-    (
+    RUN_BENCH(
         "ethash_build_light_cache_lm3",
         commonLoop,
         lightCacheNumber,
         1u,
-        etash_light_cache_lm3(
-            propertiesNvidia.cuStream,
-            lightCache,
-            seedCache,
-            lightCacheNumber)
-    )
+        etash_light_cache_lm3(propertiesNvidia.cuStream, lightCache, seedCache, lightCacheNumber))
     CUDA_ER(cudaMemset(seedCache, 0, seedCacheSize));
     CUDA_ER(cudaMemset(lightCache, 0, lightCacheSize));
 

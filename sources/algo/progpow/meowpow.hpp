@@ -9,7 +9,7 @@ namespace algo
     namespace meowpow
     {
         // Override Ethash
-        constexpr uint32_t DAG_ITEM_PARENTS { 512u };
+        constexpr uint32_t DAG_ITEM_PARENTS{ 512u };
 
         // Override ProgPOW
         constexpr uint32_t REGS{ 16u };
@@ -20,34 +20,38 @@ namespace algo
 
         namespace nvidia
         {
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
 
         namespace amd
         {
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace device
 {
     struct DeviceMocker : public device::Device
     {
-    protected:
+      protected:
         bool initialize() final;
         void cleanUp() final;
     };

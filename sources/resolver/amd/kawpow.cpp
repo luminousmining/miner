@@ -3,8 +3,7 @@
 #include <resolver/amd/kawpow.hpp>
 
 
-resolver::ResolverAmdKawPOW::ResolverAmdKawPOW():
-    resolver::ResolverAmdProgPOW()
+resolver::ResolverAmdKawPOW::ResolverAmdKawPOW() : resolver::ResolverAmdProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::KAWPOW;

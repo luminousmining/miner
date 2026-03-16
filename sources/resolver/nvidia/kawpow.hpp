@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverNvidiaKawPOW : public resolver::ResolverNvidiaProgPOW
     {
-    public:
+      public:
         ResolverNvidiaKawPOW();
         ~ResolverNvidiaKawPOW() = default;
     };

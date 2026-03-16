@@ -3,8 +3,7 @@
 #include <resolver/nvidia/meowpow.hpp>
 
 
-resolver::ResolverNvidiaMeowPOW::ResolverNvidiaMeowPOW():
-    resolver::ResolverNvidiaProgPOW()
+resolver::ResolverNvidiaMeowPOW::ResolverNvidiaMeowPOW() : resolver::ResolverNvidiaProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::MEOWPOW;

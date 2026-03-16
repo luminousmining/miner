@@ -3,17 +3,17 @@
 #if defined(CUDA_ENABLE)
 
 #include <algo/dag_context.hpp>
-#include <algo/hash.hpp>
 #include <algo/ethash/result.hpp>
-#include <resolver/nvidia/nvidia.hpp>
+#include <algo/hash.hpp>
 #include <resolver/nvidia/blake3_kernel_parameter.hpp>
+#include <resolver/nvidia/nvidia.hpp>
 
 
 namespace resolver
 {
     class ResolverNvidiaBlake3 : public resolver::ResolverNvidia
     {
-    public:
+      public:
         ResolverNvidiaBlake3();
         ~ResolverNvidiaBlake3();
 
@@ -24,8 +24,8 @@ namespace resolver
         void submit(stratum::Stratum* const stratum) final;
         void submit(stratum::StratumSmartMining* const stratum) final;
 
-    protected:
-        algo::blake3::ResultShare resultShare{};
+      protected:
+        algo::blake3::ResultShare                  resultShare{};
         resolver::nvidia::blake3::KernelParameters parameters{};
     };
 }

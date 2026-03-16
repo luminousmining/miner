@@ -1,13 +1,12 @@
 #include <cuda_runtime.h>
 #include <gtest/gtest.h>
-#include <gtest/gtest.h>
 
+#include <algo/ethash/ethash.hpp>
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
-#include <algo/ethash/ethash.hpp>
+#include <common/config.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
-#include <common/config.hpp>
 #include <resolver/nvidia/ethash.hpp>
 #include <resolver/tests/nvidia.hpp>
 
@@ -50,7 +49,8 @@ struct ResolverEthashNvidiaTest : public testing::Test
         jobInfo.seedHash = algo::toHash256("3c77b17f5e89ebc92dc434fd7d631d80e5b522f07c9a452bc735c05c152381a1");
         jobInfo.boundary = algo::toHash256("0000000225c17d04dad2a2a5b11fb33e22c8af8733a66744290d88c89181a499");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::ethash::MAX_EPOCH_NUMBER);
+        jobInfo.epoch =
+            algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, algo::ethash::MAX_EPOCH_NUMBER);
     }
 };
 
@@ -76,7 +76,7 @@ TEST_F(ResolverEthashNvidiaTest, findNonceWithLightCacheGPU)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("77530000094a7c09"s, nonceStr);
@@ -94,7 +94,7 @@ TEST_F(ResolverEthashNvidiaTest, findNonceWithLightCacheCPU)
 
     ASSERT_FALSE(stratum.paramSubmit.empty());
 
-    std::string const nonceStr { stratum.paramSubmit[1].as_string().c_str() };
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
     EXPECT_EQ("77530000094a7c09"s, nonceStr);

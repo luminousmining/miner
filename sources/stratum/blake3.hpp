@@ -9,7 +9,7 @@ namespace stratum
 {
     class StratumBlake3 : public stratum::Stratum
     {
-    public:
+      public:
         void onResponse(boost::json::object const& root) final;
         void onMiningNotify(boost::json::object const& root) final;
         void onMiningSetDifficulty(boost::json::object const& root) final;
@@ -17,7 +17,6 @@ namespace stratum
         void onUnknownMethod(boost::json::object const& root) final;
 
         void miningSubscribe() override;
-        void miningSubmit(uint32_t const deviceId,
-                          boost::json::object const& params) final;
+        void miningSubmit(uint32_t const deviceId, boost::json::object const& params) final;
     };
 }

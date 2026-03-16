@@ -2,13 +2,12 @@
 #include <resolver/nvidia/progpow_quai.hpp>
 
 
-resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai():
-    resolver::ResolverNvidiaProgPOW()
+resolver::ResolverNvidiaProgpowQuai::ResolverNvidiaProgpowQuai() : resolver::ResolverNvidiaProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::PROGPOWQUAI;
 
-    //Ethash
+    // Ethash
     dagItemParents = algo::progpow_quai::DAG_ITEM_PARENTS;
     dagCountItemsGrowth = algo::progpow_quai::DAG_COUNT_ITEMS_GROWTH;
     dagCountItemsInit = algo::progpow_quai::DAG_COUNT_ITEMS_INIT;

@@ -8,7 +8,7 @@ namespace algo
 {
     namespace ethash
     {
-        constexpr uint32_t MAX_RESULT { 4u };
+        constexpr uint32_t MAX_RESULT{ 4u };
 
         struct alignas(8) Result
         {

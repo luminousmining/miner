@@ -13,7 +13,7 @@ struct ResolverProgpowCpuTest : public testing::Test
     stratum::StratumJobInfo       jobInfo{};
     common::mocker::MockerStratum stratum{};
     // resolver::tests::Properties   properties{};
-    resolver::ResolverCpuProgPOW  resolver{};
+    resolver::ResolverCpuProgPOW resolver{};
 
     ResolverProgpowCpuTest()
     {

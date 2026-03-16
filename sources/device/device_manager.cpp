@@ -9,14 +9,14 @@
 #include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
 #include <common/config.hpp>
-#include <common/dashboard.hpp>
 #include <common/custom.hpp>
+#include <common/dashboard.hpp>
 #include <common/date.hpp>
-#include <common/formater_hashrate.hpp>
 #include <common/error/cuda_error.hpp>
 #include <common/error/opencl_error.hpp>
-#include <device/device_manager.hpp>
+#include <common/formater_hashrate.hpp>
 #include <device/amd.hpp>
+#include <device/device_manager.hpp>
 #include <device/mocker.hpp>
 #include <device/nvidia.hpp>
 #include <stratum/stratums.hpp>
@@ -40,9 +40,9 @@ device::DeviceManager::~DeviceManager()
 
 bool device::DeviceManager::initialize()
 {
-    bool initialized{ false };
-    common::Config const& config { common::Config::instance() };
-    algo::ALGORITHM const algorithm { config.getAlgorithm() };
+    bool                  initialized{ false };
+    common::Config const& config{ common::Config::instance() };
+    algo::ALGORITHM const algorithm{ config.getAlgorithm() };
 
 #if defined(AMD_ENABLE)
     ////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ bool device::DeviceManager::initialize()
         {
             logErr() << "Cannot initialize device Amd";
         }
-        initialized =  true;
+        initialized = true;
     }
 #endif
 
@@ -78,7 +78,7 @@ bool device::DeviceManager::initialize()
         {
             logErr() << "Cannot initialize device Nvidia";
         }
-        initialized =  true;
+        initialized = true;
     }
 #endif
 
@@ -121,8 +121,7 @@ bool device::DeviceManager::initialize()
 #if defined(AMD_ENABLE)
                     case device::DEVICE_TYPE::AMD:
                     {
-                        if (   false == config.amdSetting.host.empty()
-                            && 0 < config.amdSetting.port
+                        if (false == config.amdSetting.host.empty() && 0 < config.amdSetting.port
                             && false == config.amdSetting.algo.empty())
                         {
                             customDeviceID = device->id;
@@ -134,8 +133,7 @@ bool device::DeviceManager::initialize()
 #if defined(CUDA_ENABLE)
                     case device::DEVICE_TYPE::NVIDIA:
                     {
-                        if (   false == config.nvidiaSetting.host.empty()
-                            && 0 < config.nvidiaSetting.port
+                        if (false == config.nvidiaSetting.host.empty() && 0 < config.nvidiaSetting.port
                             && false == config.nvidiaSetting.algo.empty())
                         {
                             customDeviceID = device->id;
@@ -167,7 +165,7 @@ bool device::DeviceManager::initialize()
                 return false;
             }
 
-            stratum::Stratum* stratum { stratums.at(customDeviceID) };
+            stratum::Stratum* stratum{ stratums.at(customDeviceID) };
             device->setAlgorithm(customAlgorithm);
             device->setStratum(stratum);
         }
@@ -179,7 +177,7 @@ bool device::DeviceManager::initialize()
 
 bool device::DeviceManager::initializeStratumSmartMining()
 {
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     stratumSmartMining.host.assign(config.mining.host);
     stratumSmartMining.port = config.mining.port;
@@ -187,35 +185,26 @@ bool device::DeviceManager::initializeStratumSmartMining()
     stratumSmartMining.password.assign(config.mining.password);
 
     stratumSmartMining.setCallbackSetAlgorithm(
-        std::bind(
-            &device::DeviceManager::onSmartMiningSetAlgorithm,
-            this,
-            std::placeholders::_1));
+        std::bind(&device::DeviceManager::onSmartMiningSetAlgorithm, this, std::placeholders::_1));
 
     stratumSmartMining.setCallbackUpdateJob(
-        std::bind(
-            &device::DeviceManager::onSmartMiningUpdateJob,
-            this,
-            std::placeholders::_1));
+        std::bind(&device::DeviceManager::onSmartMiningUpdateJob, this, std::placeholders::_1));
 
-    stratumSmartMining.setCallbackShareStatus(
-        std::bind(
-            &device::DeviceManager::onShareStatus,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3));
+    stratumSmartMining.setCallbackShareStatus(std::bind(
+        &device::DeviceManager::onShareStatus,
+        this,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
     return true;
 }
 
 
-bool device::DeviceManager::initializeStratum(
-    uint32_t const deviceId,
-    algo::ALGORITHM const algorithm)
+bool device::DeviceManager::initializeStratum(uint32_t const deviceId, algo::ALGORITHM const algorithm)
 {
-    stratum::Stratum* stratum { nullptr };
-    common::Config const& config { common::Config::instance() };
+    stratum::Stratum*     stratum{ nullptr };
+    common::Config const& config{ common::Config::instance() };
 
     if (true == containStratum(deviceId))
     {
@@ -241,10 +230,7 @@ bool device::DeviceManager::initializeStratum(
     }
     else
     {
-        std::optional<common::Config::PoolConfig> customSettings
-        {
-            config.getConfigDevice(deviceId)
-        };
+        std::optional<common::Config::PoolConfig> customSettings{ config.getConfigDevice(deviceId) };
         if (std::nullopt != customSettings)
         {
             stratum->host.assign((*customSettings).host);
@@ -264,19 +250,14 @@ bool device::DeviceManager::initializeStratum(
     }
 
     stratum->setCallbackUpdateJob(
-        std::bind(
-            &device::DeviceManager::onUpdateJob,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2));
+        std::bind(&device::DeviceManager::onUpdateJob, this, std::placeholders::_1, std::placeholders::_2));
 
-    stratum->setCallbackShareStatus(
-        std::bind(
-            &device::DeviceManager::onShareStatus,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3));
+    stratum->setCallbackShareStatus(std::bind(
+        &device::DeviceManager::onShareStatus,
+        this,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
     return true;
 }
@@ -326,7 +307,7 @@ bool device::DeviceManager::initializeNvidia()
     for (int32_t i{ 0 }; i < numberDevice; ++i)
     {
         ////////////////////////////////////////////////////////////////////////////
-        cudaError_t codeError{ cudaSuccess };
+        cudaError_t           codeError{ cudaSuccess };
         device::DeviceNvidia* device{ NEW(device::DeviceNvidia) };
 
         ////////////////////////////////////////////////////////////////////////////
@@ -374,7 +355,7 @@ bool device::DeviceManager::initializeNvidia()
 #if defined(AMD_ENABLE)
 bool device::DeviceManager::initializeAmd()
 {
-    std::vector<cl::Device> cldevices{};
+    std::vector<cl::Device>   cldevices{};
     std::vector<cl::Platform> platforms{};
 
     cl::Platform::get(&platforms);
@@ -383,14 +364,14 @@ bool device::DeviceManager::initializeAmd()
     // GPU AMD
     for (cl::Platform const& platform : platforms)
     {
-        std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
+        std::string const platformName{ platform.getInfo<CL_PLATFORM_NAME>() };
         if (platformName.find("AMD") == std::string::npos)
         {
             continue;
         }
 
         platform.getDevices(CL_DEVICE_TYPE_GPU, &cldevices);
-        for (uint32_t i { 0u }; i < cldevices.size(); ++i)
+        for (uint32_t i{ 0u }; i < cldevices.size(); ++i)
         {
             ////////////////////////////////////////////////////////////////////////////
             if (CL_DEVICE_TYPE_GPU != cldevices.at(i).getInfo<CL_DEVICE_TYPE>())
@@ -405,25 +386,17 @@ bool device::DeviceManager::initializeAmd()
             device->id = castU32(devices.size());
 
             ////////////////////////////////////////////////////////////////////////////
-            cl_char topology[24]{ 0, };
+            cl_char topology[24]{
+                0,
+            };
             OPENCL_ER(
-                clGetDeviceInfo(
-                    device->clDevice.get(),
-                    CL_DEVICE_TOPOLOGY_AMD,
-                    sizeof(topology),
-                    &topology,
-                    nullptr));
+                clGetDeviceInfo(device->clDevice.get(), CL_DEVICE_TOPOLOGY_AMD, sizeof(topology), &topology, nullptr));
             device->pciBus = castU32(topology[21]);
 
             ////////////////////////////////////////////////////////////////////////////
             cl_ulong memoryAvailable{ 0ull };
             OPENCL_ER(
-                clGetDeviceInfo(
-                    device->clDevice.get(),
-                    0x4039,
-                    sizeof(memoryAvailable),
-                    &memoryAvailable,
-                    nullptr));
+                clGetDeviceInfo(device->clDevice.get(), 0x4039, sizeof(memoryAvailable), &memoryAvailable, nullptr));
             device->memoryAvailable = castU64(memoryAvailable) * (1024ull * 1024ull);
 
             ////////////////////////////////////////////////////////////////////////////
@@ -446,7 +419,7 @@ void device::DeviceManager::run()
     threadStatistical.interrupt();
 
     ////////////////////////////////////////////////////////////////////////////
-    for (uint32_t i { 0u }; i < device::DeviceManager::MAX_STRATUMS; ++i)
+    for (uint32_t i{ 0u }; i < device::DeviceManager::MAX_STRATUMS; ++i)
     {
         stratum::StratumJobInfo& jobInfo{ jobInfos[i] };
         jobInfo.copy(cleanJob);
@@ -499,35 +472,28 @@ std::vector<device::Device*>& device::DeviceManager::getDevices()
 }
 
 
-void device::DeviceManager::onUpdateJob(
-    uint32_t const stratumUUID,
-    stratum::StratumJobInfo const& newJobInfo)
+void device::DeviceManager::onUpdateJob(uint32_t const stratumUUID, stratum::StratumJobInfo const& newJobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxJobInfo);
 
     ////////////////////////////////////////////////////////////////////////////
-    auto const& config{ common::Config::instance() };
+    auto const&              config{ common::Config::instance() };
     stratum::StratumJobInfo& jobInfo{ jobInfos[stratumUUID] };
 
     ////////////////////////////////////////////////////////////////////////////
-    bool updateMemory { false };
-    bool updateConstants { false };
-    bool const isSameEpoch { jobInfo.epoch == newJobInfo.epoch };
-    bool const isSameHeader { algo::isEqual(jobInfo.headerHash, newJobInfo.headerHash) };
-    bool const isSameHeaderBlob { algo::isEqual(jobInfo.headerBlob, newJobInfo.headerBlob) };
+    bool       updateMemory{ false };
+    bool       updateConstants{ false };
+    bool const isSameEpoch{ jobInfo.epoch == newJobInfo.epoch };
+    bool const isSameHeader{ algo::isEqual(jobInfo.headerHash, newJobInfo.headerHash) };
+    bool const isSameHeaderBlob{ algo::isEqual(jobInfo.headerBlob, newJobInfo.headerBlob) };
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   true == isSameEpoch
-        && true == isSameHeader
-        && true == isSameHeaderBlob)
+    if (true == isSameEpoch && true == isSameHeader && true == isSameHeaderBlob)
     {
-        logDebug()
-            << "Skip Job"
-            << ", isSameEpoch " << std::boolalpha << isSameEpoch
-            << ", isSameHeader " << std::boolalpha << isSameHeader
-            << ", isSameHeaderBlob " << std::boolalpha << isSameHeaderBlob
-            << newJobInfo;
+        logDebug() << "Skip Job"
+                   << ", isSameEpoch " << std::boolalpha << isSameEpoch << ", isSameHeader " << std::boolalpha
+                   << isSameHeader << ", isSameHeaderBlob " << std::boolalpha << isSameHeaderBlob << newJobInfo;
         return;
     }
 
@@ -538,15 +504,13 @@ void device::DeviceManager::onUpdateJob(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   false == isSameHeader
-        || false == isSameHeaderBlob)
+    if (false == isSameHeader || false == isSameHeaderBlob)
     {
         updateConstants = true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (   true == updateMemory
-        || true == updateConstants)
+    if (true == updateMemory || true == updateConstants)
     {
         jobInfo.copy(newJobInfo);
         jobInfo.gapNonce /= devices.size();
@@ -563,13 +527,10 @@ void device::DeviceManager::onUpdateJob(
 }
 
 
-void device::DeviceManager::onShareStatus(
-    bool const isValid,
-    uint32_t const requestID,
-    uint32_t const stratumUUID)
+void device::DeviceManager::onShareStatus(bool const isValid, uint32_t const requestID, uint32_t const stratumUUID)
 {
     ///////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     ///////////////////////////////////////////////////////////////////////////
     for (device::Device* const device : devices)
@@ -580,9 +541,8 @@ void device::DeviceManager::onShareStatus(
         }
         if (common::PROFILE::STANDARD == config.profile)
         {
-            stratum::Stratum* stratum { device->getStratum() };
-            if (   nullptr == stratum
-                || stratum->uuid != stratumUUID)
+            stratum::Stratum* stratum{ device->getStratum() };
+            if (nullptr == stratum || stratum->uuid != stratumUUID)
             {
                 continue;
             }
@@ -598,8 +558,7 @@ void device::DeviceManager::onShareStatus(
 }
 
 
-void device::DeviceManager::onSmartMiningSetAlgorithm(
-    algo::ALGORITHM const algorithm)
+void device::DeviceManager::onSmartMiningSetAlgorithm(algo::ALGORITHM const algorithm)
 {
     ////////////////////////////////////////////////////////////////////////////
     threadStatistical.interrupt();
@@ -639,8 +598,7 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(
 }
 
 
-void device::DeviceManager::onSmartMiningUpdateJob(
-    stratum::StratumJobInfo const& newJobInfo)
+void device::DeviceManager::onSmartMiningUpdateJob(stratum::StratumJobInfo const& newJobInfo)
 {
     onUpdateJob(0u, newJobInfo);
 }
@@ -648,11 +606,11 @@ void device::DeviceManager::onSmartMiningUpdateJob(
 
 void device::DeviceManager::updateDevice(
     uint32_t const stratumUUID,
-    bool const updateMemory,
-    bool const updateConstants)
+    bool const     updateMemory,
+    bool const     updateConstants)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config{ common::Config::instance() };
+    common::Config const&          config{ common::Config::instance() };
     stratum::StratumJobInfo const& jobInfo{ jobInfos[stratumUUID] };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -666,8 +624,7 @@ void device::DeviceManager::updateDevice(
         if (common::PROFILE::STANDARD == config.profile)
         {
             stratum::Stratum* stratum{ device->getStratum() };
-            if (   nullptr == stratum
-                || stratum->uuid != stratumUUID)
+            if (nullptr == stratum || stratum->uuid != stratumUUID)
             {
                 continue;
             }
@@ -678,22 +635,19 @@ void device::DeviceManager::updateDevice(
 }
 
 
-bool device::DeviceManager::containStratum(
-    uint32_t const deviceId) const
+bool device::DeviceManager::containStratum(uint32_t const deviceId) const
 {
     return stratums.find(deviceId) != stratums.end();
 }
 
 
-stratum::Stratum* device::DeviceManager::getOrCreateStratum(
-    algo::ALGORITHM const algorithm,
-    uint32_t const deviceId)
+stratum::Stratum* device::DeviceManager::getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId)
 {
     ////////////////////////////////////////////////////////////////////////////
     stratum::Stratum* stratum{ nullptr };
 
     ////////////////////////////////////////////////////////////////////////////
-    auto it { stratums.find(deviceId) };
+    auto it{ stratums.find(deviceId) };
     if (it != stratums.end())
     {
         return it->second;

@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverNvidiaEvrprogPOW : public resolver::ResolverNvidiaProgPOW
     {
-    public:
+      public:
         ResolverNvidiaEvrprogPOW();
         ~ResolverNvidiaEvrprogPOW() = default;
     };

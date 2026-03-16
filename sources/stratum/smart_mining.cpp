@@ -31,8 +31,7 @@ void stratum::StratumSmartMining::onConnect()
 }
 
 
-void stratum::StratumSmartMining::onReceive(
-    std::string const& message)
+void stratum::StratumSmartMining::onReceive(std::string const& message)
 {
     try
     {
@@ -59,10 +58,9 @@ void stratum::StratumSmartMining::onReceive(
 }
 
 
-void stratum::StratumSmartMining::onMethod(
-    boost::json::object const& root)
+void stratum::StratumSmartMining::onMethod(boost::json::object const& root)
 {
-    bool success { true };
+    bool              success{ true };
     std::string const method{ root.at("method").as_string().c_str() };
 
     if ("smart_mining.set_algo" == method)
@@ -98,10 +96,9 @@ void stratum::StratumSmartMining::onMethod(
 }
 
 
-bool stratum::StratumSmartMining::onSmartMiningSetAlgo(
-    boost::json::object const& root)
+bool stratum::StratumSmartMining::onSmartMiningSetAlgo(boost::json::object const& root)
 {
-    std::string const& algorithm { root.at("params").as_string().c_str() };
+    std::string const& algorithm{ root.at("params").as_string().c_str() };
     currentAlgorithm = algo::toEnum(algorithm);
     doSetAlgorithm(currentAlgorithm);
 
@@ -115,8 +112,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetAlgo(
 }
 
 
-bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
-    boost::json::object const& root)
+bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(boost::json::object const& root)
 {
     IS_NULL(stratumPool);
 
@@ -133,15 +129,15 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
         case algo::ALGORITHM::FIROPOW:
         case algo::ALGORITHM::EVRPROGPOW:
         {
-            std::string extraNonceStr { root.at("params").as_string().c_str() };
+            std::string extraNonceStr{ root.at("params").as_string().c_str() };
             stratumPool->setExtraNonce(extraNonceStr);
             break;
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
         {
             boost::json::array const& params(root.at("params").as_array());
-            std::string extraNonceStr { params.at(0).as_string().c_str() };
-            uint32_t const extraNonce2Size { common::boostJsonGetNumber<uint32_t const>(params.at(1)) };
+            std::string               extraNonceStr{ params.at(0).as_string().c_str() };
+            uint32_t const            extraNonce2Size{ common::boostJsonGetNumber<uint32_t const>(params.at(1)) };
             stratumPool->setExtraNonce(extraNonceStr, extraNonce2Size);
             break;
         }
@@ -156,8 +152,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetExtraNonce(
 }
 
 
-bool stratum::StratumSmartMining::onMiningNotify(
-    boost::json::object const& root)
+bool stratum::StratumSmartMining::onMiningNotify(boost::json::object const& root)
 {
     IS_NULL(stratumPool);
 
@@ -168,8 +163,7 @@ bool stratum::StratumSmartMining::onMiningNotify(
 }
 
 
-bool stratum::StratumSmartMining::onMiningSetDifficulty(
-    boost::json::object const& root)
+bool stratum::StratumSmartMining::onMiningSetDifficulty(boost::json::object const& root)
 {
     IS_NULL(stratumPool);
 
@@ -179,8 +173,7 @@ bool stratum::StratumSmartMining::onMiningSetDifficulty(
 }
 
 
-bool stratum::StratumSmartMining::onMiningSetTarget(
-    boost::json::object const& root)
+bool stratum::StratumSmartMining::onMiningSetTarget(boost::json::object const& root)
 {
     IS_NULL(stratumPool);
 
@@ -190,8 +183,7 @@ bool stratum::StratumSmartMining::onMiningSetTarget(
 }
 
 
-void stratum::StratumSmartMining::onResponse(
-    boost::json::object const& root)
+void stratum::StratumSmartMining::onResponse(boost::json::object const& root)
 {
     auto miningRequestID{ common::boostJsonGetNumber<uint32_t const>(root.at("id")) };
 
@@ -200,18 +192,10 @@ void stratum::StratumSmartMining::onResponse(
         return;
     }
 
-    bool isValid { true };
-    bool const isErrResult
-    {
-           false == common::boostJsonContains(root, "result")
-        || true == root.at("result").is_null()
-        || false == root.at("result").as_bool()
-    };
-    bool const isErrError
-    {
-           true == common::boostJsonContains(root, "error")
-        && false == root.at("error").is_null()
-    };
+    bool       isValid{ true };
+    bool const isErrResult{ false == common::boostJsonContains(root, "result") || true == root.at("result").is_null()
+                            || false == root.at("result").as_bool() };
+    bool const isErrError{ true == common::boostJsonContains(root, "error") && false == root.at("error").is_null() };
     if (true == isErrResult || true == isErrError)
     {
         logErr() << root;
@@ -227,30 +211,19 @@ void stratum::StratumSmartMining::onResponse(
 
 void stratum::StratumSmartMining::subscribe()
 {
-    auto const& config { common::Config::instance() };
+    auto const&        config{ common::Config::instance() };
     boost::json::array listCoin{};
 
     for (auto const& [coin, poolConfig] : config.smartMining.coinPoolConfig)
     {
-        boost::json::array array
-        {
-            coin,
-            poolConfig.host,
-            poolConfig.port,
-            poolConfig.wallet
-        };
+        boost::json::array array{ coin, poolConfig.host, poolConfig.port, poolConfig.wallet };
         listCoin.emplace_back(array);
     }
 
     boost::json::object root;
     root["id"] = stratum::StratumSmartMining::ID_MINING_SUBSCRIBE;
     root["method"] = "mining.subscribe";
-    root["params"] = boost::json::array
-    {
-        workerName,
-        password,
-        listCoin
-    };
+    root["params"] = boost::json::array{ workerName, password, listCoin };
 
     send(root);
 }
@@ -261,26 +234,19 @@ void stratum::StratumSmartMining::setProfile()
     boost::json::object root;
     root["id"] = stratum::StratumSmartMining::ID_SMART_MINING_SET_PROFILE;
     root["method"] = "smart_mining.set_profile";
-    root["params"] = boost::json::array
-    {
-        "usd_sec"
-    };
+    root["params"] = boost::json::array{ "usd_sec" };
 
     send(root);
 }
 
 
-void stratum::StratumSmartMining::miningSubmit(
-    uint32_t const deviceId,
-    boost::json::array const& params)
+void stratum::StratumSmartMining::miningSubmit(uint32_t const deviceId, boost::json::array const& params)
 {
     stratumPool->miningSubmit(deviceId, params);
 }
 
 
-void stratum::StratumSmartMining::miningSubmit(
-    uint32_t const deviceId,
-    boost::json::object const& params)
+void stratum::StratumSmartMining::miningSubmit(uint32_t const deviceId, boost::json::object const& params)
 {
     stratumPool->miningSubmit(deviceId, params);
 }

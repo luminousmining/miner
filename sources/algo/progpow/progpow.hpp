@@ -2,8 +2,8 @@
 
 #if !defined(__LIB_CUDA)
 #include <cstdint>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include <algo/crypto/kiss99.hpp>
 #endif
@@ -56,65 +56,65 @@ namespace algo
         }
 
 #if !defined(__LIB_CUDA)
-        algo::Kiss99Properties initializeRound(uint64_t const period,
-                                               int32_t* const dst,
-                                               int32_t* const src,
-                                               uint32_t const regs);
-        void writeMathRandomKernelCuda(VERSION const progpowVersion,
-                                       uint32_t const deviceId,
-                                       uint64_t const period,
-                                       uint32_t const countCache,
-                                       uint32_t const countMath,
-                                       uint32_t const regs,
-                                       uint32_t const moduleSource);
-        void writeMathRandomKernelOpenCL(VERSION const progpowVersion,
-                                         uint32_t const deviceId,
-                                         uint64_t const period,
-                                         uint32_t const countCache,
-                                         uint32_t const countMath,
-                                         uint32_t const regs,
-                                         uint32_t const moduleSource);
+        algo::Kiss99Properties
+             initializeRound(uint64_t const period, int32_t* const dst, int32_t* const src, uint32_t const regs);
+        void writeMathRandomKernelCuda(
+            VERSION const  progpowVersion,
+            uint32_t const deviceId,
+            uint64_t const period,
+            uint32_t const countCache,
+            uint32_t const countMath,
+            uint32_t const regs,
+            uint32_t const moduleSource);
+        void writeMathRandomKernelOpenCL(
+            VERSION const  progpowVersion,
+            uint32_t const deviceId,
+            uint64_t const period,
+            uint32_t const countCache,
+            uint32_t const countMath,
+            uint32_t const regs,
+            uint32_t const moduleSource);
 
 #if defined(CUDA_ENABLE)
         namespace nvidia
         {
-            void writeSequenceMergeEntries(std::stringstream& ss,
-                                           uint32_t const i,
-                                           uint32_t const x,
-                                           uint32_t const sel);
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void
+            writeSequenceMergeEntries(std::stringstream& ss, uint32_t const i, uint32_t const x, uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
 #endif
 
         namespace amd
         {
-            void writeSequenceMergeEntries(std::stringstream& ss,
-                                           uint32_t const i,
-                                           uint32_t const x,
-                                           uint32_t const sel);
-            void writeSequenceMathMerge(std::stringstream& ss,
-                                        uint32_t const i,
-                                        uint32_t const dst,
-                                        uint32_t const src1,
-                                        uint32_t const src2,
-                                        uint32_t const sel_math,
-                                        uint32_t const sel_merge);
-            void writeSequenceMergeCache(std::stringstream& ss,
-                                         uint32_t const i,
-                                         uint32_t const src,
-                                         uint32_t const dst,
-                                         uint32_t const sel);
+            void
+            writeSequenceMergeEntries(std::stringstream& ss, uint32_t const i, uint32_t const x, uint32_t const sel);
+            void writeSequenceMathMerge(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     dst,
+                uint32_t const     src1,
+                uint32_t const     src2,
+                uint32_t const     sel_math,
+                uint32_t const     sel_merge);
+            void writeSequenceMergeCache(
+                std::stringstream& ss,
+                uint32_t const     i,
+                uint32_t const     src,
+                uint32_t const     dst,
+                uint32_t const     sel);
         }
 #endif
     }

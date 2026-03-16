@@ -2,8 +2,8 @@
 
 #include <CL/opencl.hpp>
 
-#include <common/log/log.hpp>
 #include <common/cast.hpp>
+#include <common/log/log.hpp>
 
 
 namespace resolver
@@ -12,22 +12,21 @@ namespace resolver
     {
         struct Properties
         {
-            cl::Device clDevice{ nullptr };
-            cl::Context clContext{ nullptr };
+            cl::Device       clDevice{ nullptr };
+            cl::Context      clContext{ nullptr };
             cl::CommandQueue clQueue{ nullptr };
         };
 
-        inline
-        uint32_t getDeviceCount()
+        inline uint32_t getDeviceCount()
         {
-            uint32_t count { 0u };
-            std::vector<cl::Device> cldevices{};
+            uint32_t                  count{ 0u };
+            std::vector<cl::Device>   cldevices{};
             std::vector<cl::Platform> platforms{};
             cl::Platform::get(&platforms);
 
             for (cl::Platform const& platform : platforms)
             {
-                std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
+                std::string const platformName{ platform.getInfo<CL_PLATFORM_NAME>() };
                 if (platformName.find("AMD") == std::string::npos)
                 {
                     continue;
@@ -40,17 +39,16 @@ namespace resolver
             return count;
         }
 
-        inline
-        cl::Device getDevice(uint32_t const index)
+        inline cl::Device getDevice(uint32_t const index)
         {
-            std::vector<cl::Device> cldevices{};
+            std::vector<cl::Device>   cldevices{};
             std::vector<cl::Platform> platforms{};
             cl::Platform::get(&platforms);
 
             size_t currentIndex{ 0u };
             for (cl::Platform const& platform : platforms)
             {
-                std::string const platformName { platform.getInfo<CL_PLATFORM_NAME>() };
+                std::string const platformName{ platform.getInfo<CL_PLATFORM_NAME>() };
                 if (platformName.find("AMD") == std::string::npos)
                 {
                     continue;
@@ -68,11 +66,8 @@ namespace resolver
                 if (index < totalIndex)
                 {
                     size_t const indexBuffer{ totalIndex - index - 1u };
-                    auto const& clDevice{ cldevices[indexBuffer] };
-                    logInfo()
-                        << "Device ["
-                        << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>()
-                        << "] selected!";
+                    auto const&  clDevice{ cldevices[indexBuffer] };
+                    logInfo() << "Device [" << clDevice.getInfo<CL_DEVICE_BOARD_NAME_AMD>() << "] selected!";
                     return clDevice;
                 }
 
@@ -82,8 +77,7 @@ namespace resolver
             return {};
         }
 
-        inline bool initializeOpenCL(resolver::tests::Properties& properties,
-                                     uint32_t index = 0u)
+        inline bool initializeOpenCL(resolver::tests::Properties& properties, uint32_t index = 0u)
         {
             properties.clDevice = resolver::tests::getDevice(index);
             properties.clContext = cl::Context(properties.clDevice);

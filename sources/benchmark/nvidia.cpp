@@ -12,9 +12,7 @@ bool benchmark::cleanUpCuda()
 }
 
 
-bool benchmark::initializeCuda(
-        benchmark::PropertiesNvidia& properties,
-        uint32_t const index)
+bool benchmark::initializeCuda(benchmark::PropertiesNvidia& properties, uint32_t const index)
 {
     if (false == cleanUpCuda())
     {

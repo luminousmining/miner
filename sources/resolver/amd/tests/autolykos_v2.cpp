@@ -1,9 +1,9 @@
 #include <CL/opencl.hpp>
 #include <gtest/gtest.h>
 
+#include <algo/autolykos/autolykos.hpp>
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
-#include <algo/autolykos/autolykos.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
@@ -47,7 +47,6 @@ struct ResolverAutolykosv2AmdTest : public testing::Test
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
         jobInfo.period = castU64(algo::autolykos_v2::computePeriod(castU32(jobInfo.blockNumber)));
     }
-
 };
 
 

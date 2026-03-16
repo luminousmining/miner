@@ -1,9 +1,9 @@
 #include <string>
 
-#include <algo/hash.hpp>
-#include <algo/hash_utils.hpp>
 #include <algo/autolykos/autolykos.hpp>
 #include <algo/autolykos/cuda/autolykos.cuh>
+#include <algo/hash.hpp>
+#include <algo/hash_utils.hpp>
 #include <common/boost_utils.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
@@ -11,23 +11,21 @@
 #include <stratum/autolykos_v2.hpp>
 
 
-void stratum::StratumAutolykosV2::onResponse(
-    boost::json::object const& root)
+void stratum::StratumAutolykosV2::onResponse(boost::json::object const& root)
 {
     auto const miningRequestID{ common::boostJsonGetNumber<uint32_t>(root.at("id")) };
 
-    switch(miningRequestID)
+    switch (miningRequestID)
     {
         case stratum::Stratum::ID_MINING_SUBSCRIBE:
         {
-            if (   false == root.contains("error")
-                || true == root.at("error").is_null())
+            if (false == root.contains("error") || true == root.at("error").is_null())
             {
                 boost::json::array const& result(root.at("result").as_array());
                 if (false == result.empty())
                 {
-                    std::string extraNonceStr{ result.at(1).as_string().c_str() };
-                    uint32_t const extraNonce2Size { common::boostJsonGetNumber<uint32_t const>(result.at(2)) };
+                    std::string    extraNonceStr{ result.at(1).as_string().c_str() };
+                    uint32_t const extraNonce2Size{ common::boostJsonGetNumber<uint32_t const>(result.at(2)) };
                     setExtraNonce(extraNonceStr, extraNonce2Size);
                     miningAuthorize();
                 }
@@ -40,8 +38,7 @@ void stratum::StratumAutolykosV2::onResponse(
         }
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
-            if (   false == root.contains("error")
-                || true == root.at("error").is_null())
+            if (false == root.contains("error") || true == root.at("error").is_null())
             {
                 authenticated = root.at("result").as_bool();
                 if (true == authenticated)
@@ -68,8 +65,7 @@ void stratum::StratumAutolykosV2::onResponse(
 }
 
 
-void stratum::StratumAutolykosV2::onMiningNotify(
-    boost::json::object const& root)
+void stratum::StratumAutolykosV2::onMiningNotify(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxDispatchJob);
@@ -80,11 +76,8 @@ void stratum::StratumAutolykosV2::onMiningNotify(
     jobInfo.jobIDStr.assign(params.at(0).as_string().c_str());
     jobInfo.blockNumber = common::boostJsonGetNumber<uint64_t>(params.at(1));
     jobInfo.headerHash = algo::toHash256(params.at(2).as_string().c_str());
-    jobInfo.boundary =
-        algo::toHash2<algo::hash256, algo::hash512>(
-            algo::toLittleEndian<algo::hash512>(
-                algo::decimalToHash<algo::hash512>(
-                    params.at(6).as_string().c_str())));
+    jobInfo.boundary = algo::toHash2<algo::hash256, algo::hash512>(
+        algo::toLittleEndian<algo::hash512>(algo::decimalToHash<algo::hash512>(params.at(6).as_string().c_str())));
 
     jobInfo.cleanJob = params.at(8).as_bool();
 
@@ -98,11 +91,10 @@ void stratum::StratumAutolykosV2::onMiningNotify(
 }
 
 
-void stratum::StratumAutolykosV2::onMiningSetDifficulty(
-    boost::json::object const& root)
+void stratum::StratumAutolykosV2::onMiningSetDifficulty(boost::json::object const& root)
 {
     boost::json::array const& params(root.at("params").as_array());
-    double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
+    double const              difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     jobInfo.boundary = algo::toHash256(difficulty);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
@@ -111,24 +103,18 @@ void stratum::StratumAutolykosV2::onMiningSetDifficulty(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
-    logInfo()
-        << "Target: "
-        << std::hex << jobInfo.boundaryU64
-        << std::dec << " (" << difficulty << ")";
+    logInfo() << "Target: " << std::hex << jobInfo.boundaryU64 << std::dec << " (" << difficulty << ")";
 }
 
 
-void stratum::StratumAutolykosV2::miningSubmit(
-    uint32_t const deviceId,
-    boost::json::array const& params)
+void stratum::StratumAutolykosV2::miningSubmit(uint32_t const deviceId, boost::json::array const& params)
 {
     UNIQUE_LOCK(mtxSubmit);
 
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::array
-    { 
+    root["params"] = boost::json::array{
         wallet + "." + workerName, // Wallet.WorkerName
         params.at(0),              // Job ID
         params.at(1),              // Nonce without extraNonce

@@ -9,23 +9,23 @@ namespace profiler
 {
     struct Amd
     {
-    public:
+      public:
         bool valid{ false };
 
-        bool load();
-        void unload();
+        bool          load();
+        void          unload();
         ADLPMActivity getCurrentActivity(uint32_t const id);
 
-    private:
+      private:
 #if defined(_WIN32)
         HMODULE libModule{ nullptr };
 #else
         void* libModule{ nullptr };
 #endif
 
-        using ADL_MAIN_CONTROL_CREATE = int(*)(ADL_MAIN_MALLOC_CALLBACK callback, int enumConnectedAdapters);
-        using ADL_MAIN_CONTROL_DESTROY = int(*)();
-        using ADL_PM_ACTIVITY_GET = int(*)(int iAdapterIndex, ADLPMActivity* lpActivity);
+        using ADL_MAIN_CONTROL_CREATE = int (*)(ADL_MAIN_MALLOC_CALLBACK callback, int enumConnectedAdapters);
+        using ADL_MAIN_CONTROL_DESTROY = int (*)();
+        using ADL_PM_ACTIVITY_GET = int (*)(int iAdapterIndex, ADLPMActivity* lpActivity);
 
         ADL_MAIN_CONTROL_CREATE  adlMainControlCreate{ nullptr };
         ADL_MAIN_CONTROL_DESTROY adlMainControlDestroy{ nullptr };
@@ -35,4 +35,4 @@ namespace profiler
     };
 }
 
-#endif //!CUDA_ENABLE
+#endif //! CUDA_ENABLE

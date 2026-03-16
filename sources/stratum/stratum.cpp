@@ -1,8 +1,8 @@
+#include <algo/hash_utils.hpp>
 #include <common/app.hpp>
 #include <common/boost_utils.hpp>
 #include <common/cast.hpp>
 #include <common/config.hpp>
-#include <algo/hash_utils.hpp>
 #include <common/log/log.hpp>
 #include <stratum/stratum.hpp>
 
@@ -13,7 +13,7 @@ stratum::Stratum::~Stratum()
 
 
 void stratum::Stratum::miningSubmit(
-    [[maybe_unused]] uint32_t const deviceId,
+    [[maybe_unused]] uint32_t const            deviceId,
     [[maybe_unused]] boost::json::array const& params)
 {
     logErr() << "mining.submit params[array] was not implemented!";
@@ -21,15 +21,14 @@ void stratum::Stratum::miningSubmit(
 
 
 void stratum::Stratum::miningSubmit(
-    [[maybe_unused]] uint32_t const deviceId,
+    [[maybe_unused]] uint32_t const             deviceId,
     [[maybe_unused]] boost::json::object const& params)
 {
     logErr() << "mining.submit params[object] was not implemented!";
 }
 
 
-void stratum::Stratum::setCallbackUpdateJob(
-    stratum::Stratum::callbackUpdateJob cbUpdateJob)
+void stratum::Stratum::setCallbackUpdateJob(stratum::Stratum::callbackUpdateJob cbUpdateJob)
 {
     if (nullptr != cbUpdateJob)
     {
@@ -38,8 +37,7 @@ void stratum::Stratum::setCallbackUpdateJob(
 }
 
 
-void stratum::Stratum::setCallbackShareStatus(
-    stratum::Stratum::callbackShareStatus cbShareStatus)
+void stratum::Stratum::setCallbackShareStatus(stratum::Stratum::callbackShareStatus cbShareStatus)
 {
     if (nullptr != cbShareStatus)
     {
@@ -48,8 +46,7 @@ void stratum::Stratum::setCallbackShareStatus(
 }
 
 
-void stratum::Stratum::onReceive(
-    std::string const& message)
+void stratum::Stratum::onReceive(std::string const& message)
 {
     try
     {
@@ -76,8 +73,7 @@ void stratum::Stratum::onReceive(
 }
 
 
-void stratum::Stratum::onMethod(
-    boost::json::object const& root)
+void stratum::Stratum::onMethod(boost::json::object const& root)
 {
     std::string const method{ root.at("method").as_string().c_str() };
 
@@ -104,7 +100,7 @@ void stratum::Stratum::onMethod(
     else if ("client.show_message" == method)
     {
         boost::json::array const& params(root.at("params").as_array());
-        std::stringstream ss;
+        std::stringstream         ss;
         for (auto msg : params)
         {
             ss << msg;
@@ -124,16 +120,14 @@ void stratum::Stratum::onConnect()
     common::Config const& config{ common::Config::instance() };
 
 
-    if (   true == config.mining.wallet.empty()
-        || true == config.mining.password.empty())
+    if (true == config.mining.wallet.empty() || true == config.mining.password.empty())
     {
-        logErr()
-            << "Cannot connect wallet[" << config.mining.wallet << "]"
-            << " password[" << config.mining.password << "]";
+        logErr() << "Cannot connect wallet[" << config.mining.wallet << "]"
+                 << " password[" << config.mining.password << "]";
         return;
     }
 
-    switch(stratumType)
+    switch (stratumType)
     {
         case stratum::STRATUM_TYPE::ETHEREUM_V1:
         {
@@ -181,33 +175,28 @@ void stratum::Stratum::loopGetWork()
 }
 
 
-void stratum::Stratum::onUnknownMethod(
-    boost::json::object const& root)
+void stratum::Stratum::onUnknownMethod(boost::json::object const& root)
 {
     std::string const method{ root.at("method").as_string().c_str() };
 
-    logErr()
-        << "Unknown[" << method << "]"
-        << " " << root;
+    logErr() << "Unknown[" << method << "]"
+             << " " << root;
 }
 
 
-void stratum::Stratum::onMiningSet(
-    [[maybe_unused]] boost::json::object const& root)
+void stratum::Stratum::onMiningSet([[maybe_unused]] boost::json::object const& root)
 {
     logErr() << "mining.set unimplemented!";
 }
 
 
-void stratum::Stratum::onMiningSetTarget(
-    [[maybe_unused]] boost::json::object const& root)
+void stratum::Stratum::onMiningSetTarget([[maybe_unused]] boost::json::object const& root)
 {
     logErr() << "mining.set_target unimplemented!";
 }
 
 
-void stratum::Stratum::onMiningSetExtraNonce(
-    [[maybe_unused]] boost::json::object const& root)
+void stratum::Stratum::onMiningSetExtraNonce([[maybe_unused]] boost::json::object const& root)
 {
     logErr() << "mining.set_extranonce unimplemented!";
 }
@@ -222,24 +211,13 @@ void stratum::Stratum::doLoopTimeout()
 
 void stratum::Stratum::miningHello()
 {
-    auto const softwareName
-    {
-        "luminousminer/"
-        + std::to_string(common::VERSION_MAJOR)
-        + "."
-        + std::to_string(common::VERSION_MINOR)
-    };
+    auto const softwareName{ "luminousminer/" + std::to_string(common::VERSION_MAJOR) + "."
+                             + std::to_string(common::VERSION_MINOR) };
 
     boost::json::object root;
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
     root["method"] = "mining.hello";
-    root["params"] =
-    {
-        { "agent", softwareName },
-        { "host", host },
-        { "port", port },
-        { "proto", protocol }
-    };
+    root["params"] = { { "agent", softwareName }, { "host", host }, { "port", port }, { "proto", protocol } };
 
     send(root);
 }
@@ -247,13 +225,8 @@ void stratum::Stratum::miningHello()
 
 void stratum::Stratum::miningSubscribe()
 {
-    auto const softwareName
-    {
-        "luminousminer/"
-        + std::to_string(common::VERSION_MAJOR)
-        + "."
-        + std::to_string(common::VERSION_MINOR)
-    };
+    auto const softwareName{ "luminousminer/" + std::to_string(common::VERSION_MAJOR) + "."
+                             + std::to_string(common::VERSION_MINOR) };
 
     boost::json::object root;
     root["id"] = stratum::Stratum::ID_MINING_SUBSCRIBE;
@@ -304,14 +277,13 @@ void stratum::Stratum::ethGetWork()
 }
 
 
-void stratum::Stratum::setExtraNonce(
-    std::string const& paramExtraNonce)
+void stratum::Stratum::setExtraNonce(std::string const& paramExtraNonce)
 {
     jobInfo.extraNonceSize = castU32(paramExtraNonce.size());
     jobInfo.extraNonce = std::strtoull(paramExtraNonce.c_str(), nullptr, 16);
 
     // Define the 0 counter to define nonce gap.
-    size_t fill{ 16ull - paramExtraNonce.size() };
+    size_t      fill{ 16ull - paramExtraNonce.size() };
     std::string extraNonceFill{};
     extraNonceFill.assign(paramExtraNonce);
     for (size_t i{ 0ull }; i < fill; ++i)
@@ -333,9 +305,7 @@ void stratum::Stratum::setExtraNonce(
 }
 
 
-void stratum::Stratum::setExtraNonce(
-    std::string const& paramExtraNonce,
-    uint32_t const paramExtraNonce2Size)
+void stratum::Stratum::setExtraNonce(std::string const& paramExtraNonce, uint32_t const paramExtraNonce2Size)
 {
     setExtraNonce(paramExtraNonce);
     jobInfo.extraNonce2Size = paramExtraNonce2Size;
@@ -355,7 +325,7 @@ void stratum::Stratum::updateJob()
     }
     else
     {
-        common::Config const& config { common::Config::instance() };
+        common::Config const& config{ common::Config::instance() };
         if (common::PROFILE::STANDARD == config.profile)
         {
             logErr() << "The callback updateJob is nullptr!";
@@ -366,15 +336,14 @@ void stratum::Stratum::updateJob()
 
 bool stratum::Stratum::isValidJob() const
 {
-    bool ret { true };
+    bool ret{ true };
 
     if (true == algo::isHashEmpty(jobInfo.jobID))
     {
         logDebug() << "jobID is empty";
         ret = false;
     }
-    if (   true == algo::isHashEmpty(jobInfo.headerHash)
-        && true == algo::isHashEmpty(jobInfo.headerBlob))
+    if (true == algo::isHashEmpty(jobInfo.headerHash) && true == algo::isHashEmpty(jobInfo.headerBlob))
     {
         logDebug() << "HeaderHash or headerBlob is empty";
         ret = false;
@@ -399,33 +368,24 @@ bool stratum::Stratum::isValidJob() const
 }
 
 
-void stratum::Stratum::onShare(
-    boost::json::object const& root,
-    uint32_t const miningRequestID)
+void stratum::Stratum::onShare(boost::json::object const& root, uint32_t const miningRequestID)
 {
     ////////////////////////////////////////////////////////////////////////////
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
-    bool isValid { true };
+    bool isValid{ true };
 
     ////////////////////////////////////////////////////////////////////////////
-    switch(stratumType)
+    switch (stratumType)
     {
         case stratum::STRATUM_TYPE::ETHEREUM_V1:
         case stratum::STRATUM_TYPE::ETHEREUM_V2:
         {
-            bool const isErrResult
-            {
-                   false == common::boostJsonContains(root, "result")
-                || true == root.at("result").is_null()
-                || false == root.at("result").as_bool()
-            };
-            bool const isErrError
-            {
-                true == common::boostJsonContains(root, "error")
-                && false == root.at("error").is_null()
-            };
+            bool const isErrResult{ false == common::boostJsonContains(root, "result")
+                                    || true == root.at("result").is_null() || false == root.at("result").as_bool() };
+            bool const isErrError{ true == common::boostJsonContains(root, "error")
+                                   && false == root.at("error").is_null() };
             if (true == isErrResult || true == isErrError)
             {
                 logErr() << root;
@@ -435,18 +395,11 @@ void stratum::Stratum::onShare(
         }
         case stratum::STRATUM_TYPE::ETHPROXY:
         {
-            bool const isErrResult
-            {
-                   false == common::boostJsonContains(root, "result")
-                || true == root.at("result").is_null()
-                || false == root.at("result").is_object()
-                || "OK"s != root.at("result").as_object().at("status").as_string().c_str()
-            };
-            bool const isErrError
-            {
-                   true == common::boostJsonContains(root, "error")
-                && false == root.at("error").is_null()
-            };
+            bool const isErrResult{ false == common::boostJsonContains(root, "result")
+                                    || true == root.at("result").is_null() || false == root.at("result").is_object()
+                                    || "OK"s != root.at("result").as_object().at("status").as_string().c_str() };
+            bool const isErrError{ true == common::boostJsonContains(root, "error")
+                                   && false == root.at("error").is_null() };
 
             if (true == isErrResult || true == isErrError)
             {

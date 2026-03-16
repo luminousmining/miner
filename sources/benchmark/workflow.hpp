@@ -10,39 +10,39 @@
 #include <statistical/statistical.hpp>
 
 
-#define RUN_BENCH(name, loopCount, _threads, _blocks, function)                \
-    logDebug() << "================================";                          \
-    setGrid(_threads, _blocks);                                                \
-    for (uint32_t i{ 0u }; i < loopCount; ++i)                                 \
-    {                                                                          \
-        startChrono(name);                                                     \
-        if (false == (function))                                               \
-        {                                                                      \
-            return false;                                                      \
-        }                                                                      \
-        stopChrono(dashboard);                                                 \
-    }                                                                          \
-    setMultiplicator(1u);                                                      \
-    setDivisor(1u);                                                            \
+#define RUN_BENCH(name, loopCount, _threads, _blocks, function)                                                        \
+    logDebug() << "================================";                                                                  \
+    setGrid(_threads, _blocks);                                                                                        \
+    for (uint32_t i{ 0u }; i < loopCount; ++i)                                                                         \
+    {                                                                                                                  \
+        startChrono(name);                                                                                             \
+        if (false == (function))                                                                                       \
+        {                                                                                                              \
+            return false;                                                                                              \
+        }                                                                                                              \
+        stopChrono(dashboard);                                                                                         \
+    }                                                                                                                  \
+    setMultiplicator(1u);                                                                                              \
+    setDivisor(1u);                                                                                                    \
     logDebug() << "================================";
 
 
-#define BENCH_INIT_RESET_RESULT(result)                                        \
-    if (false == initCleanResult(&result))                                     \
-    {                                                                          \
-        return false;                                                          \
+#define BENCH_INIT_RESET_RESULT(result)                                                                                \
+    if (false == initCleanResult(&result))                                                                             \
+    {                                                                                                                  \
+        return false;                                                                                                  \
     }
 
-#define BENCH_INIT_RESET_RESULT_32(result)                                     \
-    if (false == initCleanResult32(&result))                                   \
-    {                                                                          \
-        return false;                                                          \
+#define BENCH_INIT_RESET_RESULT_32(result)                                                                             \
+    if (false == initCleanResult32(&result))                                                                           \
+    {                                                                                                                  \
+        return false;                                                                                                  \
     }
 
-#define BENCH_INIT_RESET_RESULT_64(result)                                     \
-    if (false == initCleanResult64(&result))                                   \
-    {                                                                          \
-        return false;                                                          \
+#define BENCH_INIT_RESET_RESULT_64(result)                                                                             \
+    if (false == initCleanResult64(&result))                                                                           \
+    {                                                                                                                  \
+        return false;                                                                                                  \
     }
 
 namespace benchmark
@@ -58,23 +58,22 @@ namespace benchmark
 
     struct BenchmarkWorkflow
     {
-    public:
+      public:
 #if defined(CUDA_ENABLE)
         bool                        enableNvidia{ true };
         benchmark::PropertiesNvidia propertiesNvidia{};
 #endif
 #if defined(AMD_ENABLE)
-        bool                        enableAmd{ true };
-        benchmark::PropertiesAmd    propertiesAmd{};
+        bool                     enableAmd{ true };
+        benchmark::PropertiesAmd propertiesAmd{};
 #endif
 
-        explicit BenchmarkWorkflow(bool const nvidia,
-                                   bool const amd);
+        explicit BenchmarkWorkflow(bool const nvidia, bool const amd);
         bool initializeDevices(uint32_t const deviceIndex = 0u);
         void destroyDevices();
         void run();
 
-    private:
+      private:
         device::DEVICE_TYPE              currentdeviceType{ device::DEVICE_TYPE::UNKNOWN };
         std::string                      currentBenchName{};
         uint32_t                         blocks{ 1u };
@@ -87,7 +86,7 @@ namespace benchmark
         std::vector<common::Dashboard>   dashboards{};
 
         common::Dashboard createNewDashboard(std::string const& title);
-        void writeReport();
+        void              writeReport();
 
         void setMultiplicator(uint32_t const _multiplicator);
         void setDivisor(uint32_t const _divisor);

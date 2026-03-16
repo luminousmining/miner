@@ -9,7 +9,7 @@ namespace resolver
 {
     class ResolverNvidiaProgpowQuai : public resolver::ResolverNvidiaProgPOW
     {
-    public:
+      public:
         ResolverNvidiaProgpowQuai();
         ~ResolverNvidiaProgpowQuai() = default;
     };

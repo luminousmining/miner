@@ -13,9 +13,9 @@
 
 
 #if defined(_WIN32) && !defined(__BYTE_ORDER__)
-constexpr std::int32_t __ORDER_LITTLE_ENDIAN__ { 1234 };
-constexpr std::int32_t __ORDER_BIG_ENDIAN__    { 4321 };
-constexpr std::int32_t __BYTE_ORDER__          { __ORDER_LITTLE_ENDIAN__ };
+constexpr std::int32_t __ORDER_LITTLE_ENDIAN__{ 1234 };
+constexpr std::int32_t __ORDER_BIG_ENDIAN__{ 4321 };
+constexpr std::int32_t __BYTE_ORDER__{ __ORDER_LITTLE_ENDIAN__ };
 #elif (defined(__linux__) || defined(__GNUC__)) && !defined(__BYTE_ORDER__)
 #error "__GNUC__ should define __BYTE_ORDER__"
 #endif
@@ -36,8 +36,14 @@ namespace algo
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     namespace le
     {
-        inline uint32_t uint32(uint32_t const x) { return x; }
-        inline uint64_t uint64(uint64_t const x) { return x; }
+        inline uint32_t uint32(uint32_t const x)
+        {
+            return x;
+        }
+        inline uint64_t uint64(uint64_t const x)
+        {
+            return x;
+        }
         inline uint64_t uint64(uint8_t const* const data)
         {
             uint64_t word{ 0ull };
@@ -45,25 +51,39 @@ namespace algo
             return le::uint64(word);
         }
 
-        inline hash1024 const& uint32(algo::hash1024 const& h) { return h; }
-        inline hash512  const& uint32(algo::hash512 const& h)  { return h; }
-        inline hash256  const& uint32(algo::hash256 const& h)  { return h; }
+        inline hash1024 const& uint32(algo::hash1024 const& h)
+        {
+            return h;
+        }
+        inline hash512 const& uint32(algo::hash512 const& h)
+        {
+            return h;
+        }
+        inline hash256 const& uint32(algo::hash256 const& h)
+        {
+            return h;
+        }
     };
 
     namespace be
     {
-        inline uint32_t uint32(uint32_t const x) { return bswap32(x); }
-        inline uint64_t uint64(uint64_t const x) { return bswap64(x); }
+        inline uint32_t uint32(uint32_t const x)
+        {
+            return bswap32(x);
+        }
+        inline uint64_t uint64(uint64_t const x)
+        {
+            return bswap64(x);
+        }
     };
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #endif
 
     template<typename T>
-    inline
-    T hashXor(T const& x, T const& y)
+    inline T hashXor(T const& x, T const& y)
     {
-        T hash{};
-        size_t const length { sizeof(T) / sizeof(uint64_t) };
+        T            hash{};
+        size_t const length{ sizeof(T) / sizeof(uint64_t) };
         for (size_t i{ 0 }; i < length; ++i)
         {
             hash.word64[i] = x.word64[i] ^ y.word64[i];

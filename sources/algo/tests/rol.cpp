@@ -29,4 +29,4 @@ TEST_F(RotateByteTest, rolU32)
     EXPECT_EQ(0u, algo::rol_u32(0x1101u, 0x2202u));
     EXPECT_EQ(0u, algo::rol_u32(0x2202u, 0x1101u));
     EXPECT_EQ(0u, algo::rol_u32(1u, 0x1111111u));
-}               
+}

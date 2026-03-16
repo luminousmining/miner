@@ -50,10 +50,10 @@ TEST_F(MathTest, isOddPrimeFalse)
 
 TEST_F(MathTest, findPrimeNumber)
 {
-    EXPECT_EQ(2ull,  algo::largestPrime(2ull));
-    EXPECT_EQ(3ull,  algo::largestPrime(3ull));
-    EXPECT_EQ(5ull,  algo::largestPrime(5ull));
-    EXPECT_EQ(7ull,  algo::largestPrime(7ull));
+    EXPECT_EQ(2ull, algo::largestPrime(2ull));
+    EXPECT_EQ(3ull, algo::largestPrime(3ull));
+    EXPECT_EQ(5ull, algo::largestPrime(5ull));
+    EXPECT_EQ(7ull, algo::largestPrime(7ull));
     EXPECT_EQ(11ull, algo::largestPrime(11ull));
     EXPECT_EQ(13ull, algo::largestPrime(13ull));
     EXPECT_EQ(17ull, algo::largestPrime(17ull));
@@ -80,9 +80,9 @@ TEST_F(MathTest, findPrimeNumber)
 
 TEST_F(MathTest, findPrimeNumberGap)
 {
-    EXPECT_EQ(3ull,  algo::largestPrime(5ull - 1ull));
-    EXPECT_EQ(5ull,  algo::largestPrime(7ull - 1ull));
-    EXPECT_EQ(7ull,  algo::largestPrime(11ull - 1ull));
+    EXPECT_EQ(3ull, algo::largestPrime(5ull - 1ull));
+    EXPECT_EQ(5ull, algo::largestPrime(7ull - 1ull));
+    EXPECT_EQ(7ull, algo::largestPrime(11ull - 1ull));
     EXPECT_EQ(11ull, algo::largestPrime(13ull - 1ull));
     EXPECT_EQ(13ull, algo::largestPrime(17ull - 1ull));
     EXPECT_EQ(17ull, algo::largestPrime(19ull - 1ull));

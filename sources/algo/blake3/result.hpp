@@ -9,7 +9,7 @@ namespace algo
 {
     namespace blake3
     {
-        constexpr uint32_t MAX_RESULT { 4u };
+        constexpr uint32_t MAX_RESULT{ 4u };
 
         struct alignas(8) Result
         {
@@ -25,7 +25,7 @@ namespace algo
             uint32_t    toGroup{ 0u };
             uint32_t    fromGroup{ 0u };
             bool        found{ false };
-            uint32_t    extraNonceSize { 0u };
+            uint32_t    extraNonceSize{ 0u };
             uint32_t    count{ 0u };
             uint64_t    nonces[algo::blake3::MAX_RESULT]{ 0ull, 0ull, 0ull, 0ull };
         };

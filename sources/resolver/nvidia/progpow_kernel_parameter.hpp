@@ -15,7 +15,7 @@ namespace resolver
                 uint32_t*              seedCache{ nullptr };
                 uint32_t*              lightCache{ nullptr };
                 uint32_t*              dagCache{ nullptr };
-                uint32_t*              headerCache { nullptr };
+                uint32_t*              headerCache{ nullptr };
                 algo::progpow::Result* resultCache{ nullptr };
             };
         }

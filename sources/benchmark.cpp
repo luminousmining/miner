@@ -1,5 +1,5 @@
-#include <common/log/log.hpp>
 #include <benchmark/workflow.hpp>
+#include <common/log/log.hpp>
 
 
 int main()

@@ -3,8 +3,7 @@
 #include <resolver/nvidia/evrprogpow.hpp>
 
 
-resolver::ResolverNvidiaEvrprogPOW::ResolverNvidiaEvrprogPOW():
-    resolver::ResolverNvidiaProgPOW()
+resolver::ResolverNvidiaEvrprogPOW::ResolverNvidiaEvrprogPOW() : resolver::ResolverNvidiaProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::EVRPROGPOW;

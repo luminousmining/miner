@@ -3,8 +3,7 @@
 #include <resolver/nvidia/kawpow.hpp>
 
 
-resolver::ResolverNvidiaKawPOW::ResolverNvidiaKawPOW():
-    resolver::ResolverNvidiaProgPOW()
+resolver::ResolverNvidiaKawPOW::ResolverNvidiaKawPOW() : resolver::ResolverNvidiaProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::KAWPOW;

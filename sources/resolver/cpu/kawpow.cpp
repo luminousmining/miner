@@ -3,8 +3,7 @@
 #include <resolver/cpu/kawpow.hpp>
 
 
-resolver::ResolverCpuKawPOW::ResolverCpuKawPOW():
-    resolver::ResolverCpuProgPOW()
+resolver::ResolverCpuKawPOW::ResolverCpuKawPOW() : resolver::ResolverCpuProgPOW()
 {
     ///////////////////////////////////////////////////////////////////////////
     algorithm = algo::ALGORITHM::KAWPOW;

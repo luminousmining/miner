@@ -6,7 +6,12 @@
 #include <common/log/log_file.hpp>
 
 
-#define CLI_CHECK(condition, msg) if ((condition)) { error = true; logErr() << msg; }
+#define CLI_CHECK(condition, msg)                                                                                      \
+    if ((condition))                                                                                                   \
+    {                                                                                                                  \
+        error = true;                                                                                                  \
+        logErr() << msg;                                                                                               \
+    }
 
 
 common::Config& common::Config::instance()
@@ -40,24 +45,24 @@ bool common::Config::isValidConfig() const
 
     if (common::PROFILE::STANDARD == profile)
     {
-        CLI_CHECK(mining.host.empty() == true,       "missing --host");
-        CLI_CHECK(mining.port == 0,                  "missing --port");
-        CLI_CHECK(mining.algo.empty() == true,       "missing --algo");
+        CLI_CHECK(mining.host.empty() == true, "missing --host");
+        CLI_CHECK(mining.port == 0, "missing --port");
+        CLI_CHECK(mining.algo.empty() == true, "missing --algo");
         CLI_CHECK(mining.workerName.empty() == true, "missing --workername");
-        CLI_CHECK(mining.password.empty() == true,   "missing --password");
-        CLI_CHECK(mining.wallet.empty() == true,     "missing --wallet");
+        CLI_CHECK(mining.password.empty() == true, "missing --password");
+        CLI_CHECK(mining.wallet.empty() == true, "missing --wallet");
     }
     else if (common::PROFILE::SMART_MINING == profile)
     {
-        CLI_CHECK(mining.workerName.empty() == true,          "missing --workername");
-        CLI_CHECK(mining.password.empty() == true,            "missing --password");
+        CLI_CHECK(mining.workerName.empty() == true, "missing --workername");
+        CLI_CHECK(mining.password.empty() == true, "missing --password");
         CLI_CHECK(smartMining.coinPoolConfig.empty() == true, "missing --sm_wallet and --sm_pool");
         for (auto const& it : smartMining.coinPoolConfig)
         {
-            PoolConfig const& poolConfig { it.second };
-            CLI_CHECK(poolConfig.host.empty() == true,     "missing --sm_pool");
-            CLI_CHECK(poolConfig.port == 0,                "missing --sm_pool");
-            CLI_CHECK(poolConfig.wallet.empty() == true,   "missing --sm_wallet");
+            PoolConfig const& poolConfig{ it.second };
+            CLI_CHECK(poolConfig.host.empty() == true, "missing --sm_pool");
+            CLI_CHECK(poolConfig.port == 0, "missing --sm_pool");
+            CLI_CHECK(poolConfig.wallet.empty() == true, "missing --sm_wallet");
             CLI_CHECK(poolConfig.password.empty() == true, "missing --sm_wallet");
         }
     }
@@ -66,8 +71,7 @@ bool common::Config::isValidConfig() const
 }
 
 
-common::Config::PoolConfig* common::Config::getOrAddDeviceSettings(
-    uint32_t const deviceId)
+common::Config::PoolConfig* common::Config::getOrAddDeviceSettings(uint32_t const deviceId)
 {
     if (deviceSettings.find(deviceId) == deviceSettings.end())
     {
@@ -90,21 +94,21 @@ bool common::Config::loadCli(int argc, char** argv)
         ////////////////////////////////////////////////////////////////////////
         // LOGGER
         ////////////////////////////////////////////////////////////////////////
-        auto const levelLog { cli.getLevelLog() };
+        auto const levelLog{ cli.getLevelLog() };
         if (std::nullopt != levelLog)
         {
             log.level = *levelLog;
             setLogLevel(*levelLog);
         }
 
-        auto const logFile { cli.getLogFilenaName() };
+        auto const logFile{ cli.getLogFilenaName() };
         if (std::nullopt != logFile)
         {
             log.file.assign(*logFile);
             common::LoggerFile::instance().openFilename();
         }
 
-        auto const intervalHashStats { cli.getLogIntervalHashStats() };
+        auto const intervalHashStats{ cli.getLogIntervalHashStats() };
         if (std::nullopt != intervalHashStats)
         {
             log.intervalHashStats = common::min_limit(*intervalHashStats, 100u);
@@ -118,11 +122,7 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const cudaLazy{ cli.getEnvironmentCudaLazy() };
         if (std::nullopt != cudaLazy)
         {
-            common::setVarEnv
-            (
-                "CUDA_MODULE_LOADING",
-                *cudaLazy == true ? "LAZY" : "EAGER"
-            );
+            common::setVarEnv("CUDA_MODULE_LOADING", *cudaLazy == true ? "LAZY" : "EAGER");
         }
 
         auto const cudaDeviceOrder{ cli.getEnvironmentCudadeviceOrder() };
@@ -224,7 +224,7 @@ bool common::Config::loadCli(int argc, char** argv)
         mining.socks5 = cli.isSocks5();
         if (true == mining.socks5)
         {
-            auto const SocksPort { cli.getSocksPort() };
+            auto const SocksPort{ cli.getSocksPort() };
             if (true == algo::inRange(1u, 65535u, SocksPort))
             {
                 mining.socksPort = SocksPort;
@@ -325,9 +325,7 @@ bool common::Config::loadCli(int argc, char** argv)
             auto const amdPort{ cli.getAMDPort() };
             auto const amdAlgo{ cli.getAMDAlgo() };
 
-            if (   std::nullopt != amdHost
-                && std::nullopt != amdPort
-                && std::nullopt != amdAlgo)
+            if (std::nullopt != amdHost && std::nullopt != amdPort && std::nullopt != amdAlgo)
             {
                 amdSetting.host.assign(*amdHost);
                 amdSetting.port = *amdPort;
@@ -346,9 +344,7 @@ bool common::Config::loadCli(int argc, char** argv)
             auto const nvidiaPort{ cli.getNvidiaPort() };
             auto const nvidiaAlgo{ cli.getNvidiaAlgo() };
 
-            if (   std::nullopt != nvidiaHost
-                && std::nullopt != nvidiaPort
-                && std::nullopt != nvidiaAlgo)
+            if (std::nullopt != nvidiaHost && std::nullopt != nvidiaPort && std::nullopt != nvidiaAlgo)
             {
                 nvidiaSetting.host.assign(*nvidiaHost);
                 nvidiaSetting.port = *nvidiaPort;
@@ -364,43 +360,43 @@ bool common::Config::loadCli(int argc, char** argv)
         }
         for (auto const& it : cli.getCustomHost())
         {
-            uint32_t const& index{ std::get<0>(it) };
-            std::string const& value{ std::get<1>(it) };
+            uint32_t const&             index{ std::get<0>(it) };
+            std::string const&          value{ std::get<1>(it) };
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->host.assign(value);
         }
         for (auto const& it : cli.getCustomPort())
         {
-            uint32_t const& index{ std::get<0>(it) };
-            uint32_t const& value{ std::get<1>(it) };
+            uint32_t const&             index{ std::get<0>(it) };
+            uint32_t const&             value{ std::get<1>(it) };
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->port = value;
         }
         for (auto const& it : cli.getCustomPassword())
         {
-            uint32_t const& index{ std::get<0>(it) };
-            std::string const& value{ std::get<1>(it) };
+            uint32_t const&             index{ std::get<0>(it) };
+            std::string const&          value{ std::get<1>(it) };
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->password.assign(value);
         }
         for (auto const& it : cli.getCustomAlgorithm())
         {
-            uint32_t const& index{ std::get<0>(it) };
-            std::string const& value{ std::get<1>(it) };
+            uint32_t const&             index{ std::get<0>(it) };
+            std::string const&          value{ std::get<1>(it) };
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->algo.assign(value);
         }
         for (auto const& it : cli.getCustomWallet())
         {
-            uint32_t const& index{ std::get<0>(it) };
-            std::string const& value{ std::get<1>(it) };
+            uint32_t const&             index{ std::get<0>(it) };
+            std::string const&          value{ std::get<1>(it) };
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->wallet.assign(value);
         }
         for (auto const& it : cli.getCustomWorkerName())
         {
-            uint32_t const& index{ std::get<0>(it) };
-            std::string const& value{ std::get<1>(it) };
+            uint32_t const&             index{ std::get<0>(it) };
+            std::string const&          value{ std::get<1>(it) };
             common::Config::PoolConfig* poolConfig{ getOrAddDeviceSettings(index) };
             poolConfig->workerName.assign(value);
         }
@@ -418,8 +414,7 @@ bool common::Config::loadCli(int argc, char** argv)
         occupancy.internalLoop = internalLoop;
         occupancy.cudaContext = cudaContext;
         occupancy.kernelMinimunExecuteNeeded = kernelMinimunExecuteNeeded;
-        if (   0u != occupancyThreads
-            || 0u != occupancyBlocks)
+        if (0u != occupancyThreads || 0u != occupancyBlocks)
         {
             if (0u != occupancyThreads)
             {
@@ -466,11 +461,10 @@ bool common::Config::loadCli(int argc, char** argv)
             {
                 std::string const& smartMiningCoin{ std::get<0>(it) };
                 std::string const& smartMiningUrl{ std::get<1>(it) };
-                uint32_t const& smartMiningPort{ std::get<2>(it) };
+                uint32_t const&    smartMiningPort{ std::get<2>(it) };
 
-                common::Config::PoolConfig& poolConfig { smartMining.coinPoolConfig[smartMiningCoin] };
-                if (   false == poolConfig.host.empty()
-                    || 0u != poolConfig.port)
+                common::Config::PoolConfig& poolConfig{ smartMining.coinPoolConfig[smartMiningCoin] };
+                if (false == poolConfig.host.empty() || 0u != poolConfig.port)
                 {
                     logErr() << "sm_pool => duplicate coin[" << smartMiningCoin << "]";
                     return false;
@@ -480,11 +474,11 @@ bool common::Config::loadCli(int argc, char** argv)
                 poolConfig.password = mining.password;
             }
         }
-        
+
         ////////////////////////////////////////////////////////////////////////
         // API
         ////////////////////////////////////////////////////////////////////////
-        auto const ApiPort { cli.getApiPort() };
+        auto const ApiPort{ cli.getApiPort() };
         if (true == algo::inRange(1u, 65535u, ApiPort))
         {
             api.port = ApiPort;
@@ -493,30 +487,30 @@ bool common::Config::loadCli(int argc, char** argv)
         ////////////////////////////////////////////////////////////////////////
         // TOOL MOCKER
         ////////////////////////////////////////////////////////////////////////
-#if defined(TOOLS_ENABLE) &&  defined(TOOL_MOCKER)
+#if defined(TOOLS_ENABLE) && defined(TOOL_MOCKER)
         toolConfigs.mockerResolverCount = cli.getMockerResolverCount();
         toolConfigs.mockerResolverUpdateMemorySleep = cli.getMockerResolverUpdateMemorySleep();
 #endif
     }
-    catch(std::exception const& e)
+    catch (std::exception const& e)
     {
         logErr() << e.what() << '\n';
         return false;
     }
-    
+
     return true;
 }
 
 
 bool common::Config::isEnable(uint32_t const deviceId) const
 {
-    auto const& it
-    {
-        std::find_if(
-            deviceDisable.begin(),
-            deviceDisable.end(),
-            [&](uint32_t id) { return deviceId == id; })
-    };
+    auto const& it{ std::find_if(
+        deviceDisable.begin(),
+        deviceDisable.end(),
+        [&](uint32_t id)
+        {
+            return deviceId == id;
+        }) };
 
     return it == deviceDisable.end();
 }
@@ -528,10 +522,9 @@ algo::ALGORITHM common::Config::getAlgorithm() const
 }
 
 
-std::optional<common::Config::PoolConfig> common::Config::getConfigDevice(
-    uint32_t const deviceId) const
+std::optional<common::Config::PoolConfig> common::Config::getConfigDevice(uint32_t const deviceId) const
 {
-    auto it { deviceSettings.find(deviceId) };
+    auto it{ deviceSettings.find(deviceId) };
     if (it != deviceSettings.end())
     {
         return { it->second };

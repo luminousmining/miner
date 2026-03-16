@@ -10,17 +10,15 @@
 #include <stratum/blake3.hpp>
 
 
-void stratum::StratumBlake3::onResponse(
-    [[maybe_unused]] boost::json::object const& root)
+void stratum::StratumBlake3::onResponse([[maybe_unused]] boost::json::object const& root)
 {
     auto const miningRequestID{ common::boostJsonGetNumber<uint32_t>(root.at("id")) };
 
-    switch(miningRequestID)
+    switch (miningRequestID)
     {
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
-            if (   false == root.contains("error")
-                || true == root.at("params").as_bool())
+            if (false == root.contains("error") || true == root.at("params").as_bool())
             {
                 authenticated = true;
             }
@@ -39,8 +37,7 @@ void stratum::StratumBlake3::onResponse(
 }
 
 
-void stratum::StratumBlake3::onUnknownMethod(
-    boost::json::object const& root)
+void stratum::StratumBlake3::onUnknownMethod(boost::json::object const& root)
 {
     std::string const method{ common::boostGetString(root, "method") };
 
@@ -51,25 +48,23 @@ void stratum::StratumBlake3::onUnknownMethod(
 }
 
 
-void stratum::StratumBlake3::onMiningNotify(
-    boost::json::object const& root)
+void stratum::StratumBlake3::onMiningNotify(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
     boost::json::array const& params(root.at("params").as_array());
-    size_t const length { params.size() };
-    boost::json::object jobParam { params[length - 1].as_object() };
+    size_t const              length{ params.size() };
+    boost::json::object       jobParam{ params[length - 1].as_object() };
 
     ////////////////////////////////////////////////////////////////////////////
     jobInfo.jobIDStr.assign(jobParam.at("jobId").as_string().c_str());
     jobInfo.fromGroup = common::boostJsonGetNumber<uint32_t>(jobParam.at("fromGroup"));
     jobInfo.toGroup = common::boostJsonGetNumber<uint32_t>(jobParam.at("toGroup"));
     jobInfo.targetBlob = algo::toHash256(common::boostGetString(jobParam, "targetBlob"));
-    jobInfo.headerBlob = algo::toHash<algo::hash3072>(
-        common::boostGetString(jobParam, "headerBlob"),
-        algo::HASH_SHIFT::RIGHT);
+    jobInfo.headerBlob =
+        algo::toHash<algo::hash3072>(common::boostGetString(jobParam, "headerBlob"), algo::HASH_SHIFT::RIGHT);
 
     ////////////////////////////////////////////////////////////////////////////
     jobInfo.jobID = algo::toHash256(jobInfo.jobIDStr);
@@ -94,10 +89,9 @@ void stratum::StratumBlake3::onMiningNotify(
 }
 
 
-void stratum::StratumBlake3::onMiningSetDifficulty(
-    boost::json::object const& root)
+void stratum::StratumBlake3::onMiningSetDifficulty(boost::json::object const& root)
 {
-    auto const params{ root.at("params").as_array() };
+    auto const   params{ root.at("params").as_array() };
     double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     jobInfo.boundary = algo::toHash256(difficulty);
@@ -107,18 +101,14 @@ void stratum::StratumBlake3::onMiningSetDifficulty(
         jobInfo.boundaryU64 = jobInfo.targetBits;
     }
 
-    logInfo()
-        << "Target: "
-        << std::hex << jobInfo.boundaryU64
-        << std::dec << " (" << difficulty << ")";
+    logInfo() << "Target: " << std::hex << jobInfo.boundaryU64 << std::dec << " (" << difficulty << ")";
 }
 
 
-void stratum::StratumBlake3::onMiningSetExtraNonce(
-    boost::json::object const& root)
+void stratum::StratumBlake3::onMiningSetExtraNonce(boost::json::object const& root)
 {
     boost::json::array const& params(root.at("params").as_array());
-    std::string const extraNonceStr{ params.at(0).as_string().c_str() };
+    std::string const         extraNonceStr{ params.at(0).as_string().c_str() };
     setExtraNonce(extraNonceStr);
 
     logInfo() << "Nonce start: " << std::hex << jobInfo.startNonce;
@@ -134,7 +124,7 @@ void stratum::StratumBlake3::miningSubscribe()
 
 
 void stratum::StratumBlake3::miningSubmit(
-    [[maybe_unused]] uint32_t const deviceId,
+    [[maybe_unused]] uint32_t const             deviceId,
     [[maybe_unused]] boost::json::object const& params)
 {
     using namespace std::string_literals;
@@ -144,16 +134,13 @@ void stratum::StratumBlake3::miningSubmit(
     boost::json::object root;
     root["id"] = (deviceId + 1u) * stratum::Stratum::OVERCOM_NONCE;
     root["method"] = "mining.submit";
-    root["params"] = boost::json::object
-    {
-        { "jobId",     common::boostGetString(params, "jobId") },
-        { "fromGroup", common::boostJsonGetNumber<uint32_t>(params.at("fromGroup")) },
-        { "toGroup",   common::boostJsonGetNumber<uint32_t>(params.at("toGroup")) },
-        { "nonce",     common::boostGetString(params, "nonce") },
-        { "worker",    wallet + "."s + workerName }
-    };
+    root["params"] = boost::json::object{ { "jobId", common::boostGetString(params, "jobId") },
+                                          { "fromGroup", common::boostJsonGetNumber<uint32_t>(params.at("fromGroup")) },
+                                          { "toGroup", common::boostJsonGetNumber<uint32_t>(params.at("toGroup")) },
+                                          { "nonce", common::boostGetString(params, "nonce") },
+                                          { "worker", wallet + "."s + workerName } };
 
-    //logDebug() << root;
+    // logDebug() << root;
 
     send(root);
 }

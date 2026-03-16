@@ -3,22 +3,19 @@
 #include <resolver/amd/amd.hpp>
 
 
-void resolver::ResolverAmd::setDevice(
-    cl::Device* const device)
+void resolver::ResolverAmd::setDevice(cl::Device* const device)
 {
     clDevice = device;
 }
 
 
-void resolver::ResolverAmd::setContext(
-    cl::Context* const context)
+void resolver::ResolverAmd::setContext(cl::Context* const context)
 {
     clContext = context;
 }
 
 
-void resolver::ResolverAmd::setQueue(
-    cl::CommandQueue* const queue)
+void resolver::ResolverAmd::setQueue(cl::CommandQueue* const queue)
 {
     clQueue[0] = &queue[0];
     clQueue[1] = &queue[1];
@@ -31,12 +28,10 @@ uint32_t resolver::ResolverAmd::getMaxGroupSize() const
 }
 
 
-void resolver::ResolverAmd::overrideOccupancy(
-    uint32_t const defaultThreads,
-    uint32_t const defaultBlocks)
+void resolver::ResolverAmd::overrideOccupancy(uint32_t const defaultThreads, uint32_t const defaultBlocks)
 {
     ////////////////////////////////////////////////////////////////////////////
-    common::Config const& config { common::Config::instance() };
+    common::Config const& config{ common::Config::instance() };
 
     ////////////////////////////////////////////////////////////////////////////
     if (std::nullopt != config.occupancy.threads)
@@ -48,10 +43,8 @@ void resolver::ResolverAmd::overrideOccupancy(
         }
         else
         {
-            resolverErr()
-                << "Cannot use " << threadsCount
-                << " threads. You must define a multiple of 32."
-                << " Kernel use 256 threads by default!";
+            resolverErr() << "Cannot use " << threadsCount << " threads. You must define a multiple of 32."
+                          << " Kernel use 256 threads by default!";
             setThreads(256u);
         }
     }
@@ -65,17 +58,15 @@ void resolver::ResolverAmd::overrideOccupancy(
     {
         uint32_t const blocksCount{ *config.occupancy.blocks };
 
-        if (   0u == blocksCount % 32u
-            && getMaxGroupSize() >= blocksCount)
+        if (0u == blocksCount % 32u && getMaxGroupSize() >= blocksCount)
         {
             setBlocks(blocksCount);
         }
         else
         {
-            resolverErr()
-                << "Cannot use " << blocksCount << "block."
-                << " You must define a multiple of 32 or less than or equal to " << getMaxGroupSize() << "."
-                << " Kernel use " << getMaxGroupSize() << " blocks by default!";
+            resolverErr() << "Cannot use " << blocksCount << "block."
+                          << " You must define a multiple of 32 or less than or equal to " << getMaxGroupSize() << "."
+                          << " Kernel use " << getMaxGroupSize() << " blocks by default!";
             setThreads(getMaxGroupSize());
         }
     }
@@ -85,8 +76,5 @@ void resolver::ResolverAmd::overrideOccupancy(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    resolverDebug()
-        << "Occupancy - Threads[" << getThreads()
-        << "] Blocks[" << getBlocks() << "]";
-
+    resolverDebug() << "Occupancy - Threads[" << getThreads() << "] Blocks[" << getBlocks() << "]";
 }
