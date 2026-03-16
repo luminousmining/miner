@@ -19,7 +19,14 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
     logInfo() << "Running benchmark NVIDIA Etash";
 
     ////////////////////////////////////////////////////////////////////////////
+    if (false == config.nvidia.isAlgoEnabled("ethash"))
+    {
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     common::Dashboard dashboard{ createNewDashboard("[NVIDIA] ETHASH") };
+    benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("ethash") };
 
     ////////////////////////////////////////////////////////////////////////////
     uint64_t const dagItems{ 45023203ull };
@@ -38,58 +45,51 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
     BENCH_INIT_RESET_RESULT(result);
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const commonLoop{ 10u };
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (true == init_ethash_base(&headerHash, dagItems))
+    if (algo.isKernelEnabled("base"))
     {
-        // Official etherminer implement
-        RUN_BENCH(
-            "ethash: ethash_base"s,
-            commonLoop,
-            128u,
-            8192u,
-            ethash_base(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
-        BENCH_INIT_RESET_RESULT(result);
+        if (true == init_ethash_base(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("base") };
+            RUN_BENCH("ethash: ethash_base"s, p.loop, p.threads, p.blocks,
+                ethash_base(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == init_ethash_ethminer(dagHash, &headerHash, dagItems))
+    if (algo.isKernelEnabled("ethminer"))
     {
-        // Official etherminer implement
-        RUN_BENCH(
-            "ethash: ethminer"s,
-            commonLoop,
-            128u,
-            8192u,
-            ethash_ethminer(propertiesNvidia.cuStream, result, blocks, threads))
-        BENCH_INIT_RESET_RESULT(result);
+        if (true == init_ethash_ethminer(dagHash, &headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("ethminer") };
+            RUN_BENCH("ethash: ethminer"s, p.loop, p.threads, p.blocks,
+                ethash_ethminer(propertiesNvidia.cuStream, result, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == init_ethash_lm1(&headerHash, dagItems))
+    if (algo.isKernelEnabled("lm1"))
     {
-        // Custom implement
-        RUN_BENCH(
-            "ethash: ethash_lm1"s,
-            commonLoop,
-            128u,
-            8192u,
-            ethash_lm1(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
-        BENCH_INIT_RESET_RESULT(result);
+        if (true == init_ethash_lm1(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("lm1") };
+            RUN_BENCH("ethash: ethash_lm1"s, p.loop, p.threads, p.blocks,
+                ethash_lm1(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == init_ethash_lm2(&headerHash, dagItems))
+    if (algo.isKernelEnabled("lm2"))
     {
-        // Integer Division (fast_mod)
-        RUN_BENCH(
-            "ethash: ethash_lm2"s,
-            commonLoop,
-            128u,
-            8192u,
-            ethash_lm2(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
-        BENCH_INIT_RESET_RESULT(result);
+        if (true == init_ethash_lm2(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("lm2") };
+            RUN_BENCH("ethash: ethash_lm2"s, p.loop, p.threads, p.blocks,
+                ethash_lm2(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////

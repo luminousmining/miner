@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <benchmark/amd.hpp>
+#include <benchmark/config.hpp>
 #include <benchmark/nvidia.hpp>
 #include <benchmark/result.hpp>
 #include <common/dashboard.hpp>
@@ -68,12 +69,13 @@ namespace benchmark
         benchmark::PropertiesAmd propertiesAmd{};
 #endif
 
-        explicit BenchmarkWorkflow(bool const nvidia, bool const amd);
-        bool initializeDevices(uint32_t const deviceIndex = 0u);
+        explicit BenchmarkWorkflow(benchmark::Config const& config);
+        bool initializeDevices();
         void destroyDevices();
         void run();
 
       private:
+        Config                           config{};
         device::DEVICE_TYPE              currentdeviceType{ device::DEVICE_TYPE::UNKNOWN };
         std::string                      currentBenchName{};
         uint32_t                         blocks{ 1u };

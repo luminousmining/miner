@@ -19,7 +19,14 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     logInfo() << "Running benchmark NVIDIA Autolykos V2";
 
     ////////////////////////////////////////////////////////////////////////////
+    if (false == config.nvidia.isAlgoEnabled("autolykos_v2"))
+    {
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     common::Dashboard dashboard{ createNewDashboard("[NVIDIA] AUTOLYKOS V2") };
+    benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("autolykos_v2") };
 
     ////////////////////////////////////////////////////////////////////////////
     t_result_64* result{ nullptr };
@@ -55,77 +62,89 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
         cudaMemcpy((void*)headerHash->bytes, (void const*)header.bytes, algo::LEN_HASH_256, cudaMemcpyHostToDevice));
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == autolykos_v2_mhssamadi_init(boundary))
+    // Autolykos uses algorithm-fixed grid: threads=64, blocks=NONCES_PER_ITER/64
+    uint32_t const fixedThreads{ 64u };
+    uint32_t const fixedBlocks{ algo::autolykos_v2::NONCES_PER_ITER / fixedThreads };
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("mhssamadi"))
     {
-        if (true
-            == autolykos_v2_mhssamadi_prehash(
-                propertiesNvidia.cuStream,
-                dagHash->word32,
-                blocks,
-                threads,
-                period,
-                height))
+        if (true == autolykos_v2_mhssamadi_init(boundary))
         {
-            RUN_BENCH(
-                "autolykos_v2: mhssamadi"s,
-                10u,
-                64u,
-                algo::autolykos_v2::NONCES_PER_ITER / 64u,
-                autolykos_v2_mhssamadi(
-                    propertiesNvidia.cuStream,
-                    result,
-                    dagHash->word32,
-                    BHashes->word32,
-                    headerHash->word32,
-                    blocks,
-                    threads,
-                    period,
-                    height));
+            if (true == autolykos_v2_mhssamadi_prehash(
+                    propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+            {
+                uint32_t const loop{ algo.resolveKernel("mhssamadi").loop };
+                RUN_BENCH(
+                    "autolykos_v2: mhssamadi"s,
+                    loop,
+                    fixedThreads,
+                    fixedBlocks,
+                    autolykos_v2_mhssamadi(
+                        propertiesNvidia.cuStream,
+                        result,
+                        dagHash->word32,
+                        BHashes->word32,
+                        headerHash->word32,
+                        blocks,
+                        threads,
+                        period,
+                        height));
+            }
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == autolykos_v2_init_lm1(boundary))
+    if (algo.isKernelEnabled("lm1"))
     {
-        if (true
-            == autolykos_v2_prehash_lm1(propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+        if (true == autolykos_v2_init_lm1(boundary))
         {
-            RUN_BENCH(
-                "autolykos_v2: lm1"s,
-                10u,
-                64u,
-                algo::autolykos_v2::NONCES_PER_ITER / 64u,
-                autolykos_v2_lm1(
-                    propertiesNvidia.cuStream,
-                    result,
-                    dagHash->word32,
-                    headerHash->word32,
-                    BHashes->word32,
-                    blocks,
-                    threads,
-                    period));
+            if (true == autolykos_v2_prehash_lm1(
+                    propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+            {
+                uint32_t const loop{ algo.resolveKernel("lm1").loop };
+                RUN_BENCH(
+                    "autolykos_v2: lm1"s,
+                    loop,
+                    fixedThreads,
+                    fixedBlocks,
+                    autolykos_v2_lm1(
+                        propertiesNvidia.cuStream,
+                        result,
+                        dagHash->word32,
+                        headerHash->word32,
+                        BHashes->word32,
+                        blocks,
+                        threads,
+                        period));
+            }
         }
     }
-    if (true == autolykos_v2_init_lm2(boundary))
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("lm2"))
     {
-        if (true
-            == autolykos_v2_prehash_lm1(propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+        if (true == autolykos_v2_init_lm2(boundary))
         {
-            // using __threadfence_block() on load global memory
-            RUN_BENCH(
-                "autolykos_v2: lm2"s,
-                10u,
-                64u,
-                algo::autolykos_v2::NONCES_PER_ITER / 64u,
-                autolykos_v2_lm2(
-                    propertiesNvidia.cuStream,
-                    result,
-                    dagHash->word32,
-                    headerHash->word32,
-                    BHashes->word32,
-                    blocks,
-                    threads,
-                    period));
+            if (true == autolykos_v2_prehash_lm1(
+                    propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+            {
+                uint32_t const loop{ algo.resolveKernel("lm2").loop };
+                RUN_BENCH(
+                    "autolykos_v2: lm2"s,
+                    loop,
+                    fixedThreads,
+                    fixedBlocks,
+                    autolykos_v2_lm2(
+                        propertiesNvidia.cuStream,
+                        result,
+                        dagHash->word32,
+                        headerHash->word32,
+                        BHashes->word32,
+                        blocks,
+                        threads,
+                        period));
+            }
         }
     }
 

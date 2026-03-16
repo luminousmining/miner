@@ -12,23 +12,24 @@
 #include <common/log/log.hpp>
 
 
-benchmark::BenchmarkWorkflow::BenchmarkWorkflow([[maybe_unused]] bool const nvidia, [[maybe_unused]] bool const amd)
+benchmark::BenchmarkWorkflow::BenchmarkWorkflow(Config const& _config)
+    : config{ _config }
 {
 #if defined(CUDA_ENABLE)
-    enableNvidia = nvidia;
+    enableNvidia = config.nvidia.enabled;
 #endif
 #if defined(AMD_ENABLE)
-    enableAmd = amd;
+    enableAmd = config.amd.enabled;
 #endif
 }
 
 
-bool benchmark::BenchmarkWorkflow::initializeDevices(uint32_t const deviceIndex)
+bool benchmark::BenchmarkWorkflow::initializeDevices()
 {
 #if defined(CUDA_ENABLE)
     if (true == enableNvidia)
     {
-        if (false == benchmark::initializeCuda(propertiesNvidia, deviceIndex))
+        if (false == benchmark::initializeCuda(propertiesNvidia, config.nvidia.deviceIndex))
         {
             logErr() << "Fail to load device NVIDIA";
             return false;
@@ -38,7 +39,7 @@ bool benchmark::BenchmarkWorkflow::initializeDevices(uint32_t const deviceIndex)
 #if defined(AMD_ENABLE)
     if (true == enableAmd)
     {
-        if (false == benchmark::initializeOpenCL(propertiesAmd, deviceIndex))
+        if (false == benchmark::initializeOpenCL(propertiesAmd, config.amd.deviceIndex))
         {
             logErr() << "Fail to load device AMD";
             return false;

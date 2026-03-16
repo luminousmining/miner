@@ -24,7 +24,14 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     logInfo() << "Running benchmark AMD Kawpow";
 
     ////////////////////////////////////////////////////////////////////////////
+    if (false == config.amd.isAlgoEnabled("kawpow"))
+    {
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     common::Dashboard dashboard{ createNewDashboard("[AMD] KAWPOW") };
+    benchmark::AlgoConfig const& algo{ config.amd.getAlgo("kawpow") };
 
     ////////////////////////////////////////////////////////////////////////////
     bool                dagInitialized{ false };
@@ -200,10 +207,20 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     ////////////////////////////////////////////////////////////////////////////
     if (true == dagInitialized)
     {
-        benchKawpow("kawpow_lm1", 1u, 256u, 1024u, algo::progpow::LANES); // Parallele + LDS
-        benchKawpow("kawpow_lm2", 1u, 256u, 1024u, algo::progpow::LANES); // Parallel + crosslane
-        benchKawpow("kawpow_lm3", 1u, 256u, 1024u, algo::progpow::LANES); // Parallel + crosslane + LDS header
-        benchKawpow("kawpow_lm4", 1u, 256u, 1024u, algo::progpow::LANES); // Parallel + crosslane + LDS header
+        auto const runKernel = [&](std::string const& name)
+        {
+            if (false == algo.isKernelEnabled(name))
+            {
+                return;
+            }
+            KernelParams const p{ algo.resolveKernel(name) };
+            benchKawpow(name, p.loop, p.threads, p.blocks, algo::progpow::LANES);
+        };
+
+        runKernel("kawpow_lm1");
+        runKernel("kawpow_lm2");
+        runKernel("kawpow_lm3");
+        runKernel("kawpow_lm4");
     }
 
     ////////////////////////////////////////////////////////////////////////////

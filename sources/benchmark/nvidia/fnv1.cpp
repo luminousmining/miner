@@ -17,32 +17,35 @@ bool benchmark::BenchmarkWorkflow::runNvidiaFnv1()
     logInfo() << "Running benchmark NVIDIA Fnv1";
 
     ////////////////////////////////////////////////////////////////////////////
+    if (false == config.nvidia.isAlgoEnabled("fnv1"))
+    {
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     common::Dashboard dashboard{ createNewDashboard("[NVIDIA] FNV1") };
+    benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("fnv1") };
 
     ////////////////////////////////////////////////////////////////////////////
-    uint32_t const commonLoop{ 10u };
-    uint32_t const commonThread{ 1024u };
-    uint32_t const commonBlock{ 8192u };
-
-    ////////////////////////////////////////////////////////////////////////////
+    benchmark::KernelParams const defaultParams{ algo.defaults };
     uint32_t* result{ nullptr };
-    CU_ALLOC(&result, (commonBlock * commonThread) * sizeof(uint32_t));
+    CU_ALLOC(&result, (defaultParams.blocks * defaultParams.threads) * sizeof(uint32_t));
 
     ////////////////////////////////////////////////////////////////////////////
-    RUN_BENCH(
-        "fnv1: fnv1_lm1"s,
-        commonLoop,
-        commonThread,
-        commonBlock,
-        fnv1_lm1(propertiesNvidia.cuStream, result, blocks, threads))
+    if (algo.isKernelEnabled("lm1"))
+    {
+        KernelParams const p{ algo.resolveKernel("lm1") };
+        RUN_BENCH("fnv1: fnv1_lm1"s, p.loop, p.threads, p.blocks,
+            fnv1_lm1(propertiesNvidia.cuStream, result, blocks, threads))
+    }
 
-    // use __umulhi instead of mult
-    RUN_BENCH(
-        "fnv1: fnv1_lm2"s,
-        commonLoop,
-        commonThread,
-        commonBlock,
-        fnv1_lm2(propertiesNvidia.cuStream, result, blocks, threads))
+    ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("lm2"))
+    {
+        KernelParams const p{ algo.resolveKernel("lm2") };
+        RUN_BENCH("fnv1: fnv1_lm2"s, p.loop, p.threads, p.blocks,
+            fnv1_lm2(propertiesNvidia.cuStream, result, blocks, threads))
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(result);
