@@ -12,8 +12,7 @@
 #include <common/log/log.hpp>
 
 
-benchmark::BenchmarkWorkflow::BenchmarkWorkflow(Config const& _config)
-    : config{ _config }
+benchmark::BenchmarkWorkflow::BenchmarkWorkflow(Config const& _config) : config{ _config }
 {
 #if defined(CUDA_ENABLE)
     enableNvidia = config.nvidia.enabled;

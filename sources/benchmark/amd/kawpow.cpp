@@ -30,7 +30,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKawpow()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    common::Dashboard dashboard{ createNewDashboard("[AMD] KAWPOW") };
+    common::Dashboard            dashboard{ createNewDashboard("[AMD] KAWPOW") };
     benchmark::AlgoConfig const& algo{ config.amd.getAlgo("kawpow") };
 
     ////////////////////////////////////////////////////////////////////////////

@@ -18,9 +18,10 @@ int main(int argc, char** argv)
 
     ////////////////////////////////////////////////////////////////////////////
     po::options_description desc{ "Benchmark options" };
-    desc.add_options()
-        ("help,h",   "Show help message")
-        ("config,c", po::value<std::string>(&configPath), "Path to benchmark config JSON file (default: benchmark.json)");
+    desc.add_options()("help,h", "Show help message")(
+        "config,c",
+        po::value<std::string>(&configPath),
+        "Path to benchmark config JSON file (default: benchmark.json)");
 
     po::positional_options_description pos{};
     pos.add("config", 1);

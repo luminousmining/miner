@@ -25,7 +25,7 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] AUTOLYKOS V2") };
+    common::Dashboard            dashboard{ createNewDashboard("[NVIDIA] AUTOLYKOS V2") };
     benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("autolykos_v2") };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,8 +71,14 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     {
         if (true == autolykos_v2_mhssamadi_init(boundary))
         {
-            if (true == autolykos_v2_mhssamadi_prehash(
-                    propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+            if (true
+                == autolykos_v2_mhssamadi_prehash(
+                    propertiesNvidia.cuStream,
+                    dagHash->word32,
+                    blocks,
+                    threads,
+                    period,
+                    height))
             {
                 uint32_t const loop{ algo.resolveKernel("mhssamadi").loop };
                 RUN_BENCH(
@@ -99,8 +105,14 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     {
         if (true == autolykos_v2_init_lm1(boundary))
         {
-            if (true == autolykos_v2_prehash_lm1(
-                    propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+            if (true
+                == autolykos_v2_prehash_lm1(
+                    propertiesNvidia.cuStream,
+                    dagHash->word32,
+                    blocks,
+                    threads,
+                    period,
+                    height))
             {
                 uint32_t const loop{ algo.resolveKernel("lm1").loop };
                 RUN_BENCH(
@@ -126,8 +138,14 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     {
         if (true == autolykos_v2_init_lm2(boundary))
         {
-            if (true == autolykos_v2_prehash_lm1(
-                    propertiesNvidia.cuStream, dagHash->word32, blocks, threads, period, height))
+            if (true
+                == autolykos_v2_prehash_lm1(
+                    propertiesNvidia.cuStream,
+                    dagHash->word32,
+                    blocks,
+                    threads,
+                    period,
+                    height))
             {
                 uint32_t const loop{ algo.resolveKernel("lm2").loop };
                 RUN_BENCH(

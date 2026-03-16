@@ -23,19 +23,23 @@ bool benchmark::BenchmarkWorkflow::runNvidiaFnv1()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] FNV1") };
+    common::Dashboard            dashboard{ createNewDashboard("[NVIDIA] FNV1") };
     benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("fnv1") };
 
     ////////////////////////////////////////////////////////////////////////////
     benchmark::KernelParams const defaultParams{ algo.defaults };
-    uint32_t* result{ nullptr };
+    uint32_t*                     result{ nullptr };
     CU_ALLOC(&result, (defaultParams.blocks * defaultParams.threads) * sizeof(uint32_t));
 
     ////////////////////////////////////////////////////////////////////////////
     if (algo.isKernelEnabled("lm1"))
     {
         KernelParams const p{ algo.resolveKernel("lm1") };
-        RUN_BENCH("fnv1: fnv1_lm1"s, p.loop, p.threads, p.blocks,
+        RUN_BENCH(
+            "fnv1: fnv1_lm1"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             fnv1_lm1(propertiesNvidia.cuStream, result, blocks, threads))
     }
 
@@ -43,7 +47,11 @@ bool benchmark::BenchmarkWorkflow::runNvidiaFnv1()
     if (algo.isKernelEnabled("lm2"))
     {
         KernelParams const p{ algo.resolveKernel("lm2") };
-        RUN_BENCH("fnv1: fnv1_lm2"s, p.loop, p.threads, p.blocks,
+        RUN_BENCH(
+            "fnv1: fnv1_lm2"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             fnv1_lm2(propertiesNvidia.cuStream, result, blocks, threads))
     }
 

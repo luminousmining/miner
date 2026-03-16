@@ -23,7 +23,7 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthashLightCache()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] Light Cache") };
+    common::Dashboard            dashboard{ createNewDashboard("[NVIDIA] Light Cache") };
     benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("ethash_light_cache") };
 
     ///////////////////////////////////////////////////////////////////////////

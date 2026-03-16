@@ -23,7 +23,7 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    common::Dashboard dashboard{ createNewDashboard("[NVIDIA] KAWPOW") };
+    common::Dashboard            dashboard{ createNewDashboard("[NVIDIA] KAWPOW") };
     benchmark::AlgoConfig const& algo{ config.nvidia.getAlgo("kawpow") };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -60,8 +60,17 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("kawpowminer_1") };
         RUN_BENCH(
-            "kawpow: kawpowminer_1"s, p.loop, p.threads, p.blocks,
-            kawpow_kawpowminer_1(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
+            "kawpow: kawpowminer_1"s,
+            p.loop,
+            p.threads,
+            p.blocks,
+            kawpow_kawpowminer_1(
+                propertiesNvidia.cuStream,
+                result,
+                headerHash->word32,
+                dagHash->word32,
+                blocks,
+                threads))
         BENCH_INIT_RESET_RESULT(result);
     }
 
@@ -70,8 +79,17 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("kawpowminer_2") };
         RUN_BENCH(
-            "kawpow: kawpowminer_2"s, p.loop, p.threads, p.blocks,
-            kawpow_kawpowminer_2(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
+            "kawpow: kawpowminer_2"s,
+            p.loop,
+            p.threads,
+            p.blocks,
+            kawpow_kawpowminer_2(
+                propertiesNvidia.cuStream,
+                result,
+                headerHash->word32,
+                dagHash->word32,
+                blocks,
+                threads))
         BENCH_INIT_RESET_RESULT(result);
     }
 
@@ -80,7 +98,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm1") };
         RUN_BENCH(
-            "kawpow: lm1"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm1"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm1(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -90,7 +111,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm2") };
         RUN_BENCH(
-            "kawpow: lm2"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm2"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm2(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -100,7 +124,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm3") };
         RUN_BENCH(
-            "kawpow: lm3"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm3"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm3(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -110,7 +137,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm4") };
         RUN_BENCH(
-            "kawpow: lm4"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm4"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm4(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -120,7 +150,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm5") };
         RUN_BENCH(
-            "kawpow: lm5"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm5"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm5(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -130,7 +163,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm6") };
         RUN_BENCH(
-            "kawpow: lm6"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm6"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm6(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -141,7 +177,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
         KernelParams const p{ algo.resolveKernel("lm7") };
         setMultiplicator(10u);
         RUN_BENCH(
-            "kawpow: lm7"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm7"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm7(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -152,7 +191,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
         KernelParams const p{ algo.resolveKernel("lm8") };
         setMultiplicator(10u);
         RUN_BENCH(
-            "kawpow: lm8"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm8"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm8(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -162,7 +204,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm9") };
         RUN_BENCH(
-            "kawpow: lm9"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm9"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm9(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -173,7 +218,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
         KernelParams const p{ algo.resolveKernel("lm10") };
         setDivisor(16u);
         RUN_BENCH(
-            "kawpow: lm10"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm10"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm10(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
@@ -183,7 +231,10 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKawpow()
     {
         KernelParams const p{ algo.resolveKernel("lm11") };
         RUN_BENCH(
-            "kawpow: lm11"s, p.loop, p.threads, p.blocks,
+            "kawpow: lm11"s,
+            p.loop,
+            p.threads,
+            p.blocks,
             kawpow_lm11(propertiesNvidia.cuStream, result, headerHash->word32, dagHash->word32, blocks, threads))
         BENCH_INIT_RESET_RESULT(result);
     }
