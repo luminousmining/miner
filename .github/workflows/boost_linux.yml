@@ -21,6 +21,7 @@ jobs:
 
     env:
       BOOST_VERSION: ${{ inputs.boost_version }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout

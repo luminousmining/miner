@@ -33,6 +33,9 @@ jobs:
     needs: [build-cmake, build-boost, build-openssl, build-opencl]
     runs-on: ubuntu-22.04
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -145,6 +148,9 @@ jobs:
   build-miner-nvidia:
     needs: [build-cmake, build-boost, build-openssl, build-opencl, build-cuda]
     runs-on: ubuntu-22.04
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - uses: actions/checkout@v4
@@ -273,4 +279,143 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: miner-nvidia-linux
+          path: build/miner
+
+  #==========================================================================
+  # Build Miner ALL (AMD + NVIDIA + CPU)
+  #==========================================================================
+  build-miner-all:
+    needs: [build-cmake, build-boost, build-openssl, build-opencl, build-cuda]
+    runs-on: ubuntu-22.04
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ===============================
+      # Download CMake
+      # ===============================
+      - name: Download CMake
+        uses: actions/download-artifact@v4
+        with:
+          name: cmake-linux-3.26.4
+          path: deps/cmake
+
+      - name: Add CMake to PATH
+        run: |
+          chmod +x ${{ github.workspace }}/deps/cmake/bin/cmake
+          echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
+
+      # ===============================
+      # Download and install Boost
+      # ===============================
+      - name: Download Boost
+        uses: actions/download-artifact@v4
+        with:
+          name: boost-Linux-1.90.0
+          path: deps/boost
+
+      - name: Install Boost
+        run: |
+          sudo cp -r deps/boost/include/* /usr/local/include/
+          sudo cp -r deps/boost/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Download and install OpenSSL
+      # ===============================
+      - name: Download OpenSSL
+        uses: actions/download-artifact@v4
+        with:
+          name: openssl-Linux-1.1.1w
+          path: deps/openssl
+
+      - name: Install OpenSSL
+        run: |
+          sudo cp -r deps/openssl/include/* /usr/local/include/
+          sudo cp -r deps/openssl/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Download and install OpenCL
+      # ===============================
+      - name: Download OpenCL
+        uses: actions/download-artifact@v4
+        with:
+          name: opencl-Linux-3.0.19
+          path: deps/opencl
+
+      - name: Install OpenCL
+        run: |
+          sudo cp -r deps/opencl/include/* /usr/local/include/
+          sudo cp -r deps/opencl/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Download and install CUDA
+      # ===============================
+      - name: Download CUDA
+        uses: actions/download-artifact@v4
+        with:
+          name: cuda-Linux-13.1.0
+          path: deps/cuda
+
+      - name: Install CUDA
+        run: |
+          sudo mkdir -p /usr/local/cuda-13.1
+          sudo cp -r deps/cuda/* /usr/local/cuda-13.1/
+          echo "/usr/local/cuda-13.1/bin" >> $GITHUB_PATH
+
+      # ===============================
+      # Install system build tools
+      # ===============================
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libstdc++-12-dev \
+            clang-15 \
+            clang++-15 \
+            git \
+            libgnutls28-dev
+
+      # ===============================
+      # Configure and build (ALL)
+      # ===============================
+      - name: Configure CMake (ALL)
+        run: |
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_EXE_BENCHMARK=OFF \
+            -DBUILD_EXE_UNIT_TEST=OFF \
+            -DBUILD_EXE_MINER=ON \
+            -DBUILD_NVIDIA=ON \
+            -DBUILD_AMD=ON \
+            -DBUILD_CPU=ON \
+            -DENABLE_LTO=OFF \
+            -DENABLE_NATIVE=OFF
+        env:
+          CUDA_HOME: /usr/local/cuda-13.1
+          CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+          LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
+
+      - name: Build Miner (ALL)
+        run: make -j$(nproc) -C build
+        env:
+          CUDA_HOME: /usr/local/cuda-13.1
+          CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+          LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
+
+      # ===============================
+      # Upload artifact
+      # ===============================
+      - name: Upload ALL Miner artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: miner-all-linux
           path: build/miner
