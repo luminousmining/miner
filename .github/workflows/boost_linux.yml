@@ -7,6 +7,13 @@ on:
         description: "Boost version"
         required: true
         default: "1.90.0"
+  workflow_call:
+    inputs:
+      boost_version:
+        description: "Boost version"
+        required: false
+        type: string
+        default: "1.90.0"
 
 jobs:
   build-linux:
@@ -80,8 +87,7 @@ jobs:
       # Upload artifact
       # ===============================
       - name: Upload Boost artifact
-        if: steps.boost-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: boost-${{ env.BOOST_VERSION }}
+          name: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
           path: boost-install

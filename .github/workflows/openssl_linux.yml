@@ -2,6 +2,7 @@ name: Linux OpenSSL
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-linux:
@@ -58,7 +59,6 @@ jobs:
       # Upload artifact
       # ===============================
       - name: Upload OpenSSL artifact
-        if: steps.openssl-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: openssl-${{ runner.os }}-1.1.1w

@@ -2,6 +2,7 @@ name: Linux CMake
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-cmake:
