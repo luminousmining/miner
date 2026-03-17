@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      BOOST_VERSION: ${{ github.event.inputs.boost_version }}
+      BOOST_VERSION: ${{ inputs.boost_version }}
 
     steps:
       - name: Checkout
