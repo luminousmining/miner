@@ -2,10 +2,14 @@ name: Linux Cuda
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-linux:
     runs-on: ubuntu-22.04
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
@@ -57,7 +61,6 @@ jobs:
       # Upload artifact
       # ===============================
       - name: Upload CUDA artifact
-        if: steps.cuda-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: cuda-${{ runner.os }}-13.1.0
