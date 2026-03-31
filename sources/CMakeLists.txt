@@ -5,6 +5,7 @@ if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
     cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
         algo/autolykos/cuda/autolykos_v2.cu
         algo/blake3/cuda/blake3.cu
+        algo/cuckatoo/cuda/cuckatoo32.cu
         algo/ethash/cuda/ethash.cu
         algo/progpow/cuda/progpow.cu
     )

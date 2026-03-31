@@ -46,6 +46,10 @@ namespace stratum
         uint32_t       fromGroup{ 0u };
         uint32_t       toGroup{ 0u };
 
+        // CUCKATOO32
+        uint32_t prePowSize{ 0u }; // byte length of pre_pow data stored in headerBlob
+        uint32_t grinJobId{ 0u };  // pool job identifier (uint32)
+
         StratumJobInfo(StratumJobInfo&& obj) = delete;
         StratumJobInfo(StratumJobInfo const& obj) = delete;
         StratumJobInfo& operator=(StratumJobInfo&& obj) = delete;

@@ -99,13 +99,12 @@ void device::DeviceManager::loopStatistical()
             statistical::Statistical::ShareInfo shareInfo{ device->getShare() };
 
             ///////////////////////////////////////////////////////////////////
-            showMiningStats(boardMining, device, hashrate, host, shareInfo);
-            showDeviceStats(boardDevice, device, hashrate);
-
-            ///////////////////////////////////////////////////////////////////
+            logInfo() << "hashrate: " << hashrate;
             if (0.0 < hashrate)
             {
                 displayable = true;
+                showMiningStats(boardMining, device, hashrate, host, shareInfo);
+                showDeviceStats(boardDevice, device, hashrate);
             }
         }
 

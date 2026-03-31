@@ -71,6 +71,11 @@ stratum::Stratum* stratum::NewStratum(algo::ALGORITHM const algorithm)
             stratum = NEW(stratum::StratumBlake3);
             break;
         }
+        case algo::ALGORITHM::CUCKATOO32:
+        {
+            stratum = NEW(stratum::StratumCuckatoo);
+            break;
+        }
         case algo::ALGORITHM::UNKNOWN:
         {
             break;

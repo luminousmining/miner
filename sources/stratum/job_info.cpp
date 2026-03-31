@@ -45,4 +45,9 @@ void stratum::StratumJobInfo::copy(stratum::StratumJobInfo const& other)
     algo::copyHash(targetBlob, other.targetBlob);
     fromGroup = other.fromGroup;
     toGroup = other.toGroup;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // CUCKATOO32
+    prePowSize = other.prePowSize;
+    grinJobId  = other.grinJobId;
 }

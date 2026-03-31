@@ -5,6 +5,7 @@
 #include <common/log/log.hpp>
 #include <device/device.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
+#include <resolver/amd/cuckatoo32.hpp>
 #include <resolver/amd/etchash.hpp>
 #include <resolver/amd/ethash.hpp>
 #include <resolver/amd/evrprogpow.hpp>
@@ -16,6 +17,7 @@
 #include <resolver/mocker.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/blake3.hpp>
+#include <resolver/nvidia/cuckatoo32.hpp>
 #include <resolver/nvidia/etchash.hpp>
 #include <resolver/nvidia/ethash.hpp>
 #include <resolver/nvidia/evrprogpow.hpp>
@@ -333,6 +335,33 @@ void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
 #if defined(AMD_ENABLE)
                 case device::DEVICE_TYPE::AMD:
                 {
+                    break;
+                }
+#endif
+                case device::DEVICE_TYPE::UNKNOWN:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+        case algo::ALGORITHM::CUCKATOO32:
+        {
+            switch (deviceType)
+            {
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaCuckatoo32);
+                    break;
+                }
+#endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverAmdCuckatoo32);
                     break;
                 }
 #endif

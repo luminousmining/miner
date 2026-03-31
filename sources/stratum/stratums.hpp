@@ -3,6 +3,7 @@
 #include <algo/algo_type.hpp>
 #include <stratum/autolykos_v2.hpp>
 #include <stratum/blake3.hpp>
+#include <stratum/cuckatoo.hpp>
 #include <stratum/etchash.hpp>
 #include <stratum/ethash.hpp>
 #include <stratum/evrprogpow.hpp>
