@@ -1,6 +1,6 @@
 #if defined(_WIN32)
-#include <wincrypt.h>
 #include <windows.h>
+#include <wincrypt.h>
 #endif
 
 #include <iostream>
