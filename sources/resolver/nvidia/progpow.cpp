@@ -454,9 +454,12 @@ void resolver::ResolverNvidiaProgPOW::submit(stratum::Stratum* const stratum)
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-                        boost::json::array params{ resultShare.jobId,
-                                                   nonceHexa.str(),
-                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -465,9 +468,12 @@ void resolver::ResolverNvidiaProgPOW::submit(stratum::Stratum* const stratum)
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << std::hex << resultShare.nonces[i];
-                        boost::json::array params{ resultShare.jobId,
-                                                   nonceHexa.str().substr(resultShare.extraNonceSize),
-                                                   stratum->workerID };
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->workerID
+                        };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -477,8 +483,11 @@ void resolver::ResolverNvidiaProgPOW::submit(stratum::Stratum* const stratum)
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
 
-                        boost::json::array params{ nonceHexa.str(),
-                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
+                        boost::json::array params
+                        {
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -515,9 +524,12 @@ void resolver::ResolverNvidiaProgPOW::submit(stratum::StratumSmartMining* const 
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
-                        boost::json::array params{ resultShare.jobId,
-                                                   nonceHexa.str(),
-                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -526,9 +538,12 @@ void resolver::ResolverNvidiaProgPOW::submit(stratum::StratumSmartMining* const 
                     {
                         std::stringstream nonceHexa;
                         nonceHexa << std::hex << resultShare.nonces[i];
-                        boost::json::array params{ resultShare.jobId,
-                                                   nonceHexa.str().substr(resultShare.extraNonceSize),
-                                                   stratum->stratumPool->workerID };
+                        boost::json::array params
+                        {
+                            resultShare.jobId,
+                            nonceHexa.str().substr(resultShare.extraNonceSize),
+                            stratum->stratumPool->workerID
+                        };
 
                         stratum->miningSubmit(deviceId, params);
                         break;
@@ -538,8 +553,11 @@ void resolver::ResolverNvidiaProgPOW::submit(stratum::StratumSmartMining* const 
                         std::stringstream nonceHexa;
                         nonceHexa << "0x" << std::hex << std::setfill('0') << std::setw(16) << resultShare.nonces[i];
 
-                        boost::json::array params{ nonceHexa.str(),
-                                                   "0x" + algo::toHex(algo::toHash256((uint8_t*)hash)) };
+                        boost::json::array params
+                        {
+                            nonceHexa.str(),
+                            "0x" + algo::toHex(algo::toHash256((uint8_t*)hash))
+                        };
 
                         stratum->miningSubmit(deviceId, params);
                         break;

@@ -113,11 +113,9 @@ bool resolver::ResolverNvidiaEthash::updateMemory(stratum::StratumJobInfo const&
     ////////////////////////////////////////////////////////////////////////////
     resolverInfo() << "Building DAG";
     chrono.start();
-    if (false
-        == ethashBuildDag(
-            cuStream[currentIndexStream],
-            algo::ethash::DAG_ITEM_PARENTS,
-            castU32(context.dagCache.numberItem)))
+    if (false == ethashBuildDag(cuStream[currentIndexStream],
+                                algo::ethash::DAG_ITEM_PARENTS,
+                                castU32(context.dagCache.numberItem)))
     {
         return false;
     }
