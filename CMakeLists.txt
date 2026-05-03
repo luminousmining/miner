@@ -177,7 +177,7 @@ endif()
 ################################################################################
 if (WIN32)
     set(Boost_ROOT       "C:\\Boost")
-    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_90")
+    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_91")
     set(Boost_COMPILER   -vc${VISUAL_STUDIO_VERSION})
     set(Boost_THREADAPI  win32)
 else()
@@ -236,7 +236,7 @@ if (BUILD_NVIDIA)
     ### NVCC NVIDIA ARCHITECTURE
     if (NVCC_ARCH_COMPUTE)
         list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${NVCC_ARCH_COMPUTE}")
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_${NVCC_ARCH_COMPUTE},code=sm_${NVCC_ARCH_COMPUTE}") # Turing (RTX 2000, GTX 1600, T4)
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_${NVCC_ARCH_COMPUTE},code=sm_${NVCC_ARCH_COMPUTE}")
     else()
         ### NVCC FLAGS GENCODE
         list(APPEND CUDA_NVCC_FLAGS
@@ -276,7 +276,7 @@ endif()
 ################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
-find_package(Boost 1.90.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
 if (BUILD_AMD)
     find_package(OpenCL COMPONENTS OpenCL)
 endif()
