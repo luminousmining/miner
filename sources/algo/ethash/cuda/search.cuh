@@ -270,17 +270,29 @@ void check_nonce(
 __global__
 void search(
     algo::ethash::Result* result,
-    uint64_t const startNonce)
+    uint64_t const start_nonce,
+    uint32_t const internal_loop)
 {
-    uint64_t state[25];
-    uint4 seed[4];
     uint32_t const thread_id{ (blockIdx.x * blockDim.x) + threadIdx.x };
-    uint64_t const nonce{ thread_id + startNonce };
+    uint32_t const nonce_stride{ blockDim.x * gridDim.x };
 
-    keccak_f1600_first(state, seed, d_header, nonce);
-    ethash_create_mix_hash(state, seed, thread_id);
-    keccak_f1600_final(state);
-    check_nonce(result, state[0], nonce);
+    #pragma unroll 1
+    for (uint32_t i{ 0u }; i < internal_loop; ++i)
+    {
+        uint64_t state[25];
+        uint4 seed[4];
+        uint64_t const nonce{ start_nonce + thread_id + (static_cast<uint64_t>(i) * nonce_stride) };
+
+        keccak_f1600_first(state, seed, d_header, nonce);
+        ethash_create_mix_hash(state, seed, thread_id);
+        keccak_f1600_final(state);
+        check_nonce(result, state[0], nonce);
+
+        if (algo::ethash::MAX_RESULT <= result->count)
+        {
+            break;
+        }
+    }
 }
 
 
@@ -290,7 +302,8 @@ void ethashSearch(
     algo::ethash::Result* result,
     uint32_t const blocks,
     uint32_t const threads,
-    uint64_t const startNonce)
+    uint64_t const startNonce,
+    uint32_t const internalLoop)
 {
-    search<<<blocks, threads, 0, stream>>>(result, startNonce);
+    search<<<blocks, threads, 0, stream>>>(result, startNonce, internalLoop);
 }

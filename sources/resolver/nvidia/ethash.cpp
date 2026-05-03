@@ -154,12 +154,20 @@ bool resolver::ResolverNvidiaEthash::updateConstants(stratum::StratumJobInfo con
 bool resolver::ResolverNvidiaEthash::executeSync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+    uint32_t const internalLoop
+    {
+        (std::nullopt != config.occupancy.internalLoop) ? *config.occupancy.internalLoop : 1u
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
     ethashSearch(
         cuStream[currentIndexStream],
         &parameters.resultCache[currentIndexStream],
         blocks,
         threads,
-        jobInfo.nonce);
+        jobInfo.nonce,
+        internalLoop);
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
@@ -191,6 +199,13 @@ bool resolver::ResolverNvidiaEthash::executeSync(stratum::StratumJobInfo const& 
 bool resolver::ResolverNvidiaEthash::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+    uint32_t const internalLoop
+    {
+        (std::nullopt != config.occupancy.internalLoop) ? *config.occupancy.internalLoop : 1u
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
     CUDA_ER(cudaStreamSynchronize(cuStream[currentIndexStream]));
     CUDA_ER(cudaGetLastError());
 
@@ -201,7 +216,8 @@ bool resolver::ResolverNvidiaEthash::executeAsync(stratum::StratumJobInfo const&
         &parameters.resultCache[currentIndexStream],
         blocks,
         threads,
-        jobInfo.nonce);
+        jobInfo.nonce,
+        internalLoop);
 
     ////////////////////////////////////////////////////////////////////////////
     swapIndexStream();
