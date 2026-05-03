@@ -22,4 +22,5 @@ void ethashSearch(cudaStream_t stream,
                   algo::ethash::Result* result,
                   uint32_t const blocks,
                   uint32_t const threads,
-                  uint64_t const startNonce);
+                  uint64_t const startNonce,
+                  uint32_t const internalLoop);
