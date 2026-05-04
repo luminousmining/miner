@@ -37,6 +37,10 @@ if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
         benchmark/cuda/ethash/ethash_ethminer.cu
         benchmark/cuda/ethash/ethash_lm1.cu
         benchmark/cuda/ethash/ethash_lm2.cu
+        benchmark/cuda/ethash/ethash_lm3.cu
+        benchmark/cuda/ethash/ethash_lm4.cu
+        benchmark/cuda/ethash/ethash_lm5.cu
+        benchmark/cuda/ethash/ethash_lm6.cu
         benchmark/cuda/ethash_light_cache/ethash_light_cache_lm1.cu
         benchmark/cuda/ethash_light_cache/ethash_light_cache_lm2.cu
         benchmark/cuda/ethash_light_cache/ethash_light_cache_lm3.cu

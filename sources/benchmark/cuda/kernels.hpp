@@ -121,6 +121,14 @@ bool init_ethash_lm1(PARAMETER_ETHASH_INIT);
 bool ethash_lm1(PARAMETER_ETHASH_SEARCH);
 bool init_ethash_lm2(PARAMETER_ETHASH_INIT);
 bool ethash_lm2(PARAMETER_ETHASH_SEARCH);
+bool init_ethash_lm3(PARAMETER_ETHASH_INIT);
+bool ethash_lm3(PARAMETER_ETHASH_SEARCH);
+bool init_ethash_lm4(PARAMETER_ETHASH_INIT);
+bool ethash_lm4(PARAMETER_ETHASH_SEARCH);
+bool init_ethash_lm5(PARAMETER_ETHASH_INIT);
+bool ethash_lm5(PARAMETER_ETHASH_SEARCH);
+bool init_ethash_lm6(PARAMETER_ETHASH_INIT);
+bool ethash_lm6(PARAMETER_ETHASH_SEARCH);
 
 
 ////////////////////////////////////////////////////////////////////////////////
