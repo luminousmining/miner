@@ -27,7 +27,7 @@
                 "loop": 10,
                 "threads": 128,
                 "blocks": 8192,
-                "kernels": ["base", "ethminer", "lm1", "lm2"]
+                "kernels": ["base", "ethminer", "lm1", "lm2", "lm3", "lm4", "lm5", "lm6"]
             },
             "autolykos_v2": {
                 "enabled": true,

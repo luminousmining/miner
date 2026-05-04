@@ -109,6 +109,70 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("lm3"))
+    {
+        if (true == init_ethash_lm3(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("lm3") };
+            RUN_BENCH(
+                "ethash: ethash_lm3"s,
+                p.loop,
+                p.threads,
+                p.blocks,
+                ethash_lm3(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("lm4"))
+    {
+        if (true == init_ethash_lm4(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("lm4") };
+            RUN_BENCH(
+                "ethash: ethash_lm4"s,
+                p.loop,
+                p.threads,
+                p.blocks,
+                ethash_lm4(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("lm5"))
+    {
+        if (true == init_ethash_lm5(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("lm5") };
+            RUN_BENCH(
+                "ethash: ethash_lm5"s,
+                p.loop,
+                p.threads,
+                p.blocks,
+                ethash_lm5(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (algo.isKernelEnabled("lm6"))
+    {
+        if (true == init_ethash_lm6(&headerHash, dagItems))
+        {
+            KernelParams const p{ algo.resolveKernel("lm6") };
+            RUN_BENCH(
+                "ethash: ethash_lm6"s,
+                p.loop,
+                p.threads,
+                p.blocks,
+                ethash_lm6(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
+            BENCH_INIT_RESET_RESULT(result);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     CU_SAFE_DELETE(dagHash);
     CU_SAFE_DELETE_HOST(result);
 
