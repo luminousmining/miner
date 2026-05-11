@@ -32,7 +32,10 @@ void common::tool::ToolMemoryTrace::registerAllocation(
 }
 
 
-void common::tool::ToolMemoryTrace::registerDesallocation(void* ptr, char const* functionName, uint32_t const line)
+void common::tool::ToolMemoryTrace::registerDesallocation(
+    void*          ptr,
+    char const*    functionName,
+    uint32_t const line)
 {
     auto it = allocations.find(ptr);
     if (it != allocations.end())
