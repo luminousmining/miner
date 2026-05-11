@@ -33,20 +33,26 @@
 
 #define CU_ALLOC(src, size)                                                                                            \
     CUDA_ER(cudaMalloc((void**)src, size));                                                                            \
-    TOOL_MEMORY_ALLOC(*src, size);
+    if (nullptr != src)                                                                                                \
+    {                                                                                                                  \
+        TOOL_MEMORY_ALLOC(*src, size);
+    }
 
 #define CU_CALLOC(src, size)                                                                                           \
     CUDA_ER(cudaMalloc((void**)src, size));                                                                            \
     if (nullptr != src)                                                                                                \
     {                                                                                                                  \
         CUDA_ER(cudaMemset((void*)*src, 0, size));                                                                     \
-    }                                                                                                                  \
-    TOOL_MEMORY_ALLOC(*src, size);
+        TOOL_MEMORY_ALLOC(*src, size);                                                                                 \
+    }
 
 
 #define CU_ALLOC_HOST(src, size)                                                                                       \
     CUDA_ER(cudaMallocHost((void**)src, size, 0));                                                                     \
-    TOOL_MEMORY_ALLOC(*src, size);
+    if (nullptr != src)                                                                                                \
+    {                                                                                                                  \
+        TOOL_MEMORY_ALLOC(*src, size);
+    }
 
 #define CU_SAFE_DELETE(ptr)                                                                                            \
     if (nullptr != ptr)                                                                                                \
