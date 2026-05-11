@@ -701,12 +701,18 @@ void device::Device::submit(common::PROFILE const profile)
     {
         case common::PROFILE::STANDARD:
         {
-            resolver->submit(stratum);
+            if (nullptr != resolver)
+            {
+                resolver->submit(stratum);
+            }
             break;
         }
         case common::PROFILE::SMART_MINING:
         {
-            resolver->submit(stratumSmartMining);
+            if (nullptr != resolver)
+            {
+                resolver->submit(stratumSmartMining);
+            }
             break;
         }
     }
