@@ -311,6 +311,13 @@ bool device::DeviceManager::initializeNvidia()
         device::DeviceNvidia* device{ NEW(device::DeviceNvidia) };
 
         ////////////////////////////////////////////////////////////////////////////
+        if (nullptr == device)
+        {
+            logErr() << "Cannot alloc memory to create new NVIDIA Device";
+            continue;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
         codeError = cudaGetDeviceProperties(&device->properties, i);
         if (cudaSuccess != codeError)
         {
@@ -381,14 +388,19 @@ bool device::DeviceManager::initializeAmd()
 
             ////////////////////////////////////////////////////////////////////////////
             device::DeviceAmd* device{ NEW(device::DeviceAmd) };
+            if (nullptr == device)
+            {
+                logErr() << "Cannot alloc memory to create new AMD Device";
+                continue;
+            }
+
+            ////////////////////////////////////////////////////////////////////////////
             device->deviceType = device::DEVICE_TYPE::AMD;
             device->clDevice = cldevices.at(i);
             device->id = castU32(devices.size());
 
             ////////////////////////////////////////////////////////////////////////////
-            cl_char topology[24]{
-                0,
-            };
+            cl_char topology[24]{0, };
             OPENCL_ER(
                 clGetDeviceInfo(device->clDevice.get(), CL_DEVICE_TOPOLOGY_AMD, sizeof(topology), &topology, nullptr));
             device->pciBus = castU32(topology[21]);
