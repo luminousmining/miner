@@ -51,7 +51,7 @@ namespace network
         boost_socket*           socketTCP{ nullptr };
 
         NetworkTCPClient() = default;
-        virtual ~NetworkTCPClient() = default;
+        virtual ~NetworkTCPClient();
 
         virtual void onConnect() = 0;
         virtual void onReceive(std::string const& message) = 0;

@@ -20,6 +20,12 @@
 #endif
 
 
+network::NetworkTCPClient::~NetworkTCPClient()
+{
+    SAFE_DELETE(socketTCP);
+}
+
+
 void network::NetworkTCPClient::wait()
 {
     runService.join();
