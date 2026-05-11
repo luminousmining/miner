@@ -431,6 +431,10 @@ void device::DeviceManager::run()
 
     ////////////////////////////////////////////////////////////////////////////
     threadStatistical.interrupt();
+    if (true == threadStatistical.joinable())
+    {
+        threadStatistical.join();
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     for (uint32_t i{ 0u }; i < device::DeviceManager::MAX_STRATUMS; ++i)
@@ -576,6 +580,10 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(algo::ALGORITHM const algo
 {
     ////////////////////////////////////////////////////////////////////////////
     threadStatistical.interrupt();
+    if (true == threadStatistical.joinable())
+    {
+        threadStatistical.join();
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     boost::chrono::milliseconds ms{ device::DeviceManager::WAITING_DEVICE_STOP_COMPUTE };
