@@ -333,6 +333,8 @@ bool device::DeviceManager::initializeNvidia()
         if (cudaSuccess != codeError)
         {
             logErr() << "[" << codeError << "]" << __FUNCTION__ << cudaGetErrorString(codeError);
+            freeMem = 0u;
+            totalMem = 0u;
         }
 
         ////////////////////////////////////////////////////////////////////////////
