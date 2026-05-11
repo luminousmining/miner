@@ -46,8 +46,8 @@ char const* openclShowError(cl_int err);
     catch (cl::Error const& clErr)                                                                                     \
     {                                                                                                                  \
         OPENCL_EXCEPTION_ERROR_SHOW(function, clErr);                                                                  \
+        return false;                                                                                                  \
     }
-
 #endif // defined(CL_HPP_ENABLE_EXCEPTIONS)
 
 
