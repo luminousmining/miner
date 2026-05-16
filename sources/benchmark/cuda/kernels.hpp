@@ -26,6 +26,17 @@ bool fnv1_lm2(PARAMETER_FNV1);
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#define PARAMETER_BLAKE2B cudaStream_t stream,                                 \
+                          uint32_t const blocks,                               \
+                          uint32_t const threads
+bool blake2b_lm1(PARAMETER_BLAKE2B);
+bool blake2b_lm2(PARAMETER_BLAKE2B);
+bool blake2b_lm3(PARAMETER_BLAKE2B);
+bool blake2b_lm4(PARAMETER_BLAKE2B);
+bool blake2b_lm5(PARAMETER_BLAKE2B);
+
+
+////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_KECCAK_F800 cudaStream_t stream,                             \
                          uint32_t const blocks,                                \
                          uint32_t const threads

@@ -16,13 +16,13 @@ bool benchmark::BenchmarkWorkflow::runNvidiaAutolykosv2()
     using namespace std::string_literals;
 
     ////////////////////////////////////////////////////////////////////////////
-    logInfo() << "Running benchmark NVIDIA Autolykos V2";
-
-    ////////////////////////////////////////////////////////////////////////////
     if (false == config.nvidia.isAlgoEnabled("autolykos_v2"))
     {
         return true;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    logInfo() << "Running benchmark NVIDIA Autolykos V2";
 
     ////////////////////////////////////////////////////////////////////////////
     common::Dashboard            dashboard{ createNewDashboard("[NVIDIA] AUTOLYKOS V2") };

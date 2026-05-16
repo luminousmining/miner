@@ -14,14 +14,14 @@ int main(int argc, char** argv)
     namespace po = boost::program_options;
 
     ////////////////////////////////////////////////////////////////////////////
-    std::string configPath{ "benchmark.json" };
+    std::string configPath{ "config.json" };
 
     ////////////////////////////////////////////////////////////////////////////
     po::options_description desc{ "Benchmark options" };
     desc.add_options()("help,h", "Show help message")(
         "config,c",
         po::value<std::string>(&configPath),
-        "Path to benchmark config JSON file (default: benchmark.json)");
+        "Path to benchmark config JSON file (default: config.json)");
 
     po::positional_options_description pos{};
     pos.add("config", 1);
