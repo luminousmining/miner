@@ -306,6 +306,10 @@ void benchmark::BenchmarkWorkflow::runNvidia()
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
 
     ///////////////////////////////////////////////////////////////////////////
+    if (false == runNvidiaBlake2b())
+    {
+        logErr() << "Nvidia Blake2b failled!";
+    }
     if (false == runNvidiaKeccak())
     {
         logErr() << "Nvidia Keccak failled!";
