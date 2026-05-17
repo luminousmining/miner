@@ -5,9 +5,6 @@
 > This document explains Blake2b step by step, in programmer's language.
 > Every mathematical concept is immediately translated into code.
 >
-> **Reference files:**
-> - Implementation : `crypto/blake2b.py`
-> - Tests          : `crypto/blake2b_test.py`
 > - Specification  : [RFC 7693](https://www.rfc-editor.org/rfc/rfc7693)
 
 ---
