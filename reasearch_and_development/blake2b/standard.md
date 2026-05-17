@@ -1,7 +1,7 @@
 # Blake2b — Technical Documentation
 
 > **Who is this document for?**
-> You are an expert programmer, but a beginner in mathematics.
+> You are an programmer, but a beginner in mathematics.
 > This document explains Blake2b step by step, in programmer's language.
 > Every mathematical concept is immediately translated into code.
 >
