@@ -27,6 +27,13 @@ endif()
 ################################################################################
 if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
     cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
+        benchmark/cuda/argon2d/argon2d_lm1.cu
+        benchmark/cuda/argon2d/argon2d_lm2.cu
+        benchmark/cuda/argon2d/argon2d_lm3.cu
+        benchmark/cuda/argon2d/argon2d_lm4.cu
+        benchmark/cuda/argon2d/argon2d_lm5.cu
+        benchmark/cuda/argon2d/argon2d_lm6.cu
+        benchmark/cuda/argon2d/argon2d_lm7.cu
         benchmark/cuda/blake2b/blake2b_lm1.cu
         benchmark/cuda/blake2b/blake2b_lm2.cu
         benchmark/cuda/blake2b/blake2b_lm3.cu
