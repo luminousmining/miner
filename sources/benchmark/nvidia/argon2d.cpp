@@ -31,13 +31,14 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm1"))
     {
         KernelParams const p{ algo.resolveKernel("lm1") };
+        setGrid(p.threads, p.blocks);
 
         // Each thread owns 8 blocks of 128 uint64 words (8 KiB per thread).
         uint64_t* deviceMemory{ nullptr };
         uint64_t const memSize
         {
-            castU64(p.threads)
-                * castU64(p.blocks)
+            castU64(blocks)
+                * castU64(threads)
                 * 8ull
                 * 128ull
                 * sizeof(uint64_t)
@@ -47,8 +48,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
         RUN_BENCH(
             "argon2d: lm1"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm1(propertiesNvidia.cuStream, deviceMemory, blocks, threads))
 
         CUDA_ER(cudaFree(deviceMemory));
@@ -58,23 +59,24 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm2"))
     {
         KernelParams const p{ algo.resolveKernel("lm2") };
+        setGrid(p.threads, p.blocks);
 
         uint64_t* deviceMemory{ nullptr };
         uint64_t const memSize
         {
-            static_cast<uint64_t>(p.threads)
-            * static_cast<uint64_t>(p.blocks)
-            * 8ull
-            * 128ull
-            * sizeof(uint64_t)
+            castU64(blocks)
+                * castU64(threads)
+                * 8ull
+                * 128ull
+                * sizeof(uint64_t)
         };
         CUDA_ER(cudaMalloc(&deviceMemory, memSize));
 
         RUN_BENCH(
             "argon2d: lm2"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm2(propertiesNvidia.cuStream, deviceMemory, blocks, threads))
 
         CUDA_ER(cudaFree(deviceMemory));
@@ -84,12 +86,13 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm3"))
     {
         KernelParams const p{ algo.resolveKernel("lm3") };
+        setGrid(p.threads, p.blocks);
 
         uint64_t* deviceMemory{ nullptr };
         uint64_t const memSize
         {
-            castU64(p.threads)
-                * castU64(p.blocks)
+            castU64(blocks)
+                * castU64(threads)
                 * 8ull
                 * 128ull
                 * sizeof(uint64_t)
@@ -99,8 +102,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
         RUN_BENCH(
             "argon2d: lm3"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm3(propertiesNvidia.cuStream, deviceMemory, blocks, threads))
 
         CUDA_ER(cudaFree(deviceMemory));
@@ -110,12 +113,13 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm4"))
     {
         KernelParams const p{ algo.resolveKernel("lm4") };
+        setGrid(p.threads, p.blocks);
 
         uint64_t* deviceMemory{ nullptr };
         uint64_t const memSize
         {
-            castU64(p.threads)
-                * castU64(p.blocks)
+            castU64(blocks)
+                * castU64(threads)
                 * 8ull
                 * 128ull
                 * sizeof(uint64_t)
@@ -125,8 +129,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
         RUN_BENCH(
             "argon2d: lm4"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm4(propertiesNvidia.cuStream, deviceMemory, blocks, threads))
 
         CUDA_ER(cudaFree(deviceMemory));
@@ -136,12 +140,13 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm5"))
     {
         KernelParams const p{ algo.resolveKernel("lm5") };
+        setGrid(p.threads, p.blocks);
 
         uint64_t* deviceMemory{ nullptr };
         uint64_t const memSize
         {
-            castU64(p.threads)
-                * castU64(p.blocks)
+            castU64(blocks)
+                * castU64(threads)
                 * 8ull
                 * 128ull
                 * sizeof(uint64_t)
@@ -151,8 +156,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
         RUN_BENCH(
             "argon2d: lm5"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm5(propertiesNvidia.cuStream, deviceMemory, blocks, threads))
 
         CUDA_ER(cudaFree(deviceMemory));
@@ -162,12 +167,13 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm6"))
     {
         KernelParams const p{ algo.resolveKernel("lm6") };
+        setGrid(p.threads, p.blocks);
 
         uint64_t* deviceMemory{ nullptr };
         uint64_t const memSize
         {
-           castU64(p.threads)
-                * castU64(p.blocks)
+            castU64(blocks)
+                * castU64(threads)
                 * 8ull
                 * 128ull
                 * sizeof(uint64_t)
@@ -177,8 +183,8 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
         RUN_BENCH(
             "argon2d: lm6"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm6(propertiesNvidia.cuStream, deviceMemory, blocks, threads))
 
         CUDA_ER(cudaFree(deviceMemory));
@@ -188,12 +194,13 @@ bool benchmark::BenchmarkWorkflow::runNvidiaArgon2d()
     if (true == algo.isKernelEnabled("lm7"))
     {
         KernelParams const p{ algo.resolveKernel("lm7") };
+        setGrid(p.threads, p.blocks);
 
         RUN_BENCH(
             "argon2d: lm7"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             argon2d_lm7(propertiesNvidia.cuStream, blocks, threads))
     }
 

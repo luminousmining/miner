@@ -35,11 +35,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaFnv1()
     if (algo.isKernelEnabled("lm1"))
     {
         KernelParams const p{ algo.resolveKernel("lm1") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "fnv1: fnv1_lm1"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             fnv1_lm1(propertiesNvidia.cuStream, result, blocks, threads))
     }
 
@@ -47,11 +48,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaFnv1()
     if (algo.isKernelEnabled("lm2"))
     {
         KernelParams const p{ algo.resolveKernel("lm2") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "fnv1: fnv1_lm2"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             fnv1_lm2(propertiesNvidia.cuStream, result, blocks, threads))
     }
 

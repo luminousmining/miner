@@ -29,11 +29,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm1"))
     {
         KernelParams const p{ algo.resolveKernel("lm1") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm1"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm1(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -41,11 +42,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm2"))
     {
         KernelParams const p{ algo.resolveKernel("lm2") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm2"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm2(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -53,11 +55,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm3"))
     {
         KernelParams const p{ algo.resolveKernel("lm3") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm3"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm3(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -65,11 +68,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm4"))
     {
         KernelParams const p{ algo.resolveKernel("lm4") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm4"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm4(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -77,11 +81,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm5"))
     {
         KernelParams const p{ algo.resolveKernel("lm5") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm5"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm5(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -89,11 +94,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm6"))
     {
         KernelParams const p{ algo.resolveKernel("lm6") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm6"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm6(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -101,11 +107,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm7"))
     {
         KernelParams const p{ algo.resolveKernel("lm7") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm7"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm7(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -113,11 +120,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm8"))
     {
         KernelParams const p{ algo.resolveKernel("lm8") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm8"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm8(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -125,11 +133,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaKeccak()
     if (algo.isKernelEnabled("lm9"))
     {
         KernelParams const p{ algo.resolveKernel("lm9") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "keccakf800: lm9"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             keccak_f800_lm9(propertiesNvidia.cuStream, blocks, threads))
     }
 

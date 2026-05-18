@@ -29,11 +29,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaBlake2b()
     if (true == algo.isKernelEnabled("lm1"))
     {
         KernelParams const p{ algo.resolveKernel("lm1") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "blake2b: lm1"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             blake2b_lm1(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -41,11 +42,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaBlake2b()
     if (true == algo.isKernelEnabled("lm2"))
     {
         KernelParams const p{ algo.resolveKernel("lm2") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "blake2b: lm2"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             blake2b_lm2(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -53,11 +55,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaBlake2b()
     if (true == algo.isKernelEnabled("lm3"))
     {
         KernelParams const p{ algo.resolveKernel("lm3") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "blake2b: lm3"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             blake2b_lm3(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -65,11 +68,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaBlake2b()
     if (true == algo.isKernelEnabled("lm4"))
     {
         KernelParams const p{ algo.resolveKernel("lm4") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "blake2b: lm4"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             blake2b_lm4(propertiesNvidia.cuStream, blocks, threads))
     }
 
@@ -77,11 +81,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaBlake2b()
     if (true == algo.isKernelEnabled("lm5"))
     {
         KernelParams const p{ algo.resolveKernel("lm5") };
+        setGrid(p.threads, p.blocks);
         RUN_BENCH(
             "blake2b: lm5"s,
             p.loop,
-            p.threads,
-            p.blocks,
+            threads,
+            blocks,
             blake2b_lm5(propertiesNvidia.cuStream, blocks, threads))
     }
 

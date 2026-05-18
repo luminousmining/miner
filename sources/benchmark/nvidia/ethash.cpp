@@ -50,11 +50,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_base(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("base") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_base"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_base(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -66,11 +67,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_ethminer(dagHash, &headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("ethminer") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethminer"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_ethminer(propertiesNvidia.cuStream, result, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -82,11 +84,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_lm1(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("lm1") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_lm1"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_lm1(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -98,11 +101,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_lm2(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("lm2") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_lm2"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_lm2(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -114,11 +118,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_lm3(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("lm3") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_lm3"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_lm3(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -130,11 +135,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_lm4(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("lm4") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_lm4"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_lm4(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -146,11 +152,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_lm5(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("lm5") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_lm5"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_lm5(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
@@ -162,11 +169,12 @@ bool benchmark::BenchmarkWorkflow::runNvidiaEthash()
         if (true == init_ethash_lm6(&headerHash, dagItems))
         {
             KernelParams const p{ algo.resolveKernel("lm6") };
+            setGrid(p.threads, p.blocks);
             RUN_BENCH(
                 "ethash: ethash_lm6"s,
                 p.loop,
-                p.threads,
-                p.blocks,
+                threads,
+                blocks,
                 ethash_lm6(propertiesNvidia.cuStream, result, dagHash, blocks, threads))
             BENCH_INIT_RESET_RESULT(result);
         }
