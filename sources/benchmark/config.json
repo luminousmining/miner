@@ -3,6 +3,13 @@
         "enabled": true,
         "device_index": 0,
         "algorithms": {
+            "argon2d": {
+                "enabled": true,
+                "loop": 10,
+                "threads": 32,
+                "blocks": 128,
+                "kernels": ["lm1", "lm2", "lm3", "lm4", "lm5", "lm6", { "name": "lm7", "threads": 1, "blocks": 2048 }]
+            },
             "blake2b": {
                 "enabled": true,
                 "loop": 10,

@@ -102,6 +102,7 @@ namespace benchmark
 
 #if defined(CUDA_ENABLE)
         void runNvidia();
+        bool runNvidiaArgon2d();
         bool runNvidiaBlake2b();
         bool runNvidiaFnv1();
         bool runNvidiaKeccak();

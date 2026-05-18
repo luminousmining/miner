@@ -93,7 +93,7 @@ Input : [  data  ]  (arbitrary size)
                                   Truncate to digest_size
                                              |
                                              v
-                                       [ HASH ]
+                                          [ HASH ]
 ```
 
 The compression function mixes **one message block** into **state h**.
@@ -208,7 +208,7 @@ byte[1] = 0x02  ->  0x02 << 8  =  0x0000000000000200
 byte[2] = 0x03  ->  0x03 << 16 =  0x0000000000030000
 ...
 byte[7] = 0x08  ->  0x08 << 56 =  0x0800000000000000
-                                  -----------------------
+-----------------------
                       OR of all =  0x0807060504030201
 ```
 
@@ -341,7 +341,7 @@ def _G(a: int, b: int, c: int, d: int, x: int, y: int):
 ```
         a          b          c          d
         |          |          |          |
-     [+b+x] ------.          |          |
+     [+b+x] -------.          |          |
         |          |          |          |
         .----------.----------.--------[^ XOR]
         |          |          |        [rotr32]
@@ -461,7 +461,7 @@ Round r:
 Visualization of the 4x4 square: columns (|) then diagonals (/)
 
 ```
-Columns:           Diagonals:
+Columns:          Diagonals:
 |  |  |  |         /  /  /  /
 0  1  2  3        0  1  2  3
 4  5  6  7        5  6  7  4

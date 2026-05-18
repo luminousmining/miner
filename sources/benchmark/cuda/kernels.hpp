@@ -26,6 +26,20 @@ bool fnv1_lm2(PARAMETER_FNV1);
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#define PARAMETER_ARGON2D cudaStream_t stream,                                 \
+                          uint64_t* const memory,                              \
+                          uint32_t const blocks,                               \
+                          uint32_t const threads
+bool argon2d_lm1(PARAMETER_ARGON2D);
+bool argon2d_lm2(PARAMETER_ARGON2D);
+bool argon2d_lm3(PARAMETER_ARGON2D);
+bool argon2d_lm4(PARAMETER_ARGON2D);
+bool argon2d_lm5(PARAMETER_ARGON2D);
+bool argon2d_lm6(PARAMETER_ARGON2D);
+bool argon2d_lm7(cudaStream_t stream, uint32_t const blocks, uint32_t const threads);
+
+
+////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_BLAKE2B cudaStream_t stream,                                 \
                           uint32_t const blocks,                               \
                           uint32_t const threads
