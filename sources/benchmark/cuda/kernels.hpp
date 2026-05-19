@@ -40,6 +40,17 @@ bool argon2d_lm7(cudaStream_t stream, uint32_t const blocks, uint32_t const thre
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#define PARAMETER_RANDOM_X cudaStream_t stream,                                \
+                           uint64_t const* const dataset,                      \
+                           uint8_t* const scratchpads,                         \
+                           uint32_t const blocks,                              \
+                           uint32_t const threads
+bool random_x_build_cache(cudaStream_t stream, uint8_t* const cache);
+bool random_x_build_dataset(cudaStream_t stream, uint8_t const* const cache, uint64_t* const dataset);
+bool random_x_lm1(PARAMETER_RANDOM_X);
+
+
+////////////////////////////////////////////////////////////////////////////////
 #define PARAMETER_BLAKE2B cudaStream_t stream,                                 \
                           uint32_t const blocks,                               \
                           uint32_t const threads

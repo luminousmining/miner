@@ -3,6 +3,13 @@
         "enabled": true,
         "device_index": 0,
         "algorithms": {
+            "random_x": {
+                "enabled": true,
+                "loop": 10,
+                "threads": 4,
+                "blocks": 8,
+                "kernels": ["lm1"]
+            },
             "argon2d": {
                 "enabled": true,
                 "loop": 10,

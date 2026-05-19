@@ -104,6 +104,7 @@ namespace benchmark
         void runNvidia();
         bool runNvidiaArgon2d();
         bool runNvidiaBlake2b();
+        bool runNvidiaRandomX();
         bool runNvidiaFnv1();
         bool runNvidiaKeccak();
         bool runNvidiaAutolykosv2();

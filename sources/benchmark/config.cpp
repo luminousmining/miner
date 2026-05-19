@@ -167,6 +167,7 @@ benchmark::Config benchmark::Config::makeDefault()
 
     cfg.nvidia.enabled = true;
     cfg.nvidia.deviceIndex = 0u;
+    cfg.nvidia.algorithms["random_x"] = { true, { 10u, 4u, 8u }, { { "lm1", { 10u, 4u, 8u } } } };
     cfg.nvidia.algorithms["blake2b"] = { true, { 10u, 128u, 1024u }, { { "lm1", { 10u, 128u, 1024u } }, { "lm2", { 10u, 128u, 1024u } } } };
     cfg.nvidia.algorithms["keccak"] = { true, { 10u, 128u, 1024u }, {} };
     cfg.nvidia.algorithms["fnv1"] = { true, { 10u, 1024u, 8192u }, {} };

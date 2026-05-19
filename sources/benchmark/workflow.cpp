@@ -306,6 +306,10 @@ void benchmark::BenchmarkWorkflow::runNvidia()
     currentdeviceType = device::DEVICE_TYPE::NVIDIA;
 
     ///////////////////////////////////////////////////////////////////////////
+    if (false == runNvidiaRandomX())
+    {
+        logErr() << "Nvidia RandomX failled!";
+    }
     if (false == runNvidiaArgon2d())
     {
         logErr() << "Nvidia Argon2d failled!";

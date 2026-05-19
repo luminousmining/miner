@@ -27,6 +27,9 @@ endif()
 ################################################################################
 if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
     cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
+        benchmark/cuda/random_x/random_x_build_cache.cu
+        benchmark/cuda/random_x/random_x_build_dataset.cu
+        benchmark/cuda/random_x/random_x_lm1.cu
         benchmark/cuda/argon2d/argon2d_lm1.cu
         benchmark/cuda/argon2d/argon2d_lm2.cu
         benchmark/cuda/argon2d/argon2d_lm3.cu
