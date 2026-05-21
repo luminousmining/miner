@@ -455,3 +455,5 @@ bin/
 bin_*/
 build/
 build_*/
+
+.claude
