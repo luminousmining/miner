@@ -28,6 +28,7 @@ add_subdirectory(blake3)
 add_subdirectory(crypto)
 add_subdirectory(ethash)
 add_subdirectory(progpow)
+add_subdirectory(random_x)
 add_subdirectory(tests)
 
 set(SOURCES_ALGO ${HEADERS} ${SOURCES} PARENT_SCOPE)

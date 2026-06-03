@@ -7,6 +7,7 @@ if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
         algo/blake3/cuda/blake3.cu
         algo/ethash/cuda/ethash.cu
         algo/progpow/cuda/progpow.cu
+        algo/random_x/cuda/random_x.cu
     )
 
     target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE

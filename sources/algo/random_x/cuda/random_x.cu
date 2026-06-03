@@ -19,6 +19,11 @@ constexpr uint64_t RX_CACHE_BYTES        { RX_CACHE_ITEMS * 64ull };
 constexpr uint32_t RX_SCRATCHPAD_L3      { 2097152u };
 constexpr uint32_t RX_SCRATCHPAD_L2      { 262144u };
 constexpr uint32_t RX_SCRATCHPAD_L1      { 16384u };
+// Per-thread scratchpad stride includes 64-byte padding to avoid OOB reads.
+// The reference allocates ScratchpadSize + 64 (vm_interpreted.cpp).
+// With MASK_L3_8=0x1FFFF8, the last valid 8-byte-aligned address is 0x1FFFF8=2097144;
+// the r[7] read then lands at 2097144+56=2097200, i.e. 48 bytes past 2097152.
+constexpr uint32_t RX_SCRATCHPAD_STRIDE  { RX_SCRATCHPAD_L3 + 64u };
 constexpr uint32_t RX_PROGRAM_COUNT      { 8u };
 constexpr uint32_t RX_PROGRAM_ITERATIONS { 2048u };
 constexpr uint32_t RX_PROGRAM_SIZE       { 256u };
@@ -970,14 +975,15 @@ void rx_run_vm(
         }
     }
 
-    // ── Step 2: fill scratchpad via AesGenerator1R ────────────────────────
-    aes_gen1r_fill(aes_state, sp, RX_SCRATCHPAD_L3 / 64u);
-
-    // ── Step 3: copy AES state for AesGenerator4R ────────────────────────
+    // ── Step 2: copy AES state for AesGenerator4R ────────────────────────
+    // NOTE: AES-4R (program entropy) runs FIRST, then AES-1R (scratchpad fill)
+    // runs SECOND from the state already modified by AES-4R.  This matches
+    // VmBase::run() in the reference: generateProgram() calls fillAes4Rx4,
+    // then fillAes1Rx4 is called on the same (now-modified) tempHash.
     uint8_t gen4r_state[64];
     for (uint32_t i{ 0u }; i < 64u; ++i) { gen4r_state[i] = aes_state[i]; }
 
-    // ── Step 4: VM registers ──────────────────────────────────────────────
+    // ── Step 3: VM registers ──────────────────────────────────────────────
     uint64_t r[8]{};
     double   f[4][2]{};
     double   e[4][2]{};
@@ -993,7 +999,14 @@ void rx_run_vm(
 
     for (uint32_t prog_idx{ 0u }; prog_idx < RX_PROGRAM_COUNT; ++prog_idx)
     {
+        // AES-4R: generate program entropy (modifies gen4r_state in place)
         aes_gen4r_fill(gen4r_state, prog_buf, 34u);
+
+        // AES-1R: fill scratchpad from the NOW-modified state (first program only)
+        if (prog_idx == 0u)
+        {
+            aes_gen1r_fill(gen4r_state, sp, RX_SCRATCHPAD_L3 / 64u);
+        }
 
         uint64_t hdr[16];
         for (uint32_t i{ 0u }; i < 16u; ++i)
@@ -1041,23 +1054,26 @@ void rx_run_vm(
 
         rx_parse_program(prog_buf + 128u, prog);
 
-        for (uint32_t i{ 0u }; i < 8u; ++i) { r[i] = 0ull; }
+        // Integer registers r[] carry over from previous program (or 0 for first).
+        // Only the per-iteration scratchpad-address accumulators reset per program.
         uint32_t spAddr0{ mx };
         uint32_t spAddr1{ ma };
 
         for (uint32_t iter{ 0u }; iter < RX_PROGRAM_ITERATIONS; ++iter)
         {
-            uint64_t const rr01{ r[readReg[0]] ^ r[readReg[1]] };
-            spAddr0 ^= static_cast<uint32_t>(rr01);
-            spAddr1 ^= static_cast<uint32_t>(rr01 >> 32u);
+            // reference: spMix = r[readReg0]^r[readReg1]; spAddr0 ^= low32(spMix); spAddr1 ^= high32(spMix)
+            uint64_t const spMix{ r[readReg[0]] ^ r[readReg[1]] };
+            spAddr0 ^= static_cast<uint32_t>(spMix);
+            spAddr1 ^= static_cast<uint32_t>(spMix >> 32u);
 
-            uint32_t const addr2{ spAddr0 & MASK_L3_64 };
+            // reference ScratchpadL3Mask64 = (L3/8 - 1)*8 = 0x1FFFF8 = MASK_L3_8 (8-byte aligned)
+            uint32_t const addr2{ spAddr0 & MASK_L3_8 };
             for (uint32_t i{ 0u }; i < 8u; ++i)
             {
                 r[i] ^= sp_read_u64(sp, addr2 + i * 8u);
             }
 
-            uint32_t const addr3{ spAddr1 & MASK_L3_64 };
+            uint32_t const addr3{ spAddr1 & MASK_L3_8 };
             uint8_t const* const blk3{ sp + addr3 };
             for (uint32_t i{ 0u }; i < 4u; ++i)
             {
@@ -1085,7 +1101,7 @@ void rx_run_vm(
 
             { uint32_t const tmp{ mx }; mx = ma; ma = tmp; }
 
-            uint32_t const addr9{ spAddr1 & MASK_L3_64 };
+            uint32_t const addr9{ spAddr1 & MASK_L3_8 };
             for (uint32_t i{ 0u }; i < 8u; ++i) { sp_write_u64(sp, addr9 + i * 8u, r[i]); }
 
             for (uint32_t i{ 0u }; i < 4u; ++i)
@@ -1097,7 +1113,7 @@ void rx_run_vm(
                 __builtin_memcpy(&f[i][0], &fb0, 8u); __builtin_memcpy(&f[i][1], &fb1, 8u);
             }
 
-            uint32_t const addr11{ spAddr0 & MASK_L3_64 };
+            uint32_t const addr11{ spAddr0 & MASK_L3_8 };
             for (uint32_t i{ 0u }; i < 4u; ++i)
             {
                 uint64_t fb0, fb1;
@@ -1389,7 +1405,7 @@ void kernel_rx_search(
     rx_blake2b_512_blob(blob, RX_BLOB_SIZE, seed);
 
     // Run VM — writes final 32-byte hash into seed[0..3]
-    uint8_t* const sp{ scratchpads + (uint64_t)globalId * RX_SCRATCHPAD_L3 };
+    uint8_t* const sp{ scratchpads + (uint64_t)globalId * RX_SCRATCHPAD_STRIDE };
     rx_run_vm(seed, dataset, sp);
 
     // seed[0..3] now holds the 32-byte hash (Blake2b-256 output from rx_run_vm)
@@ -1440,7 +1456,7 @@ bool randomxInitMemory(
     uint32_t const threads)
 {
     constexpr uint64_t DATASET_BYTES   { RX_DATASET_ITEMS * 8ull * 8ull }; // items * 8 uint64 * 8 bytes
-    uint64_t const     scratchpadsBytes{ static_cast<uint64_t>(blocks) * threads * RX_SCRATCHPAD_L3 };
+    uint64_t const     scratchpadsBytes{ static_cast<uint64_t>(blocks) * threads * RX_SCRATCHPAD_STRIDE };
 
     CU_ALLOC(&params.dataset,    DATASET_BYTES);
     CU_ALLOC(&params.scratchpads, scratchpadsBytes);

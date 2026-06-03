@@ -71,6 +71,11 @@ stratum::Stratum* stratum::NewStratum(algo::ALGORITHM const algorithm)
             stratum = NEW(stratum::StratumBlake3);
             break;
         }
+        case algo::ALGORITHM::RANDOM_X:
+        {
+            stratum = NEW(stratum::StratumRandomX);
+            break;
+        }
         case algo::ALGORITHM::UNKNOWN:
         {
             break;

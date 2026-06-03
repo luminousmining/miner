@@ -20,6 +20,7 @@ namespace algo
         EVRPROGPOW,
         AUTOLYKOS_V2,
         BLAKE3,
+        RANDOM_X,
         UNKNOWN,
         MAX_SIZE = algo::ALGORITHM::UNKNOWN
     };

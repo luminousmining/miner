@@ -16,6 +16,7 @@
 #include <resolver/mocker.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/blake3.hpp>
+#include <resolver/nvidia/random_x.hpp>
 #include <resolver/nvidia/etchash.hpp>
 #include <resolver/nvidia/ethash.hpp>
 #include <resolver/nvidia/evrprogpow.hpp>
@@ -327,6 +328,31 @@ void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
                 {
                     SAFE_DELETE(resolver);
                     resolver = NEW(resolver::ResolverNvidiaBlake3);
+                    break;
+                }
+#endif
+#if defined(AMD_ENABLE)
+                case device::DEVICE_TYPE::AMD:
+                {
+                    break;
+                }
+#endif
+                case device::DEVICE_TYPE::UNKNOWN:
+                {
+                    break;
+                }
+            }
+            break;
+        }
+        case algo::ALGORITHM::RANDOM_X:
+        {
+            switch (deviceType)
+            {
+#if defined(CUDA_ENABLE)
+                case device::DEVICE_TYPE::NVIDIA:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaRandomX);
                     break;
                 }
 #endif

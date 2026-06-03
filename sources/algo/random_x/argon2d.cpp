@@ -441,9 +441,9 @@ void algo::random_x::buildCache(
         b2b_update(h0, bytes, 4u);
     };
 
-    push_le32(1u);           // parallelism
-    push_le32(0u);           // tag length (RandomX uses raw memory, no output tag)
-    push_le32(262144u);      // memory (KiB)
+    push_le32(1u);                              // parallelism
+    push_le32(0u);                              // tag length = 0 (RandomX omits the finalizer step)
+    push_le32(262144u);                         // memory (KiB)
     push_le32(3u);           // iterations
     push_le32(0x13u);        // version
     push_le32(0u);           // type (Argon2d = 0)
@@ -493,6 +493,8 @@ void algo::random_x::buildCache(
             }
         }
     }
-    // Note: RandomX uses the raw 256 MiB memory array as the cache,
-    // not the final Argon2d output tag.
+
+    // RandomX spec: "The finalizer and output calculation steps of Argon2 are
+    // omitted. The output is the filled memory array."
+    // The raw 256 MiB memory blocks ARE the cache — nothing more to do.
 }

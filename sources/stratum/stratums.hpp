@@ -12,6 +12,7 @@
 #include <stratum/progpow.hpp>
 #include <stratum/progpow_quai.hpp>
 #include <stratum/progpow_z.hpp>
+#include <stratum/random_x.hpp>
 #include <stratum/sha256.hpp>
 #include <stratum/smart_mining.hpp>
 

@@ -25,6 +25,7 @@ TEST_F(AlgoTypeTest, stringToEnumSuccess)
     EXPECT_EQ(algo::toEnum("progpowz"), algo::ALGORITHM::PROGPOWZ);
     EXPECT_EQ(algo::toEnum("autolykosv2"), algo::ALGORITHM::AUTOLYKOS_V2);
     EXPECT_EQ(algo::toEnum("blake3"), algo::ALGORITHM::BLAKE3);
+    EXPECT_EQ(algo::toEnum("randomx"), algo::ALGORITHM::RANDOM_X);
 
     EXPECT_EQ(algo::toEnum(""), algo::ALGORITHM::UNKNOWN);
     EXPECT_EQ(algo::toEnum("unknown"), algo::ALGORITHM::UNKNOWN);
