@@ -410,3 +410,20 @@ if (UNIX)
         )
     endif()
 endif()
+
+
+if (WIN32 AND NOT MSVC)
+    # MinGW / llvm-mingw cross builds don't honor MSVC's #pragma comment(lib, ...)
+    # auto-linking (e.g. crypt32 in network.cpp), so link the Windows system
+    # libraries the code and static deps (OpenSSL, Boost.Asio) need explicitly.
+    set(LM_WIN_SYSLIBS crypt32 ws2_32 mswsock bcrypt secur32 advapi32 user32 crypt32)
+    if (BUILD_EXE_MINER)
+        target_link_libraries(${MINER_EXE} PRIVATE ${LM_WIN_SYSLIBS})
+    endif()
+    if (BUILD_EXE_BENCHMARK)
+        target_link_libraries(${BENCH_EXE} PRIVATE ${LM_WIN_SYSLIBS})
+    endif()
+    if (BUILD_EXE_UNIT_TEST)
+        target_link_libraries(${UNIT_TEST_EXE} PRIVATE ${LM_WIN_SYSLIBS})
+    endif()
+endif()

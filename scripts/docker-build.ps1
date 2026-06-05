@@ -29,7 +29,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('linux-amd', 'linux-nvidia', 'windows-amd', 'all')]
+    [ValidateSet('linux-amd', 'linux-nvidia', 'windows-amd', 'windows-amd-cross', 'all')]
     [string] $Target,
 
     [string] $VcpkgRef = 'master'
@@ -102,10 +102,12 @@ function Build-WindowsTarget([string] $name) {
 
 function Build-Target([string] $name) {
     switch ($name) {
-        'linux-amd'    { Build-LinuxTarget   $name }
-        'linux-nvidia' { Build-LinuxTarget   $name }
-        'windows-amd'  { Build-WindowsTarget $name }
-        default        { throw "Unknown target '$name'" }
+        'linux-amd'          { Build-LinuxTarget   $name }
+        'linux-nvidia'       { Build-LinuxTarget   $name }
+        # Cross-compiled Windows .exe: builds in a LINUX container (no mode switch).
+        'windows-amd-cross'  { Build-LinuxTarget   $name }
+        'windows-amd'        { Build-WindowsTarget $name }
+        default              { throw "Unknown target '$name'" }
     }
 }
 
