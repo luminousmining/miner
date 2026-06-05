@@ -279,13 +279,20 @@ void stratum::Stratum::ethGetWork()
 
 void stratum::Stratum::setExtraNonce(std::string const& paramExtraNonce)
 {
-    jobInfo.extraNonceSize = castU32(paramExtraNonce.size());
-    jobInfo.extraNonce = std::strtoull(paramExtraNonce.c_str(), nullptr, 16);
+    // The pool controls this string (subscribe result / mining.set_extranonce).
+    // A 64-bit nonce is at most 16 hex chars; cap it so `16 - size()` below
+    // cannot underflow size_t and drive the fill loops into a multi-exabyte
+    // string append (remote OOM / denial of service).
+    std::string const extraNonce{ paramExtraNonce.size() > 16u ? paramExtraNonce.substr(0u, 16u)
+                                                               : paramExtraNonce };
+
+    jobInfo.extraNonceSize = castU32(extraNonce.size());
+    jobInfo.extraNonce = std::strtoull(extraNonce.c_str(), nullptr, 16);
 
     // Define the 0 counter to define nonce gap.
-    size_t      fill{ 16ull - paramExtraNonce.size() };
+    size_t      fill{ 16ull - extraNonce.size() };
     std::string extraNonceFill{};
-    extraNonceFill.assign(paramExtraNonce);
+    extraNonceFill.assign(extraNonce);
     for (size_t i{ 0ull }; i < fill; ++i)
     {
         extraNonceFill += '0';
