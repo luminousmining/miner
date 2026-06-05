@@ -23,7 +23,10 @@ ARG VCPKG_REF=master
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl zip unzip tar xz-utils git pkg-config \
         build-essential ninja-build python3 \
+        libicu70 \
     && rm -rf /var/lib/apt/lists/*
+# libicu70: vcpkg's bundled PowerShell (used by the mingw triplet's post-build
+# fixups) is a .NET app that crashes without ICU.
 
 # Modern CMake (project uses the CMP0135 policy -> needs >= 3.24).
 ARG CMAKE_VERSION=3.30.5
@@ -54,6 +57,7 @@ ENV PATH="$VCPKG_ROOT:${PATH}"
 WORKDIR /src
 COPY vcpkg.json CMakePresets.json CMakeLists.txt ./
 COPY cmake ./cmake
+COPY triplets ./triplets
 COPY sources ./sources
 
 RUN cmake --preset windows-amd-cross \

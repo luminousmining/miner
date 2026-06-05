@@ -15,6 +15,17 @@ set(CMAKE_C_COMPILER   ${TOOLCHAIN_PREFIX}-clang)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-clang++)
 set(CMAKE_RC_COMPILER  ${TOOLCHAIN_PREFIX}-windres)
 
+# Applied to BOTH the vcpkg dependency builds and the project (this is the vcpkg
+# chainload toolchain):
+#   * _WIN32_WINNT/WINVER = Windows 10 so Boost.Atomic/WinAPI expose WaitOnAddress
+#     (requires >= 0x0602); otherwise boost-thread fails to compile.
+#   * -pthread so llvm-mingw links winpthreads (otherwise pthread_* are undefined).
+set(_lm_flags "-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00 -pthread")
+string(APPEND CMAKE_C_FLAGS_INIT   " ${_lm_flags}")
+string(APPEND CMAKE_CXX_FLAGS_INIT " ${_lm_flags}")
+string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT    " -pthread")
+string(APPEND CMAKE_SHARED_LINKER_FLAGS_INIT " -pthread")
+
 # Look for libraries/headers/packages in the target sysroot (and vcpkg tree),
 # but run build tools (ninja, etc.) from the host.
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

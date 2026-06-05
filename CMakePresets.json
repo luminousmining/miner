@@ -49,7 +49,9 @@
         "BUILD_NVIDIA": "OFF",
         "BUILD_CPU": "OFF",
         "VCPKG_TARGET_TRIPLET": "x64-mingw-static",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-mingw.cmake"
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-mingw.cmake",
+        "VCPKG_APPLOCAL_DEPS": "OFF"
       }
     },
     {
