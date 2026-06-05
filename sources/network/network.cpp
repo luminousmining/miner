@@ -347,27 +347,25 @@ void network::NetworkTCPClient::send(char const* data, size_t size)
         return;
     }
 
+    // async_write does NOT copy the buffer it is given: the storage must stay
+    // valid until the operation completes. Callers pass pointers to temporaries
+    // (e.g. send(boost_json) hands over a local string's c_str()), so the data
+    // was being freed before the write finished -- a use-after-free. Own a copy
+    // for the lifetime of the async op by capturing it in the completion handler.
+    // shared_ptr (not unique_ptr) keeps the handler copyable: async_write is a
+    // composed operation that may copy the handler through its internal layers,
+    // and a captured unique_ptr would make the lambda move-only.
+    auto payload{ std::make_shared<std::string>(data, size) };
+    auto handler{ [this, payload](boost_error_code const& ec, std::size_t bytes)
+                  { onSend(ec, bytes); } };
+
     if (true == secureConnection)
     {
-        boost::asio::async_write(
-            *socketTCP,
-            boost::asio::buffer(data, size),
-            boost::bind(
-                &NetworkTCPClient::onSend,
-                this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
+        boost::asio::async_write(*socketTCP, boost::asio::buffer(*payload), std::move(handler));
     }
     else
     {
-        boost::asio::async_write(
-            socketTCP->next_layer(),
-            boost::asio::buffer(data, size),
-            boost::bind(
-                &NetworkTCPClient::onSend,
-                this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
+        boost::asio::async_write(socketTCP->next_layer(), boost::asio::buffer(*payload), std::move(handler));
     }
 }
 
