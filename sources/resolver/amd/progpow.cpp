@@ -262,9 +262,18 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
     OPENCL_ER(clKernel.setArg(4u, castU32(context.lightCache.numberItem)));
 
     ////////////////////////////////////////////////////////////////////////////
-    // Run kernel to build DAG
+    // Run kernel to build DAG.
+    // Cap the Y dimension so the whole launch is actually dispatched: some drivers
+    // (AMD on gfx1201/RDNA4) silently execute fewer work-groups than requested when
+    // a dimension is very large, which leaves most of a multi-GB DAG zero. The
+    // kernel grid-strides, so a capped launch still covers every page.
     uint32_t const maxGroupSize{ getMaxGroupSize() };
-    uint32_t const threadKernel{ castU32(context.dagCache.numberItem) / maxGroupSize };
+    uint32_t const maxThreadKernel{ 32768u };
+    uint32_t       threadKernel{ (castU32(context.dagCache.numberItem) + maxGroupSize - 1u) / maxGroupSize };
+    if (threadKernel > maxThreadKernel)
+    {
+        threadKernel = maxThreadKernel;
+    }
     OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
         clKernel,
         cl::NullRange,

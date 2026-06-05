@@ -33,12 +33,17 @@ void ethash_build_dag(
     uint const cache_number_item)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint const dag_index = get_global_id(0) + get_global_id(1) * GROUP_SIZE;
-    if (dag_index >= dag_number_item)
+    // Grid-stride over every DAG page. Some drivers (e.g. AMD on gfx1201/RDNA4)
+    // silently execute fewer work-groups than requested when a launch dimension is
+    // very large, leaving most of a big DAG (multi-GB ethash epochs) unwritten and
+    // zero. Striding by the real launch size makes coverage independent of how many
+    // work-items actually run. The host also caps the launch so it is fully
+    // dispatched (see resolver buildDAG).
+    uint const grid_stride = (uint)(get_global_size(0) * get_global_size(1));
+    for (uint dag_index = (uint)(get_global_id(0) + get_global_id(1) * get_global_size(0));
+         dag_index < dag_number_item;
+         dag_index += grid_stride)
     {
-        return;
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     __attribute__((opencl_unroll_hint))
     for (uchar loop = 0; loop < 2; ++loop)
@@ -87,5 +92,6 @@ void ethash_build_dag(
             dag[gap_index + x] = item[x];
         }
 
+    }
     }
 }
