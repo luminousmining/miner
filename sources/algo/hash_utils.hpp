@@ -168,6 +168,24 @@ namespace algo
         ////////////////////////////////////////////////////////////////////////
         T hash{};
 
+        // `input` is pool-controlled (e.g. the Autolykos boundary arrives in
+        // mining.notify params[6] straight off the wire). Reject anything that is
+        // not a plain decimal string: a non-digit byte makes `input[i] - '0'`
+        // below evaluate to a huge limb (a high-bit char is negative as signed
+        // `char`), which overflows the fixed-size `accs`/`ts` carry arrays.
+        for (char const c : input)
+        {
+            if (c < '0' || c > '9')
+            {
+                logErr() << "decimalToHash: rejecting non-decimal pool input";
+                return hash;
+            }
+        }
+
+        // Number of base-16 limbs. The carry loops below must never index past
+        // this; `LIMBS` is reused to size the arrays and to bound `ip`.
+        constexpr std::size_t LIMBS{ sizeof(T) + 10u };
+
         uint32_t const lenght{ castU32(input.size()) };
         uint32_t*      fs{ NEW_ARRAY(uint32_t, lenght) };
         if (nullptr == fs) [[unlikely]]
@@ -175,8 +193,8 @@ namespace algo
             return hash;
         }
 
-        uint32_t ts[sizeof(T) + 10]{ 1u };
-        uint32_t accs[sizeof(T) + 10]{ 0u };
+        uint32_t ts[LIMBS]{ 1u };
+        uint32_t accs[LIMBS]{ 0u };
 
         uint32_t tmp;
         uint32_t rem;
@@ -203,6 +221,14 @@ namespace algo
 
                 do
                 {
+                    // Stop before the carry can run off the end of `accs`; an
+                    // over-long decimal would otherwise smash the stack. The high
+                    // limbs are simply dropped (a malicious oversized boundary is
+                    // rejected later by isValidJob), never written out of bounds.
+                    if (ip + 1u >= LIMBS) [[unlikely]]
+                    {
+                        break;
+                    }
                     rem = tmp >> 4;
                     accs[ip++] = tmp - (rem << 4);
                     accs[ip] += rem;
@@ -223,6 +249,10 @@ namespace algo
 
                 do
                 {
+                    if (ip + 1u >= LIMBS) [[unlikely]]
+                    {
+                        break;
+                    }
                     rem = tmp >> 4;
                     ts[ip++] = tmp - (rem << 4);
                     ts[ip] += rem;
