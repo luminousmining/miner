@@ -1,0 +1,47 @@
+# escape=`
+#
+# Build LuminousMiner for AMD GPUs (OpenCL) on WINDOWS, inside a Windows
+# container. Requires Docker Desktop switched to "Windows containers" mode and
+# Hyper-V isolation (the helper script handles the isolation flag).
+#
+# Only the OpenCL loader/headers (vcpkg) are needed to build; the AMD Radeon
+# driver supplies the runtime when the .exe is run on the host. No GPU needed
+# to build.
+#
+# Usage (from repo root):
+#   scripts/docker-build.ps1 -Target windows-amd
+# which runs roughly:
+#   docker build -f docker/Dockerfile.windows-amd -t luminousminer:windows-amd --isolation=hyperv .
+#   docker create + docker cp  (Windows images can't export via `scratch`)
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS build
+
+SHELL ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue';"]
+
+ARG VCPKG_REF=master
+
+# --- Chocolatey + toolchain (VS 2022 C++ Build Tools, CMake, Ninja, Git) ----
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+RUN choco install -y --no-progress git cmake ninja
+RUN choco install -y --no-progress visualstudio2022buildtools `
+        --package-parameters '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
+
+# --- vcpkg -----------------------------------------------------------------
+ENV VCPKG_ROOT=C:\vcpkg
+RUN git clone https://github.com/microsoft/vcpkg $env:VCPKG_ROOT; `
+    & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+
+WORKDIR C:\src
+COPY vcpkg.json CMakePresets.json CMakeLists.txt ./
+COPY cmake ./cmake
+COPY sources ./sources
+
+# Configure + build inside a VS Developer environment so cl.exe/MSBuild are on
+# PATH. (CMake's VS generator locates the toolset itself, but the env import is
+# harmless and helps tooling.)
+RUN cmake --preset windows-amd; `
+    cmake --build --preset windows-amd
+
+# Artifacts land in C:\src\build\windows-amd\bin ; extracted via docker cp by
+# the helper script.

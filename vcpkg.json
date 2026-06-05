@@ -1,0 +1,27 @@
+{
+  "name": "luminousminer",
+  "version-string": "0.10",
+  "description": "Dependency manifest for building LuminousMiner via vcpkg (Boost subset + OpenSSL + OpenCL loader). Enabled by -DUSE_VCPKG=ON and a vcpkg toolchain file; used by the Docker images and CMake presets.",
+  "dependencies": [
+    "openssl",
+    "opencl",
+    "boost-asio",
+    "boost-beast",
+    "boost-json",
+    "boost-thread",
+    "boost-atomic",
+    "boost-chrono",
+    "boost-system",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-program-options",
+    "boost-endian",
+    "boost-lockfree",
+    "boost-property-tree",
+    "boost-bind",
+    "boost-algorithm",
+    "boost-multiprecision",
+    "boost-exception",
+    "boost-date-time"
+  ]
+}

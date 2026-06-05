@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1
+#
+# Build LuminousMiner for AMD GPUs (OpenCL) on Linux, inside a container.
+#
+# The build only needs the OpenCL headers + ICD loader (supplied by vcpkg). The
+# real AMD OpenCL runtime is provided by the host's Radeon driver when the
+# resulting binary is executed -- so NO GPU is required to build this image.
+#
+# Usage (from repo root, BuildKit required):
+#   docker build -f docker/Dockerfile.linux-amd --target artifact -o dist/linux-amd .
+# or via the helper:
+#   scripts/docker-build.ps1 -Target linux-amd
+
+FROM ubuntu:22.04 AS build
+
+ARG DEBIAN_FRONTEND=noninteractive
+# Pin vcpkg for reproducibility; override with --build-arg VCPKG_REF=<tag/sha>.
+ARG VCPKG_REF=master
+
+# --- Toolchain -------------------------------------------------------------
+# clang-15 is what the project's CMakeLists forces as the compiler on Linux.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates curl zip unzip tar git pkg-config \
+        build-essential ninja-build python3 \
+        clang-15 lld-15 \
+        linux-libc-dev libgnutls28-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Modern CMake. Ubuntu 22.04's apt ships 3.22, but the project's CMakeLists uses
+# the CMP0135 policy which requires CMake >= 3.24.
+ARG CMAKE_VERSION=3.30.5
+RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
+        | tar xz -C /opt \
+    && ln -sf /opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/* /usr/local/bin/
+
+# Build with the compiler the project targets (clang-15). The upstream
+# set(CMAKE_C_COMPILER clang-15 FORCE) is a no-op (it runs after project()), so
+# without this the distro default gcc would be used.
+ENV CC=clang-15 CXX=clang++-15
+
+# --- vcpkg (dependency provider) ------------------------------------------
+ENV VCPKG_ROOT=/opt/vcpkg
+RUN git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT" \
+    && git -C "$VCPKG_ROOT" checkout "$VCPKG_REF" \
+    && "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+ENV PATH="$VCPKG_ROOT:${PATH}"
+
+WORKDIR /src
+
+# Copy the manifest first so the (slow) dependency install layer is cached
+# independently of source changes.
+COPY vcpkg.json CMakePresets.json CMakeLists.txt ./
+COPY cmake ./cmake
+COPY sources ./sources
+
+# Configure (vcpkg installs deps here, manifest mode) then build.
+RUN cmake --preset linux-amd \
+    && cmake --build --preset linux-amd
+
+# --- Artifact stage --------------------------------------------------------
+# `--target artifact -o <dir>` exports just the built binaries/kernels.
+FROM scratch AS artifact
+COPY --from=build /src/build/linux-amd/bin /

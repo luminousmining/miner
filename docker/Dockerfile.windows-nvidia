@@ -1,0 +1,27 @@
+# escape=`
+#
+# ============================================================================
+# DEFERRED / SCAFFOLD ONLY -- not wired into build/docker-build.ps1's default
+# flow and not yet verified. Building NVIDIA on Windows in a container means
+# installing the full CUDA 13.1 toolkit into the image (multi-GB silent
+# install), which is the heaviest/most fragile target. Documented here so the
+# matrix is complete; finish + verify only when a Windows NVIDIA binary is
+# actually needed.
+# ============================================================================
+#
+# Plan when implementing:
+#   1. Start from the same servercore + VS 2022 Build Tools + vcpkg base as
+#      docker/Dockerfile.windows-amd (factor that into a shared base image).
+#   2. Silently install the CUDA 13.1 toolkit (compiler/runtime subpackages
+#      only -- no display driver) from NVIDIA's network installer, e.g.:
+#        cuda_13.1.0_windows_network.exe -s nvcc_13.1 cudart_13.1 ...
+#   3. Ensure CUDA_PATH / nvcc are on PATH so CMake's FindCUDA locates them.
+#   4. Build with the windows-nvidia preset:
+#        cmake --preset windows-nvidia && cmake --build --preset windows-nvidia
+#   5. Extract C:\src\build\windows-nvidia\bin via docker cp.
+#
+# Until then, build Windows+NVIDIA natively on a host with the CUDA toolkit
+# installed:  cmake --preset windows-nvidia && cmake --build --preset windows-nvidia
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+RUN echo "Dockerfile.windows-nvidia is a deferred scaffold -- see header comments." && exit 1

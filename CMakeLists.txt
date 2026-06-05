@@ -23,6 +23,11 @@ option(BUILD_EXE_BENCHMARK "Build benchmark executable" ON)
 option(TOOL_TRACE_MEMORY "Tool for develloper, trace memory allocation" OFF)
 option(TOOL_MOCKER "Tool for develloper, insert devices fake" OFF)
 option(TOOL_ANALYZER "Tool for develloper, analyzer source code" OFF)
+### DEPENDENCY PROVISIONING
+# When ON, Boost/OpenSSL/OpenCL are resolved through a vcpkg toolchain file
+# (CMAKE_TOOLCHAIN_FILE) instead of the hard-coded C:\Boost / /usr/local paths
+# below. Used by the Docker images and CMake presets.
+option(USE_VCPKG "Resolve Boost/OpenSSL/OpenCL via a vcpkg toolchain instead of hard-coded paths" OFF)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
@@ -50,8 +55,11 @@ endif()
 ################################################################################
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+# Output into the build tree (not the source tree) so that separate build
+# directories for each variant (linux-amd, linux-nvidia, windows-amd, ...) do
+# not overwrite one another's binaries/kernels.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 ################################################################################
 ### TOOL FORMAT                                                             ####
@@ -175,16 +183,18 @@ endif()
 ################################################################################
 ### BOOST                                                                   ####
 ################################################################################
-if (WIN32)
-    set(Boost_ROOT       "C:\\Boost")
-    set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_91")
-    set(Boost_COMPILER   -vc${VISUAL_STUDIO_VERSION})
-    set(Boost_THREADAPI  win32)
-else()
-    set(BOOST_INCLUDEDIR "/usr/local/include")
-    set(BOOST_LIBRARYDIR "/usr/local/lib")
+if (NOT USE_VCPKG)
+    if (WIN32)
+        set(Boost_ROOT       "C:\\Boost")
+        set(BOOST_INCLUDEDIR "C:\\Boost\\include\\boost-1_91")
+        set(Boost_COMPILER   -vc${VISUAL_STUDIO_VERSION})
+        set(Boost_THREADAPI  win32)
+    else()
+        set(BOOST_INCLUDEDIR "/usr/local/include")
+        set(BOOST_LIBRARYDIR "/usr/local/lib")
+    endif()
+    set(Boost_NO_SYSTEM_PATHS ON)
 endif()
-set(Boost_NO_SYSTEM_PATHS ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(Boost_DEBUG             ON)
     set(Boost_USE_DEBUG_LIBS    ON)
@@ -206,7 +216,7 @@ set(Boost_USE_STATIC_RUNTIME   OFF)
 ################################################################################
 ### OPENSSL                                                                 ####
 ################################################################################
-if (WIN32)
+if (NOT USE_VCPKG AND WIN32)
     set(OPENSSL_ROOT_DIR "C:\\Program Files\\OpenSSL")
 endif()
 set(OPENSSL_USE_STATIC_LIBS TRUE)
@@ -276,7 +286,29 @@ endif()
 ################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
-find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+if (USE_VCPKG)
+    # vcpkg ships Boost as a CONFIG package; its exact version follows the vcpkg
+    # baseline (see vcpkg.json) rather than being pinned to 1.91.0 here.
+    find_package(Boost CONFIG REQUIRED COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+    if (NOT Boost_LIBRARIES)
+        set(Boost_LIBRARIES
+            Boost::atomic Boost::chrono Boost::filesystem Boost::system
+            Boost::json Boost::thread Boost::serialization Boost::program_options)
+    endif()
+    # The legacy FindCUDA/nvcc path (sources/CMakeLists.txt feeds it
+    # ${Boost_INCLUDE_DIR}) does NOT pick up include dirs from imported targets,
+    # and CONFIG mode leaves the plain Boost_INCLUDE_DIR empty -> nvcc can't find
+    # boost headers. Derive it from the Boost::headers target / Boost_INCLUDE_DIRS.
+    if (NOT Boost_INCLUDE_DIR)
+        if (Boost_INCLUDE_DIRS)
+            set(Boost_INCLUDE_DIR "${Boost_INCLUDE_DIRS}")
+        elseif (TARGET Boost::headers)
+            get_target_property(Boost_INCLUDE_DIR Boost::headers INTERFACE_INCLUDE_DIRECTORIES)
+        endif()
+    endif()
+else()
+    find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+endif()
 if (BUILD_AMD)
     find_package(OpenCL COMPONENTS OpenCL)
 endif()
@@ -287,7 +319,12 @@ find_package(OpenSSL 1.1.1 REQUIRED COMPONENTS SSL Crypto)
 if (UNIX)
     find_package(GnuTLS)
 endif()
-find_library(OpenCL_LIBRARIES name OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
+# Only needed for AMD builds, and only if find_package(OpenCL) above didn't
+# already populate OpenCL_LIBRARIES (it does under vcpkg). The previous
+# unconditional form also forced an OpenCL dependency onto NVIDIA/CPU-only builds.
+if (BUILD_AMD AND NOT OpenCL_LIBRARIES)
+    find_library(OpenCL_LIBRARIES NAMES OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
+endif()
 if (BUILD_NVIDIA)
     if (WIN32)
         SET(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib\\x64)
@@ -309,10 +346,12 @@ endif()
 ### OPENCL                                                                  ####
 ################################################################################
 if (BUILD_AMD)
-    if (WIN32)
-        set(OpenCL_INCLUDE_DIRS "C:\\OpenCL\\include")
-    else()
-        set(OpenCL_INCLUDE_DIRS "/usr/local/include")
+    if (NOT USE_VCPKG)
+        if (WIN32)
+            set(OpenCL_INCLUDE_DIRS "C:\\OpenCL\\include")
+        else()
+            set(OpenCL_INCLUDE_DIRS "/usr/local/include")
+        endif()
     endif()
     add_compile_definitions(
         CL_HPP_ENABLE_EXCEPTIONS=true     # Enable C++ exceptions in OpenCL C++ wrapper

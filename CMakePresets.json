@@ -1,0 +1,76 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 22, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "vcpkg-base",
+      "hidden": true,
+      "cacheVariables": {
+        "USE_VCPKG": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "BUILD_EXE_MINER": "ON",
+        "BUILD_EXE_UNIT_TEST": "OFF",
+        "BUILD_EXE_BENCHMARK": "OFF"
+      }
+    },
+    {
+      "name": "linux-amd",
+      "displayName": "Linux / AMD (OpenCL)",
+      "inherits": "vcpkg-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-amd",
+      "cacheVariables": {
+        "BUILD_AMD": "ON",
+        "BUILD_NVIDIA": "OFF",
+        "BUILD_CPU": "OFF"
+      }
+    },
+    {
+      "name": "linux-nvidia",
+      "displayName": "Linux / NVIDIA (CUDA)",
+      "inherits": "vcpkg-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-nvidia",
+      "cacheVariables": {
+        "BUILD_AMD": "OFF",
+        "BUILD_NVIDIA": "ON",
+        "BUILD_CPU": "OFF"
+      }
+    },
+    {
+      "name": "windows-amd",
+      "displayName": "Windows / AMD (OpenCL)",
+      "inherits": "vcpkg-base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/windows-amd",
+      "cacheVariables": {
+        "BUILD_AMD": "ON",
+        "BUILD_NVIDIA": "OFF",
+        "BUILD_CPU": "OFF",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
+      }
+    },
+    {
+      "name": "windows-nvidia",
+      "displayName": "Windows / NVIDIA (CUDA) [deferred]",
+      "inherits": "vcpkg-base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/windows-nvidia",
+      "cacheVariables": {
+        "BUILD_AMD": "OFF",
+        "BUILD_NVIDIA": "ON",
+        "BUILD_CPU": "OFF",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "linux-amd",      "configurePreset": "linux-amd",      "configuration": "Release" },
+    { "name": "linux-nvidia",   "configurePreset": "linux-nvidia",   "configuration": "Release" },
+    { "name": "windows-amd",    "configurePreset": "windows-amd",    "configuration": "Release" },
+    { "name": "windows-nvidia", "configurePreset": "windows-nvidia", "configuration": "Release" }
+  ]
+}
