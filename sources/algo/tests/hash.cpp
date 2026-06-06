@@ -1,3 +1,5 @@
+#include <string>
+
 #include <gtest/gtest.h>
 
 #include <algo/hash_utils.hpp>
@@ -180,5 +182,24 @@ TEST_F(HashTest, Hash1024)
     for (uint64_t i{ 0ull }; i < algo::LEN_HASH_1024_WORD_8; ++i)
     {
         ASSERT_EQ(hash_1.ubytes[i], hash_2.ubytes[i]) << "index " << i;
+    }
+}
+
+
+TEST_F(HashTest, Hash256OverlongInputBounded)
+{
+    // Regression guard: a malicious or MITM'd pool can send a header/seed/boundary
+    // field longer than 64 hex chars. toHash256() must stay inside the 32-byte
+    // buffer -- no out-of-bounds write / crash -- dropping the excess high bytes
+    // and keeping the low 32 bytes (i.e. the last 64 hex chars).
+    std::string const canonical{ "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80" };
+    std::string const overlong{ "ffffffffffffffffdeadbeefdeadbeef" + canonical };
+
+    algo::hash256 const expected{ algo::toHash256(canonical) };
+    algo::hash256 const actual{ algo::toHash256(overlong) };
+
+    for (uint64_t i{ 0ull }; i < algo::LEN_HASH_256_WORD_8; ++i)
+    {
+        ASSERT_EQ(expected.ubytes[i], actual.ubytes[i]) << "index " << i;
     }
 }
