@@ -1,3 +1,5 @@
+#include <boost/asio/ssl/host_name_verification.hpp>
+
 #include <common/log/log.hpp>
 #include <network/network.hpp>
 
@@ -31,12 +33,31 @@ void network::NetworkTCPClient::asyncReceive()
 }
 
 
-bool network::NetworkTCPClient::onVerifySSL([[maybe_unused]] bool preverified, boost_verify_context& ctx)
+bool network::NetworkTCPClient::onVerifySSL(bool preverified, boost_verify_context& ctx)
 {
+    // OpenSSL's chain / expiry / CA verification must pass first. The previous
+    // implementation discarded `preverified` and returned true for any cert that
+    // merely existed, which fully bypassed TLS authentication and let a MITM
+    // present any certificate. Never override a chain failure.
+    if (false == preverified)
+    {
+        logErr() << "TLS certificate chain verification failed.";
+        return false;
+    }
+
     auto const* cert{ X509_STORE_CTX_get_current_cert(ctx.native_handle()) };
     if (nullptr == cert)
     {
-        logErr() << "Certificat is incorrect.";
+        logErr() << "TLS certificate is missing.";
+        return false;
+    }
+
+    // Ensure the leaf certificate actually matches the pool hostname; a valid
+    // certificate for a different host must not be accepted.
+    boost::asio::ssl::host_name_verification const verifier{ host };
+    if (false == verifier(preverified, ctx))
+    {
+        logErr() << "TLS certificate hostname mismatch for " << host << ".";
         return false;
     }
 

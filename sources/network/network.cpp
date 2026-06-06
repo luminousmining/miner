@@ -256,6 +256,9 @@ bool network::NetworkTCPClient::doSecureConnection()
         CertCloseStore(certStore, 0);
         SSL_CTX_set_cert_store(context.native_handle(), store);
 #elif defined(__linux__)
+        // Fall back to OpenSSL's built-in default trust paths if the explicit
+        // bundle below is absent, so verification still succeeds (fail-closed).
+        context.set_default_verify_paths();
         auto certPath{ common::getEnv("SSL_CERT_FILE") };
         try
         {
