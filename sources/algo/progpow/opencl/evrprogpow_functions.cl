@@ -1,5 +1,5 @@
 inline
-void initialize_seed(
+ulong initialize_seed(
     __constant uint4 const* const restrict header,
     uint* const restrict seed,
     ulong const nonce)
@@ -34,6 +34,8 @@ void initialize_seed(
     seed[24] = 'W';
 
     keccak_f800(seed);
+
+    return ((ulong)seed[1]) << 32 | seed[0];
 }
 
 
