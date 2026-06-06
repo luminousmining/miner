@@ -34,6 +34,13 @@ namespace network
         static constexpr uint32_t MAX_BUFFER_RECV{ 1024u };
         static constexpr uint32_t MAX_BUFFER_SEND{ 1024u };
 
+        // Upper bound for a single '\n'-delimited stratum line. async_read_until
+        // grows recvBuffer without limit otherwise, so a pool (or a MITM) that
+        // streams bytes with no delimiter can exhaust memory. 64 KiB is far above
+        // any real stratum message; an oversize line completes with an error and
+        // the connection is dropped (fail-closed).
+        static constexpr std::size_t MAX_RECV_STREAMBUF{ 64u * 1024u };
+
         // MAX RETRY CONNECTION
         static constexpr uint32_t MAX_RETRY_COUNT{ 10u };
 
@@ -41,7 +48,7 @@ namespace network
         std::string             host{};
         uint32_t                port{ 0u };
         uint32_t                countRetryConnect{ 0u };
-        boost::asio::streambuf  recvBuffer;
+        boost::asio::streambuf  recvBuffer{ MAX_RECV_STREAMBUF };
         boost_mutex             rxMutex;
         boost_mutex             txMutex;
         boost_thread            runService;
