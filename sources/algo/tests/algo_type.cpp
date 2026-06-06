@@ -16,7 +16,7 @@ TEST_F(AlgoTypeTest, stringToEnumSuccess)
     EXPECT_EQ(algo::toEnum("ethash"), algo::ALGORITHM::ETHASH);
     EXPECT_EQ(algo::toEnum("etchash"), algo::ALGORITHM::ETCHASH);
     EXPECT_EQ(algo::toEnum("progpow"), algo::ALGORITHM::PROGPOW);
-    EXPECT_EQ(algo::toEnum("progpowz"), algo::ALGORITHM::PROGPOW);
+    EXPECT_EQ(algo::toEnum("progpowz"), algo::ALGORITHM::PROGPOWZ);
     EXPECT_EQ(algo::toEnum("kawpow"), algo::ALGORITHM::KAWPOW);
     EXPECT_EQ(algo::toEnum("meowpow"), algo::ALGORITHM::MEOWPOW);
     EXPECT_EQ(algo::toEnum("firopow"), algo::ALGORITHM::FIROPOW);

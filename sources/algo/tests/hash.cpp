@@ -162,9 +162,16 @@ TEST_F(HashTest, ShiftingRight)
 
 TEST_F(HashTest, Hash256)
 {
-    auto const hash_1{ algo::toHash<algo::hash256>(
-        "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
-    auto const hash_2{ algo::toHash256("6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
+    auto const hash_1
+    {
+        algo::toHash<algo::hash256>(
+            "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80")
+    };
+    auto const hash_2
+    {
+        algo::toHash256(
+            "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80")
+    };
 
     for (uint64_t i{ 0ull }; i < algo::LEN_HASH_256_WORD_8; ++i)
     {

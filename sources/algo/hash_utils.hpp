@@ -127,7 +127,7 @@ namespace algo
 
         int64_t pos{ cast64(sizeof(T)) - 1ll };
 
-        while (index > 0 && pos > 0)
+        while (index > 0 && pos >= 0)
         {
             std::string strHex;
             strHex += hex.at(index - 2ll);
