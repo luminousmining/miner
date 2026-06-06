@@ -435,14 +435,17 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     uint8_t nonce[algo::autolykos_v2::NONCE_SIZE_8]{
         0,
     };
-    char n_str[algo::autolykos_v2::NONCE_SIZE_8]{
+    // Holds the hex string of `nonce` (2 chars/byte) plus a NUL terminator; the
+    // hex helpers write inlen*2 chars + '\0'. Sizing this NONCE_SIZE_8 overflowed
+    // the stack (smashing the canary -> abort) once a candidate was verified.
+    char n_str[algo::autolykos_v2::NONCE_SIZE_8 * 2u + 1u]{
         0,
     };
 
     uint8_t height[HEIGHT_SIZE]{
         0,
     };
-    char h_str[HEIGHT_SIZE]{
+    char h_str[HEIGHT_SIZE * 2u + 1u]{
         0,
     };
 
