@@ -75,6 +75,7 @@ void algo::ethash::ContextGenerator::free(algo::ALGORITHM const algorithm)
     {
         SAFE_DELETE_ARRAY(contextShare.context.data);
         contextShare.context.lightCache.hash = nullptr;
+        contextShare.context.epoch = -1;
     }
 }
 
