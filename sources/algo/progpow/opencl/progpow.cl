@@ -14,7 +14,8 @@ void reduce_hash(
         value = fnv1a_u32(value, hash[i]);
     }
     share_fnv1a[get_global_id(0)] = value;
-    barrier(CLK_LOCAL_MEM_FENCE);
+    // is_same_lane reads only its own worker_group's LANES slots -> intra-wavefront.
+    sub_group_barrier(CLK_LOCAL_MEM_FENCE);
 
     if (true == is_same_lane)
     {
@@ -45,7 +46,10 @@ uint const l_id)
         {
             share_hash0[worker_group] = hash[0];
         }
-        barrier(CLK_LOCAL_MEM_FENCE);
+        // worker_group spans LANES (<= wavefront) consecutive lanes, so the
+        // exchange is intra-wavefront: a sub-group barrier is sufficient and
+        // avoids stalling the other wavefronts of the work-group every DAG read.
+        sub_group_barrier(CLK_LOCAL_MEM_FENCE);
 
         uint dag_index = share_hash0[worker_group];
         dag_index %= DAG_SIZE;
@@ -144,7 +148,8 @@ void progpow_search(
             {
                 share_msb_lsb[index_share_seed] = seed;
             }
-            barrier(CLK_LOCAL_MEM_FENCE);
+            // index_share_seed groups BATCH_GROUP_LANE (== LANES) lanes -> intra-wavefront.
+            sub_group_barrier(CLK_LOCAL_MEM_FENCE);
 
             ////////////////////////////////////////////////////////////////////////
             ulong const seedShare = share_msb_lsb[index_share_seed];
