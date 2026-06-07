@@ -15,7 +15,7 @@ jobs:
   build-boost:
     uses: ./.github/workflows/boost_linux.yml
     with:
-      boost_version: "1.90.0"
+      boost_version: "1.91.0"
 
   build-openssl:
     uses: ./.github/workflows/openssl_linux.yml
@@ -59,7 +59,7 @@ jobs:
       - name: Download Boost
         uses: actions/download-artifact@v4
         with:
-          name: boost-Linux-1.90.0
+          name: boost-Linux-1.91.0
           path: deps/boost
 
       - name: Install Boost
@@ -175,7 +175,7 @@ jobs:
       - name: Download Boost
         uses: actions/download-artifact@v4
         with:
-          name: boost-Linux-1.90.0
+          name: boost-Linux-1.91.0
           path: deps/boost
 
       - name: Install Boost
@@ -314,7 +314,7 @@ jobs:
       - name: Download Boost
         uses: actions/download-artifact@v4
         with:
-          name: boost-Linux-1.90.0
+          name: boost-Linux-1.91.0
           path: deps/boost
 
       - name: Install Boost
