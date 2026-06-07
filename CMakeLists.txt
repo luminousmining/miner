@@ -277,10 +277,10 @@ endif()
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
 set(Boost_ADDITIONAL_VERSIONS "1.91" "1.91.0")
-find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem json thread serialization program_options)
 if (BUILD_AMD)
     find_package(OpenCL COMPONENTS OpenCL)
-    find_library(OpenCL_LIBRARIES name OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
+    find_library(OpenCL_LIBRARIES NAMES OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
 endif()
 if (BUILD_NVIDIA)
     find_package(CUDA COMPONENTS cudart)

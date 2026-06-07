@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: boost-install
-          key: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
+          key: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}-static-system
 
       # ===============================
       # Install dependencies
