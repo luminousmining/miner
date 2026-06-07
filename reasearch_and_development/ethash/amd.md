@@ -77,17 +77,22 @@ hashrate over a fixed window) cancels thermal/clock drift.
 
 ## Results
 
-> TODO: populate from `./bin/benchmark` on the target GPU. Numbers below are
-> placeholders.
+**Device:** RX 9070 XT (RDNA4, gfx1201), Windows host, cross-compiled
+(`windows-amd-cross`). 10 iterations per variant, `threads=256`, `blocks=8192`.
+Kernel search rate (per-launch), not end-to-end miner hashrate.
 
-**Device:** RX 9070 XT (RDNA4, gfx1201) — _fill in driver / ROCm version_
+| variant                   | median (MH/s) | mean (MH/s) | max (MH/s) | Δ median |
+|---------------------------|---------------|-------------|------------|----------|
+| `ethash_search_baseline`  | 39.51         | 39.08       | 39.62      | —        |
+| `ethash_search_subgroup`  | 40.01         | 39.64       | 40.04      | **+1.26%** |
 
-| variant                   | mean (MH/s) | Δ vs baseline |
-|---------------------------|-------------|---------------|
-| `ethash_search_baseline`  | _TODO_      | —             |
-| `ethash_search_subgroup`  | _TODO_      | _TODO_        |
+Δ across metrics: median **+1.26%**, mean **+1.42%**, max **+1.06%**,
+warmup-excluded mean **+1.14%** — a consistent ~+1.1–1.4% in favour of
+`sub_group_barrier`. (Each variant's slowest sample is the first, cold-cache
+iteration; excluding it gives the warmup-excluded figure.)
 
-End-to-end interleaved A/B (full miner, `ethw.2miners.com`):
+End-to-end interleaved A/B (full miner, `ethw.2miners.com`) — _separate run,
+optional cross-check; not yet recorded:_
 
 | build      | per-round (MH/s)        | mean   |
 |------------|-------------------------|--------|
