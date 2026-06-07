@@ -2,17 +2,28 @@
 ###  LIB CUDA ETHASH                                                        ####
 ################################################################################
 if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
-    cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
-        algo/autolykos/cuda/autolykos_v2.cu
-        algo/blake3/cuda/blake3.cu
-        algo/ethash/cuda/ethash.cu
-        algo/progpow/cuda/progpow.cu
-    )
+    if (USE_CLANG_CUDA)
+        # Cross path: CMake can't drive clang+CUDA on Windows (#20776), so compile
+        # each .cu with clang directly (helper defined in the top-level CMakeLists).
+        lm_clang_cuda_library(${LIB_CRYPTO_NVIDIA}
+            algo/autolykos/cuda/autolykos_v2.cu
+            algo/blake3/cuda/blake3.cu
+            algo/ethash/cuda/ethash.cu
+            algo/progpow/cuda/progpow.cu
+        )
+    else()
+        cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
+            algo/autolykos/cuda/autolykos_v2.cu
+            algo/blake3/cuda/blake3.cu
+            algo/ethash/cuda/ethash.cu
+            algo/progpow/cuda/progpow.cu
+        )
 
-    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE
-        __LIB_CUDA
-        CUDA_ENABLE
-    )
+        target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE
+            __LIB_CUDA
+            CUDA_ENABLE
+        )
+    endif()
 
     target_include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
         ${Boost_INCLUDE_DIR}

@@ -15,6 +15,7 @@ endif()
 option(BUILD_AMD "Build with OpenCL for AMD GPU" ON)
 option(BUILD_CPU "Build with OpenMP for CPU(Intel/AMD)" ON)
 option(BUILD_NVIDIA "Build with CUDA for Nvidia GPU" ON)
+option(USE_CLANG_CUDA "Compile .cu with clang (not nvcc/FindCUDA) for Windows cross-compile" OFF)
 ### BUILD EXE
 option(BUILD_EXE_MINER "Build miner executable" ON)
 option(BUILD_EXE_UNIT_TEST "Build unit test executable" ON)
@@ -253,7 +254,58 @@ set(OPEN_SSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
 ### CUDA                                                                    ####
 ### https://cmake.org/cmake/help/latest/module/FindCUDA.html                ####
 ################################################################################
-if (BUILD_NVIDIA)
+if (BUILD_NVIDIA AND USE_CLANG_CUDA)
+    ### Clang CUDA-language cross. CMake cannot drive clang+CUDA when targeting
+    ### Windows (issue #20776), so the .cu units are compiled by clang directly via
+    ### add_custom_command in sources/CMakeLists.txt. These vars feed those commands.
+    if (DEFINED ENV{XWIN_ROOT})
+        set(_xwin "$ENV{XWIN_ROOT}")
+    else()
+        set(_xwin "/opt/xwin")
+    endif()
+    if (DEFINED ENV{CUDA_HOME})
+        set(CLANG_CUDA_PATH "$ENV{CUDA_HOME}")
+    else()
+        set(CLANG_CUDA_PATH "/usr/local/cuda")
+    endif()
+    set(CLANG_CUDA_COMPILER "/opt/llvm-mingw/bin/clang++")
+    set(CLANG_CUDA_GPU_ARCHS sm_75 sm_86 sm_89 sm_120 sm_121)
+    set(CLANG_CUDA_XWIN_INC
+        "-I${_xwin}/crt/include" "-I${_xwin}/sdk/include/ucrt"
+        "-I${_xwin}/sdk/include/um" "-I${_xwin}/sdk/include/shared")
+    # FindCUDA is not run on this path; host TUs that include cuda_runtime.h need this.
+    set(CUDA_INCLUDE_DIRS "${CLANG_CUDA_PATH}/include")
+    add_compile_definitions(CUDA_ENABLE)
+
+    # Compile each .cu with clang (-x cuda) into a Windows-MSVC object and archive
+    # them into a STATIC lib. Used in place of cuda_add_library on the cross path.
+    function(lm_clang_cuda_library target)
+        set(_archflags "")
+        foreach(a ${CLANG_CUDA_GPU_ARCHS})
+            list(APPEND _archflags "--cuda-gpu-arch=${a}")
+        endforeach()
+        set(_objs "")
+        foreach(src ${ARGN})
+            get_filename_component(_nm "${src}" NAME)
+            set(_obj "${CMAKE_CURRENT_BINARY_DIR}/${target}_${_nm}.obj")
+            add_custom_command(
+                OUTPUT "${_obj}"
+                COMMAND "${CLANG_CUDA_COMPILER}" --target=x86_64-pc-windows-msvc -x cuda
+                        "${CMAKE_CURRENT_SOURCE_DIR}/${src}" -c -o "${_obj}"
+                        --cuda-path=${CLANG_CUDA_PATH} ${_archflags}
+                        -Wno-unknown-cuda-version -std=c++20 -fms-compatibility -fms-extensions
+                        ${CLANG_CUDA_XWIN_INC}
+                        "-I${CMAKE_SOURCE_DIR}/sources" "-I${Boost_INCLUDE_DIR}"
+                        "-I${CUDA_INCLUDE_DIRS}" -D__LIB_CUDA -DCUDA_ENABLE
+                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${src}"
+                VERBATIM)
+            list(APPEND _objs "${_obj}")
+            set_source_files_properties("${_obj}" PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+        endforeach()
+        add_library(${target} STATIC ${_objs})
+        set_target_properties(${target} PROPERTIES LINKER_LANGUAGE CXX)
+    endfunction()
+elseif (BUILD_NVIDIA)
     ### CUDA GLOBAL INFORMATIONS
     set(CUDA_STANDARD                20)
     set(CUDA_RUNTIME_LIBRARY         STATIC)
@@ -338,10 +390,23 @@ endif()
 if (BUILD_AMD)
     find_package(OpenCL COMPONENTS OpenCL)
 endif()
-if (BUILD_NVIDIA)
+if (BUILD_NVIDIA AND NOT USE_CLANG_CUDA)
     find_package(CUDA COMPONENTS cudart)
 endif()
-find_package(OpenSSL 1.1.1 REQUIRED COMPONENTS SSL Crypto)
+if (USE_CLANG_CUDA)
+    # Prebuilt MSVC OpenSSL staged by the Dockerfile (vcpkg can't cross-build it).
+    set(_ssl "$ENV{OPENSSL_WIN_ROOT}")
+    add_library(OpenSSL::Crypto STATIC IMPORTED)
+    add_library(OpenSSL::SSL    STATIC IMPORTED)
+    set_target_properties(OpenSSL::Crypto PROPERTIES
+        IMPORTED_LOCATION "${_ssl}/lib/libcrypto.lib"
+        INTERFACE_INCLUDE_DIRECTORIES "${_ssl}/include")
+    set_target_properties(OpenSSL::SSL PROPERTIES
+        IMPORTED_LOCATION "${_ssl}/lib/libssl.lib"
+        INTERFACE_INCLUDE_DIRECTORIES "${_ssl}/include")
+else()
+    find_package(OpenSSL 1.1.1 REQUIRED COMPONENTS SSL Crypto)
+endif()
 if (UNIX)
     find_package(GnuTLS)
 endif()
@@ -351,7 +416,13 @@ endif()
 if (BUILD_AMD AND NOT OpenCL_LIBRARIES)
     find_library(OpenCL_LIBRARIES NAMES OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
 endif()
-if (BUILD_NVIDIA)
+if (BUILD_NVIDIA AND USE_CLANG_CUDA)
+    # Windows CUDA import libs from the redist, staged by the Dockerfile.
+    set(_cuda_win_lib "$ENV{CUDA_WIN_LIB}")
+    find_library(CUDA_LIBRARY        NAMES cuda   PATHS "${_cuda_win_lib}" NO_DEFAULT_PATH REQUIRED)
+    find_library(CUDA_NVRTC_LIBRARY  NAMES nvrtc  PATHS "${_cuda_win_lib}" NO_DEFAULT_PATH REQUIRED)
+    find_library(CUDA_CUDART_LIBRARY NAMES cudart PATHS "${_cuda_win_lib}" NO_DEFAULT_PATH REQUIRED)
+elseif (BUILD_NVIDIA)
     if (WIN32)
         SET(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib\\x64)
         set(CUDA_NVRTC_BUILTINS_LIBRARY "")
