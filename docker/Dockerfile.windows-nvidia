@@ -1,6 +1,11 @@
 # escape=`
 #
 # ============================================================================
+# NOTE: For a Windows NVIDIA binary you almost certainly want
+# `docker/Dockerfile.windows-nvidia-cross` instead -- it cross-compiles a native
+# Windows miner.exe (clang-CUDA + xwin) from a LINUX container, no Windows host
+# needed. This native-Windows-container path remains a deferred scaffold.
+# ============================================================================
 # DEFERRED / SCAFFOLD ONLY -- not wired into build/docker-build.ps1's default
 # flow and not yet verified. Building NVIDIA on Windows in a container means
 # installing the full CUDA 13.1 toolkit into the image (multi-GB silent
