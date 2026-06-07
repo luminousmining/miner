@@ -139,3 +139,36 @@ initialize_header(header_dag, dag);
 - **LDS vs L2**: AMD LDS bandwidth is very high within a workgroup. Caching the 4096-item DAG header in LDS (LM1/LM3/LM4) exploits this effectively for the header region.
 - **Sub-group operations**: `get_sub_group_local_id()` and related built-ins map to AMD DS_SWIZZLE or `v_readlane` instructions — faster than writing to and reading from LDS for simple broadcasts.
 - **DAG build**: KAWPOW uses `DAG_ITEM_PARENTS = 512` (vs. 256 for Ethash). The DAG build loop is adjusted accordingly: `DAG_LOOP = DAG_ITEM_PARENTS / 4 / 4`.
+
+---
+
+## Production kernel A/B — LDS coalesce + `sub_group_barrier`
+
+Distinct from the `lm1`–`lm4` exploration above, this benchmarks the **production**
+`progpow_search` kernel (the one the miner actually runs) before vs after the
+optimisation in this PR. Both variants are byte-for-byte copies of the production
+`progpow.cl`; the rest of the kernel (result struct, `kawpow_functions.cl`, and the
+per-period generated math sequence) is shared, so the delta is exactly the change:
+
+- **`progpow_baseline`** — original: strided AoS LDS header store (4 words/lane,
+  bank-conflicting) + full work-group `barrier(CLK_LOCAL_MEM_FENCE)` at the three
+  lane-exchange points.
+- **`progpow_subgroup`** — this PR: coalesced one-uint-per-lane LDS store
+  (bank-conflict-free, coalesced global read) + `sub_group_barrier` on the three
+  intra-wavefront exchanges.
+
+Benchmark entry point: [sources/benchmark/amd/progpow.cpp](../../sources/benchmark/amd/progpow.cpp)
+(assembly mirrors `ResolverAmdProgPOW::buildSearch`; config algo key `progpow`).
+Kernel sources: [sources/benchmark/opencl/progpow/](../../sources/benchmark/opencl/progpow/)
+
+### Results
+
+> TODO: populate from `./bin/benchmark` on the target GPU (enable `amd` +
+> `progpow` in `config.json`). 10 iterations, `threads=256`, `blocks=1024`.
+
+**Device:** RX 9070 XT (RDNA4, gfx1201) — _fill in driver version_
+
+| variant             | median (MH/s) | mean (MH/s) | max (MH/s) | Δ median |
+|---------------------|---------------|-------------|------------|----------|
+| `progpow_baseline`  | _TODO_        | _TODO_      | _TODO_     | —        |
+| `progpow_subgroup`  | _TODO_        | _TODO_      | _TODO_     | _TODO_   |

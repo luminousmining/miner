@@ -362,5 +362,11 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD ethash failed";
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdProgpow())
+    {
+        logErr() << "AMD progpow failed";
+    }
 }
 #endif

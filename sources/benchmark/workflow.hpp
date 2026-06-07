@@ -116,6 +116,7 @@ namespace benchmark
         void runAmd();
         bool runAmdKawpow();
         bool runAmdEthash();
+        bool runAmdProgpow();
 #endif
     };
 }
