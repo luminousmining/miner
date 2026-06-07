@@ -294,6 +294,7 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
                         "${CMAKE_CURRENT_SOURCE_DIR}/${src}" -c -o "${_obj}"
                         --cuda-path=${CLANG_CUDA_PATH} ${_archflags}
                         -Wno-unknown-cuda-version -std=c++20 -fms-compatibility -fms-extensions
+                        -fms-runtime-lib=dll -Wno-unknown-attributes
                         ${CLANG_CUDA_XWIN_INC}
                         "-I${CMAKE_SOURCE_DIR}/sources" "-I${Boost_INCLUDE_DIR}"
                         "-I${CUDA_INCLUDE_DIRS}" -D__LIB_CUDA -DCUDA_ENABLE
