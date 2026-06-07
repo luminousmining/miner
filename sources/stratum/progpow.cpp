@@ -317,14 +317,16 @@ void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
             }
 
             ////////////////////////////////////////////////////////////////////
-            int32_t epoch{ 0 };
-            if (jobInfo.blockNumber > 0ull)
+            // The DAG epoch is whatever the network seedHash encodes — authoritative
+            // even when a chain changes its epoch length. Firo's FiroPoW epoch length
+            // differs between early and current blocks, so blockNumber/EPOCH_LENGTH
+            // derives the wrong epoch (wrong DAG -> "Invalid Mixhash" reject) for live
+            // Firo. Prefer the seed hash (as the ethash path already does); fall back
+            // to blockNumber/EPOCH_LENGTH only if the seed isn't recognized.
+            int32_t epoch{ algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch) };
+            if (-1 == epoch && jobInfo.blockNumber > 0ull)
             {
                 epoch = cast32(jobInfo.blockNumber / castU64(maxEpochLength));
-            }
-            else
-            {
-                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
             }
             if (-1 != epoch)
             {

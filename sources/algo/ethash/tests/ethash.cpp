@@ -45,6 +45,24 @@ TEST_F(EthashTest, epoch)
 }
 
 
+// Regression for the live FiroPoW "Invalid Firo Mixhash" bug (2026-06): the DAG
+// epoch must be recovered from the network seedHash, NOT computed as
+// blockNumber/EPOCH_LENGTH. Firo changed its epoch length between early and current
+// blocks, so the constant derives the wrong epoch (e.g. block 1319805 gave 1015 via
+// /1300, but the real epoch is 650) -> wrong DAG -> every share rejected. This pins
+// a real WoolyPooly firo seedHash to its epoch (650), the value StratumProgPOW now
+// derives via findEpoch(seedHash). The seed for a given epoch is fixed forever, so
+// this assertion is stable as the chain advances.
+TEST_F(EthashTest, firoEpochFromSeedHash)
+{
+    algo::hash256 const firoSeed{
+        algo::toHash256("969685223d756d0d2c314efcb880b13fd979b38e23cfc77bbf3d66e69949566e") };
+
+    EXPECT_EQ(650,
+              algo::ethash::ContextGenerator::instance().findEpoch(firoSeed, cast32(algo::ethash::MAX_EPOCH_NUMBER)));
+}
+
+
 TEST_F(EthashTest, lightCacheBuild)
 {
     algo::DagContext context{};
