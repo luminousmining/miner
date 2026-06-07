@@ -60,7 +60,14 @@ COPY cmake ./cmake
 COPY triplets ./triplets
 COPY sources ./sources
 
-RUN cmake --preset windows-amd-cross \
+# Persist vcpkg's binary cache + source downloads across builds so dependency
+# changes (or source-only changes that re-trigger the configure step) reuse
+# prebuilt boost/openssl/opencl archives instead of rebuilding from source.
+# vcpkg binary caching is on by default; these BuildKit cache mounts are what
+# make it survive between `docker build` invocations.
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    --mount=type=cache,target=/opt/vcpkg/downloads \
+    cmake --preset windows-amd-cross -DBUILD_EXE_UNIT_TEST=ON \
     && cmake --build --preset windows-amd-cross
 
 FROM scratch AS artifact
