@@ -76,6 +76,13 @@
                 "threads": 256,
                 "blocks": 1024,
                 "kernels": ["lm1", "lm2", "lm3", "lm4"]
+            },
+            "ethash": {
+                "enabled": false,
+                "loop": 10,
+                "threads": 256,
+                "blocks": 8192,
+                "kernels": ["ethash_search_baseline", "ethash_search_subgroup"]
             }
         }
     }

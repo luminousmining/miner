@@ -115,6 +115,7 @@ namespace benchmark
 #if defined(AMD_ENABLE)
         void runAmd();
         bool runAmdKawpow();
+        bool runAmdEthash();
 #endif
     };
 }

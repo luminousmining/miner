@@ -356,5 +356,11 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD kawpow failed";
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdEthash())
+    {
+        logErr() << "AMD ethash failed";
+    }
 }
 #endif

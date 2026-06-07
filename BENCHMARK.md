@@ -35,7 +35,8 @@ sources/
     │   ├── autolykos.cpp            # 3 kernel variants
     │   └── ethash_light_cache.cpp   # 3 kernel variants
     ├── amd/
-    │   └── kawpow.cpp               # 4 OpenCL kernel variants
+    │   ├── kawpow.cpp               # 4 OpenCL kernel variants
+    │   └── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources
