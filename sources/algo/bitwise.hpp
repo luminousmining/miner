@@ -2,9 +2,11 @@
 
 #if !defined(__LIB_CUDA)
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
+// Windows (MSVC and MinGW/clang): no <endian.h>. _byteswap_* live in <stdlib.h>;
+// byte-order macros are provided by the compiler or defined below.
 #include <stdlib.h>
-#elif defined(__linux__) || defined(__GNUC__)
+#elif defined(__linux__)
 #include <endian.h>
 #endif
 
