@@ -81,6 +81,23 @@
         "BUILD_CPU": "OFF",
         "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
       }
+    },
+    {
+      "name": "windows-nvidia-cross",
+      "displayName": "Windows / NVIDIA (CUDA) - cross-compiled from Linux (clang + xwin)",
+      "inherits": "vcpkg-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/windows-nvidia-cross",
+      "cacheVariables": {
+        "BUILD_AMD": "OFF",
+        "BUILD_NVIDIA": "ON",
+        "BUILD_CPU": "OFF",
+        "USE_CLANG_CUDA": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-clangcl",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-clang-cl-xwin.cmake",
+        "VCPKG_APPLOCAL_DEPS": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -88,6 +105,7 @@
     { "name": "linux-nvidia",       "configurePreset": "linux-nvidia",       "configuration": "Release" },
     { "name": "windows-amd-cross",  "configurePreset": "windows-amd-cross",  "configuration": "Release" },
     { "name": "windows-amd",    "configurePreset": "windows-amd",    "configuration": "Release" },
-    { "name": "windows-nvidia", "configurePreset": "windows-nvidia", "configuration": "Release" }
+    { "name": "windows-nvidia", "configurePreset": "windows-nvidia", "configuration": "Release" },
+    { "name": "windows-nvidia-cross", "configurePreset": "windows-nvidia-cross", "configuration": "Release" }
   ]
 }
