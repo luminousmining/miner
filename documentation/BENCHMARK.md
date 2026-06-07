@@ -36,7 +36,8 @@ sources/
     │   └── ethash_light_cache.cpp   # 3 kernel variants
     ├── amd/
     │   ├── kawpow.cpp               # 4 OpenCL kernel variants
-    │   └── blake3.cpp               # Alephium search throughput (DAG-free)
+    │   ├── blake3.cpp               # Alephium search throughput (DAG-free)
+    │   └── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources

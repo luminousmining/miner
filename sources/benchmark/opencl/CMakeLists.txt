@@ -12,6 +12,8 @@ set(BENCHMARK_OPENCL_FILES
     kawpow/kawpow_lm4.cl
     kawpow/sequence_dynamic.cl
     kawpow/sequence_dynamic_local.cl
+    ethash/ethash_search_baseline.cl
+    ethash/ethash_search_subgroup.cl
 )
 
 foreach(FILE ${BENCHMARK_OPENCL_FILES})
@@ -34,4 +36,6 @@ add_custom_target(copy_benchmark_opencl ALL
     ${OUT_COMMON}/kawpow/kawpow_lm4.cl
     ${OUT_COMMON}/kawpow/sequence_dynamic.cl
     ${OUT_COMMON}/kawpow/sequence_dynamic_local.cl
+    ${OUT_COMMON}/ethash/ethash_search_baseline.cl
+    ${OUT_COMMON}/ethash/ethash_search_subgroup.cl
 )

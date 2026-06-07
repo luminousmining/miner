@@ -366,5 +366,9 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD blake3 failed";
     }
+    if (false == runAmdEthash())
+    {
+        logErr() << "AMD ethash failed";
+    }
 }
 #endif
