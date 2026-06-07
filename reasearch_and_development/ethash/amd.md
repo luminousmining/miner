@@ -63,33 +63,37 @@ Run with:
 
 ## Methodology
 
-Per `BENCHMARK.md`: each variant runs `loop` iterations (default 10); the
-dashboard reports the mean kernel hashrate. Because both variants share an
-identical harness, DAG, grid, and accounting, the **relative** delta is a valid
-measure of the optimisation even though the absolute figure is a per-launch
-kernel rate rather than an end-to-end miner hashrate.
+Each variant runs `loop` iterations (default 10); the dashboard reports the mean
+kernel hashrate. **Important:** the absolute per-launch rate drifts run-to-run
+with GPU clock/thermal state (±5–7%), which is larger than the effect size, so
+comparing a baseline *block* to a subgroup *block* across different times is
+unreliable. What is stable is **within-run pairing**: in a single `benchmark.exe`
+run the two variants execute back-to-back under the same clock state, so their
+ratio is meaningful. The figures below take each run's per-variant **median**
+(robust to the cold first iteration) and pair `baseline` vs `subgroup` within the
+same run, across **5 runs**.
 
 For an end-to-end cross-check, an interleaved A/B of full-miner runs
 (alternating baseline/optimised builds, N rounds each, reading reported
-hashrate over a fixed window) cancels thermal/clock drift.
+hashrate over a fixed window) cancels the same drift.
 
 ---
 
 ## Results
 
 **Device:** RX 9070 XT (RDNA4, gfx1201), Windows host, cross-compiled
-(`windows-amd-cross`). 10 iterations per variant, `threads=256`, `blocks=8192`.
-Kernel search rate (per-launch), not end-to-end miner hashrate.
+(`windows-amd-cross`). 5 runs × 10 iterations per variant, `threads=256`,
+`blocks=8192`. Per-run median, paired within run.
 
-| variant                   | median (MH/s) | mean (MH/s) | max (MH/s) | Δ median |
-|---------------------------|---------------|-------------|------------|----------|
-| `ethash_search_baseline`  | 39.51         | 39.08       | 39.62      | —        |
-| `ethash_search_subgroup`  | 40.01         | 39.64       | 40.04      | **+1.26%** |
+| variant                   | median-of-medians (MH/s) | per-run median range |
+|---------------------------|--------------------------|----------------------|
+| `ethash_search_baseline`  | 39.49                    | 38.03 – 39.53        |
+| `ethash_search_subgroup`  | 39.94                    | 38.28 – 40.01        |
 
-Δ across metrics: median **+1.26%**, mean **+1.42%**, max **+1.06%**,
-warmup-excluded mean **+1.14%** — a consistent ~+1.1–1.4% in favour of
-`sub_group_barrier`. (Each variant's slowest sample is the first, cold-cache
-iteration; excluding it gives the warmup-excluded figure.)
+Per-run paired Δ (subgroup vs baseline, same run): **+0.7%, +1.0%, +1.3%, +1.1%,
++1.1%** → **+1.0%** (paired mean), 5/5 runs positive. The tight pairing is the
+real signal; one earlier standalone run that compared blocks across a throttling
+event read −6.9%, which is exactly the cross-block drift this methodology avoids.
 
 End-to-end interleaved A/B (full miner, `ethw.2miners.com`) — _separate run,
 optional cross-check; not yet recorded:_
