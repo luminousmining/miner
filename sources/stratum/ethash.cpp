@@ -20,9 +20,8 @@ void stratum::StratumEthash::onResponse(boost::json::object const& root)
         {
             if (false == root.contains("error") || true == root.at("error").is_null())
             {
-                if (true == root.contains("result") && true == root.at("result").is_array())
+                if (stratum::STRATUM_TYPE::ETHEREUM_V1 == stratumType)
                 {
-                    boost::json::array const& result{ root.at("result").as_array() };
                     // NiceHash (EthereumStratum/1.0.0) returns the extranonce as the
                     // second element of "result": [["mining.notify", id, proto], nonce].
                     // Parse it defensively: a missing/short/oddly-typed result must NOT
@@ -30,17 +29,35 @@ void stratum::StratumEthash::onResponse(boost::json::object const& root)
                     // reached after result.at(1) succeeded, so any parse hiccup left the
                     // worker unauthenticated and the pool rejected every share (NiceHash
                     // reports that as "Missing KYC/KYB").
-                    if (result.size() >= 2u && true == result.at(1).is_string())
+                    if (   true == root.contains("result")
+                        && true == root.at("result").is_array())
+                    {
+                        boost::json::array const& result{ root.at("result").as_array() };
+                        if (result.size() >= 2u && true == result.at(1).is_string())
+                        {
+                            std::string const extraNonceStr{ result.at(1).as_string().c_str() };
+                            setExtraNonce(extraNonceStr);
+                            jobInfo.targetBits = std::strtoul(extraNonceStr.c_str(), nullptr, 16);
+                        }
+                    }
+                    // Always authorize on a non-error subscribe reply, even if the
+                    // extranonce could not be parsed -- skipping it leaves the worker
+                    // unauthenticated and the pool rejects every share.
+                    miningAuthorize();
+                }
+                else
+                {
+                    // Other stratum types keep the original ordering: authorize only
+                    // after the extranonce has been parsed.
+                    boost::json::array const& result{ root.at("result").as_array() };
+                    if (false == result.empty())
                     {
                         std::string const extraNonceStr{ result.at(1).as_string().c_str() };
                         setExtraNonce(extraNonceStr);
                         jobInfo.targetBits = std::strtoul(extraNonceStr.c_str(), nullptr, 16);
+                        miningAuthorize();
                     }
                 }
-                // Always authorize on a non-error subscribe reply, even if the
-                // extranonce could not be parsed -- skipping it leaves the worker
-                // unauthenticated and the pool rejects every share.
-                miningAuthorize();
             }
             else
             {
