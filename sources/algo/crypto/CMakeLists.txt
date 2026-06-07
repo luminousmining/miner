@@ -15,6 +15,13 @@ if (BUILD_EXE_UNIT_TEST)
     )
 endif()
 
+if (BUILD_EXE_BENCHMARK)
+    target_sources(${BENCH_EXE} PUBLIC
+        ${HEADERS}
+        ${SOURCES}
+    )
+endif()
+
 add_subdirectory(cuda)
 add_subdirectory(opencl)
 add_subdirectory(tests)

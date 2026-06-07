@@ -118,6 +118,7 @@ namespace benchmark
         bool runAmdKawpow();
         bool runAmdBlake3();
         bool runAmdEthash();
+        bool runAmdProgpow();
 #endif
     };
 }
