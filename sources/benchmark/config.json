@@ -90,6 +90,11 @@
                 "threads": 256,
                 "blocks": 1024,
                 "kernels": ["progpow_baseline", "progpow_subgroup"]
+            },
+            "autolykos_v2": {
+                "enabled": false,
+                "loop": 10,
+                "kernels": ["autolykos_v2_search", "autolykos_v2_verify"]
             }
         }
     }

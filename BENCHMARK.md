@@ -36,7 +36,9 @@ sources/
     │   └── ethash_light_cache.cpp   # 3 kernel variants
     ├── amd/
     │   ├── kawpow.cpp               # 4 OpenCL kernel variants
-    │   └── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
+    │   ├── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
+    │   ├── progpow.cpp              # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
+    │   └── autolykos_v2.cpp         # production search + verify kernels (throughput)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources
@@ -87,7 +89,10 @@ run()
     │   ├── runNvidiaAutolykosv2()
     │   └── runNvidiaKawpow()
     ├── runAmd()
-    │   └── runAmdKawpow()
+    │   ├── runAmdKawpow()
+    │   ├── runAmdEthash()
+    │   ├── runAmdProgpow()
+    │   └── runAmdAutolykos()
     ├── display all dashboards
     └── writeReport() → benchmark.json
 ```
@@ -274,6 +279,9 @@ For each kawpow_lmN kernel:
 | Algorithm | Variants | Notes |
 |---|---|---|
 | KAWPOW | 4 (lm1–lm4) | LDS caching and sub-group strategies |
+| Ethash | 2 (baseline, subgroup) | barrier vs sub_group_barrier |
+| ProgPOW | 2 (baseline, subgroup) | barrier vs sub_group_barrier |
+| Autolykos V2 | 2 (search, verify) | Production Ergo kernels — throughput coverage |
 
 ---
 
@@ -370,3 +378,24 @@ Measured on 2026-03-16, 10 iterations per kernel, config: `sources/benchmark/con
 | lm9  | ~27.15 MH | |
 | lm10 | ~16.25 MH | 64 blocks only — warp parallelism, needs tuning |
 | lm11 | ~27.35 MH | |
+
+---
+
+## Reference Results — AMD Radeon RX 9070 XT (gfx1201 / RDNA4)
+
+Measured on 2026-06-07, 20 iterations per kernel, config: `sources/benchmark/config.json`
+(`amd.autolykos_v2`). The DAG is built once (~4 GiB, 134,217,728 items) and the two
+production kernels are then timed back to back.
+
+### Autolykos V2 — logical nonce grid 65536 blocks × 64 threads (AMD_NONCES_PER_ITER)
+
+| Kernel | Hashrate (steady) | Time/launch | Notes |
+|---|---|---|---|
+| autolykos_v2_search | ~1.0 GH (0.95–1.5 GH across runs) | ~2.8–4.4 ms | blake2b prehash over the DAG → BHashes; clock-sensitive |
+| autolykos_v2_verify | ~67 MH | ~62 ms | final blake2b + boundary test over the full grid |
+
+> First iteration is always slower (cold DAG / clock ramp). Steady-state values shown above.
+> These are raw per-kernel throughputs over the full nonce space, not the end-to-end mining
+> rate — in production `verify` only runs on the candidates `search` flags, so the realised
+> hashrate is far higher than the standalone `verify` figure. The search hashrate tracks the
+> GPU boost clock and so varies between back-to-back runs.
