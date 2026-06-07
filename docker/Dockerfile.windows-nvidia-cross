@@ -41,6 +41,11 @@ RUN set -eux; \
     ln -sf /opt/llvm-mingw/bin/clang /opt/llvm-mingw/bin/clang-cl
 ENV PATH="/opt/llvm-mingw/bin:${PATH}"
 
+# boost-context (pulled transitively via boost-asio/coroutine) assembles its .asm
+# context-switch routines with `ml64` (MSVC MASM). Shim it to llvm-ml (MASM-compatible).
+RUN printf '#!/bin/sh\nexec /opt/llvm-mingw/bin/llvm-ml -m64 "$@"\n' > /usr/local/bin/ml64 \
+    && chmod +x /usr/local/bin/ml64
+
 # One-line patch to clang's CUDA device math forward-declares: add a device
 # `long double fma` overload so MSVC <cmath>'s C++20 std::lerp(long double) (which
 # calls fma at parse time) is not ambiguous against device fma(double)/fma(float).
@@ -107,8 +112,10 @@ COPY sources ./sources
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/opt/vcpkg/downloads \
     cmake --preset windows-nvidia-cross \
-    && cmake --build --preset windows-nvidia-cross \
-    && cp /opt/openssl-win/bin/*.dll /opt/cuda-win/bin/*.dll /src/build/windows-nvidia-cross/bin/ 2>/dev/null || true
+    && cmake --build --preset windows-nvidia-cross
+# Ship the OpenSSL + CUDA runtime DLLs next to miner.exe (separate RUN so a build
+# failure above is never masked by the copy).
+RUN cp /opt/openssl-win/bin/*.dll /opt/cuda-win/bin/*.dll /src/build/windows-nvidia-cross/bin/
 
 FROM scratch AS artifact
 COPY --from=build /src/build/windows-nvidia-cross/bin /
