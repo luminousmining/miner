@@ -36,6 +36,11 @@ set(CMAKE_TRY_COMPILE_CONFIGURATION Release)
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
+# A CMAKE_GENERATOR_PLATFORM=x64 leaks into Ninja try_compiles (e.g. Boost's
+# find_dependency(Threads)) -> "Ninja does not support platform specification".
+# Clear it so the nested test projects configure. (Same fix as toolchain-mingw.cmake.)
+set(CMAKE_GENERATOR_PLATFORM "" CACHE INTERNAL "" FORCE)
+
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
