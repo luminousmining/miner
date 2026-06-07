@@ -423,6 +423,9 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
     find_library(CUDA_LIBRARY        NAMES cuda   PATHS "${_cuda_win_lib}" NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED)
     find_library(CUDA_NVRTC_LIBRARY  NAMES nvrtc  PATHS "${_cuda_win_lib}" NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED)
     find_library(CUDA_CUDART_LIBRARY NAMES cudart PATHS "${_cuda_win_lib}" NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED)
+    # The native FindCUDA path auto-links cudart; here fold it into CUDA_LIBRARY so
+    # every `${CUDA_LIBRARY}` link site also pulls the CUDA runtime (cudaGetDeviceCount, ...).
+    set(CUDA_LIBRARY "${CUDA_LIBRARY};${CUDA_CUDART_LIBRARY}")
 elseif (BUILD_NVIDIA)
     if (WIN32)
         SET(CUDA_TOOLKIT_PATH_SUFFIXES lib64 lib\\x64)
