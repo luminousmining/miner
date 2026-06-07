@@ -106,7 +106,7 @@ void stratum::StratumSha256::onMiningNotify(boost::json::object const& root)
 }
 
 
-void stratum::StratumSha256::onMiningSetDifficulty(boost::json::object const& root)
+void stratum::StratumSha256::onMiningSetDifficulty([[maybe_unused]] sboost::json::object const& root)
 {
     // boost::json::array const& params(root.at("params").as_array());
 
