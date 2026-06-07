@@ -74,8 +74,7 @@ jobs:
 
           ./bootstrap.sh --prefix=${{ github.workspace }}/boost-install
 
-          ./b2 release -j$(nproc)
-          ./b2 install
+          ./b2 release link=static runtime-link=shared threading=multi --layout=system -j$(nproc) install
 
       # ===============================
       # Verify installation
