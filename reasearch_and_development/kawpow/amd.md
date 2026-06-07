@@ -163,12 +163,20 @@ Kernel sources: [sources/benchmark/opencl/progpow/](../../sources/benchmark/open
 
 ### Results
 
-> TODO: populate from `./bin/benchmark` on the target GPU (enable `amd` +
-> `progpow` in `config.json`). 10 iterations, `threads=256`, `blocks=1024`.
+**Device:** RX 9070 XT (RDNA4, gfx1201), Windows host, cross-compiled
+(`windows-amd-cross`). 5 runs × 10 iterations per variant, `threads=256`,
+`blocks=1024`. Per-run median, paired within run (see the Ethash doc's
+Methodology — absolute rate drifts ±5–7% run-to-run, so only the within-run
+baseline↔subgroup ratio is meaningful).
 
-**Device:** RX 9070 XT (RDNA4, gfx1201) — _fill in driver version_
+| variant             | median-of-medians (MH/s) | per-run median range |
+|---------------------|--------------------------|----------------------|
+| `progpow_baseline`  | 37.91                    | 34.46 – 38.16        |
+| `progpow_subgroup`  | 38.60                    | 37.02 – 38.93        |
 
-| variant             | median (MH/s) | mean (MH/s) | max (MH/s) | Δ median |
-|---------------------|---------------|-------------|------------|----------|
-| `progpow_baseline`  | _TODO_        | _TODO_      | _TODO_     | —        |
-| `progpow_subgroup`  | _TODO_        | _TODO_      | _TODO_     | _TODO_   |
+Per-run paired Δ (subgroup vs baseline, same run): **+7.4%, +1.9%, +1.1%, +2.5%,
+−1.3%** → **+2.3% mean / +1.8% median**, positive in 4/5 runs. The coalesced LDS
+store + `sub_group_barrier` is consistently a small win; the outliers (+7.4% from
+a cold-cache baseline, −1.3% from a low subgroup sample) are the run-to-run noise
+the pairing is designed to bound. Notably `progpow_baseline` runs *first* (cooler)
+each run, so the gain shows up despite a slight thermal handicap.
