@@ -146,6 +146,20 @@ if (BUILD_EXE_UNIT_TEST)
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
+
+    # clang-cl (windows-cross) is stricter than cl.exe and escalates benign
+    # warnings googletest itself doesn't expect -- e.g. a char8_t -> char32_t
+    # conversion in gtest-printers.h -- which is fatal because upstream gtest
+    # builds its own targets with -WX (warnings as errors). Drop -Werror for
+    # googletest's targets only, and only under clang-cl, so unit_test can build.
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+        foreach (gtest_target IN ITEMS gtest gtest_main gmock gmock_main)
+            if (TARGET ${gtest_target})
+                target_compile_options(${gtest_target} PRIVATE -Wno-error)
+            endif()
+        endforeach()
+    endif()
+
     enable_testing()
     include(GoogleTest)
 

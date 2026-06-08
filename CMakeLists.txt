@@ -125,7 +125,14 @@ if (WIN32)
 ################################################################################
 ### VISUAL STUDIO                                                           ####
 ################################################################################
-    set(CMAKE_GENERATOR_PLATFORM "x64")
+    # Only the Visual Studio multi-config generators honour the platform spec
+    # (the `-A x64` arg). clang-cl also reports MSVC=true, but its windows-cross
+    # preset drives Ninja, where a non-empty CMAKE_GENERATOR_PLATFORM leaks into
+    # FetchContent/try_compile sub-builds (e.g. googletest) and fails with
+    # "Ninja does not support platform specification". Gate on the generator.
+    if (CMAKE_GENERATOR MATCHES "Visual Studio")
+        set(CMAKE_GENERATOR_PLATFORM "x64")
+    endif()
     set(VISUAL_STUDIO_VERSION 143)
     set(CMAKE_SYSTEM_VERSION 10.0.22621.0)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
