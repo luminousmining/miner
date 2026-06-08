@@ -10,6 +10,7 @@
 #include <stratum/evrprogpow.hpp>
 #include <stratum/firopow.hpp>
 #include <stratum/kawpow.hpp>
+#include <stratum/kheavyhash.hpp>
 #include <stratum/meowpow.hpp>
 #include <stratum/progpow.hpp>
 #include <stratum/progpow_quai.hpp>

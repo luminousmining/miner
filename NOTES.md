@@ -1,9 +1,31 @@
 # kHeavyHash (Kaspa) — Implementation Research Notes
 
-Status: **Layers 1–3 verified; AMD miner integration code-complete (compile-pending).**
-Layers 4–5 (stratum, live shares) pending.
+Status: **Layers 1–3 verified; AMD integration + Layer-4 stratum code-complete
+(full-miner compile pending).** Layer 5 (live accepted shares) pending.
 Reference: **rusty-kaspa `master`** (fetched 2026-06-08), which is post-Crescendo.
 Branch: `worktree-kheavyhash-kaspa`.
+
+## Layer 4 — Kaspa stratum client
+`stratum/kheavyhash.{hpp,cpp}` (`StratumKHeavyHash`) + `stratums.cpp` factory case,
+modeled on the gostratum/kaspa-stratum-bridge NORMAL dialect (NOTES s4):
+- `miningSubscribe` → base subscribe (non-BzMiner agent) then authorize.
+- `onMiningNotify` parses `[jobIdStr, [4 LE u64], timestamp]` → `prePowFromWords`
+  into `headerHash`, sets `timestamp`, restarts nonce at `startNonce`, pins
+  `epoch=1` (so resolver `updateMemory` runs once; per-job `headerHash` change drives
+  `updateConstants`), then `updateJob()`.
+- `onMiningSetDifficulty` → `difficultyToTargetLe` → `boundary` (LE 256-bit).
+- `onMiningSetExtraNonce`/subscribe-ack → `setExtraNonce`.
+- `miningSubmit` emits `[wallet.worker, jobId, nonceHex]`.
+
+The two error-prone primitives live dependency-free in
+`algo/kheavyhash/stratum_math.{hpp,cpp}` and are **TDD-verified now** (4 KATs, run via
+the dev image): `prePowFromWords` (4 LE u64 → 32 bytes, exact) and
+`difficultyToTargetLe` (maxTarget=2^224-1, exact integer long-division, LE; diff=1 →
+28×0xFF, diff=2 → 2^223-1, monotonic). ⚠ `maxTarget`/scaling is the most pool-specific
+value — confirm against the chosen testnet pool before trusting acceptance (s4.3).
+
+Not compile-verified in the full miner (needs Boost/the full build); the stratum is a
+thin JSON wrapper over the verified math + the existing base-stratum plumbing.
 
 ## Integration into the main miner (AMD)
 Wired KHEAVYHASH into the real miner, additive to the existing seams:
