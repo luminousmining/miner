@@ -77,9 +77,12 @@ void stratum::StratumKHeavyHash::onMiningNotify(boost::json::object const& root)
     UNIQUE_LOCK(mtxDispatchJob);
 
     ////////////////////////////////////////////////////////////////////////////
-    // params = [ jobIdStr, [u64_0, u64_1, u64_2, u64_3], timestamp ]
+    // Two job encodings are seen in the wild (both Kaspa gostratum dialect):
+    //   NORMAL: [ jobIdStr, [u64_0..u64_3], timestamp ]   (4 LE u64 pre_pow words)
+    //   BIG:    [ jobIdStr, "<80 hex>" ]                   (unmineable / BzMiner)
+    //           where the blob is pre_pow_hash[32] || timestamp_u64_LE[8].
     boost::json::array const& params(root.at("params").as_array());
-    if (3u > params.size())
+    if (2u > params.size())
     {
         logErr() << "mining.notify: malformed params " << root;
         return;
@@ -88,24 +91,56 @@ void stratum::StratumKHeavyHash::onMiningNotify(boost::json::object const& root)
     ////////////////////////////////////////////////////////////////////////////
     jobInfo.jobIDStr.assign(params.at(0).as_string().c_str());
 
-    boost::json::array const& words(params.at(1).as_array());
-    if (4u != words.size())
+    boost::json::value const& jobField(params.at(1));
+    if (true == jobField.is_array())
     {
-        logErr() << "mining.notify: expected 4 pre_pow words " << root;
+        boost::json::array const& words(jobField.as_array());
+        if (4u != words.size() || 3u > params.size())
+        {
+            logErr() << "mining.notify: malformed NORMAL job " << root;
+            return;
+        }
+        uint64_t prePowWords[4]{};
+        for (uint32_t i{ 0u }; i < 4u; ++i)
+        {
+            prePowWords[i] = common::boostJsonGetNumber<uint64_t>(words.at(i));
+        }
+        kheavyhash::Hash256 const prePow{ kheavyhash::prePowFromWords(prePowWords) };
+        for (uint32_t i{ 0u }; i < 32u; ++i)
+        {
+            jobInfo.headerHash.ubytes[i] = prePow[i];
+        }
+        jobInfo.timestamp = common::boostJsonGetNumber<uint64_t>(params.at(2));
+    }
+    else if (true == jobField.is_string())
+    {
+        std::string const blob{ jobField.as_string().c_str() };
+        if (80u > blob.size())  // 32-byte header + 8-byte timestamp = 80 hex chars
+        {
+            logErr() << "mining.notify: short BIG job blob " << root;
+            return;
+        }
+        uint8_t bytes[40]{};
+        for (uint32_t i{ 0u }; i < 40u; ++i)
+        {
+            bytes[i] = static_cast<uint8_t>(std::stoul(blob.substr(i * 2u, 2u), nullptr, 16));
+        }
+        for (uint32_t i{ 0u }; i < 32u; ++i)
+        {
+            jobInfo.headerHash.ubytes[i] = bytes[i];
+        }
+        uint64_t timestamp{ 0ull };
+        for (uint32_t i{ 0u }; i < 8u; ++i)
+        {
+            timestamp |= static_cast<uint64_t>(bytes[32u + i]) << (8u * i);
+        }
+        jobInfo.timestamp = timestamp;
+    }
+    else
+    {
+        logErr() << "mining.notify: unexpected job field type " << root;
         return;
     }
-    uint64_t prePowWords[4]{};
-    for (uint32_t i{ 0u }; i < 4u; ++i)
-    {
-        prePowWords[i] = common::boostJsonGetNumber<uint64_t>(words.at(i));
-    }
-    kheavyhash::Hash256 const prePow{ kheavyhash::prePowFromWords(prePowWords) };
-    for (uint32_t i{ 0u }; i < 32u; ++i)
-    {
-        jobInfo.headerHash.ubytes[i] = prePow[i];
-    }
-
-    jobInfo.timestamp = common::boostJsonGetNumber<uint64_t>(params.at(2));
 
     ////////////////////////////////////////////////////////////////////////////
     // isValidJob() rejects an empty jobID hash, but NiceHash uses tiny jobId
