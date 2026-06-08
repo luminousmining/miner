@@ -210,3 +210,69 @@ TEST_F(HashTest, Hash256OverlongInputBounded)
         ASSERT_EQ(expected.ubytes[i], actual.ubytes[i]) << "index " << i;
     }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// decimalToHash<hash512> turns a decimal boundary string into a hash512 whose
+// bytes are the ASCII uppercase-hex digits of the value, big-endian (most
+// significant digit at ubytes[0]). The input is pool-controlled, so these tests
+// pin both the happy path and the two attack shapes the overflow fix guards
+// against (see fix/decimaltohash-overflow).
+static std::string decimalHashToHex(algo::hash512 const& hash)
+{
+    std::string str;
+    str.reserve(sizeof(algo::hash512));
+    for (uint32_t i{ 0u }; i < sizeof(algo::hash512); ++i)
+    {
+        str.push_back(cast8(hash.ubytes[i]));
+    }
+    return str;
+}
+
+
+TEST_F(HashTest, decimalToHashValidBoundary)
+{
+    // Small values verified by hand plus the real 256-bit Autolykos boundary
+    // used by the autolykos_v2 stratum/resolver tests. Correct conversion must
+    // be preserved by the input-validation fix.
+    EXPECT_EQ("00000000000000000000000000000000000000000000000000000000000000FF",
+              decimalHashToHex(algo::decimalToHash<algo::hash512>("255")));
+
+    EXPECT_EQ("00000000000000000000000000000000000000000000000000000000499602D2",
+              decimalHashToHex(algo::decimalToHash<algo::hash512>("1234567890")));
+
+    EXPECT_EQ("0000000112E0BE826D694B2E62D01511F12A60609E6058143D609A1A1444A664",
+              decimalHashToHex(algo::decimalToHash<algo::hash512>(
+                  "28948022309329048855892746252171976963209391069768726095651290785380")));
+}
+
+
+TEST_F(HashTest, decimalToHashRejectsNonDecimal)
+{
+    // A non-digit byte (here a letter) must be rejected cleanly, returning the
+    // zero hash instead of feeding a garbage limb into the carry arrays.
+    algo::hash512 const fromLetter{ algo::decimalToHash<algo::hash512>("12345x67890") };
+    EXPECT_TRUE(algo::isHashEmpty(fromLetter));
+
+    // A high-bit byte is negative as a signed char, so `input[i] - '0'` would
+    // otherwise produce a huge limb; it must be rejected the same way.
+    std::string highBit{ "1234" };
+    highBit.push_back(cast8(0xFF));
+    algo::hash512 const fromHighBit{ algo::decimalToHash<algo::hash512>(highBit) };
+    EXPECT_TRUE(algo::isHashEmpty(fromHighBit));
+}
+
+
+TEST_F(HashTest, decimalToHashOversizedIsBounded)
+{
+    // A boundary far larger than the 256-bit field (100 decimal digits ~= 332
+    // bits). An oversized number must be handled without corrupting the stack:
+    // the carry index is bounded to LIMBS so the high limbs are dropped instead
+    // of being written past the fixed-size `accs`/`ts` arrays. The call must
+    // return cleanly and the least-significant nibble must still be correct
+    // (a run of 100 nines is == 15 mod 16).
+    std::string const oversized(100u, '9');
+    algo::hash512 const hash{ algo::decimalToHash<algo::hash512>(oversized) };
+
+    EXPECT_EQ('F', cast8(hash.ubytes[sizeof(algo::hash512) - 1u]));
+}
