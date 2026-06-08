@@ -59,7 +59,6 @@ NiceHash / 2miners); the hashrate is the kernel's throughput, independent of poo
 | GPU | Arch | Hashrate | Notes |
 |---|---|---|---|
 | AMD Radeon RX 9070 XT | RDNA4 (gfx1201) | **~389.8 MH/s** | two consecutive readings: 389.87, 389.80 MH/s |
-| AMD Radeon 5700G iGPU | Vega (gfx90c) | 0 H/s | builds the kernel but reports no hashrate — separate iGPU follow-up |
 
 The miner double-buffers (two command queues overlapping), so its sustained
 number lands just under the framework's bare-launch peak — the two agree within
@@ -72,12 +71,6 @@ Correctness on the same run was confirmed end-to-end (pool-accepted shares).
 
 ## Caveats / follow-ups
 
-- **Telemetry is flaky on this RDNA4 card.** The miner's stats thread floods
-  `ADL cannot get activity`, which intermittently stalls hashrate reporting
-  (dashboard blank, `api/get_stats` `hs:[0,0]`). The framework benchmark times the
-  kernel directly and is unaffected. (See the ADL2/PMLog telemetry work; unrelated
-  to the kernel.)
-- The iGPU reporting 0 H/s is a device-2 follow-up, not a kernel correctness issue.
 - For reference, optimised kHeavyHash miners reach ~1.3–1.7 GH/s on a 9070 XT, so the
   naive kernel is roughly a quarter of peak — the expected headroom for a later
   optimisation pass (LDS matrix tiling, fewer global re-reads, register pressure).
