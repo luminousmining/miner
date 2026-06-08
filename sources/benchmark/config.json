@@ -102,6 +102,13 @@
                 "threads": 256,
                 "blocks": 1024,
                 "kernels": ["progpow_lm_0", "progpow_lm_1"]
+            },
+            "kheavyhash": {
+                "enabled": false,
+                "loop": 20,
+                "threads": 256,
+                "blocks": 8192,
+                "kernels": ["search"]
             }
         }
     }
