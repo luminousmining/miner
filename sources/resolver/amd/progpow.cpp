@@ -64,6 +64,13 @@ bool resolver::ResolverAmdProgPOW::updateContext(stratum::StratumJobInfo const& 
         return false;
     }
 
+    // Surface the derived epoch and DAG footprint: a wrong epoch (e.g. a seed-hash
+    // mismatch on Quai) shows up here as a multi-GiB jump before clCreateBuffer is
+    // even reached.
+    resolverInfo() << "DAG epoch " << context.epoch << " | light cache " << context.lightCache.size
+                   << " B | DAG " << context.dagCache.size << " B ("
+                   << (context.dagCache.size / (1024ull * 1024ull)) << " MiB)";
+
     return true;
 }
 

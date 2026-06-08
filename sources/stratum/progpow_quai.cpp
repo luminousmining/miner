@@ -10,4 +10,5 @@ stratum::StratumProgpowQuai::StratumProgpowQuai() : stratum::StratumProgPOW()
 {
     maxPeriod = algo::progpow_quai::MAX_PERIOD;
     maxEpochLength = algo::progpow_quai::EPOCH_LENGTH;
+    deriveEpochFromBlockNumber = true;
 }
