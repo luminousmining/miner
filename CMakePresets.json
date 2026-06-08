@@ -15,85 +15,32 @@
       }
     },
     {
-      "name": "linux-amd",
-      "displayName": "Linux / AMD (OpenCL)",
+      "name": "linux",
+      "displayName": "Linux (native clang; GPU selected via -D)",
       "inherits": "vcpkg-base",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/linux-amd",
+      "binaryDir": "${sourceDir}/build/linux",
       "cacheVariables": {
         "BUILD_AMD": "ON",
-        "BUILD_NVIDIA": "OFF",
-        "BUILD_CPU": "OFF"
-      }
-    },
-    {
-      "name": "linux-nvidia",
-      "displayName": "Linux / NVIDIA (CUDA)",
-      "inherits": "vcpkg-base",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/linux-nvidia",
-      "cacheVariables": {
-        "BUILD_AMD": "OFF",
-        "BUILD_NVIDIA": "ON",
-        "BUILD_CPU": "OFF"
-      }
-    },
-    {
-      "name": "windows-amd-cross",
-      "displayName": "Windows / AMD (OpenCL) - cross-compiled from Linux (MinGW)",
-      "inherits": "vcpkg-base",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/windows-amd-cross",
-      "cacheVariables": {
-        "BUILD_AMD": "ON",
-        "BUILD_NVIDIA": "OFF",
-        "BUILD_CPU": "OFF",
-        "VCPKG_TARGET_TRIPLET": "x64-mingw-static",
-        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-mingw.cmake",
-        "VCPKG_APPLOCAL_DEPS": "OFF"
-      }
-    },
-    {
-      "name": "windows-amd",
-      "displayName": "Windows / AMD (OpenCL)",
-      "inherits": "vcpkg-base",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
-      "binaryDir": "${sourceDir}/build/windows-amd",
-      "cacheVariables": {
-        "BUILD_AMD": "ON",
-        "BUILD_NVIDIA": "OFF",
-        "BUILD_CPU": "OFF",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
-      }
-    },
-    {
-      "name": "windows-nvidia",
-      "displayName": "Windows / NVIDIA (CUDA) [deferred]",
-      "inherits": "vcpkg-base",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
-      "binaryDir": "${sourceDir}/build/windows-nvidia",
-      "cacheVariables": {
-        "BUILD_AMD": "OFF",
         "BUILD_NVIDIA": "ON",
         "BUILD_CPU": "OFF",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opencl;openssl"
       }
     },
     {
-      "name": "windows-nvidia-cross",
-      "displayName": "Windows / NVIDIA (CUDA) - cross-compiled from Linux (clang + xwin)",
+      "name": "windows-cross",
+      "displayName": "Windows cross (clang-cl + xwin, MSVC ABI; GPU selected via -D)",
       "inherits": "vcpkg-base",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/windows-nvidia-cross",
+      "binaryDir": "${sourceDir}/build/windows-cross",
       "cacheVariables": {
-        "BUILD_AMD": "OFF",
+        "BUILD_AMD": "ON",
         "BUILD_NVIDIA": "ON",
         "BUILD_CPU": "OFF",
         "USE_CLANG_CUDA": "ON",
         "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opencl",
         "VCPKG_TARGET_TRIPLET": "x64-windows-clangcl",
         "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-clang-cl-xwin.cmake",
@@ -102,11 +49,7 @@
     }
   ],
   "buildPresets": [
-    { "name": "linux-amd",          "configurePreset": "linux-amd",          "configuration": "Release" },
-    { "name": "linux-nvidia",       "configurePreset": "linux-nvidia",       "configuration": "Release" },
-    { "name": "windows-amd-cross",  "configurePreset": "windows-amd-cross",  "configuration": "Release" },
-    { "name": "windows-amd",    "configurePreset": "windows-amd",    "configuration": "Release" },
-    { "name": "windows-nvidia", "configurePreset": "windows-nvidia", "configuration": "Release" },
-    { "name": "windows-nvidia-cross", "configurePreset": "windows-nvidia-cross", "configuration": "Release" }
+    { "name": "linux",         "configurePreset": "linux",         "configuration": "Release" },
+    { "name": "windows-cross", "configurePreset": "windows-cross", "configuration": "Release" }
   ]
 }
