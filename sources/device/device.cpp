@@ -23,6 +23,7 @@
 #include <resolver/nvidia/evrprogpow.hpp>
 #include <resolver/nvidia/firopow.hpp>
 #include <resolver/nvidia/kawpow.hpp>
+#include <resolver/nvidia/kheavyhash.hpp>
 #include <resolver/nvidia/meowpow.hpp>
 #include <resolver/nvidia/progpow.hpp>
 #include <resolver/nvidia/progpow_quai.hpp>
@@ -362,7 +363,8 @@ void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
 #if defined(CUDA_ENABLE)
                 case device::DEVICE_TYPE::NVIDIA:
                 {
-                    // CUDA kernel not implemented yet (OpenCL/AMD only).
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverNvidiaKHeavyHash);
                     break;
                 }
 #endif

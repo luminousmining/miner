@@ -37,7 +37,8 @@ if(KHEAVYHASH_BUILD_TESTS)
         tests/matrix_test.cpp
         tests/hashers_test.cpp
         tests/kheavyhash_test.cpp
-        tests/stratum_math_test.cpp)
+        tests/stratum_math_test.cpp
+        tests/cuda_device_test.cpp)
     target_include_directories(kheavyhash_unit_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     target_link_libraries(kheavyhash_unit_test PRIVATE kheavyhash_reference GTest::gtest GTest::gtest_main)
     add_test(NAME kheavyhash_unit_test COMMAND kheavyhash_unit_test)
