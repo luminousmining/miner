@@ -854,4 +854,30 @@ Expected: PR #149 reflects the unified design; still a draft.
 - **Selector consistency:** `GPU` values `amd|nvidia|both` and the `AMD/NV/CC/FEAT` mapping are identical across the Dockerfile `case` (T4, T5) and the preset overrides (T3). `USE_CLANG_CUDA` is ON only for Windows-cross NVIDIA/both; OFF everywhere on Linux.
 - **CMake consistency:** `LM_WIN_CROSS` (T2) is keyed on `OPENSSL_WIN_ROOT`, which both Windows-cross branches export (T4), so AMD-only and combined both get prebuilt OpenSSL; CUDA stays `BUILD_NVIDIA`-gated.
 - **Open risk flagged in-task:** if clang-cl AMD code needs explicit Windows syslibs (the `WIN32 AND NOT MSVC` block at `sources/CMakeLists.txt:433` is skipped under clang-cl), T4 Steps 3–5 will surface unresolved symbols at link; the fix is to extend that syslib list to the MSVC clang-cl path. Noted here so the implementer recognizes it rather than treating it as mysterious.
+
+---
+
+## Implementation outcome (2026-06-08)
+
+Executed inline. **All 6 variants build green** (verified by real `docker build`):
+windows-cross amd(1.5MB)/nvidia(12.7MB)/both(12.9MB) PE32+; linux amd(11MB)/
+nvidia(176MB)/both(176MB) ELF.
+
+Deviations / fixes discovered by running the builds (none were statically catchable):
+- **`ARG GPU` must be global-scope** (before the first `FROM`) for the `FROM base-${GPU}`
+  selector — otherwise empty → "invalid reference format".
+- **Host `g++` required**: vcpkg probes an `x64-linux` host compiler before any cross
+  build; the lean ubuntu base lacks one. Added to the windows-cross apt list.
+- **`CMAKE_RC_FLAGS` needs the xwin SDK includes**: the `.rc` compile path doesn't inherit
+  the C/CXX `/imsvc` includes, so `#include <windows.h>` in a resource failed. Fixed in
+  `cmake/toolchain-clang-cl-xwin.cmake`.
+- **OpenCL: ICD-loader-from-source, not vcpkg** (the pre-authorized fallback). vcpkg's
+  `opencl` port compiles under clangcl but fails its final `cllayerinfo` tool-copy under
+  cross-compile. The windows-cross image now builds the Khronos OpenCL-ICD-Loader
+  (`OpenCL.lib`) + stages CL/CLHPP headers; `VCPKG_MANIFEST_FEATURES` is empty on
+  windows-cross. The linux image still uses vcpkg opencl (native triplet builds it fine).
+- The clang-cl AMD syslib risk did **not** materialize (pragma auto-link worked).
+
+Still pending (needs the AMD Windows host): **Task 8** — run the combined `miner.exe` on
+the RX 9070 XT (graceful 0-CUDA-devices) + AMD MSVC-vs-mingw perf parity.
 </content>
