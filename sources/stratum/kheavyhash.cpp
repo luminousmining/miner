@@ -60,6 +60,14 @@ void stratum::StratumKHeavyHash::onUnknownMethod(boost::json::object const& root
     {
         onResponse(root);
     }
+    // NiceHash delivers the extranonce as the subscribe reply with the bare
+    // method name "set_extranonce" (no "mining." prefix), so the base router
+    // misses it. Without applying it the high nonce bytes are wrong and every
+    // share is rejected. (Verified against kheavyhash.auto.nicehash.com:9200.)
+    else if ("set_extranonce" == method)
+    {
+        onMiningSetExtraNonce(root);
+    }
 }
 
 
@@ -100,7 +108,11 @@ void stratum::StratumKHeavyHash::onMiningNotify(boost::json::object const& root)
     jobInfo.timestamp = common::boostJsonGetNumber<uint64_t>(params.at(2));
 
     ////////////////////////////////////////////////////////////////////////////
-    jobInfo.jobID = algo::toHash256(jobInfo.jobIDStr);
+    // isValidJob() rejects an empty jobID hash, but NiceHash uses tiny jobId
+    // strings (e.g. "0000000000000000") that hash to all-zero. The pre-pow
+    // header uniquely identifies the job, so use it as the non-empty jobID gate;
+    // jobIDStr stays the wire value used for mining.submit + staleness.
+    algo::copyHash(jobInfo.jobID, jobInfo.headerHash);
 
     ////////////////////////////////////////////////////////////////////////////
     // Restart the per-job nonce sweep from the (extranonce) base.
@@ -128,6 +140,16 @@ void stratum::StratumKHeavyHash::onMiningSetDifficulty(boost::json::object const
     {
         jobInfo.boundary.ubytes[i] = target[i];
     }
+
+    // The kernel compares against the full 256-bit boundary buffer, but
+    // isValidJob() also requires boundaryU64 != 0. Fill it from the target's
+    // most-significant 64 bits (guarded non-zero) purely to pass that gate.
+    uint64_t high{ 0ull };
+    for (uint32_t i{ 0u }; i < 8u; ++i)
+    {
+        high = (high << 8) | jobInfo.boundary.ubytes[31u - i];
+    }
+    jobInfo.boundaryU64 = (0ull != high) ? high : 1ull;
 
     logInfo() << "Difficulty: " << difficulty;
 }
