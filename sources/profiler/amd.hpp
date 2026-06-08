@@ -53,8 +53,9 @@ namespace profiler
 
         ADL_CONTEXT_HANDLE      context{ nullptr };
         Backend                 backend{ Backend::NONE };
-        std::map<uint32_t, int> busToAdapter{};  //!< PCI bus number -> ADL adapter index
-        std::set<uint32_t>      warnedBuses{};    //!< Buses already warned about (avoid per-interval spam)
+        std::map<uint32_t, int> busToAdapter{};   //!< PCI bus number -> ADL adapter index
+        std::set<uint32_t>      warnedBuses{};     //!< Buses already warned about (avoid per-interval spam)
+        std::set<int>           warnedAdapters{};  //!< Adapters whose PMLog query failed (warn once)
 
         ////////////////////////////////////////////////////////////////////////
         // ADL1 (legacy, context-less)

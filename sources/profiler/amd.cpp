@@ -238,7 +238,12 @@ bool profiler::Amd::buildAdapterMap()
 
     for (AdapterInfo const& adapter : info)
     {
-        if (AMD_VENDOR_ID != adapter.iVendorID || 0 == adapter.iPresent)
+        // ADL returns iVendorID signed, and integrated AMD adapters (APUs) report
+        // it negated (-1002 instead of 1002). Match either sign, otherwise the
+        // iGPU is left out of the map and borrows the dGPU's telemetry through the
+        // single-adapter fallback in resolveAdapterIndex().
+        if ((AMD_VENDOR_ID != adapter.iVendorID && -AMD_VENDOR_ID != adapter.iVendorID)
+            || 0 == adapter.iPresent)
         {
             continue;
         }
@@ -329,7 +334,14 @@ profiler::Amd::Telemetry profiler::Amd::getTelemetryPMLog(int const adapterIndex
     ADLPMLogDataOutput data{};
     if (ADL_OK != adl2NewQueryPMLogDataGet(context, adapterIndex, &data))
     {
-        logErr() << "ADL PMLog query failed (adapter " << adapterIndex << ")";
+        // Some adapters (notably integrated GPUs / APUs) return ADL_ERR_NOT_SUPPORTED
+        // here: they expose no PMLog sensors, so telemetry stays zero. Warn once per
+        // adapter instead of every stats interval.
+        if (true == warnedAdapters.insert(adapterIndex).second)
+        {
+            logWarn() << "ADL PMLog unavailable for adapter " << adapterIndex
+                      << "; telemetry will read zero for this device";
+        }
         return telemetry;
     }
 
