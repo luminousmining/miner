@@ -258,6 +258,14 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
     ### Clang CUDA-language cross. CMake cannot drive clang+CUDA when targeting
     ### Windows (issue #20776), so the .cu units are compiled by clang directly via
     ### add_custom_command in sources/CMakeLists.txt. These vars feed those commands.
+    ### This path is wired for the windows-nvidia-cross Docker image; the staging
+    ### env vars must be present (fail fast with a clear message if configured bare).
+    if (NOT DEFINED ENV{OPENSSL_WIN_ROOT} OR NOT DEFINED ENV{CUDA_WIN_LIB})
+        message(FATAL_ERROR
+            "USE_CLANG_CUDA expects the windows-nvidia-cross Docker environment "
+            "(OPENSSL_WIN_ROOT and CUDA_WIN_LIB must be set). Build via "
+            "docker/Dockerfile.windows-nvidia-cross, not a bare configure.")
+    endif()
     if (DEFINED ENV{XWIN_ROOT})
         set(_xwin "$ENV{XWIN_ROOT}")
     else()
@@ -286,13 +294,19 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
         endforeach()
         set(_objs "")
         foreach(src ${ARGN})
-            get_filename_component(_nm "${src}" NAME)
+            # Key the object on the full relative path (sanitized), not just the
+            # basename, so two .cu with the same filename in different dirs can't collide.
+            string(REGEX REPLACE "[/\\.]" "_" _nm "${src}")
             set(_obj "${CMAKE_CURRENT_BINARY_DIR}/${target}_${_nm}.obj")
             add_custom_command(
                 OUTPUT "${_obj}"
+                # Release device codegen: -O3 -DNDEBUG matches the nvcc release path
+                # (CUDA_NVCC_FLAGS_RELEASE). Without it clang defaults to -O0 and the
+                # mining kernels -- the hot path -- ship unoptimized.
                 COMMAND "${CLANG_CUDA_COMPILER}" --target=x86_64-pc-windows-msvc -x cuda
                         "${CMAKE_CURRENT_SOURCE_DIR}/${src}" -c -o "${_obj}"
                         --cuda-path=${CLANG_CUDA_PATH} ${_archflags}
+                        -O3 -DNDEBUG
                         -Wno-unknown-cuda-version -std=c++20 -fms-compatibility -fms-extensions
                         -fms-runtime-lib=dll -Wno-unknown-attributes -D_MT -D_DLL
                         ${CLANG_CUDA_XWIN_INC}

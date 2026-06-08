@@ -37,7 +37,7 @@ endif()
 ###  LIB CUDA BENCH                                                        ####
 ################################################################################
 if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
-    cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
+    set(_bench_cu
         benchmark/cuda/argon2d/argon2d_lm1.cu
         benchmark/cuda/argon2d/argon2d_lm2.cu
         benchmark/cuda/argon2d/argon2d_lm3.cu
@@ -93,7 +93,14 @@ if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
         benchmark/cuda/keccak/keccak_f800_lm9.cu
     )
 
-    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
+    # Same gate as the crypto CUDA lib: clang-direct on the cross path (cuda_add_library
+    # is undefined when FindCUDA isn't loaded), nvcc/FindCUDA otherwise.
+    if (USE_CLANG_CUDA)
+        lm_clang_cuda_library(${LIB_BENCH_NVIDIA} ${_bench_cu})
+    else()
+        cuda_add_library(${LIB_BENCH_NVIDIA} STATIC ${_bench_cu})
+        target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
+    endif()
 
     target_include_directories(${LIB_BENCH_NVIDIA} PUBLIC
         ${Boost_INCLUDE_DIR}
