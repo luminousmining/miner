@@ -10,8 +10,6 @@
 #include <algo/kheavyhash/result.hpp>
 #include <algo/kheavyhash/types.hpp>
 #include <benchmark/workflow.hpp>
-#include <common/cast.hpp>
-#include <common/custom.hpp>
 #include <common/kernel_generator/opencl.hpp>
 #include <common/opencl/buffer_mapped.hpp>
 #include <common/opencl/buffer_wrapper.hpp>
@@ -43,11 +41,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     // not skew the timing.
     algo::hash256 const headerHash{ algo::toHash256(
         "71c967486cb3b70d5dfcb2ebd8eeef138453637cacbf3ccb580a41a7e96986bb") };
-    algo::hash256       target{};
-    for (uint32_t i{ 0u }; i < algo::LEN_HASH_256; ++i)
-    {
-        target.ubytes[i] = 0u;
-    }
+    algo::hash256 const target{}; // value-initialised: all 32 bytes zero -> no nonce ever meets it
 
     ////////////////////////////////////////////////////////////////////////////
     // Host-side matrix generation (xoshiro256++ + full-rank gate) -- the CPU
@@ -158,7 +152,10 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     if (true == algo.isKernelEnabled("search"))
     {
         benchmark::KernelParams const p{ algo.resolveKernel("search") };
-        benchSearch(p.loop, p.threads, p.blocks);
+        if (false == benchSearch(p.loop, p.threads, p.blocks))
+        {
+            logErr() << "kHeavyHash search benchmark aborted (GPU error)";
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
