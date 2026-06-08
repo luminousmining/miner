@@ -1,8 +1,31 @@
 # kHeavyHash (Kaspa) — Implementation Research Notes
 
-Status: **Layers 1–3 implemented & verified.** Layers 4–5 (stratum, live shares) pending.
+Status: **Layers 1–3 verified; AMD miner integration code-complete (compile-pending).**
+Layers 4–5 (stratum, live shares) pending.
 Reference: **rusty-kaspa `master`** (fetched 2026-06-08), which is post-Crescendo.
 Branch: `worktree-kheavyhash-kaspa`.
+
+## Integration into the main miner (AMD)
+Wired KHEAVYHASH into the real miner, additive to the existing seams:
+- `algo_type` enum + `toString`/`toEnum` ("kheavyhash"); `algo/kheavyhash/result.hpp`
+  (`Result`/`ResultShare`, layout matching the `.cl` Result struct).
+- `resolver/amd/kheavyhash.{hpp,cpp}` + `kheavyhash_kernel_parameter.hpp`, modeled
+  on `ResolverAmdEthash` but **no DAG**: `updateMemory` only allocates buffers +
+  builds the `search` kernel; `updateConstants` host-generates the matrix
+  (`::kheavyhash::generateMatrix`) and uploads matrix/header/target; `executeSync`
+  launches a 1-D `search` (global = blocks*threads, nonce = jobInfo.nonce + gid);
+  `submit` emits `[jobId, nonceHex]`. header/target buffers typed `algo::hash256`.
+- `StratumJobInfo.timestamp` (+ copy); `device.cpp` setAlgorithm KHEAVYHASH→AMD case
+  (NVIDIA/CUDA path intentionally empty — no CUDA kernel yet).
+- CMake: `algo/kheavyhash/CMakeLists.txt` guarded — standalone dev/POCL harness when
+  built directly, else compiles the CPU reference into the miner; `opencl/` deploys
+  `kheavyhash.cl` to `kernel/kheavyhash/`; CPU KATs fold into the main `unit_test`.
+
+**Not yet compile-verified in the full miner** — needs the AMD cross-build toolchain
+(clang-cl + OpenCL), which is on the `build/windows-cross-compile` branch, not this
+worktree. The standalone CPU+OpenCL(POCL) KAT suites stay green (5/5 + 8/8). The
+search kernel still has no live job source until Layer 4 (Kaspa testnet stratum)
+populates headerHash/boundary/timestamp and signals the memory/constant counters.
 
 ## Progress (Layer 3 — OpenCL kernel, bit-identical to CPU oracle)
 `sources/algo/kheavyhash/opencl/kheavyhash.cl` ports keccak-f[1600], PowHash,

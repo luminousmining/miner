@@ -1,14 +1,17 @@
-# Standalone CPU-reference build for kHeavyHash (Kaspa).
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+
+# ============================================================================
+# Standalone CPU-reference / OpenCL-KAT build for kHeavyHash (Kaspa).
 #
 # This is the correctness oracle for the algorithm. It is intentionally
-# dependency-free (no Boost/CUDA/OpenCL) so it can be built and tested on a
-# minimal toolchain. A later session wires `kheavyhash_reference` and its tests
-# into the main `unit_test` target alongside the GPU resolvers.
+# dependency-free (no Boost/CUDA) so it can be built and tested on a minimal
+# toolchain, including running the OpenCL kernel on the CPU via POCL.
 #
 # Build + test in isolation:
-#   cmake -S sources/algo/kheavyhash -B build-kheavyhash
+#   cmake -S sources/algo/kheavyhash -B build-kheavyhash [-DKHEAVYHASH_BUILD_OPENCL=ON]
 #   cmake --build build-kheavyhash
 #   ctest --test-dir build-kheavyhash --output-on-failure
+# ============================================================================
 cmake_minimum_required(VERSION 3.16)
 project(kheavyhash_reference CXX)
 
@@ -54,4 +57,34 @@ if(KHEAVYHASH_BUILD_OPENCL)
     target_link_libraries(kheavyhash_opencl_test
         PRIVATE kheavyhash_reference OpenCL::OpenCL GTest::gtest GTest::gtest_main)
     add_test(NAME kheavyhash_opencl_test COMMAND kheavyhash_opencl_test)
+endif()
+
+else()
+
+# ============================================================================
+# Integrated into the main miner build. The CPU reference (matrix/keccak/
+# hashers/kheavyhash) compiles into the miner so the AMD resolver can generate
+# the per-job matrix host-side. The .cl is deployed to kernel/kheavyhash/, and
+# the CPU known-answer tests fold into the main unit_test target.
+# ============================================================================
+file(GLOB HEADERS "*.hpp")
+file(GLOB SOURCES "*.cpp")
+
+if (BUILD_EXE_MINER)
+    target_sources(${MINER_EXE} PUBLIC ${HEADERS} ${SOURCES})
+endif()
+
+if (BUILD_EXE_UNIT_TEST)
+    target_sources(${UNIT_TEST_EXE} PUBLIC ${HEADERS} ${SOURCES})
+endif()
+
+if (BUILD_EXE_BENCHMARK)
+    target_sources(${BENCH_EXE} PUBLIC ${HEADERS} ${SOURCES})
+endif()
+
+add_subdirectory(opencl)
+add_subdirectory(tests)
+
+set(SOURCES_ALGO_KHEAVYHASH ${HEADERS} ${SOURCES} PARENT_SCOPE)
+
 endif()

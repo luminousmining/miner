@@ -224,45 +224,48 @@ TEST_F(OpenClKat, HeavyHashMatchesReference)
 class SearchKernel : public OpenClKat
 {
 protected:
+    // Mirrors the kernel's Result struct (and algo::ethash::Result layout).
+    struct alignas(8) Result
+    {
+        uint8_t  found{ 0 };
+        uint32_t count{ 0 };
+        uint64_t nonces[4]{ 0, 0, 0, 0 };
+    };
+
     cl_ulong runSearch(std::array<uint8_t, 32> const& target, cl_ulong nonceStart, size_t globalSize,
                        cl_uint& foundCount)
     {
         Matrix const                matrix{ kheavyhash::generateMatrix(toHash(kheavyhash::kat::FP_PRE)) };
         std::vector<uint16_t> const flat{ flatten(matrix) };
 
-        cl_ulong foundNonce{ 0 };
-        foundCount = 0;
+        Result result{};
         cl_mem matBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flat.size() * sizeof(uint16_t),
                                const_cast<uint16_t*>(flat.data())) };
         cl_mem preBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32,
                                const_cast<uint8_t*>(kheavyhash::kat::FP_PRE.data())) };
         cl_mem tgtBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32,
                                const_cast<uint8_t*>(target.data())) };
-        cl_mem nonceBuf{ makeBuf(CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(cl_ulong), &foundNonce) };
-        cl_mem countBuf{ makeBuf(CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &foundCount) };
+        cl_mem resBuf{ makeBuf(CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Result), &result) };
 
         cl_kernel k{ kernel("search") };
         cl_ulong  ts{ kheavyhash::kat::FP_TIMESTAMP };
         clCheck(clSetKernelArg(k, 0, sizeof(cl_mem), &matBuf), "arg0");
         clCheck(clSetKernelArg(k, 1, sizeof(cl_mem), &preBuf), "arg1");
-        clCheck(clSetKernelArg(k, 2, sizeof(cl_ulong), &ts), "arg2");
-        clCheck(clSetKernelArg(k, 3, sizeof(cl_mem), &tgtBuf), "arg3");
+        clCheck(clSetKernelArg(k, 2, sizeof(cl_mem), &tgtBuf), "arg2");
+        clCheck(clSetKernelArg(k, 3, sizeof(cl_ulong), &ts), "arg3");
         clCheck(clSetKernelArg(k, 4, sizeof(cl_ulong), &nonceStart), "arg4");
-        clCheck(clSetKernelArg(k, 5, sizeof(cl_mem), &nonceBuf), "arg5");
-        clCheck(clSetKernelArg(k, 6, sizeof(cl_mem), &countBuf), "arg6");
+        clCheck(clSetKernelArg(k, 5, sizeof(cl_mem), &resBuf), "arg5");
         run(k, globalSize);
-        clCheck(clEnqueueReadBuffer(queue, nonceBuf, CL_TRUE, 0, sizeof(cl_ulong), &foundNonce, 0, nullptr, nullptr),
-                "read nonce");
-        clCheck(clEnqueueReadBuffer(queue, countBuf, CL_TRUE, 0, sizeof(cl_uint), &foundCount, 0, nullptr, nullptr),
-                "read count");
+        clCheck(clEnqueueReadBuffer(queue, resBuf, CL_TRUE, 0, sizeof(Result), &result, 0, nullptr, nullptr),
+                "read result");
 
         clReleaseKernel(k);
         clReleaseMemObject(matBuf);
         clReleaseMemObject(preBuf);
         clReleaseMemObject(tgtBuf);
-        clReleaseMemObject(nonceBuf);
-        clReleaseMemObject(countBuf);
-        return foundNonce;
+        clReleaseMemObject(resBuf);
+        foundCount = result.count;
+        return result.nonces[0];
     }
 };
 

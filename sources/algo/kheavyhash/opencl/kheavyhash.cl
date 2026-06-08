@@ -255,23 +255,36 @@ __kernel void test_heavy_hash(__global ushort const* matrix,
 }
 
 
-// Real mining kernel: each work-item tries nonce = nonceStart + global_id(0).
-// On a hit (pow <= target, little-endian) it publishes its nonce.
-__kernel void search(__global ushort const* matrix,
-                     __global uchar const*  prePowHash,
-                     ulong const            timestamp,
-                     __global uchar const*  target,
-                     ulong const            nonceStart,
-                     __global ulong*        foundNonce,
-                     __global uint*         foundCount)
+// Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
+// MAX_RESULT is overridable by the host kernel generator (addDefine).
+#ifndef MAX_RESULT
+#define MAX_RESULT 4
+#endif
+
+typedef struct __attribute__((aligned(8)))
 {
-    ulong const nonce = nonceStart + (ulong)get_global_id(0);
+    uchar found;
+    uint  count;
+    ulong nonces[MAX_RESULT];
+} Result;
+
+
+// Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
+// On a hit (pow <= target, little-endian) it publishes its nonce into result.
+__kernel void search(__global ushort const* matrix,
+                     __global uchar const*  header,
+                     __global uchar const*  target,
+                     ulong const            timestamp,
+                     ulong const            startNonce,
+                     __global Result*       result)
+{
+    ulong const nonce = startNonce + (ulong)get_global_id(0);
 
     uchar pre[32];
     uchar tgt[32];
     for (int i = 0; i < 32; ++i)
     {
-        pre[i] = prePowHash[i];
+        pre[i] = header[i];
         tgt[i] = target[i];
     }
 
@@ -282,7 +295,11 @@ __kernel void search(__global ushort const* matrix,
 
     if (meetsTarget(pow, tgt))
     {
-        atomic_inc(foundCount);
-        foundNonce[0] = nonce;
+        uint const idx = atomic_inc(&result->count);
+        result->found = 1;
+        if (idx < MAX_RESULT)
+        {
+            result->nonces[idx] = nonce;
+        }
     }
 }
