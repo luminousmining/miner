@@ -18,6 +18,9 @@
 #   docker build -f docker/Dockerfile.windows-cross --build-arg GPU=both \
 #       --target artifact -o dist/windows-cross-both .
 
+# GPU must be declared in global scope (before the first FROM) so it can be used
+# in the stage-selector FROM below.
+ARG GPU=both
 ARG BASE_AMD=ubuntu:24.04
 ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
 
@@ -26,16 +29,18 @@ ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
 FROM ${BASE_CUDA} AS base-both
 FROM ${BASE_CUDA} AS base-nvidia
 FROM ${BASE_AMD}  AS base-amd
-ARG GPU=both
 FROM base-${GPU} AS build
 ARG GPU
 ARG DEBIAN_FRONTEND=noninteractive
 ARG VCPKG_REF=master
 
 # --- Common toolchain (identical on either Ubuntu 24.04 base) ---------------
+# g++ is the HOST (x64-linux) compiler vcpkg probes before building anything --
+# even for a pure cross target. The CUDA devel base ships it; the lean ubuntu
+# base does not, so install it here (harmless/no-op on the CUDA base).
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl zip unzip tar xz-utils git pkg-config python3 \
-        ninja-build perl bison file libicu74 \
+        ninja-build perl bison file libicu74 g++ \
     && rm -rf /var/lib/apt/lists/*
 
 ARG CMAKE_VERSION=3.30.5
@@ -122,23 +127,56 @@ ENV PATH="$VCPKG_ROOT:${PATH}"
 WORKDIR /src
 COPY vcpkg.json CMakePresets.json CMakeLists.txt ./
 COPY cmake ./cmake
+
+# --- OpenCL provisioning for AMD (skipped for GPU=nvidia) ------------------
+# Build the Khronos OpenCL ICD loader (-> OpenCL.lib) and stage the C and C++
+# (CLHPP) headers with our clang-cl+xwin toolchain. We build the loader directly
+# rather than via vcpkg's opencl port: that port compiles fine here but fails its
+# final `cllayerinfo` tool-copy under cross-compilation (a debug CLI we don't
+# need). At runtime the AMD driver's OpenCL.dll (System32) satisfies the import
+# lib. Cached independently of the source tree (depends only on cmake/).
+ARG OPENCL_REF=v2024.10.24
+RUN if [ "$GPU" != "nvidia" ]; then set -eux; \
+      for r in OpenCL-Headers OpenCL-CLHPP OpenCL-ICD-Loader; do \
+        git clone --depth 1 -b "$OPENCL_REF" "https://github.com/KhronosGroup/$r" "/tmp/$r"; \
+      done; \
+      cmake -S /tmp/OpenCL-ICD-Loader -B /tmp/icd-build -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=/src/cmake/toolchain-clang-cl-xwin.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DOPENCL_ICD_LOADER_HEADERS_DIR=/tmp/OpenCL-Headers \
+        -DOPENCL_ICD_LOADER_BUILD_TESTING=OFF; \
+      cmake --build /tmp/icd-build --target OpenCL; \
+      mkdir -p /opt/opencl-win/lib /opt/opencl-win/include/CL; \
+      cp "$(find /tmp/icd-build -name OpenCL.lib | head -1)" /opt/opencl-win/lib/OpenCL.lib; \
+      cp -r /tmp/OpenCL-Headers/CL/. /opt/opencl-win/include/CL/; \
+      cp /tmp/OpenCL-CLHPP/include/CL/*.hpp /opt/opencl-win/include/CL/; \
+      ls /opt/opencl-win/lib /opt/opencl-win/include/CL; \
+    else echo "GPU=nvidia: skipping OpenCL loader"; mkdir -p /opt/opencl-win/lib /opt/opencl-win/include; fi
+ENV OPENCL_WIN_ROOT=/opt/opencl-win
+
 COPY triplets ./triplets
 COPY sources ./sources
 
-# Derive the -D overrides from GPU and configure+build. opencl feature only when
-# AMD is in; USE_CLANG_CUDA only when NVIDIA is in.
+# Derive the -D overrides from GPU and configure+build. USE_CLANG_CUDA only when
+# NVIDIA is in; OpenCL (prebuilt loader above) pointed at via FindOpenCL cache
+# hints when AMD is in. vcpkg installs only Boost (no opencl feature -- the loader
+# is prebuilt; OpenSSL is prebuilt too), so VCPKG_MANIFEST_FEATURES is empty.
 RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/opt/vcpkg/downloads \
     set -eux; \
     case "$GPU" in \
-      amd)    AMD=ON;  NV=OFF; CC=OFF; FEAT="opencl" ;; \
-      nvidia) AMD=OFF; NV=ON;  CC=ON;  FEAT="" ;; \
-      both)   AMD=ON;  NV=ON;  CC=ON;  FEAT="opencl" ;; \
+      amd)    AMD=ON;  NV=OFF; CC=OFF ;; \
+      nvidia) AMD=OFF; NV=ON;  CC=ON  ;; \
+      both)   AMD=ON;  NV=ON;  CC=ON  ;; \
       *) echo "GPU must be amd|nvidia|both" >&2; exit 2 ;; \
     esac; \
+    OCL=""; \
+    if [ "$GPU" != "nvidia" ]; then \
+      OCL="-DOpenCL_INCLUDE_DIR=/opt/opencl-win/include -DOpenCL_LIBRARY=/opt/opencl-win/lib/OpenCL.lib"; \
+    fi; \
     cmake --preset windows-cross \
         -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV -DUSE_CLANG_CUDA=$CC \
-        -DVCPKG_MANIFEST_FEATURES="$FEAT"; \
+        -DVCPKG_MANIFEST_FEATURES="" $OCL; \
     cmake --build --preset windows-cross
 
 # Ship runtime DLLs next to miner.exe (separate RUN so a build failure above is

@@ -40,7 +40,7 @@
         "BUILD_CPU": "OFF",
         "USE_CLANG_CUDA": "ON",
         "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
-        "VCPKG_MANIFEST_FEATURES": "opencl",
+        "VCPKG_MANIFEST_FEATURES": "",
         "VCPKG_TARGET_TRIPLET": "x64-windows-clangcl",
         "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-clang-cl-xwin.cmake",

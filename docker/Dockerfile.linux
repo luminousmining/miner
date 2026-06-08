@@ -12,13 +12,15 @@
 #   docker build -f docker/Dockerfile.linux --build-arg GPU=both \
 #       --target artifact -o dist/linux-both .
 
+# GPU must be declared in global scope (before the first FROM) so it can be used
+# in the stage-selector FROM below.
+ARG GPU=both
 ARG BASE_AMD=ubuntu:24.04
 ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
 
 FROM ${BASE_CUDA} AS base-both
 FROM ${BASE_CUDA} AS base-nvidia
 FROM ${BASE_AMD}  AS base-amd
-ARG GPU=both
 FROM base-${GPU} AS build
 ARG GPU
 ARG DEBIAN_FRONTEND=noninteractive

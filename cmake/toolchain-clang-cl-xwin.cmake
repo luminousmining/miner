@@ -25,6 +25,13 @@ set(_inc "/imsvc${XWIN_ROOT}/crt/include /imsvc${XWIN_ROOT}/sdk/include/ucrt /im
 set(CMAKE_C_FLAGS_INIT   "${_inc} -Wno-unused-command-line-argument")
 set(CMAKE_CXX_FLAGS_INIT "${_inc} -Wno-unused-command-line-argument /EHsc")
 
+# The .rc resource compile path (clang-cl -E preprocess + llvm-rc) does NOT inherit
+# the C/CXX /imsvc system includes, so a resource that #include <windows.h> (e.g.
+# the OpenCL ICD loader's OpenCL.rc) fails with 'windows.h file not found'. Feed the
+# xwin SDK/CRT include dirs to RC explicitly via plain -I (understood by both
+# clang-cl -E and llvm-rc; /imsvc is not understood by llvm-rc).
+set(CMAKE_RC_FLAGS_INIT "-I${XWIN_ROOT}/sdk/include/um -I${XWIN_ROOT}/sdk/include/shared -I${XWIN_ROOT}/sdk/include/ucrt -I${XWIN_ROOT}/crt/include")
+
 set(_lib "/libpath:${XWIN_ROOT}/crt/lib/x86_64 /libpath:${XWIN_ROOT}/sdk/lib/ucrt/x86_64 /libpath:${XWIN_ROOT}/sdk/lib/um/x86_64")
 set(CMAKE_EXE_LINKER_FLAGS_INIT    "${_lib}")
 set(CMAKE_SHARED_LINKER_FLAGS_INIT "${_lib}")
