@@ -1,9 +1,18 @@
 # kHeavyHash (Kaspa) — Implementation Research Notes
 
-Status: **Layers 1–3 verified; AMD integration + Layer-4 stratum code-complete
-(full-miner compile pending).** Layer 5 (live accepted shares) pending.
+Status: **Layers 1–4 done & compile-verified.** Only Layer 5 (live accepted
+shares against a testnet pool) remains.
 Reference: **rusty-kaspa `master`** (fetched 2026-06-08), which is post-Crescendo.
 Branch: `worktree-kheavyhash-kaspa`.
+
+## Compile-verification (full AMD miner)
+The AMD resolver + Kaspa stratum compile and link in the real miner. Verified by
+merging this branch onto `build/windows-cross-compile` (throwaway worktree) and
+building `docker/Dockerfile.linux-amd` (clang-15 + vcpkg Boost/OpenSSL/OpenCL,
+`BUILD_AMD=ON`, no GPU needed). `bin/miner` (11 MB) links cleanly and contains
+`resolver::ResolverAmdKHeavyHash`, `stratum::StratumKHeavyHash`, the `kheavyhash`
+CPU reference, and the deployed `kernel/kheavyhash/kheavyhash.cl`. (Only blocker
+hit was a transient GitHub download blip for boost-multiprecision — unrelated.)
 
 ## Layer 4 — Kaspa stratum client
 `stratum/kheavyhash.{hpp,cpp}` (`StratumKHeavyHash`) + `stratums.cpp` factory case,
@@ -24,8 +33,9 @@ the dev image): `prePowFromWords` (4 LE u64 → 32 bytes, exact) and
 28×0xFF, diff=2 → 2^223-1, monotonic). ⚠ `maxTarget`/scaling is the most pool-specific
 value — confirm against the chosen testnet pool before trusting acceptance (s4.3).
 
-Not compile-verified in the full miner (needs Boost/the full build); the stratum is a
-thin JSON wrapper over the verified math + the existing base-stratum plumbing.
+Compile-verified in the full AMD miner (see "Compile-verification" above); the stratum
+is a thin JSON wrapper over the verified math + the existing base-stratum plumbing.
+Share acceptance against a live pool is still unproven (Layer 5).
 
 ## Integration into the main miner (AMD)
 Wired KHEAVYHASH into the real miner, additive to the existing seams:
@@ -43,11 +53,10 @@ Wired KHEAVYHASH into the real miner, additive to the existing seams:
   built directly, else compiles the CPU reference into the miner; `opencl/` deploys
   `kheavyhash.cl` to `kernel/kheavyhash/`; CPU KATs fold into the main `unit_test`.
 
-**Not yet compile-verified in the full miner** — needs the AMD cross-build toolchain
-(clang-cl + OpenCL), which is on the `build/windows-cross-compile` branch, not this
-worktree. The standalone CPU+OpenCL(POCL) KAT suites stay green (5/5 + 8/8). The
-search kernel still has no live job source until Layer 4 (Kaspa testnet stratum)
-populates headerHash/boundary/timestamp and signals the memory/constant counters.
+Compile-verified in the full AMD miner (see "Compile-verification" above). The
+standalone CPU+OpenCL(POCL) KAT suites stay green (5/5 + 8/8). The search kernel has
+no live job source until the Layer 4 stratum (below) populates
+headerHash/boundary/timestamp and signals the memory/constant counters.
 
 ## Progress (Layer 3 — OpenCL kernel, bit-identical to CPU oracle)
 `sources/algo/kheavyhash/opencl/kheavyhash.cl` ports keccak-f[1600], PowHash,
