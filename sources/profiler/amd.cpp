@@ -106,8 +106,7 @@ bool profiler::Amd::load()
     // implementation returned a fixed 1-byte block, corrupting the heap the
     // moment ADL wrote a structure into it. A captureless lambda converts to the
     // ADL_MAIN_MALLOC_CALLBACK function pointer.
-    ADL_MAIN_MALLOC_CALLBACK const adlMalloc{ [](int const size) -> void*
-                                              { return malloc(static_cast<size_t>(size)); } };
+    ADL_MAIN_MALLOC_CALLBACK const adlMalloc{ [](int const size) -> void* { return malloc(castSize(size)); } };
 
     ////////////////////////////////////////////////////////////////////////////
     // Preferred path: ADL2 context + PMLog sensor query. Works on RDNA/Vega and
@@ -115,7 +114,8 @@ bool profiler::Amd::load()
     // symbols below are only resolved if this path is unavailable.
     if (true == loadAdl2Symbols())
     {
-        if (ADL_OK == adl2MainControlCreate(adlMalloc, 1, &context) && nullptr != context)
+        int const createStatus{ adl2MainControlCreate(adlMalloc, 1, &context) };
+        if (ADL_OK == createStatus && nullptr != context)
         {
             backend = Backend::PMLOG;
             if (true == buildAdapterMap())
@@ -197,27 +197,32 @@ bool profiler::Amd::buildAdapterMap()
     // Dispatch on the backend the caller already committed to, not on raw
     // pointers: PMLOG always means the ADL2 context-based calls, OVERDRIVE5 the
     // ADL1 context-less ones.
-    if (Backend::PMLOG == backend)
+    switch (backend)
     {
-        if (ADL_OK != adl2AdapterNumberOfAdaptersGet(context, &numAdapters))
+        case Backend::PMLOG:
+        {
+            if (ADL_OK != adl2AdapterNumberOfAdaptersGet(context, &numAdapters))
+            {
+                return false;
+            }
+            break;
+        }
+        case Backend::OVERDRIVE5:
+        {
+            // ADL1 adapter enumeration is optional (not part of loadAdl1Symbols'
+            // required set): if absent, fail the map so getTelemetry falls back to
+            // the legacy bus-as-index behaviour rather than calling a null pointer.
+            if (nullptr == adlAdapterNumberOfAdaptersGet || nullptr == adlAdapterAdapterInfoGet
+                || ADL_OK != adlAdapterNumberOfAdaptersGet(&numAdapters))
+            {
+                return false;
+            }
+            break;
+        }
+        case Backend::NONE:
         {
             return false;
         }
-    }
-    else if (Backend::OVERDRIVE5 == backend)
-    {
-        // ADL1 adapter enumeration is optional (not part of loadAdl1Symbols'
-        // required set): if absent, fail the map so getTelemetry falls back to
-        // the legacy bus-as-index behaviour rather than calling a null pointer.
-        if (nullptr == adlAdapterNumberOfAdaptersGet || nullptr == adlAdapterAdapterInfoGet
-            || ADL_OK != adlAdapterNumberOfAdaptersGet(&numAdapters))
-        {
-            return false;
-        }
-    }
-    else
-    {
-        return false;
     }
 
     if (0 >= numAdapters)
@@ -225,9 +230,8 @@ bool profiler::Amd::buildAdapterMap()
         return false;
     }
 
-    // Value-initialised so ADL sees zeroed structures.
-    std::vector<AdapterInfo> info(static_cast<size_t>(numAdapters), AdapterInfo{});
-    int const                inputSize{ static_cast<int>(sizeof(AdapterInfo) * static_cast<size_t>(numAdapters)) };
+    std::vector<AdapterInfo> info(castSize(numAdapters), AdapterInfo{});
+    int const                inputSize{ cast32(sizeof(AdapterInfo) * castSize(numAdapters)) };
 
     int const result{ Backend::PMLOG == backend ? adl2AdapterAdapterInfoGet(context, info.data(), inputSize)
                                                  : adlAdapterAdapterInfoGet(info.data(), inputSize) };
@@ -248,7 +252,7 @@ bool profiler::Amd::buildAdapterMap()
             continue;
         }
         // One physical GPU can expose several ADL indices; keep the first per bus.
-        busToAdapter.emplace(static_cast<uint32_t>(adapter.iBusNumber), adapter.iAdapterIndex);
+        busToAdapter.emplace(castU32(adapter.iBusNumber), adapter.iAdapterIndex);
     }
 
     return false == busToAdapter.empty();
@@ -268,7 +272,7 @@ bool profiler::Amd::resolveAdapterIndex(uint32_t const pciBus, int& adapterIndex
         return true;
     }
 
-    if (1 == busToAdapter.size())
+    if (1u == busToAdapter.size())
     {
         adapterIndex = busToAdapter.begin()->second;
         return true;
@@ -290,18 +294,27 @@ profiler::Amd::Telemetry profiler::Amd::getTelemetry(uint32_t const pciBus)
     int adapterIndex{ 0 };
     if (false == resolveAdapterIndex(pciBus, adapterIndex))
     {
-        // Overdrive5 has no adapter map on most paths; fall back to the bus as
-        // index to preserve historical single-GPU behaviour.
-        if (Backend::OVERDRIVE5 != backend)
+        switch (backend)
         {
-            if (true == warnedBuses.insert(pciBus).second)
+            case Backend::OVERDRIVE5:
             {
-                logWarn() << "No ADL adapter matches PCI bus " << pciBus
-                          << "; telemetry will read zero for this device";
+                // Overdrive5 has no adapter map on most paths; fall back to the
+                // bus as index to preserve historical single-GPU behaviour.
+                adapterIndex = cast32(pciBus);
+                break;
             }
-            return telemetry;
+            case Backend::PMLOG:
+            case Backend::NONE:
+            {
+                bool const firstWarning{ warnedBuses.insert(pciBus).second };
+                if (true == firstWarning)
+                {
+                    logWarn() << "No ADL adapter matches PCI bus " << pciBus
+                              << "; telemetry will read zero for this device";
+                }
+                return telemetry;
+            }
         }
-        adapterIndex = static_cast<int>(pciBus);
     }
 
     switch (backend)
@@ -337,7 +350,8 @@ profiler::Amd::Telemetry profiler::Amd::getTelemetryPMLog(int const adapterIndex
         // Some adapters (notably integrated GPUs / APUs) return ADL_ERR_NOT_SUPPORTED
         // here: they expose no PMLog sensors, so telemetry stays zero. Warn once per
         // adapter instead of every stats interval.
-        if (true == warnedAdapters.insert(adapterIndex).second)
+        bool const firstWarning{ warnedAdapters.insert(adapterIndex).second };
+        if (true == firstWarning)
         {
             logWarn() << "ADL PMLog unavailable for adapter " << adapterIndex
                       << "; telemetry will read zero for this device";
@@ -348,9 +362,9 @@ profiler::Amd::Telemetry profiler::Amd::getTelemetryPMLog(int const adapterIndex
     auto const sensor{ [&data](ADL_PMLOG_SENSORS const id) -> int
                        { return 0 != data.sensors[id].supported ? data.sensors[id].value : 0; } };
 
-    telemetry.coreClock = static_cast<uint32_t>(sensor(ADL_PMLOG_CLK_GFXCLK));
-    telemetry.memoryClock = static_cast<uint32_t>(sensor(ADL_PMLOG_CLK_MEMCLK));
-    telemetry.utilization = static_cast<uint32_t>(sensor(ADL_PMLOG_INFO_ACTIVITY_GFX));
+    telemetry.coreClock = castU32(sensor(ADL_PMLOG_CLK_GFXCLK));
+    telemetry.memoryClock = castU32(sensor(ADL_PMLOG_CLK_MEMCLK));
+    telemetry.utilization = castU32(sensor(ADL_PMLOG_INFO_ACTIVITY_GFX));
 
     // Power (W): prefer whole-board, then ASIC, then GFX-domain.
     int power{ sensor(ADL_PMLOG_BOARD_POWER) };
@@ -362,7 +376,7 @@ profiler::Amd::Telemetry profiler::Amd::getTelemetryPMLog(int const adapterIndex
     {
         power = sensor(ADL_PMLOG_GFX_POWER);
     }
-    telemetry.power = static_cast<double>(power);
+    telemetry.power = castDouble(power);
 
     return telemetry;
 }
@@ -383,9 +397,9 @@ profiler::Amd::Telemetry profiler::Amd::getTelemetryOverdrive5(int const adapter
         return telemetry;
     }
 
-    telemetry.coreClock = static_cast<uint32_t>(activity.iEngineClock) / 100u; // 10 kHz -> MHz
-    telemetry.memoryClock = static_cast<uint32_t>(activity.iMemoryClock) / 100u;
-    telemetry.utilization = static_cast<uint32_t>(activity.iActivityPercent);
+    telemetry.coreClock = castU32(activity.iEngineClock) / 100u; // 10 kHz -> MHz
+    telemetry.memoryClock = castU32(activity.iMemoryClock) / 100u;
+    telemetry.utilization = castU32(activity.iActivityPercent);
 
     return telemetry;
 }
