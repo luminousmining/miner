@@ -260,11 +260,11 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
     ### add_custom_command in sources/CMakeLists.txt. These vars feed those commands.
     ### This path is wired for the windows-nvidia-cross Docker image; the staging
     ### env vars must be present (fail fast with a clear message if configured bare).
-    if (NOT DEFINED ENV{OPENSSL_WIN_ROOT} OR NOT DEFINED ENV{CUDA_WIN_LIB})
+    if (NOT DEFINED ENV{CUDA_WIN_LIB})
         message(FATAL_ERROR
-            "USE_CLANG_CUDA expects the windows-nvidia-cross Docker environment "
-            "(OPENSSL_WIN_ROOT and CUDA_WIN_LIB must be set). Build via "
-            "docker/Dockerfile.windows-nvidia-cross, not a bare configure.")
+            "USE_CLANG_CUDA expects the windows-cross Docker environment "
+            "(CUDA_WIN_LIB must point at the staged CUDA import libs). Build via "
+            "docker/Dockerfile.windows-cross, not a bare configure.")
     endif()
     if (DEFINED ENV{XWIN_ROOT})
         set(_xwin "$ENV{XWIN_ROOT}")
@@ -377,6 +377,19 @@ elseif (BUILD_NVIDIA)
 endif()
 
 ################################################################################
+### WINDOWS MSVC-ABI CROSS PROVISIONING (clang-cl + xwin)                   ####
+################################################################################
+# The windows-cross Docker image stages prebuilt MSVC OpenSSL (vcpkg can't
+# cross-build it) and exports OPENSSL_WIN_ROOT. Its presence -- NOT USE_CLANG_CUDA
+# -- is what means "link prebuilt OpenSSL", so the AMD-only cross build (which sets
+# USE_CLANG_CUDA=OFF) still gets it. CUDA import libs remain gated on NVIDIA.
+if (DEFINED ENV{OPENSSL_WIN_ROOT})
+    set(LM_WIN_CROSS ON)
+else()
+    set(LM_WIN_CROSS OFF)
+endif()
+
+################################################################################
 ### FIND PACKAGE | LIBRARIES                                                ####
 ################################################################################
 if (USE_VCPKG)
@@ -408,7 +421,7 @@ endif()
 if (BUILD_NVIDIA AND NOT USE_CLANG_CUDA)
     find_package(CUDA COMPONENTS cudart)
 endif()
-if (USE_CLANG_CUDA)
+if (LM_WIN_CROSS)
     # Prebuilt MSVC OpenSSL staged by the Dockerfile (vcpkg can't cross-build it).
     set(_ssl "$ENV{OPENSSL_WIN_ROOT}")
     add_library(OpenSSL::Crypto STATIC IMPORTED)
