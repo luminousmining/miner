@@ -1,7 +1,7 @@
 {
   "name": "luminousminer",
   "version-string": "0.10",
-  "description": "Dependency manifest for building LuminousMiner via vcpkg (Boost subset + OpenSSL + OpenCL loader). Enabled by -DUSE_VCPKG=ON and a vcpkg toolchain file; used by the Docker images and CMake presets. OpenCL/OpenSSL are default-features so existing AMD/native builds are unchanged; the windows-nvidia-cross preset sets VCPKG_MANIFEST_NO_DEFAULT_FEATURES (no OpenCL needed, OpenSSL supplied prebuilt).",
+  "description": "Dependency manifest for LuminousMiner via vcpkg (Boost subset + optional OpenCL/OpenSSL). Enabled by -DUSE_VCPKG=ON + a vcpkg toolchain. OpenCL/OpenSSL are optional features selected per build by VCPKG_MANIFEST_FEATURES: the windows-cross image supplies OpenSSL prebuilt (no openssl feature) and adds opencl only for AMD; the linux image uses both.",
   "dependencies": [
     "boost-asio",
     "boost-beast",
@@ -34,7 +34,7 @@
       ]
     },
     "openssl": {
-      "description": "OpenSSL via vcpkg (stratum TLS). Omit when OpenSSL is supplied externally (e.g. prebuilt MSVC libs in the NVIDIA cross build).",
+      "description": "OpenSSL via vcpkg (stratum TLS). Omitted on windows-cross (prebuilt MSVC libs); used on linux.",
       "dependencies": [
         "openssl"
       ]

@@ -258,7 +258,7 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
     ### Clang CUDA-language cross. CMake cannot drive clang+CUDA when targeting
     ### Windows (issue #20776), so the .cu units are compiled by clang directly via
     ### add_custom_command in sources/CMakeLists.txt. These vars feed those commands.
-    ### This path is wired for the windows-nvidia-cross Docker image; the staging
+    ### This path is wired for the windows-cross Docker image; the staging
     ### env vars must be present (fail fast with a clear message if configured bare).
     if (NOT DEFINED ENV{CUDA_WIN_LIB})
         message(FATAL_ERROR

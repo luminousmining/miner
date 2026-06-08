@@ -1,5 +1,5 @@
 # clang-cl + xwin: cross-compile MSVC-ABI Windows binaries from Linux.
-# Used by the x64-windows-clangcl vcpkg triplet and the windows-nvidia-cross preset.
+# Used by the x64-windows-clangcl vcpkg triplet and the windows-cross preset.
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR AMD64)
 set(CMAKE_CROSSCOMPILING ON)
