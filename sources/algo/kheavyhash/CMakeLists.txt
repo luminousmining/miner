@@ -37,3 +37,21 @@ if(KHEAVYHASH_BUILD_TESTS)
     target_link_libraries(kheavyhash_unit_test PRIVATE kheavyhash_reference GTest::gtest GTest::gtest_main)
     add_test(NAME kheavyhash_unit_test COMMAND kheavyhash_unit_test)
 endif()
+
+# OpenCL kernel KAT harness. Runs the .cl on any OpenCL device the ICD exposes
+# (POCL/CPU in the dev image, a real GPU otherwise) and asserts bit-identity
+# with the CPU reference. Off by default so the pure-CPU build needs no ICD.
+option(KHEAVYHASH_BUILD_OPENCL "Build the kHeavyHash OpenCL known-answer test suite" OFF)
+if(KHEAVYHASH_BUILD_OPENCL)
+    find_package(GTest REQUIRED)
+    find_package(OpenCL REQUIRED)
+    enable_testing()
+    add_executable(kheavyhash_opencl_test opencl/tests/opencl_kat_test.cpp)
+    target_include_directories(kheavyhash_opencl_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    target_compile_definitions(kheavyhash_opencl_test
+        PRIVATE KH_CL_PATH="${CMAKE_CURRENT_SOURCE_DIR}/opencl/kheavyhash.cl")
+    target_compile_options(kheavyhash_opencl_test PRIVATE -Wall -Wextra)
+    target_link_libraries(kheavyhash_opencl_test
+        PRIVATE kheavyhash_reference OpenCL::OpenCL GTest::gtest GTest::gtest_main)
+    add_test(NAME kheavyhash_opencl_test COMMAND kheavyhash_opencl_test)
+endif()

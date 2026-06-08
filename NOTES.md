@@ -1,10 +1,29 @@
 # kHeavyHash (Kaspa) — Implementation Research Notes
 
-Status: **Layers 1–2 implemented & verified (CPU reference).** Layers 3–5 pending.
+Status: **Layers 1–3 implemented & verified.** Layers 4–5 (stratum, live shares) pending.
 Reference: **rusty-kaspa `master`** (fetched 2026-06-08), which is post-Crescendo.
 Branch: `worktree-kheavyhash-kaspa`.
 
-## Progress (this session — CPU correctness oracle)
+## Progress (Layer 3 — OpenCL kernel, bit-identical to CPU oracle)
+`sources/algo/kheavyhash/opencl/kheavyhash.cl` ports keccak-f[1600], PowHash,
+KHeavyHash and the heavy matmul step to OpenCL, plus the per-nonce `search`
+kernel (`pow <= target`, LE). Matrix is generated host-side (CPU `generateMatrix`)
+and uploaded; the kernel never does rank-checking. Constants copied verbatim from
+the CPU reference (not re-derived).
+
+**5/5 OpenCL KATs pass** (`opencl/tests/opencl_kat_test.cpp`), run on the CPU via
+**POCL** (no GPU needed) and gated on the *same* vectors as the CPU suite:
+`test_pow_hash` == `POW_KAT_EXPECTED`, `test_kheavy` == `KHEAVY_EXPECTED`,
+`test_heavy_hash` == `HEAVY_EXPECTED`, and the `search` kernel at exactly
+`FP_NONCE` passing `FP_TARGET_PASS` (== `FP_FINAL`) while failing
+`FP_TARGET_FAIL` (== `FP_FINAL`-1) — together pinning the end-to-end GPU pow to
+`FP_FINAL` bit-for-bit. The shipped `.cl` is loaded at runtime (`KH_CL_PATH`), so
+there is no second copy to drift. Build: `-DKHEAVYHASH_BUILD_OPENCL=ON`.
+
+Not yet wired into `ResolverAmd`/`device.cpp` — the `.cl` + harness are additive
+and isolated, exactly like the CPU reference. Wiring is part of a later layer.
+
+## Progress (Layers 1–2 — CPU correctness oracle)
 Implemented `sources/algo/kheavyhash/` (standalone, no Boost/CUDA/OpenCL):
 `xoshiro.hpp` (xoshiro256++), `matrix.{hpp,cpp}` (gen + f64 rank), `keccak.{hpp,cpp}`
 (f[1600]), `hashers.{hpp,cpp}` (PowHash/KHeavyHash via verbatim cSHAKE256 states),

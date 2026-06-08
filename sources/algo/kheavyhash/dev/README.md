@@ -3,8 +3,8 @@
 This directory is **build/test tooling only** — it is not compiled into the miner.
 
 ## What's here
-- `Dockerfile` — minimal image (g++, CMake, GoogleTest, pycryptodome) so the
-  CPU reference can be built and tested on a host with no native C++ toolchain.
+- `Dockerfile` — minimal image (g++, CMake, GoogleTest, pycryptodome, plus POCL
+  so OpenCL kernels run on the CPU) for a host with no native C++/GPU toolchain.
 - `oracle.py` — an **independent** re-implementation of kHeavyHash used purely to
   produce known-answer vectors. It (1) parses the rusty-kaspa reference files for
   their literal vectors and asserts agreement, (2) cross-checks the precomputed
@@ -26,8 +26,19 @@ docker run --rm -v "$PWD:/work" -w /work kheavyhash-dev \
 ```
 
 ## Build + run the KAT suite (no GPU toolchain needed)
+The CPU reference suite alone:
 ```sh
 docker run --rm -v "$PWD:/work" -w /work kheavyhash-dev bash -c \
   "cmake -S sources/algo/kheavyhash -B /tmp/bk && cmake --build /tmp/bk -j && \
    ctest --test-dir /tmp/bk --output-on-failure"
+```
+
+Add `-DKHEAVYHASH_BUILD_OPENCL=ON` to also build the OpenCL kernel KAT harness.
+It runs the shipped `opencl/kheavyhash.cl` on whatever OpenCL device the ICD
+exposes — POCL/CPU inside this image, a real GPU on a normal host — and asserts
+each stage is bit-identical to the CPU reference's vectors:
+```sh
+docker run --rm -v "$PWD:/work" -w /work kheavyhash-dev bash -c \
+  "cmake -S sources/algo/kheavyhash -B /tmp/bk -DKHEAVYHASH_BUILD_OPENCL=ON && \
+   cmake --build /tmp/bk -j && ctest --test-dir /tmp/bk --output-on-failure"
 ```
