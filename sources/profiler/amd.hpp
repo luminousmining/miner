@@ -32,14 +32,17 @@ namespace profiler
 
       private:
         ////////////////////////////////////////////////////////////////////////
-        /// Which AMD telemetry API the loaded driver actually supports.
-        /// PMLOG is the modern path (RDNA/Vega+); OVERDRIVE5 is the legacy
-        /// fallback for pre-GCN1.2 cards. A future ADLX backend slots in here.
+        /// Which AMD telemetry API the loaded driver actually supports. This is
+        /// the single source of truth for the selected ADL version: PMLOG is the
+        /// modern ADL2 path (RDNA/Vega+); OVERDRIVE5 is the legacy ADL1 fallback
+        /// for pre-GCN1.2 cards. Once `load()` picks a backend, every call site
+        /// dispatches on this enum instead of re-checking raw function pointers.
+        /// A future ADLX backend slots in here.
         enum class Backend
         {
             NONE,
-            PMLOG,
-            OVERDRIVE5
+            PMLOG,     //!< ADL2 context + PMLog sensor query
+            OVERDRIVE5 //!< ADL1 context-less Overdrive5 activity
         };
 
 #if defined(_WIN32)
@@ -84,6 +87,8 @@ namespace profiler
         ADL2_PMLOG_QUERY_GET              adl2NewQueryPMLogDataGet{ nullptr };
 
         void* loadFunction(char const* name, bool const required = true);
+        bool  loadAdl2Symbols();
+        bool  loadAdl1Symbols();
         bool  buildAdapterMap();
         bool  resolveAdapterIndex(uint32_t const pciBus, int& adapterIndex);
 
