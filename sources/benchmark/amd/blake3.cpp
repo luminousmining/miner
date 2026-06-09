@@ -29,9 +29,9 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
 
     ////////////////////////////////////////////////////////////////////////////
     // No DAG. Buffer types mirror resolver/amd/blake3_kernel_parameter.hpp.
-    common::opencl::BufferMapped<algo::hash3072> headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+    common::opencl::BufferMapped<algo::hash3072>       headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
                                                               | CL_MEM_ALLOC_HOST_PTR };
-    common::opencl::BufferMapped<algo::hash256> targetCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+    common::opencl::BufferMapped<algo::hash256>        targetCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
                                                              | CL_MEM_ALLOC_HOST_PTR };
     common::opencl::BufferMapped<algo::blake3::Result> resultCache{ CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR };
 
@@ -61,10 +61,8 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    auto benchBlake3 = [&](std::string const& variant,
-                           uint32_t const      loop,
-                           uint32_t const      threads,
-                           uint32_t const      blocks) -> bool
+    auto benchBlake3 =
+        [&](std::string const& variant, uint32_t const loop, uint32_t const threads, uint32_t const blocks) -> bool
     {
         ////////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
@@ -103,11 +101,9 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
         for (uint32_t i{ 0u }; i < loop; ++i)
         {
             startChrono(variant);
-            OPENCL_ER(propertiesAmd.clQueue.enqueueNDRangeKernel(
-                clKernel,
-                cl::NullRange,
-                cl::NDRange(globalSize),
-                cl::NDRange(localSize)));
+            OPENCL_ER(
+                propertiesAmd.clQueue
+                    .enqueueNDRangeKernel(clKernel, cl::NullRange, cl::NDRange(globalSize), cl::NDRange(localSize)));
             OPENCL_ER(propertiesAmd.clQueue.finish());
             stopChrono(dashboard);
         }
@@ -127,7 +123,7 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    runKernel("blake3");   // Alephium production search kernel — throughput baseline
+    runKernel("blake3"); // Alephium production search kernel — throughput baseline
 
     ////////////////////////////////////////////////////////////////////////////
     headerCache.free();

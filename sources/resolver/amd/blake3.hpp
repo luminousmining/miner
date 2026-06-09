@@ -24,13 +24,16 @@ namespace resolver
         void submit(stratum::StratumSmartMining* const stratum) final;
 
       protected:
-        algo::blake3::ResultShare              resultShare{};
+        algo::blake3::ResultShare               resultShare{};
         resolver::amd::blake3::KernelParameters parameters{};
-        common::KernelGeneratorOpenCL          kernelGenerator{};
+        common::KernelGeneratorOpenCL           kernelGenerator{};
 
         bool buildSearch();
-        bool getResultCache(std::string const& _jobId, uint32_t const fromGroup, uint32_t const toGroup,
-                            uint32_t const extraNonceSize);
+        bool getResultCache(
+            std::string const& _jobId,
+            uint32_t const     fromGroup,
+            uint32_t const     toGroup,
+            uint32_t const     extraNonceSize);
     };
 }
 

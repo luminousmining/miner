@@ -1,10 +1,10 @@
 #include <cstdint>
 #include <cstring>
 
-#include <algo/blake3/blake3.hpp>      // CHAIN_NUMBER
-#include <algo/blake3/blake3_pow.hpp>
+#include "blake3.h" // vendored reference, via blake3_ref lib
 
-#include "blake3.h"                    // vendored reference, via blake3_ref lib
+#include <algo/blake3/blake3.hpp> // CHAIN_NUMBER
+#include <algo/blake3/blake3_pow.hpp>
 
 
 namespace

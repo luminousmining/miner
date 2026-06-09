@@ -21,7 +21,7 @@ namespace resolver
             {
                 common::opencl::BufferMapped<algo::hash3072> headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
                                                                           | CL_MEM_ALLOC_HOST_PTR };
-                common::opencl::BufferMapped<algo::hash256> targetCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+                common::opencl::BufferMapped<algo::hash256>  targetCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
                                                                          | CL_MEM_ALLOC_HOST_PTR };
                 common::opencl::BufferMapped<algo::blake3::Result> resultCache{ CL_MEM_READ_WRITE
                                                                                 | CL_MEM_ALLOC_HOST_PTR };

@@ -51,7 +51,7 @@ struct ResolverBlake3AmdTest : public testing::Test
 
         algo::hash256 digest{};
         algo::blake3::hashRef(jobInfo.headerBlob, nonce, digest);
-        jobInfo.targetBlob = digest;   // winning nonce passes (<=)
+        jobInfo.targetBlob = digest; // winning nonce passes (<=)
         uint32_t const bigIndex{ algo::blake3::chainIndex(digest) };
         jobInfo.fromGroup = bigIndex / 4u;
         jobInfo.toGroup = bigIndex % 4u;
@@ -62,7 +62,7 @@ struct ResolverBlake3AmdTest : public testing::Test
 TEST_F(ResolverBlake3AmdTest, findNonce)
 {
     initializeJob(0x914544566c9a0a4dull);
-    resolver.updateJobId(jobInfo.jobIDStr);   // align resolver jobId so the share is not flagged stale
+    resolver.updateJobId(jobInfo.jobIDStr); // align resolver jobId so the share is not flagged stale
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));

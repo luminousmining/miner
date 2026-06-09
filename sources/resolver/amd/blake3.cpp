@@ -104,11 +104,8 @@ bool resolver::ResolverAmdBlake3::executeSync(stratum::StratumJobInfo const& job
 
     size_t const globalSize{ static_cast<size_t>(getBlocks()) * static_cast<size_t>(getThreads()) };
     size_t const localSize{ static_cast<size_t>(getThreads()) };
-    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
-        clKernel,
-        cl::NullRange,
-        cl::NDRange(globalSize),
-        cl::NDRange(localSize)));
+    OPENCL_ER(clQueue[currentIndexStream]
+                  ->enqueueNDRangeKernel(clKernel, cl::NullRange, cl::NDRange(globalSize), cl::NDRange(localSize)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     if (false == getResultCache(jobInfo.jobIDStr, jobInfo.fromGroup, jobInfo.toGroup, jobInfo.extraNonceSize))
@@ -127,8 +124,11 @@ bool resolver::ResolverAmdBlake3::executeAsync(stratum::StratumJobInfo const& jo
 }
 
 
-bool resolver::ResolverAmdBlake3::getResultCache(std::string const& _jobId, uint32_t const fromGroup,
-                                                 uint32_t const toGroup, uint32_t const extraNonceSize)
+bool resolver::ResolverAmdBlake3::getResultCache(
+    std::string const& _jobId,
+    uint32_t const     fromGroup,
+    uint32_t const     toGroup,
+    uint32_t const     extraNonceSize)
 {
     algo::blake3::Result data{};
 
