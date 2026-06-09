@@ -6,6 +6,8 @@ if (BUILD_EXE_MINER)
         ${HEADERS}
         ${SOURCES}
     )
+    # blake3_pow.cpp (Alephium PoW host oracle) uses the shared vendored BLAKE3.
+    target_link_libraries(${MINER_EXE} PUBLIC blake3_ref)
 endif()
 
 if (BUILD_EXE_UNIT_TEST)
@@ -13,8 +15,10 @@ if (BUILD_EXE_UNIT_TEST)
         ${HEADERS}
         ${SOURCES}
     )
+    target_link_libraries(${UNIT_TEST_EXE} PUBLIC blake3_ref)
 endif()
 
 add_subdirectory(opencl)
+add_subdirectory(tests)
 
 set(SOURCES_ALGO_BLAKE3 ${HEADERS} ${SOURCES} PARENT_SCOPE)

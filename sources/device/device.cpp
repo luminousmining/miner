@@ -5,6 +5,7 @@
 #include <common/log/log.hpp>
 #include <device/device.hpp>
 #include <resolver/amd/autolykos_v2.hpp>
+#include <resolver/amd/blake3.hpp>
 #include <resolver/amd/etchash.hpp>
 #include <resolver/amd/ethash.hpp>
 #include <resolver/amd/evrprogpow.hpp>
@@ -333,6 +334,8 @@ void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
 #if defined(AMD_ENABLE)
                 case device::DEVICE_TYPE::AMD:
                 {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverAmdBlake3);
                     break;
                 }
 #endif

@@ -17,80 +17,70 @@ void initialize_vector(
 
 
 __forceinline__ __device__
-void chunk_header(
-    uint32_t* __restrict__ const vector,
-    uint32_t* __restrict__ header)
+uint32_t bswap32_d(uint32_t const x)
 {
-    ////////////////////////////////////////////////////////////////////////////
-    blake3_compress_pre(
-        vector,
-        header,
-        algo::blake3::BLOCK_LENGTH,
-        algo::blake3::FLAG_CHUNK_START);
-    header += 16;
-
-    ////////////////////////////////////////////////////////////////////////////
-    #pragma unroll
-    for (uint32_t i{ 0u }; i < algo::blake3::CHUNK_LOOP_HEADER; ++i)
-    {
-        blake3_compress_pre(
-            vector,
-            header,
-            algo::blake3::BLOCK_LENGTH,
-            algo::blake3::FLAG_EMPTY);
-        header += 16;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    memset((uint8_t*)header + 6u, 0, 58);
-    blake3_compress_pre(
-        vector,
-        header,
-        6u,
-        algo::blake3::FLAG_END_AND_ROOT);
+    return (x >> 24) | ((x >> 8) & 0x0000FF00u) | ((x << 8) & 0x00FF0000u) | (x << 24);
 }
 
 
+// NOTE: ported to match the AMD/OpenCL kernel (sources/algo/blake3/opencl/blake3.cl),
+// which is POCL- and RX 9070 XT-verified against an independent BLAKE3 oracle and accepted
+// live by woolypooly + HeroMiners. Alephium PoW = BLAKE3(BLAKE3(nonce(24) || headerBlob(302))):
+// the 24-byte nonce (big-endian 8-byte value + 16 zero bytes) is PREPENDED. The old kernel
+// overwrote header[0..7] with a little-endian nonce in a SHARED buffer (a per-thread race) and
+// hashed the wrong layout. This port is compile-checked but not runtime-verified (no NVIDIA GPU).
 __global__
 void kernel_blake3_search(
     algo::blake3::Result* __restrict__ result,
-    uint32_t* __restrict__ const header,
-    uint32_t* __restrict__ const target,
+    uint32_t const* __restrict__ const header,
+    uint32_t const* __restrict__ const target,
     uint64_t const startNonce,
     uint32_t const fromGroup,
     uint32_t const toGroup)
 {
-    __shared__ uint32_t buffer[algo::LEN_HASH_3072_WORD_32];
-    uint32_t vector[algo::blake3::VECTOR_LENGTH];
-    uint32_t hash[algo::blake3::HASH_LENGTH];
-
     uint32_t const thread_id{ ((blockIdx.x * blockDim.x) + threadIdx.x) };
     uint64_t const nonce{ thread_id + startNonce };
 
-    if (threadIdx.x < algo::LEN_HASH_3072_WORD_32)
+    // Private per-thread buffer (no shared race): buf = nonce(24) || headerBlob(302).
+    uint32_t buffer[82];
+    #pragma unroll
+    for (uint32_t i{ 0u }; i < 82u; ++i)
     {
-        buffer[threadIdx.x] = header[threadIdx.x];
+        buffer[i] = 0u;
     }
-    __syncthreads();
-    ((uint64_t*)buffer)[0] = nonce;
+    buffer[0] = bswap32_d(static_cast<uint32_t>(nonce >> 32));
+    buffer[1] = bswap32_d(static_cast<uint32_t>(nonce & 0xFFFFFFFFu));
+    // buffer[2..5] = 0  (nonce bytes 8..23)
+    #pragma unroll
+    for (uint32_t i{ 0u }; i < 76u; ++i)
+    {
+        buffer[6u + i] = header[i];   // headerBlob shifted up by 24 bytes (6 words)
+    }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Pass 1: one chunk over 326 bytes = CHUNK_START + 4 empty + 6-byte END|ROOT.
+    uint32_t vector[algo::blake3::VECTOR_LENGTH];
     initialize_vector(vector);
-    chunk_header(vector, buffer);
+    blake3_compress_pre(vector, &buffer[0], algo::blake3::BLOCK_LENGTH, algo::blake3::FLAG_CHUNK_START);
+    #pragma unroll
+    for (uint32_t i{ 0u }; i < algo::blake3::CHUNK_LOOP_HEADER; ++i)
+    {
+        blake3_compress_pre(vector, &buffer[16u * (i + 1u)], algo::blake3::BLOCK_LENGTH, algo::blake3::FLAG_EMPTY);
+    }
+    uint32_t last[16]{};
+    last[0] = buffer[80];
+    last[1] = buffer[81] & 0x0000FFFFu;
+    blake3_compress_pre(vector, last, 6u, algo::blake3::FLAG_END_AND_ROOT);
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Pass 2: BLAKE3 of the 32-byte chaining value (single CHUNK_START|END|ROOT block).
+    uint32_t hash[algo::blake3::HASH_LENGTH]{};
     #pragma unroll
     for (uint32_t i{ 0u }; i < algo::blake3::VECTOR_LENGTH; ++i)
     {
         hash[i] = vector[i];
     }
-    #pragma unroll
-    for (uint32_t i{ algo::blake3::VECTOR_LENGTH }; i < algo::blake3::HASH_LENGTH; ++i)
-    {
-        hash[i] = 0u;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     initialize_vector(vector);
-    memset((uint8_t*)hash + 32, 0, 32);
     blake3_compress_pre(vector, hash, algo::blake3::BLOCK_LENGTH / 2u, 11u);
     #pragma unroll
     for (uint32_t i{ 0u }; i < algo::blake3::VECTOR_LENGTH; ++i)

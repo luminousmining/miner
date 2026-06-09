@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include <algo/blake3/cuda/blake3.cuh>
 #include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
@@ -137,8 +139,10 @@ void resolver::ResolverNvidiaBlake3::submit(stratum::Stratum* const stratum)
         {
             for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
+                // Fixed 16-hex-char (8-byte) field first — std::hex alone drops leading
+                // zeros, which would byte-misalign the 24-byte nonce the pool recomputes.
                 std::stringstream nonceHexa;
-                nonceHexa << std::hex << resultShare.nonces[i];
+                nonceHexa << std::setw(16) << std::setfill('0') << std::hex << resultShare.nonces[i];
 
                 std::string nonceStr{ nonceHexa.str() };
 
@@ -174,7 +178,7 @@ void resolver::ResolverNvidiaBlake3::submit(stratum::StratumSmartMining* const s
             for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
-                nonceHexa << std::hex << resultShare.nonces[i];
+                nonceHexa << std::setw(16) << std::setfill('0') << std::hex << resultShare.nonces[i];
 
                 boost::json::object params{};
                 params["jobId"] = resultShare.jobId;
