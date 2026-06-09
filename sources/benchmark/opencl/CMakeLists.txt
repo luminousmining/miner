@@ -16,6 +16,12 @@ set(BENCHMARK_OPENCL_FILES
     kawpow/sequence_dynamic_local.cl
     progpow/progpow_lm_0.cl
     progpow/progpow_lm_1.cl
+    kheavyhash/kHeavyHash_lm0.cl
+    kheavyhash/kHeavyHash_lm1.cl
+    kheavyhash/kHeavyHash_lm2.cl
+    kheavyhash/kHeavyHash_lm3.cl
+    kheavyhash/kHeavyHash_lm4.cl
+    kheavyhash/kHeavyHash_lm5.cl
 )
 
 foreach(FILE ${BENCHMARK_OPENCL_FILES})
@@ -42,4 +48,10 @@ add_custom_target(copy_benchmark_opencl ALL
     ${OUT_COMMON}/kawpow/sequence_dynamic_local.cl
     ${OUT_COMMON}/progpow/progpow_lm_0.cl
     ${OUT_COMMON}/progpow/progpow_lm_1.cl
+    ${OUT_COMMON}/kheavyhash/kHeavyHash_lm0.cl
+    ${OUT_COMMON}/kheavyhash/kHeavyHash_lm1.cl
+    ${OUT_COMMON}/kheavyhash/kHeavyHash_lm2.cl
+    ${OUT_COMMON}/kheavyhash/kHeavyHash_lm3.cl
+    ${OUT_COMMON}/kheavyhash/kHeavyHash_lm4.cl
+    ${OUT_COMMON}/kheavyhash/kHeavyHash_lm5.cl
 )

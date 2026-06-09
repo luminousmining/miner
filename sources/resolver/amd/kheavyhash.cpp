@@ -118,11 +118,12 @@ bool resolver::ResolverAmdKHeavyHash::buildSearch()
 {
     ////////////////////////////////////////////////////////////////////////////
     kernelGenerator.clear();
-    // kHeavyHash_lm4: LDS-staged matrix + v_dot4_u32_u8 matmul + powHash keccak
-    // midstate (per-job round-1 hoisted to LDS). Bit-identical to the reference
-    // `kHeavyHash_lm0` (OpenCL KAT-gated) and measured ~1.46x faster on the RX 9070 XT
-    // (gfx1201): ~393 -> ~573 MH/s.
-    kernelGenerator.setKernelName("kHeavyHash_lm4");
+    // The production search kernel: LDS-staged matrix + v_dot4_u32_u8 matmul +
+    // powHash keccak midstate (per-job round-1 hoisted to LDS). OpenCL KAT-gated
+    // and measured ~1.46x faster on the RX 9070 XT (gfx1201): ~393 -> ~573 MH/s.
+    // The optimisation steps that led here are kept as benchmark variants under
+    // sources/benchmark/opencl/kheavyhash/ (kHeavyHash_lm0..lm5).
+    kernelGenerator.setKernelName("search");
     kernelGenerator.addDefine("MAX_RESULT", algo::kheavyhash::MAX_RESULT);
 
     ////////////////////////////////////////////////////////////////////////////

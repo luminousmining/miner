@@ -202,59 +202,6 @@ inline bool meetsTarget(uchar const* powLe, uchar const* targetLe)
 }
 
 
-__kernel void test_pow_hash(__global uchar const* prePowHash,
-                            ulong const               timestamp,
-                            ulong const               nonce,
-                            __global uchar*           out)
-{
-    uchar pre[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        pre[i] = prePowHash[i];
-    }
-    uchar h[32];
-    powHash(pre, timestamp, nonce, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
-__kernel void test_kheavy(__global uchar const* input, __global uchar* out)
-{
-    uchar in[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        in[i] = input[i];
-    }
-    uchar h[32];
-    kHeavyHash(in, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
-__kernel void test_heavy_hash(__global ushort const* matrix,
-                              __global uchar const*  hash1,
-                              __global uchar*        out)
-{
-    uchar h1[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        h1[i] = hash1[i];
-    }
-    uchar h[32];
-    heavyHash(matrix, h1, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
 
 
 // Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
@@ -281,6 +228,18 @@ typedef struct __attribute__((aligned(8)))
 #define KH_MATRIX_ELEMS (KH_MATRIX_N * KH_MATRIX_N)
 
 
+inline void loadMatrixToLds(__global ushort const* matrix, __local uchar* mat)
+{
+    uint const lid = (uint)get_local_id(0);
+    uint const lsz = (uint)get_local_size(0);
+    for (uint i = lid; i < KH_MATRIX_ELEMS; i += lsz)
+    {
+        mat[i] = (uchar)matrix[i];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+}
+
+
 inline void publishHit(__global Result* result, ulong const nonce)
 {
     uint const idx = atomic_inc(&result->count);
@@ -292,46 +251,24 @@ inline void publishHit(__global Result* result, ulong const nonce)
 }
 
 
-#define KH_MATRIX_WORDS (KH_MATRIX_ELEMS / 4)
-
-
-#ifdef __AMDGCN__
-inline uint khUDot4(uint const m, uint const v, uint const acc)
+void heavyHashLds(__local uchar const* matrix, uchar const* hash1, uchar* out)
 {
-    return __builtin_amdgcn_udot4(m, v, acc, false);
-}
-#else
-inline uint khUDot4(uint const m, uint const v, uint const acc)
-{
-    return acc + (m & 0xFFu) * (v & 0xFFu) + ((m >> 8) & 0xFFu) * ((v >> 8) & 0xFFu)
-           + ((m >> 16) & 0xFFu) * ((v >> 16) & 0xFFu) + ((m >> 24) & 0xFFu) * ((v >> 24) & 0xFFu);
-}
-#endif
-
-
-void matmulDot(__local uint const* matU, uchar const* hash1, uchar* product)
-{
-    uint vecU[16];
-    for (int q = 0; q < 16; ++q)
-    {
-        uint packed = 0;
-        for (int k = 0; k < 4; ++k)
-        {
-            int const   col = 4 * q + k; // 0..63
-            uchar const nib = (col & 1) ? (uchar)(hash1[col >> 1] & 0x0F) : (uchar)(hash1[col >> 1] >> 4);
-            packed |= (uint)nib << (8 * k);
-        }
-        vecU[q] = packed;
-    }
-
+    ushort vec[64];
     for (int i = 0; i < 32; ++i)
     {
-        uint sum1 = 0;
-        uint sum2 = 0;
-        for (int q = 0; q < 16; ++q)
+        vec[2 * i] = (ushort)(hash1[i] >> 4);
+        vec[2 * i + 1] = (ushort)(hash1[i] & 0x0F);
+    }
+
+    uchar product[32];
+    for (int i = 0; i < 32; ++i)
+    {
+        ushort sum1 = 0;
+        ushort sum2 = 0;
+        for (int j = 0; j < 64; ++j)
         {
-            sum1 = khUDot4(matU[(2 * i) * 16 + q], vecU[q], sum1);
-            sum2 = khUDot4(matU[(2 * i + 1) * 16 + q], vecU[q], sum2);
+            sum1 = (ushort)(sum1 + (ushort)matrix[(2 * i) * 64 + j] * vec[j]);
+            sum2 = (ushort)(sum2 + (ushort)matrix[(2 * i + 1) * 64 + j] * vec[j]);
         }
         product[i] = (uchar)(((sum1 >> 10) << 4) | (sum2 >> 10));
     }
@@ -339,161 +276,34 @@ void matmulDot(__local uint const* matU, uchar const* hash1, uchar* product)
     {
         product[i] ^= hash1[i];
     }
+    kHeavyHash(product, out);
 }
 
 
-inline void khTheta(ulong* a)
-{
-    ulong const c0 = a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20];
-    ulong const c1 = a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21];
-    ulong const c2 = a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22];
-    ulong const c3 = a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23];
-    ulong const c4 = a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24];
-    ulong const d0 = c4 ^ rotl64(c1, 1);
-    ulong const d1 = c0 ^ rotl64(c2, 1);
-    ulong const d2 = c1 ^ rotl64(c3, 1);
-    ulong const d3 = c2 ^ rotl64(c4, 1);
-    ulong const d4 = c3 ^ rotl64(c0, 1);
-    a[0] ^= d0;  a[5] ^= d0;  a[10] ^= d0; a[15] ^= d0; a[20] ^= d0;
-    a[1] ^= d1;  a[6] ^= d1;  a[11] ^= d1; a[16] ^= d1; a[21] ^= d1;
-    a[2] ^= d2;  a[7] ^= d2;  a[12] ^= d2; a[17] ^= d2; a[22] ^= d2;
-    a[3] ^= d3;  a[8] ^= d3;  a[13] ^= d3; a[18] ^= d3; a[23] ^= d3;
-    a[4] ^= d4;  a[9] ^= d4;  a[14] ^= d4; a[19] ^= d4; a[24] ^= d4;
-}
-
-
-inline void khRhoPi(ulong* a)
-{
-    ulong t = a[1];
-    ulong tmp;
-    tmp = a[10]; a[10] = rotl64(t, 1);  t = tmp;
-    tmp = a[7];  a[7]  = rotl64(t, 3);  t = tmp;
-    tmp = a[11]; a[11] = rotl64(t, 6);  t = tmp;
-    tmp = a[17]; a[17] = rotl64(t, 10); t = tmp;
-    tmp = a[18]; a[18] = rotl64(t, 15); t = tmp;
-    tmp = a[3];  a[3]  = rotl64(t, 21); t = tmp;
-    tmp = a[5];  a[5]  = rotl64(t, 28); t = tmp;
-    tmp = a[16]; a[16] = rotl64(t, 36); t = tmp;
-    tmp = a[8];  a[8]  = rotl64(t, 45); t = tmp;
-    tmp = a[21]; a[21] = rotl64(t, 55); t = tmp;
-    tmp = a[24]; a[24] = rotl64(t, 2);  t = tmp;
-    tmp = a[4];  a[4]  = rotl64(t, 14); t = tmp;
-    tmp = a[15]; a[15] = rotl64(t, 27); t = tmp;
-    tmp = a[23]; a[23] = rotl64(t, 41); t = tmp;
-    tmp = a[19]; a[19] = rotl64(t, 56); t = tmp;
-    tmp = a[13]; a[13] = rotl64(t, 8);  t = tmp;
-    tmp = a[12]; a[12] = rotl64(t, 25); t = tmp;
-    tmp = a[2];  a[2]  = rotl64(t, 43); t = tmp;
-    tmp = a[20]; a[20] = rotl64(t, 62); t = tmp;
-    tmp = a[14]; a[14] = rotl64(t, 18); t = tmp;
-    tmp = a[22]; a[22] = rotl64(t, 39); t = tmp;
-    tmp = a[9];  a[9]  = rotl64(t, 61); t = tmp;
-    tmp = a[6];  a[6]  = rotl64(t, 20); t = tmp;
-    tmp = a[1];  a[1]  = rotl64(t, 44); t = tmp;
-}
-
-
-inline void khChi(ulong* a)
-{
-    for (int j = 0; j < 25; j += 5)
-    {
-        ulong const b0 = a[j + 0];
-        ulong const b1 = a[j + 1];
-        ulong const b2 = a[j + 2];
-        ulong const b3 = a[j + 3];
-        ulong const b4 = a[j + 4];
-        a[j + 0] ^= (~b1) & b2;
-        a[j + 1] ^= (~b2) & b3;
-        a[j + 2] ^= (~b3) & b4;
-        a[j + 3] ^= (~b4) & b0;
-        a[j + 4] ^= (~b0) & b1;
-    }
-}
-
-
-inline void keccakF1600FromTheta1(ulong* a)
-{
-    khRhoPi(a);
-    khChi(a);
-    a[0] ^= ROUND_CONSTANTS[0];
-    for (int round = 1; round < 24; ++round)
-    {
-        khTheta(a);
-        khRhoPi(a);
-        khChi(a);
-        a[0] ^= ROUND_CONSTANTS[round];
-    }
-}
-
-
-__kernel void search(__global ushort const* matrix,
+__kernel void kHeavyHash_lm1(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,
                          ulong const            startNonce,
                          __global Result*       result)
 {
-    __local uint  matU[KH_MATRIX_WORDS];
-    __local ulong powMid[25]; // powHash state after round-1 theta, nonce excluded
-
-    uint const lid = (uint)get_local_id(0);
-    uint const lsz = (uint)get_local_size(0);
-    for (uint w = lid; w < KH_MATRIX_WORDS; w += lsz)
-    {
-        uint const base = w * 4u;
-        matU[w] = (uint)(uchar)matrix[base] | ((uint)(uchar)matrix[base + 1] << 8)
-                  | ((uint)(uchar)matrix[base + 2] << 16) | ((uint)(uchar)matrix[base + 3] << 24);
-    }
-    if (0u == lid)
-    {
-        uchar pre[32];
-        for (int i = 0; i < 32; ++i)
-        {
-            pre[i] = header[i];
-        }
-        ulong ms[25];
-        for (int i = 0; i < 25; ++i)
-        {
-            ms[i] = POW_INITIAL_STATE[i];
-        }
-        for (int w = 0; w < 4; ++w)
-        {
-            ms[w] ^= loadLe64(pre + w * 8);
-        }
-        ms[4] ^= timestamp; // nonce (ms[9]) intentionally NOT folded in here
-        khTheta(ms);
-        for (int i = 0; i < 25; ++i)
-        {
-            powMid[i] = ms[i];
-        }
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
+    __local uchar mat[KH_MATRIX_ELEMS];
+    loadMatrixToLds(matrix, mat);
 
     ulong const nonce = startNonce + (ulong)get_global_id(0);
 
+    uchar pre[32];
     uchar tgt[32];
     for (int i = 0; i < 32; ++i)
     {
+        pre[i] = header[i];
         tgt[i] = target[i];
     }
 
-    // powHash from the shared midstate: fold this nonce back into round-1 theta.
-    ulong st[25];
-    for (int i = 0; i < 25; ++i)
-    {
-        st[i] = powMid[i];
-    }
-    ulong const nr = rotl64(nonce, 1);
-    st[0] ^= nonce; st[5] ^= nonce; st[10] ^= nonce; st[15] ^= nonce; st[20] ^= nonce; st[9] ^= nonce;
-    st[3] ^= nr;    st[8] ^= nr;    st[13] ^= nr;    st[18] ^= nr;    st[23] ^= nr;
-    keccakF1600FromTheta1(st);
     uchar h1[32];
-    storeLe256(st, h1);
-
-    uchar product[32];
-    matmulDot(matU, h1, product);
+    powHash(pre, timestamp, nonce, h1);
     uchar pow[32];
-    kHeavyHash(product, pow);
+    heavyHashLds(mat, h1, pow);
 
     if (meetsTarget(pow, tgt))
     {

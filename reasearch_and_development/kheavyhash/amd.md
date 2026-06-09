@@ -5,7 +5,8 @@
 This document covers the OpenCL kernel optimisations developed for kHeavyHash
 (Kaspa) on AMD GPUs. Six variants — `kHeavyHash_lm0` (the reference) through
 `kHeavyHash_lm5` — have been implemented, each adding one lever on top of the
-previous one. `kHeavyHash_lm4` is the shipped kernel.
+previous one. `kHeavyHash_lm4` was the winner and ships as the production
+`search` kernel; the six variants are retained as benchmark-only snapshots.
 
 Unlike Ethash/KAWPOW, kHeavyHash is **not memory-hard**: there is no DAG. The only
 per-job state is the 64×64 nibble matrix (generated host-side from the pre-pow
@@ -15,7 +16,8 @@ the full `powHash → heavyHash (matmul) → kHeavyHash` pipeline, so the kernel
 KAWPOW/Ethash roofline work.
 
 Benchmark entry point: [sources/benchmark/amd/kheavyhash.cpp](../../sources/benchmark/amd/kheavyhash.cpp)
-Kernel source (all variants in one file): [sources/algo/kheavyhash/opencl/kheavyhash.cl](../../sources/algo/kheavyhash/opencl/kheavyhash.cl)
+Benchmark variant kernels (one file each): [sources/benchmark/opencl/kheavyhash/](../../sources/benchmark/opencl/kheavyhash/)
+Production kernel (`search`): [sources/algo/kheavyhash/opencl/kheavyhash.cl](../../sources/algo/kheavyhash/opencl/kheavyhash.cl)
 Correctness gate: [sources/algo/kheavyhash/opencl/tests/opencl_kat_test.cpp](../../sources/algo/kheavyhash/opencl/tests/opencl_kat_test.cpp)
 
 ---

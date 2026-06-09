@@ -202,59 +202,6 @@ inline bool meetsTarget(uchar const* powLe, uchar const* targetLe)
 }
 
 
-__kernel void test_pow_hash(__global uchar const* prePowHash,
-                            ulong const               timestamp,
-                            ulong const               nonce,
-                            __global uchar*           out)
-{
-    uchar pre[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        pre[i] = prePowHash[i];
-    }
-    uchar h[32];
-    powHash(pre, timestamp, nonce, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
-__kernel void test_kheavy(__global uchar const* input, __global uchar* out)
-{
-    uchar in[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        in[i] = input[i];
-    }
-    uchar h[32];
-    kHeavyHash(in, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
-__kernel void test_heavy_hash(__global ushort const* matrix,
-                              __global uchar const*  hash1,
-                              __global uchar*        out)
-{
-    uchar h1[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        h1[i] = hash1[i];
-    }
-    uchar h[32];
-    heavyHash(matrix, h1, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
 
 
 // Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
@@ -426,7 +373,75 @@ inline void keccakF1600FromTheta1(ulong* a)
 }
 
 
-__kernel void search(__global ushort const* matrix,
+inline void kHeavyHashHoisted(uchar const* input, uchar* out)
+{
+    // Absorb: lanes 0..3 = base ^ input word; lanes 4..24 = base (constant).
+    ulong const a0 = HEAVY_INITIAL_STATE[0] ^ loadLe64(input + 0);
+    ulong const a1 = HEAVY_INITIAL_STATE[1] ^ loadLe64(input + 8);
+    ulong const a2 = HEAVY_INITIAL_STATE[2] ^ loadLe64(input + 16);
+    ulong const a3 = HEAVY_INITIAL_STATE[3] ^ loadLe64(input + 24);
+
+    // Round-0 theta. Constant column reductions (lanes 4..24 fixed) fold away;
+    // only c0..c3 carry one input lane each, c4 is fully constant.
+    ulong const c0 = a0 ^ (HEAVY_INITIAL_STATE[5] ^ HEAVY_INITIAL_STATE[10] ^ HEAVY_INITIAL_STATE[15]
+                           ^ HEAVY_INITIAL_STATE[20]);
+    ulong const c1 = a1 ^ (HEAVY_INITIAL_STATE[6] ^ HEAVY_INITIAL_STATE[11] ^ HEAVY_INITIAL_STATE[16]
+                           ^ HEAVY_INITIAL_STATE[21]);
+    ulong const c2 = a2 ^ (HEAVY_INITIAL_STATE[7] ^ HEAVY_INITIAL_STATE[12] ^ HEAVY_INITIAL_STATE[17]
+                           ^ HEAVY_INITIAL_STATE[22]);
+    ulong const c3 = a3 ^ (HEAVY_INITIAL_STATE[8] ^ HEAVY_INITIAL_STATE[13] ^ HEAVY_INITIAL_STATE[18]
+                           ^ HEAVY_INITIAL_STATE[23]);
+    ulong const c4 = HEAVY_INITIAL_STATE[4] ^ HEAVY_INITIAL_STATE[9] ^ HEAVY_INITIAL_STATE[14]
+                     ^ HEAVY_INITIAL_STATE[19] ^ HEAVY_INITIAL_STATE[24];
+    ulong const d0 = c4 ^ rotl64(c1, 1);
+    ulong const d1 = c0 ^ rotl64(c2, 1);
+    ulong const d2 = c1 ^ rotl64(c3, 1);
+    ulong const d3 = c2 ^ rotl64(c4, 1); // rotl64(c4,1) is compile-constant
+    ulong const d4 = c3 ^ rotl64(c0, 1);
+
+    ulong a[25];
+    a[0] = a0 ^ d0;
+    a[1] = a1 ^ d1;
+    a[2] = a2 ^ d2;
+    a[3] = a3 ^ d3;
+    a[4] = HEAVY_INITIAL_STATE[4] ^ d4;
+    a[5] = HEAVY_INITIAL_STATE[5] ^ d0;
+    a[6] = HEAVY_INITIAL_STATE[6] ^ d1;
+    a[7] = HEAVY_INITIAL_STATE[7] ^ d2;
+    a[8] = HEAVY_INITIAL_STATE[8] ^ d3;
+    a[9] = HEAVY_INITIAL_STATE[9] ^ d4;
+    a[10] = HEAVY_INITIAL_STATE[10] ^ d0;
+    a[11] = HEAVY_INITIAL_STATE[11] ^ d1;
+    a[12] = HEAVY_INITIAL_STATE[12] ^ d2;
+    a[13] = HEAVY_INITIAL_STATE[13] ^ d3;
+    a[14] = HEAVY_INITIAL_STATE[14] ^ d4;
+    a[15] = HEAVY_INITIAL_STATE[15] ^ d0;
+    a[16] = HEAVY_INITIAL_STATE[16] ^ d1;
+    a[17] = HEAVY_INITIAL_STATE[17] ^ d2;
+    a[18] = HEAVY_INITIAL_STATE[18] ^ d3;
+    a[19] = HEAVY_INITIAL_STATE[19] ^ d4;
+    a[20] = HEAVY_INITIAL_STATE[20] ^ d0;
+    a[21] = HEAVY_INITIAL_STATE[21] ^ d1;
+    a[22] = HEAVY_INITIAL_STATE[22] ^ d2;
+    a[23] = HEAVY_INITIAL_STATE[23] ^ d3;
+    a[24] = HEAVY_INITIAL_STATE[24] ^ d4;
+
+    // Finish round 0 (rho/pi, chi, iota), then rounds 1..23.
+    khRhoPi(a);
+    khChi(a);
+    a[0] ^= ROUND_CONSTANTS[0];
+    for (int round = 1; round < 24; ++round)
+    {
+        khTheta(a);
+        khRhoPi(a);
+        khChi(a);
+        a[0] ^= ROUND_CONSTANTS[round];
+    }
+    storeLe256(a, out);
+}
+
+
+__kernel void kHeavyHash_lm5(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,
@@ -460,7 +475,7 @@ __kernel void search(__global ushort const* matrix,
         {
             ms[w] ^= loadLe64(pre + w * 8);
         }
-        ms[4] ^= timestamp; // nonce (ms[9]) intentionally NOT folded in here
+        ms[4] ^= timestamp;
         khTheta(ms);
         for (int i = 0; i < 25; ++i)
         {
@@ -477,7 +492,6 @@ __kernel void search(__global ushort const* matrix,
         tgt[i] = target[i];
     }
 
-    // powHash from the shared midstate: fold this nonce back into round-1 theta.
     ulong st[25];
     for (int i = 0; i < 25; ++i)
     {
@@ -493,7 +507,7 @@ __kernel void search(__global ushort const* matrix,
     uchar product[32];
     matmulDot(matU, h1, product);
     uchar pow[32];
-    kHeavyHash(product, pow);
+    kHeavyHashHoisted(product, pow);
 
     if (meetsTarget(pow, tgt))
     {

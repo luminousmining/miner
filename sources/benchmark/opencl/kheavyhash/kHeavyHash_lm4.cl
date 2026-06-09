@@ -202,59 +202,6 @@ inline bool meetsTarget(uchar const* powLe, uchar const* targetLe)
 }
 
 
-__kernel void test_pow_hash(__global uchar const* prePowHash,
-                            ulong const               timestamp,
-                            ulong const               nonce,
-                            __global uchar*           out)
-{
-    uchar pre[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        pre[i] = prePowHash[i];
-    }
-    uchar h[32];
-    powHash(pre, timestamp, nonce, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
-__kernel void test_kheavy(__global uchar const* input, __global uchar* out)
-{
-    uchar in[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        in[i] = input[i];
-    }
-    uchar h[32];
-    kHeavyHash(in, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
-__kernel void test_heavy_hash(__global ushort const* matrix,
-                              __global uchar const*  hash1,
-                              __global uchar*        out)
-{
-    uchar h1[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        h1[i] = hash1[i];
-    }
-    uchar h[32];
-    heavyHash(matrix, h1, h);
-    for (int i = 0; i < 32; ++i)
-    {
-        out[i] = h[i];
-    }
-}
-
-
 
 
 // Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
@@ -426,7 +373,7 @@ inline void keccakF1600FromTheta1(ulong* a)
 }
 
 
-__kernel void search(__global ushort const* matrix,
+__kernel void kHeavyHash_lm4(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,

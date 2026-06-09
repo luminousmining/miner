@@ -108,7 +108,10 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
         generator.addDefine("MAX_RESULT", algo::kheavyhash::MAX_RESULT);
 
         ////////////////////////////////////////////////////////////////////////
-        if (false == generator.appendFile("kernel/kheavyhash/kheavyhash.cl"))
+        // Each variant is a self-contained snapshot of one optimisation step,
+        // shipped under kernel/kheavyhash/<kernel>.cl (the production `search`
+        // kernel lives in the algo tree, not here).
+        if (false == generator.appendFile("kernel/kheavyhash/" + kernelName + ".cl"))
         {
             return false;
         }
@@ -166,9 +169,10 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    // Reference kernel + the optimization variants, each gated bit-identical by
-    // the OpenCL KAT. All share the same 6-arg signature, so only the name and
-    // the LDS/matmul/keccak internals differ.
+    // The optimisation progression that produced the production `search` kernel.
+    // lm0 is the straight reference; lm4 is the kernel that ships as `search`.
+    // All share the same 6-arg signature, so only the name and the
+    // LDS/matmul/keccak internals differ.
     runKernel("kHeavyHash_lm0");
     runKernel("kHeavyHash_lm1");
     runKernel("kHeavyHash_lm2");

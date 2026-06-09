@@ -25,8 +25,8 @@ add_custom_target(copy_kheavyhash_opencl_files ALL
 )
 
 # Fold the OpenCL kHeavyHash KAT into the main unit_test on the AMD path so the
-# bit-identity vectors (reference `kHeavyHash_lm0` + the kHeavyHash_lm1/2/3 variants) run on
-# the actual GPU. The .cl is loaded at runtime; KH_CL_PATH is the compile-time
+# bit-identity vectors for the shipped `search` kernel run on the actual GPU.
+# The .cl is loaded at runtime; KH_CL_PATH is the compile-time
 # fallback, with an env override and a deploy-relative fallback resolved in the
 # test itself, so the same unit_test.exe works in POCL CI and on a real GPU.
 if (BUILD_EXE_UNIT_TEST AND BUILD_AMD)
