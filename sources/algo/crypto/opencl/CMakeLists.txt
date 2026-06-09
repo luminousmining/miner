@@ -7,6 +7,7 @@ file(MAKE_DIRECTORY ${OUT_CRYPTO})
 set(CRYPTO_FILES
   blake2b.cl
   blake2b_compress.cl
+  blake3.cl
   fnv1.cl
   keccak_f1600.cl
   keccak_f800.cl
@@ -28,6 +29,7 @@ add_custom_target(copy_crypto_opencl_files ALL
   DEPENDS
     ${OUT_CRYPTO}/blake2b.cl
     ${OUT_CRYPTO}/blake2b_compress.cl
+    ${OUT_CRYPTO}/blake3.cl
     ${OUT_CRYPTO}/fnv1.cl
     ${OUT_CRYPTO}/keccak_f1600.cl
     ${OUT_CRYPTO}/keccak_f800.cl
