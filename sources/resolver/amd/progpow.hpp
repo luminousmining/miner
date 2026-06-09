@@ -48,6 +48,7 @@ namespace resolver
 
         virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
 
+        bool buildLightCache();
         bool buildDAG();
         bool buildSearch();
         bool getResultCache(std::string const& jobId, uint32_t const extraNonceSize);

@@ -20,6 +20,9 @@ resolver::ResolverAmdEtchash::ResolverAmdEtchash() : resolver::ResolverAmdEthash
 bool resolver::ResolverAmdEtchash::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
@@ -29,8 +32,7 @@ bool resolver::ResolverAmdEtchash::updateContext(stratum::StratumJobInfo const& 
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
-    );
+        config.deviceAlgorithm.ethashBuildLightCacheCPU);
 
     if (context.lightCache.numberItem == 0ull || context.lightCache.size == 0ull || context.dagCache.numberItem == 0ull
         || context.dagCache.size == 0ull)
