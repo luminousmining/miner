@@ -45,8 +45,9 @@ struct ResolverFiropowAmdTest : public testing::Test
     }
 
     // Authoritative FiroPoW vector (firoorg/firo firopow_test_vectors.hpp),
-    // block 1 / epoch 0. Low epoch keeps the DAG small and the hash correct
-    // (see the DISABLED epoch-419 test for the known large-DAG defect).
+    // block 1. The epoch is derived from the block number, as in production
+    // (StratumProgPOW::deriveEpoch), rather than hand-fed: block 1 / 1300 -> epoch 0
+    // keeps the DAG small. The epoch-419 test below exercises the large-DAG path.
     void initializeJob(uint64_t const nonce)
     {
         jobInfo.nonce = nonce;
@@ -54,7 +55,7 @@ struct ResolverFiropowAmdTest : public testing::Test
         jobInfo.headerHash = algo::toHash256("2d794e900dcad779e658de9078d9a88eee87d75f7b09a8fdd270d3a8e76650c7");
         jobInfo.boundary = algo::toHash256("0001869e7a058e2aaf266cd2f166fb85c98d651e60eadbbe72bb0a36f8802805");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = 0;
+        jobInfo.epoch = static_cast<int32_t>(jobInfo.blockNumber / algo::firopow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
     }
 };
@@ -66,7 +67,7 @@ TEST_F(ResolverFiropowAmdTest, findNonce)
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
-    // One workgroup starting at the vector nonce -> deterministic single result.
+    // One work-group (16 nonces / 256 lanes) at the vector nonce -> deterministic result.
     resolver.setThreads(1u);
     ASSERT_TRUE(resolver.executeSync(jobInfo));
     resolver.submit(&stratum);
@@ -100,13 +101,12 @@ TEST_F(ResolverFiropowAmdTest, notFindNonce)
 // only check that the nonce is found; a wrong-but-self-consistent digest would
 // still pass them yet be rejected live as "Invalid Firo Mixhash". These pin the
 // digest itself, across epochs (epoch 0 does not exercise DAG growth/seed).
-namespace
+namespace resolver::test
 {
     void checkFiroVector(
         ResolverFiropowAmdTest& t,
         uint64_t const          nonce,
         uint64_t const          blockNumber,
-        uint32_t const          epoch,
         char const* const       headerHashHex,
         char const* const       boundaryHex,
         char const* const       expectedNonce,
@@ -117,13 +117,15 @@ namespace
         t.jobInfo.headerHash  = algo::toHash256(headerHashHex);
         t.jobInfo.boundary    = algo::toHash256(boundaryHex);
         t.jobInfo.boundaryU64 = algo::toUINT64(t.jobInfo.boundary);
-        t.jobInfo.epoch       = static_cast<int32_t>(epoch);
+        // Derive the epoch from the block number, as production does
+        // (StratumProgPOW::deriveEpoch), instead of hand-feeding it.
+        t.jobInfo.epoch       = static_cast<int32_t>(blockNumber / algo::firopow::EPOCH_LENGTH);
         t.jobInfo.period      = t.jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
 
         ASSERT_TRUE(t.resolver.updateMemory(t.jobInfo));
         ASSERT_TRUE(t.resolver.updateConstants(t.jobInfo));
-        // One workgroup (256 nonces) starting at the vector nonce: the vector nonce
-        // is computed and essentially nothing else clears the boundary.
+        // One work-group (16 nonces / 256 lanes) starting at the vector nonce: the
+        // vector nonce is computed and essentially nothing else clears the boundary.
         t.resolver.setThreads(1u);
         ASSERT_TRUE(t.resolver.executeSync(t.jobInfo));
         t.resolver.submit(&t.stratum);
@@ -144,9 +146,15 @@ namespace
 }
 
 
+using resolver::test::checkFiroVector;
+
+
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector)  // block 1, epoch 0
 {
-    checkFiroVector(*this, 0x85f22c9b3cd2f123ull, 1ull, 0,
+    checkFiroVector(
+        *this,
+        0x85f22c9b3cd2f123ull,
+        1ull,
         "2d794e900dcad779e658de9078d9a88eee87d75f7b09a8fdd270d3a8e76650c7",
         "0001869e7a058e2aaf266cd2f166fb85c98d651e60eadbbe72bb0a36f8802805",
         "0x85f22c9b3cd2f123",
@@ -156,7 +164,10 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector)  // block 1, epoch 0
 
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1)  // block 1300, epoch 1
 {
-    checkFiroVector(*this, 0xdec25420bac29b01ull, 1300ull, 1,
+    checkFiroVector(
+        *this,
+        0xdec25420bac29b01ull,
+        1300ull,
         "1fc36bd5d1bff8d134e24a997cfa43cbb2a0b956379bdc0c8df444f2553f6b7d",
         "00030d3cf40b1c555e4cd9a5e2cdf70b931aca3cc1d5b77ce576146df100500a",
         "0xdec25420bac29b01",
@@ -166,7 +177,10 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1)  // block 1300,
 
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10)  // block 13000, epoch 10
 {
-    checkFiroVector(*this, 0x10d0835970ff1254ull, 13000ull, 10,
+    checkFiroVector(
+        *this,
+        0x10d0835970ff1254ull,
+        13000ull,
         "794688e6167995f4891124d488365df76becfd2fc47c5c8337c9a545801d8e60",
         "0001e84617ccaeb80f88c38f5fa4985fb9a2434e6dd31586e7f5a404cd315b1d",
         "0x10d0835970ff1254",
@@ -181,7 +195,10 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10)  // block 1300
 // DAGs passed; this and the live Firo epoch failed). Without the fix this fails.
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch419)  // block 545860
 {
-    checkFiroVector(*this, 0x844c83fd15ddbc98ull, 545860ull, 419,
+    checkFiroVector(
+        *this,
+        0x844c83fd15ddbc98ull,
+        545860ull,
         "421ecabe666b8a4b3c5d9f899a15115f1fc8e2644468459c9f200d2dd10c204c",
         "00004e1fb2011c6ef320e5a5fc1b76807358965ce1ccf5fcc5dda026cd038963",
         "0x844c83fd15ddbc98",
