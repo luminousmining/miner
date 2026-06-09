@@ -60,9 +60,8 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
     uint32_t const hostHeight{ algo::be::uint32(blockNumber) };
     uint64_t const hostNonce{ 0ull };
 
-    algo::hash256 const header{ algo::toHash256(
-        "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
-    algo::hash256 boundary{};
+    algo::hash256 const header{ algo::toHash256("6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80") };
+    algo::hash256       boundary{};
     for (uint32_t i{ 0u }; i < algo::LEN_HASH_256 / sizeof(uint32_t); ++i)
     {
         boundary.word32[i] = 0xFFFFFFFFu;
@@ -75,14 +74,14 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
     uint32_t const globalVerify{ ((threadsPerIter / blockDim) + 1u) * blockDim };
 
     ////////////////////////////////////////////////////////////////////////////
-    common::opencl::Buffer<algo::u_hash256> BHashes{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
-    common::opencl::Buffer<algo::u_hash256> dagCache{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
-    common::opencl::BufferMapped<uint32_t>  boundaryCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
-                                                               | CL_MEM_ALLOC_HOST_PTR,
-                                                           algo::LEN_HASH_256 };
-    common::opencl::BufferMapped<uint32_t>  headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
-                                                             | CL_MEM_ALLOC_HOST_PTR,
-                                                         algo::LEN_HASH_256 };
+    common::opencl::Buffer<algo::u_hash256>                  BHashes{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
+    common::opencl::Buffer<algo::u_hash256>                  dagCache{ CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS };
+    common::opencl::BufferMapped<uint32_t>                   boundaryCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+                                                              | CL_MEM_ALLOC_HOST_PTR,
+                                                          algo::LEN_HASH_256 };
+    common::opencl::BufferMapped<uint32_t>                   headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+                                                            | CL_MEM_ALLOC_HOST_PTR,
+                                                        algo::LEN_HASH_256 };
     common::opencl::BufferMapped<algo::autolykos_v2::Result> resultCache{ CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -223,9 +222,8 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
         // One nonce iteration == AMD_NONCES_PER_ITER nonces; express the grid in
         // those terms so stopChrono reports nonces/s regardless of the strided
         // production launch geometry.
-        auto const runStage = [&](std::string const&            name,
-                                  common::KernelGeneratorOpenCL& generator,
-                                  uint32_t const                 global) -> bool
+        auto const runStage =
+            [&](std::string const& name, common::KernelGeneratorOpenCL& generator, uint32_t const global) -> bool
         {
             if (false == algo.isKernelEnabled(name))
             {

@@ -144,8 +144,8 @@ bool benchmark::BenchmarkWorkflow::runAmdProgpow()
         algo::kawpow::COUNT_MATH,
         algo::progpow::REGS,
         algo::progpow::MODULE_SOURCE);
-    std::string const fileSequenceMath{ "kernel/progpow/sequence_math_random_"s + std::to_string(benchDeviceId)
-                                        + "_"s + std::to_string(benchPeriod) + ".cl"s };
+    std::string const fileSequenceMath{ "kernel/progpow/sequence_math_random_"s + std::to_string(benchDeviceId) + "_"s
+                                        + std::to_string(benchPeriod) + ".cl"s };
 
     ///////////////////////////////////////////////////////////////////////////
     auto benchProgpow = [&](std::string const& variantName,
