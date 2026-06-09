@@ -12,5 +12,8 @@ namespace stratum
       public:
         StratumFiroPOW();
         ~StratumFiroPOW() = default;
+
+      protected:
+        int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const final;
     };
 }
