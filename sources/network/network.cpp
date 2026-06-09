@@ -369,32 +369,44 @@ void network::NetworkTCPClient::send(char const* data, size_t size)
 
 void network::NetworkTCPClient::transmit(std::shared_ptr<std::string const> const& payload)
 {
-    if (nullptr == socketTCP) [[unlikely]]
-    {
-        logErr() << "Cannot send packet, socketTCP is nullptr!";
-        pump->onComplete(false);
-        return;
-    }
-
-    // async_write does NOT copy the buffer it is given: the storage must stay
-    // valid until the operation completes, so the handler captures `payload`.
-    // It also captures `self` (shared_from_this) so the client cannot be
-    // destroyed while a write is in flight. shared_ptr keeps the handler
-    // copyable, which async_write's composed layers require.
+    // Run the actual write on the strand. socketTCP is an ssl::stream (not
+    // thread-safe); the reads already run on the strand, so dispatching the write
+    // there too means the stream is only ever touched by one thread at a time.
+    // dispatch() runs inline when already on the strand (the onSend->onComplete
+    // drain path) and posts otherwise (a device thread calling send()). `self`
+    // (shared_from_this) and `payload` are captured so the client and the buffer
+    // outlive the in-flight write.
     auto self{ shared_from_this() };
-    auto handler{ [self, payload](boost_error_code const& ec, std::size_t bytes)
-                  {
-                      self->onSend(ec, bytes);
-                  } };
+    boost::asio::dispatch(
+        strand,
+        [self, payload]()
+        {
+            if (nullptr == self->socketTCP) [[unlikely]]
+            {
+                logErr() << "Cannot send packet, socketTCP is nullptr!";
+                self->pump->onComplete(false);
+                return;
+            }
 
-    if (true == secureConnection)
-    {
-        boost::asio::async_write(*socketTCP, boost::asio::buffer(*payload), std::move(handler));
-    }
-    else
-    {
-        boost::asio::async_write(socketTCP->next_layer(), boost::asio::buffer(*payload), std::move(handler));
-    }
+            auto handler{ boost::asio::bind_executor(
+                self->strand,
+                [self, payload](boost_error_code const& ec, std::size_t bytes)
+                {
+                    self->onSend(ec, bytes);
+                }) };
+
+            if (true == self->secureConnection)
+            {
+                boost::asio::async_write(*self->socketTCP, boost::asio::buffer(*payload), std::move(handler));
+            }
+            else
+            {
+                boost::asio::async_write(
+                    self->socketTCP->next_layer(),
+                    boost::asio::buffer(*payload),
+                    std::move(handler));
+            }
+        });
 }
 
 

@@ -52,8 +52,13 @@ namespace network
         boost_mutex             rxMutex;
         boost_thread            runService;
         boost::asio::io_context ioContext;
-        boost_context           context{ boost_context::tlsv12_client };
-        boost_socket*           socketTCP{ nullptr };
+        // Serializes ALL access to socketTCP (an ssl::stream, which is not
+        // thread-safe) onto one executor: the read re-arm/handler and every write
+        // initiation/handler run on this strand, so a device-thread write never
+        // races the io thread's pending read on the same SSL state machine.
+        boost::asio::strand<boost::asio::io_context::executor_type> strand{ ioContext.get_executor() };
+        boost_context                                               context{ boost_context::tlsv12_client };
+        boost_socket*                                               socketTCP{ nullptr };
 
         // Serializes all outbound writes on socketTCP so only one async_write is
         // ever in flight. Created once in connect(); a SmartMining child shares
