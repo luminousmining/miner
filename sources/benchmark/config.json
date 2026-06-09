@@ -67,7 +67,7 @@
         }
     },
     "amd": {
-        "enabled": false,
+        "enabled": true,
         "device_index": 0,
         "algorithms": {
             "kawpow": {
@@ -76,6 +76,13 @@
                 "threads": 256,
                 "blocks": 1024,
                 "kernels": ["lm1", "lm2", "lm3", "lm4"]
+            },
+            "blake3": {
+                "enabled": true,
+                "loop": 30,
+                "threads": 128,
+                "blocks": 8192,
+                "kernels": ["blake3"]
             }
         }
     }
