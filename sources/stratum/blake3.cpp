@@ -94,8 +94,8 @@ void stratum::StratumBlake3::onMiningNotify(boost::json::object const& root)
 
 void stratum::StratumBlake3::onMiningSetDifficulty(boost::json::object const& root)
 {
-    auto const   params{ root.at("params").as_array() };
-    double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
+    boost::json::array const& params(root.at("params").as_array());
+    double const              difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     jobInfo.boundary = algo::toHash256(difficulty);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);

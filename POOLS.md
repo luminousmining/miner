@@ -27,7 +27,7 @@ progpow-z `miner --stratum="ethproxy" --host=zano.luckypool.io --port=8866 --alg
 
 ## HEROMINERS
 kawpow `miner --host=de.quai.herominers.com --port=1185 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
-alephium `miner --host=alephium.herominers.com --port=1199 --algo="blake3" --wallet=YOUR_BASE58_ALPH_ADDRESS --workername="YOUR_WORKERNAME"`  (plaintext; verified live ~1.71 GH/s on RX 9070 XT)  
+alephium `miner --host=alephium.herominers.com --port=1199 --algo="blake3" --wallet=YOUR_BASE58_ALPH_ADDRESS --workername="YOUR_WORKERNAME"`  
 
 ## Mining Stratum X
 kawpow `miner --internal_loop=1000 --internal_kernel_count=10 --host=mining.stratumx.org --port=3335 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  

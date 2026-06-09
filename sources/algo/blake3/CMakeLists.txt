@@ -2,12 +2,11 @@ file(GLOB HEADERS "*.hpp")
 file(GLOB SOURCES "*.cpp")
 
 if (BUILD_EXE_MINER)
+    # blake3_pow.cpp is the host PoW oracle used only by the unit tests; it (and the vendored
+    # blake3_ref it links) are not needed for a mining session, so only the headers ship here.
     target_sources(${MINER_EXE} PUBLIC
         ${HEADERS}
-        ${SOURCES}
     )
-    # blake3_pow.cpp (Alephium PoW host oracle) uses the shared vendored BLAKE3.
-    target_link_libraries(${MINER_EXE} PUBLIC blake3_ref)
 endif()
 
 if (BUILD_EXE_UNIT_TEST)

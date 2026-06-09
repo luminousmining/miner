@@ -139,8 +139,7 @@ void resolver::ResolverNvidiaBlake3::submit(stratum::Stratum* const stratum)
         {
             for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
-                // Fixed 16-hex-char (8-byte) field first — std::hex alone drops leading
-                // zeros, which would byte-misalign the 24-byte nonce the pool recomputes.
+                // Zero-pad to 16 hex (8 bytes): the pool recomputes the 24-byte nonce, so leading zeros matter.
                 std::stringstream nonceHexa;
                 nonceHexa << std::setw(16) << std::setfill('0') << std::hex << resultShare.nonces[i];
 
