@@ -623,9 +623,18 @@ void device::Device::updateBatchNonce()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads() * internalLoop);
-    miningStats.resetHashrate();
-    miningStats.reset();
+    // updateJob() calls this on every job. Only reset the hashrate accumulator when the
+    // batch size actually changes (an occupancy change — rare), never per job: otherwise a
+    // slow kernel under a fast job stream (e.g. XelisHash V3, ~1 job/s) never reaches
+    // kernelMinimunExecuteNeeded before the counter is zeroed, so the hashrate stays 0.
+    uint64_t const newBatchNonce{ static_cast<uint64_t>(resolver->getBlocks()) * resolver->getThreads()
+                                  * internalLoop };
+    if (newBatchNonce != miningStats.getBatchNonce())
+    {
+        miningStats.setBatchNonce(newBatchNonce);
+        miningStats.resetHashrate();
+        miningStats.reset();
+    }
 }
 
 
