@@ -19,7 +19,7 @@ int32_t stratum::StratumFiroPOW::deriveEpoch(stratum::StratumJobInfo const& jobI
     // "Invalid Mixhash" rejects) on live Firo. The network seed hash encodes the
     // authoritative epoch, so prefer it; fall back to blockNumber/EPOCH_LENGTH only
     // when the seed isn't recognized.
-    int32_t const epoch{ algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch) };
+    int32_t const epoch{ algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEpochSearch) };
     if (-1 == epoch && jobInfo.blockNumber > 0ull)
     {
         return cast32(jobInfo.blockNumber / castU64(maxEpochLength));

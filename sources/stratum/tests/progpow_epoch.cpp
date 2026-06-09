@@ -3,6 +3,7 @@
 #include <boost/json.hpp>
 #include <gtest/gtest.h>
 
+#include <algo/progpow/firopow.hpp>
 #include <algo/progpow/progpow_quai.hpp>
 #include <stratum/firopow.hpp>
 #include <stratum/progpow_quai.hpp>
@@ -44,6 +45,28 @@ namespace
         };
         return root;
     }
+
+
+    // A real WoolyPooly Firo (Ethereum/1.0.0) mining.notify. params[2] is the
+    // network seed hash for FiroPoW epoch 650. Firo changed its epoch length across
+    // the chain's history, so blockNumber / EPOCH_LENGTH (1'319'805 / 1300 = 1015)
+    // derives the WRONG epoch -> wrong DAG -> the live "Invalid Firo Mixhash" reject.
+    // StratumFiroPOW recovers the authoritative 650 from the seed hash instead.
+    boost::json::object makeFiroNotify()
+    {
+        boost::json::object root;
+        root["method"] = "mining.notify";
+        root["params"] = boost::json::array{
+            "0",
+            "9f5842286250856890922ee77cbc5be3b2f418547f9d748527c4aacc6424c852",
+            "969685223d756d0d2c314efcb880b13fd979b38e23cfc77bbf3d66e69949566e",
+            "00000005ba03f80cf23190f76455c5b50637575fe8f983eab6727314d04c63e2",
+            true,
+            1319805,
+            "1b01fa91"
+        };
+        return root;
+    }
 }
 
 
@@ -60,14 +83,16 @@ TEST(StratumProgpowQuaiEpoch, derivesEpochFromBlockNumberNotSeedHash)
 }
 
 
-TEST(StratumFiroPowEpoch, prefersSeedHashOverBlockNumber)
+TEST(StratumFiroPowEpoch, recoversEpochFromRealFiroSeedHash)
 {
     stratum::StratumFiroPOW stratum{};
     stratum.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
 
-    stratum.onMiningNotify(makeQuaiNotify());
+    stratum.onMiningNotify(makeFiroNotify());
 
-    // FiroPoW recovers the epoch the seed hash encodes (keccak256^586) rather than
-    // blockNumber / EPOCH_LENGTH.
-    EXPECT_EQ(586, stratum.jobInfo.epoch);
+    // FiroPoW recovers the authoritative epoch the seed hash encodes (650), not the
+    // wrong blockNumber / EPOCH_LENGTH value (1'319'805 / 1300 = 1015) that caused
+    // the live "Invalid Firo Mixhash" reject.
+    EXPECT_EQ(650, stratum.jobInfo.epoch);
+    EXPECT_NE(static_cast<int32_t>(1319805ull / algo::firopow::EPOCH_LENGTH), stratum.jobInfo.epoch);
 }

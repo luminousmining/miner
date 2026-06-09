@@ -292,7 +292,7 @@ int32_t stratum::StratumProgPOW::deriveEpoch(stratum::StratumJobInfo const& jobI
     {
         return cast32(jobInfo.blockNumber / castU64(maxEpochLength));
     }
-    return algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
+    return algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEpochSearch);
 }
 
 
