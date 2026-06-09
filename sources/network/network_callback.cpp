@@ -116,4 +116,8 @@ void network::NetworkTCPClient::onSend(boost_error_code const& ec, [[maybe_unuse
     {
         logErr() << "Fail on send message to " << host << ":" << port;
     }
+    if (nullptr != pump)
+    {
+        pump->onComplete(boost::system::errc::errc_t::success == ec);
+    }
 }

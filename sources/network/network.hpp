@@ -5,15 +5,16 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/json.hpp>
-#include <boost/lockfree/queue.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/thread.hpp>
 
+#include <network/write_pump.hpp>
+
 
 namespace network
 {
-    struct NetworkTCPClient
+    struct NetworkTCPClient : public std::enable_shared_from_this<NetworkTCPClient>
     {
       public:
         // boost alias
@@ -21,7 +22,6 @@ namespace network
         using boost_error = boost::system::errc::errc_t;
         using boost_resolve_flags = boost::asio::ip::resolver_base::flags;
         using boost_context = boost::asio::ssl::context;
-        using boost_queue = boost::lockfree::queue<std::string*>;
         using boost_resolver = boost::asio::ip::tcp::resolver;
         using boost_endpoint = boost::asio::ip::tcp::endpoint;
         using boost_mutex = boost::mutex;
@@ -50,12 +50,15 @@ namespace network
         uint32_t                countRetryConnect{ 0u };
         boost::asio::streambuf  recvBuffer{ MAX_RECV_STREAMBUF };
         boost_mutex             rxMutex;
-        boost_mutex             txMutex;
         boost_thread            runService;
         boost::asio::io_context ioContext;
-        boost_queue             tx{ 100 };
         boost_context           context{ boost_context::tlsv12_client };
         boost_socket*           socketTCP{ nullptr };
+
+        // Serializes all outbound writes on socketTCP so only one async_write is
+        // ever in flight. Created once in connect(); a SmartMining child shares
+        // its parent's pump (single writer per shared socket).
+        std::shared_ptr<network::WritePump> pump{ nullptr };
 
         NetworkTCPClient() = default;
         virtual ~NetworkTCPClient();
@@ -78,5 +81,6 @@ namespace network
         bool onVerifySSL(bool preverified, boost_verify_context& ctx);
         void onReceiveAsync(boost_error_code const& ec, size_t bytes);
         void onSend(boost_error_code const& ec, size_t bytes);
+        void transmit(std::shared_ptr<std::string const> const& payload);
     };
 }

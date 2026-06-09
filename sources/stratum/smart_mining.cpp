@@ -107,6 +107,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetAlgo(boost::json::object const
     IS_NULL(stratumPool);
 
     stratumPool->socketTCP = socketTCP;
+    stratumPool->pump = pump; // single writer per shared socket
 
     return true;
 }
