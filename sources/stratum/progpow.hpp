@@ -23,11 +23,7 @@ namespace stratum
 
       protected:
         uint32_t maxPeriod{ algo::progpow::v_0_9_2::MAX_PERIOD };
-        // Upper bound for the seedHash -> epoch search (a max epoch *number*, not a
-        // per-epoch block count). Generous on purpose so the search covers every
-        // realistic progpow/FiroPoW epoch; see deriveEpoch.
-        uint32_t maxEpochSearch{ algo::ethash::EPOCH_LENGTH };
-        // Blocks-per-epoch divisor for the blockNumber/length mapping.
+        uint32_t maxEthashEpoch{ algo::ethash::EPOCH_LENGTH };
         uint32_t maxEpochLength{ algo::progpow::EPOCH_LENGTH };
 
         virtual int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const;
