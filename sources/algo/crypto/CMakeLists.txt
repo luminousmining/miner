@@ -17,6 +17,7 @@ endif()
 
 add_subdirectory(cuda)
 add_subdirectory(opencl)
+add_subdirectory(reference)
 add_subdirectory(tests)
 
 set(SOURCES_ALGO_CRYPTO ${HEADERS} ${SOURCES} PARENT_SCOPE)
