@@ -13,6 +13,7 @@
 - Use `UPPER_CASE` for `constexpr`.
 - Use `auto` only in range-for loops or for long/complex types.
 - Use suffixes `uint64_t`, `uint32_t`, `uint16_t`, `uint8_t` instead of `int`, `long`, `char`, etc.
+- Suffix unsigned integer literals with `u`: `12u`, `1u`, `0u`.
 - Place the pointer/reference symbol on the **type** side: `char** var`.
 - Place `const` on the **right** of the type: `char const* const var`.
 - Initialize variables with `{}` instead of `=`.
@@ -40,6 +41,27 @@ constexpr uint32_t MY_MACRO{ 12u };
 - Declare scopes in order: `public` → `protected` → `private`.
 - Initialize member variables **in the declaration**, not in the constructor.
 - Align consecutive member declarations on the same column.
+- For a virtual override, mark the **terminal** override in the hierarchy `final`; use
+  `override` only while a further subclass still overrides that method.
+
+```cpp
+struct StratumProgPOW : public stratum::Stratum
+{
+protected:
+    // A subclass (FiroPoW) still overrides this -> override.
+    void    onResponse(boost::json::object const& root) override;
+    // No subclass overrides these -> final.
+    void    onMiningSetTarget(boost::json::object const& root) final;
+    virtual int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const;
+};
+
+struct StratumFiroPOW : public stratum::StratumProgPOW
+{
+protected:
+    // Leaf override -> final.
+    int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const final;
+};
+```
 
 ```cpp
 struct MyStruct
@@ -91,6 +113,23 @@ private:
 - Always use **explicit comparisons** (no implicit bool conversion).
 - For multi-line conditions, align operators (`&&`, `||`) at the start of continuation lines.
 - Column limit is 120: prefer keeping the comparison on a single line and only wrapping function arguments.
+- Keep an action and the check of its result in **separate statements** — do not mutate and
+  test the outcome in the same expression.
+
+```cpp
+// NOK — insert and check combined
+if (false == myMap.insert({ key, value }).second)
+{
+    // code
+}
+
+// OK — action first, then check
+auto const [it, inserted]{ myMap.insert({ key, value }) };
+if (false == inserted)
+{
+    // code
+}
+```
 
 ```cpp
 if (true == a)   // OK — explicit
@@ -167,6 +206,25 @@ for (uint32_t i{ 0u }; i < value; ++i)
 while (true == isOpen())
 {
     // code
+}
+```
+
+
+---
+
+## Enum
+
+- Dispatch on an enum with a `switch`, not an `if`/`else if` chain.
+- Handle every enumerator explicitly and **omit the `default` case**. With every value
+  listed and no `default`, the compiler (`-Wswitch`) warns when a new enumerator is added
+  but a `switch` is left unhandled — an `if`/`else` chain or a `default` silently swallows it.
+
+```cpp
+switch (backend)
+{
+    case Backend::PMLOG:     return readPmLog();
+    case Backend::OVERDRIVE5: return readOverdrive5();
+    // no default: adding Backend::FOO makes this switch warn until it is handled
 }
 ```
 
