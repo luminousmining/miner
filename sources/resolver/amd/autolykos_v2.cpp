@@ -30,9 +30,7 @@ resolver::ResolverAmdAutolykosV2::~ResolverAmdAutolykosV2()
 bool resolver::ResolverAmdAutolykosV2::updateMemory(stratum::StratumJobInfo const& jobInfo)
 {
     ////////////////////////////////////////////////////////////////////////////
-    if (   nullptr == clContext
-        || nullptr == clQueue[0]
-        || nullptr == clQueue[1]) [[unlikely]]
+    if (nullptr == clContext || nullptr == clQueue[0] || nullptr == clQueue[1]) [[unlikely]]
     {
         return false;
     }

@@ -28,7 +28,7 @@ struct ProbeResolverAmdAutolykosV2 : public resolver::ResolverAmdAutolykosV2
     // runs getResultCache(), which filters the raw nonces through isValidShare.)
     bool runSingleGroupRaw(algo::autolykos_v2::Result& out)
     {
-        uint32_t const blockDim{ algo::autolykos_v2::AMD_BLOCK_DIM };
+        uint32_t const          blockDim{ algo::autolykos_v2::AMD_BLOCK_DIM };
         cl::CommandQueue* const queue{ clQueue[currentIndexStream] };
 
         if (false == parameters.resultCache.resetBufferHost(queue))
@@ -37,14 +37,17 @@ struct ProbeResolverAmdAutolykosV2 : public resolver::ResolverAmdAutolykosV2
         }
 
         cl_int err{ CL_SUCCESS };
-        auto& clKernelSearch{ kernelGeneratorSearch.clKernel };
+        auto&  clKernelSearch{ kernelGeneratorSearch.clKernel };
         err |= clKernelSearch.setArg(0u, *(parameters.headerCache.getBuffer()));
         err |= clKernelSearch.setArg(1u, *(parameters.dagCache.getBuffer()));
         err |= clKernelSearch.setArg(2u, *(parameters.BHashes.getBuffer()));
         err |= clKernelSearch.setArg(3u, parameters.hostNonce);
         err |= clKernelSearch.setArg(4u, parameters.hostPeriod);
         err |= queue->enqueueNDRangeKernel(
-            clKernelSearch, cl::NullRange, cl::NDRange(blockDim, 1, 1), cl::NDRange(blockDim, 1, 1));
+            clKernelSearch,
+            cl::NullRange,
+            cl::NDRange(blockDim, 1, 1),
+            cl::NDRange(blockDim, 1, 1));
         err |= queue->finish();
         if (CL_SUCCESS != err)
         {
@@ -60,7 +63,10 @@ struct ProbeResolverAmdAutolykosV2 : public resolver::ResolverAmdAutolykosV2
         err |= clKernelVerify.setArg(5u, parameters.hostPeriod);
         err |= clKernelVerify.setArg(6u, parameters.hostHeight);
         err |= queue->enqueueNDRangeKernel(
-            clKernelVerify, cl::NullRange, cl::NDRange(blockDim, 1, 1), cl::NDRange(blockDim, 1, 1));
+            clKernelVerify,
+            cl::NullRange,
+            cl::NDRange(blockDim, 1, 1),
+            cl::NDRange(blockDim, 1, 1));
         err |= queue->finish();
         if (CL_SUCCESS != err)
         {
@@ -84,12 +90,15 @@ struct ProbeResolverAmdAutolykosV2 : public resolver::ResolverAmdAutolykosV2
         cl::Buffer staging(*clContext, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, algo::LEN_HASH_256);
         if (CL_SUCCESS
             != clQueue[currentIndexStream]->enqueueCopyBuffer(
-                *(parameters.dagCache.getBuffer()), staging, idx * algo::LEN_HASH_256, 0u, algo::LEN_HASH_256))
+                *(parameters.dagCache.getBuffer()),
+                staging,
+                idx * algo::LEN_HASH_256,
+                0u,
+                algo::LEN_HASH_256))
         {
             return false;
         }
-        if (CL_SUCCESS
-            != clQueue[currentIndexStream]->enqueueReadBuffer(staging, CL_TRUE, 0u, algo::LEN_HASH_256, out))
+        if (CL_SUCCESS != clQueue[currentIndexStream]->enqueueReadBuffer(staging, CL_TRUE, 0u, algo::LEN_HASH_256, out))
         {
             return false;
         }

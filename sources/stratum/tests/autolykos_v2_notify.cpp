@@ -47,15 +47,15 @@ namespace
         boost::json::object root;
         root["method"] = "mining.notify";
         root["params"] = boost::json::array{
-            "0000000073fd34ab",                                                 // 0: job id
-            1803772,                                                            // 1: block number
-            "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80", // 2: header hash
-            "",                                                                 // 3
-            "",                                                                 // 4
-            2,                                                                  // 5
+            "0000000073fd34ab",                                                      // 0: job id
+            1803772,                                                                 // 1: block number
+            "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80",      // 2: header hash
+            "",                                                                      // 3
+            "",                                                                      // 4
+            2,                                                                       // 5
             "107839786668602559178668060348078522694548577690162289924414440996863", // 6: boundary
-            "",                                                                 // 7
-            true                                                                // 8: clean job
+            "",                                                                      // 7
+            true                                                                     // 8: clean job
         };
         return root;
     }
