@@ -189,8 +189,9 @@ TEST_F(ResolverAutolykosv2AmdTest, acceptsCanonicalErgoVectorHeight614400)
     // Build the boundary through the exact production pipeline (mirrors
     // StratumAutolykosV2::onMiningNotify) so the verify kernel sees the target in
     // the same little-endian layout it does live.
-    jobInfo.boundary = algo::toHash2<algo::hash256, algo::hash512>(algo::toLittleEndian<algo::hash512>(
-        algo::decimalToHash<algo::hash512>("7067388259113537318333190002971674063283542741642755394446115914399301849")));
+    jobInfo.boundary = algo::toHash2<algo::hash256, algo::hash512>(
+        algo::toLittleEndian<algo::hash512>(algo::decimalToHash<algo::hash512>(
+            "7067388259113537318333190002971674063283542741642755394446115914399301849")));
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));

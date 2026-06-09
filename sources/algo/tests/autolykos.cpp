@@ -26,8 +26,9 @@ TEST(AutolykosV2CpuShare, acceptsCanonicalErgoVectorHeight614400)
     // Build the boundary through the same pipeline the live stratum uses
     // (StratumAutolykosV2::onMiningNotify), so isValidShare sees the target in the
     // little-endian layout it expects.
-    algo::hash256 boundary{ algo::toHash2<algo::hash256, algo::hash512>(algo::toLittleEndian<algo::hash512>(
-        algo::decimalToHash<algo::hash512>("7067388259113537318333190002971674063283542741642755394446115914399301849"))) };
+    algo::hash256 boundary{ algo::toHash2<algo::hash256, algo::hash512>(
+        algo::toLittleEndian<algo::hash512>(algo::decimalToHash<algo::hash512>(
+            "7067388259113537318333190002971674063283542741642755394446115914399301849"))) };
 
     // isValidShare takes the height already byte-swapped to big-endian, exactly as
     // the resolver passes it (parameters.hostHeight = algo::be::uint32(blockNumber)).
