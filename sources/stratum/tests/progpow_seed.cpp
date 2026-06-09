@@ -70,7 +70,7 @@ namespace
 }
 
 
-TEST(StratumProgpowQuaiEpoch, derivesEpochFromBlockNumberNotSeedHash)
+TEST(StratumProgpowSeed, quaiEpoch)
 {
     stratum::StratumProgpowQuai stratum{};
     stratum.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
@@ -83,7 +83,7 @@ TEST(StratumProgpowQuaiEpoch, derivesEpochFromBlockNumberNotSeedHash)
 }
 
 
-TEST(StratumFiroPowEpoch, recoversEpochFromRealFiroSeedHash)
+TEST(StratumProgpowSeed, firopowEpoch)
 {
     stratum::StratumFiroPOW stratum{};
     stratum.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;

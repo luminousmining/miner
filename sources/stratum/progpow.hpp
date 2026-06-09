@@ -30,10 +30,6 @@ namespace stratum
         // Blocks-per-epoch divisor for the blockNumber/length mapping.
         uint32_t maxEpochLength{ algo::progpow::EPOCH_LENGTH };
 
-        // Derive the DAG epoch for the current job. The base maps the block number
-        // onto EPOCH_LENGTH (what kawpow/meowpow/evrprogpow and progpow-quai expect);
-        // FiroPoW overrides this to prefer the network seed hash. Returns -1 when no
-        // epoch can be determined.
         virtual int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const;
 
       private:
