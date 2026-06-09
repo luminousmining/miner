@@ -13,7 +13,7 @@ jobs:
   build-boost:
     uses: ./.github/workflows/boost_linux.yml
     with:
-      boost_version: "1.90.0"
+      boost_version: "1.91.0"
 
   build-openssl:
     uses: ./.github/workflows/openssl_linux.yml
@@ -60,7 +60,7 @@ jobs:
       - name: Download Boost
         uses: actions/download-artifact@v4
         with:
-          name: boost-Linux-1.90.0
+          name: boost-Linux-1.91.0
           path: deps/boost
 
       - name: Install Boost
@@ -107,6 +107,8 @@ jobs:
           cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
             -DBUILD_EXE_MINER=OFF \
             -DBUILD_EXE_BENCHMARK=OFF \
             -DBUILD_EXE_UNIT_TEST=ON \
