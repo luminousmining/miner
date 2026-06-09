@@ -423,13 +423,14 @@ endif()
 if (USE_VCPKG)
     # vcpkg ships Boost as a CONFIG package; its exact version follows the vcpkg
     # baseline (see vcpkg.json) rather than being pinned to 1.91.0 here.
-    find_package(Boost CONFIG REQUIRED COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+    # Boost.System is header-only as of 1.91 (no libboost_system to find), so it
+    # is omitted from the component list -- the headers come in transitively.
+    find_package(Boost CONFIG REQUIRED COMPONENTS atomic chrono filesystem json thread serialization program_options)
     if (NOT Boost_LIBRARIES)
         set(Boost_LIBRARIES
             Boost::atomic
             Boost::chrono
             Boost::filesystem
-            Boost::system
             Boost::json
             Boost::thread
             Boost::serialization
@@ -447,7 +448,7 @@ if (USE_VCPKG)
         endif()
     endif()
 else()
-    find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem system json thread serialization program_options)
+    find_package(Boost 1.91.0 EXACT COMPONENTS atomic chrono filesystem json thread serialization program_options)
 endif()
 if (BUILD_AMD)
     find_package(OpenCL COMPONENTS OpenCL)

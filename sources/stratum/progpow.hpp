@@ -26,6 +26,8 @@ namespace stratum
         uint32_t maxEthashEpoch{ algo::ethash::EPOCH_LENGTH };
         uint32_t maxEpochLength{ algo::progpow::EPOCH_LENGTH };
 
+        virtual int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const;
+
       private:
         void onResponseEthereumV1(boost::json::object const& root);
         void onResponseEthereumV2(boost::json::object const& root);

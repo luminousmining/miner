@@ -239,10 +239,11 @@ void device::DeviceManager::showDeviceStats(
         {
             if (true == profilerAmd.valid)
             {
-                auto const activity{ profilerAmd.getCurrentActivity(device->id) };
-                coreClock = activity.iEngineClock;
-                memoryClock = activity.iMemoryClock;
-                utilizationPercent = activity.iActivityPercent;
+                auto const telemetry{ profilerAmd.getTelemetry(device->pciBus) };
+                coreClock = telemetry.coreClock;
+                memoryClock = telemetry.memoryClock;
+                utilizationPercent = telemetry.utilization;
+                power = telemetry.power;
             }
             break;
         }

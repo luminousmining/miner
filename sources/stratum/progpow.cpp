@@ -283,6 +283,19 @@ void stratum::StratumProgPOW::miningSubmit(uint32_t const deviceId, boost::json:
 }
 
 
+int32_t stratum::StratumProgPOW::deriveEpoch(stratum::StratumJobInfo const& jobInfo) const
+{
+    ////////////////////////////////////////////////////////////////////////////
+    // Map the block number onto EPOCH_LENGTH. kawpow/meowpow/evrprogpow and
+    // progpow-quai all agree with this; FiroPoW overrides to prefer the seed hash.
+    if (jobInfo.blockNumber > 0ull)
+    {
+        return cast32(jobInfo.blockNumber / castU64(maxEpochLength));
+    }
+    return algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
+}
+
+
 void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -317,15 +330,7 @@ void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
             }
 
             ////////////////////////////////////////////////////////////////////
-            int32_t epoch{ 0 };
-            if (jobInfo.blockNumber > 0ull)
-            {
-                epoch = cast32(jobInfo.blockNumber / castU64(maxEpochLength));
-            }
-            else
-            {
-                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
-            }
+            int32_t const epoch{ deriveEpoch(jobInfo) };
             if (-1 != epoch)
             {
                 jobInfo.epoch = epoch;
@@ -384,15 +389,7 @@ void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
             setExtraNonce(ss.str());
 
             ////////////////////////////////////////////////////////////////////
-            int32_t epoch{ 0 };
-            if (jobInfo.blockNumber > 0ull)
-            {
-                epoch = cast32(jobInfo.blockNumber / castU64(maxEpochLength));
-            }
-            else
-            {
-                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
-            }
+            int32_t const epoch{ deriveEpoch(jobInfo) };
             if (-1 != epoch)
             {
                 jobInfo.epoch = epoch;
