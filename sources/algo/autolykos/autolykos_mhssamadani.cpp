@@ -460,6 +460,9 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     HexStrToBigEndian(n_str, algo::autolykos_v2::NONCE_SIZE_8 * 2u, beN, algo::autolykos_v2::NONCE_SIZE_8);
 
     ///////////////////////////////////////////////////////////////////////////
+    // `height` arrives already byte-swapped to big-endian (callers pass
+    // algo::be::uint32(blockNumber)), so BigEndianToHexStr -> HexStrToBigEndian
+    // round-trips it to the canonical big-endian Ints.toByteArray(height) in beH.
     BigEndianToHexStr(height, HEIGHT_SIZE, h_str);
 
     ///////////////////////////////////////////////////////////////////////////
