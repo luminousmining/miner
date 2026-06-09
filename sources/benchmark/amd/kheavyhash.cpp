@@ -95,13 +95,16 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    auto benchSearch = [&](uint32_t const loop, uint32_t const groupSize, uint32_t const workerGroupCount) -> bool
+    auto benchSearch = [&](std::string const& kernelName,
+                           uint32_t const     loop,
+                           uint32_t const     groupSize,
+                           uint32_t const     workerGroupCount) -> bool
     {
         ////////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
 
         ////////////////////////////////////////////////////////////////////////
-        generator.setKernelName("search");
+        generator.setKernelName(kernelName);
         generator.addDefine("MAX_RESULT", algo::kheavyhash::MAX_RESULT);
 
         ////////////////////////////////////////////////////////////////////////
@@ -135,7 +138,7 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
             uint64_t const startNonce{ static_cast<uint64_t>(i) * static_cast<uint64_t>(groupSize) * workerGroupCount };
             OPENCL_ER(clKernel.setArg(4u, startNonce));
 
-            startChrono("search");
+            startChrono(kernelName);
             OPENCL_ER(propertiesAmd.clQueue.enqueueNDRangeKernel(
                 clKernel,
                 cl::NullRange,
@@ -149,14 +152,29 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    if (true == algo.isKernelEnabled("search"))
+    auto const runKernel = [&](std::string const& name)
     {
-        benchmark::KernelParams const p{ algo.resolveKernel("search") };
-        if (false == benchSearch(p.loop, p.threads, p.blocks))
+        if (false == algo.isKernelEnabled(name))
         {
-            logErr() << "kHeavyHash search benchmark aborted (GPU error)";
+            return;
         }
-    }
+        benchmark::KernelParams const p{ algo.resolveKernel(name) };
+        if (false == benchSearch(name, p.loop, p.threads, p.blocks))
+        {
+            logErr() << "kHeavyHash " << name << " benchmark aborted (GPU error)";
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Reference kernel + the optimization variants, each gated bit-identical by
+    // the OpenCL KAT. All share the same 6-arg signature, so only the name and
+    // the LDS/matmul/keccak internals differ.
+    runKernel("search");
+    runKernel("search_lm1");
+    runKernel("search_lm2");
+    runKernel("search_lm3");
+    runKernel("search_lm4");
+    runKernel("search_lm5");
 
     ////////////////////////////////////////////////////////////////////////////
     matrixCache.free();

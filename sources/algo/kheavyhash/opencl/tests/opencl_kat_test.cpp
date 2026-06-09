@@ -10,6 +10,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -73,8 +74,28 @@ namespace
             queue = clCreateCommandQueueWithProperties(context, device, nullptr, &err);
             clCheck(err, "clCreateCommandQueue");
 
-            std::ifstream     in{ KH_CL_PATH };
-            ASSERT_TRUE(in.good()) << "cannot open kernel source: " << KH_CL_PATH;
+            // Resolve the .cl: env override (fast iteration on the rig) first,
+            // then the compile-time source path (standalone/POCL CI), then the
+            // path the miner build deploys next to the binary. First that opens
+            // wins, so the same unit_test.exe works in CI and on a real GPU.
+            std::string       clPath{};
+            {
+                char const*                    candidates[3]{ std::getenv("KH_CL_PATH"),
+                                                              KH_CL_PATH,
+                                                              "kernel/kheavyhash/kheavyhash.cl" };
+                for (char const* const cand : candidates)
+                {
+                    if (nullptr != cand && std::ifstream{ cand }.good())
+                    {
+                        clPath = cand;
+                        break;
+                    }
+                }
+            }
+            ASSERT_FALSE(clPath.empty()) << "cannot open kernel source (tried env KH_CL_PATH, "
+                                         << KH_CL_PATH << ", kernel/kheavyhash/kheavyhash.cl)";
+            std::ifstream     in{ clPath };
+            ASSERT_TRUE(in.good()) << "cannot open kernel source: " << clPath;
             std::stringstream ss;
             ss << in.rdbuf();
             std::string const src{ ss.str() };
@@ -221,7 +242,7 @@ TEST_F(OpenClKat, HeavyHashMatchesReference)
 // Full per-nonce mining kernel: given the job's matrix/header/target, the work
 // item whose nonce reproduces FP_FINAL must report a hit at exactly FP_NONCE,
 // and must NOT report one against a target one unit below FP_FINAL.
-class SearchKernel : public OpenClKat
+class SearchKernel : public OpenClKat, public ::testing::WithParamInterface<char const*>
 {
 protected:
     // Mirrors the kernel's Result struct (and algo::ethash::Result layout).
@@ -247,7 +268,7 @@ protected:
                                const_cast<uint8_t*>(target.data())) };
         cl_mem resBuf{ makeBuf(CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Result), &result) };
 
-        cl_kernel k{ kernel("search") };
+        cl_kernel k{ kernel(GetParam()) };
         cl_ulong  ts{ kheavyhash::kat::FP_TIMESTAMP };
         clCheck(clSetKernelArg(k, 0, sizeof(cl_mem), &matBuf), "arg0");
         clCheck(clSetKernelArg(k, 1, sizeof(cl_mem), &preBuf), "arg1");
@@ -274,7 +295,7 @@ protected:
 // A single work-item at exactly FP_NONCE that passes the first and fails the
 // second pins the kernel's end-to-end pow output to FP_FINAL bit-for-bit, and
 // proves the hit-reporting (atomic_inc + foundNonce = nonceStart + gid) path.
-TEST_F(SearchKernel, ReportsHitAtWinningNonce)
+TEST_P(SearchKernel, ReportsHitAtWinningNonce)
 {
     cl_uint        count{ 0 };
     cl_ulong const found{ runSearch(kheavyhash::kat::FP_TARGET_PASS, kheavyhash::kat::FP_NONCE, 1, count) };
@@ -284,10 +305,22 @@ TEST_F(SearchKernel, ReportsHitAtWinningNonce)
 }
 
 
-TEST_F(SearchKernel, NoHitWhenPowExceedsTarget)
+TEST_P(SearchKernel, NoHitWhenPowExceedsTarget)
 {
     cl_uint count{ 0 };
     runSearch(kheavyhash::kat::FP_TARGET_FAIL, kheavyhash::kat::FP_NONCE, 1, count);
 
     EXPECT_EQ(0u, count);
 }
+
+
+// The optimized variants (search_lm1/2/3) are gated bit-identical to the
+// reference `search`: the same winning-nonce / boundary vectors must hold for
+// every kernel. A variant whose LDS staging, udot4 matmul, or unrolled keccak
+// drifted by a single bit fails here.
+INSTANTIATE_TEST_SUITE_P(AllVariants,
+                         SearchKernel,
+                         ::testing::Values("search", "search_lm1", "search_lm2", "search_lm3", "search_lm4",
+                                           "search_lm5"),
+                         [](::testing::TestParamInfo<char const*> const& info)
+                         { return std::string{ info.param }; });
