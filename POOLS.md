@@ -15,7 +15,7 @@ firopow `miner --host=pool.eu.woolypooly.com --port=3104 --algo="firopow" --wall
 ethash `miner --host=pool.eu.woolypooly.com --port=3096 --algo="ethash" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 etchash `miner --host=pool.eu.woolypooly.com --port=35000 --algo="etchash" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 ergo `miner --host=pool.eu.woolypooly.com --port=3100 --algo="autolykosv2" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
-alephium `miner --host=pool.eu.woolypooly.com --port=3106 --algo="blake3" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+alephium `miner --host=pool.eu.woolypooly.com --port=3106 --algo="blake3" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME" --ssl=true`  (port 3106 is TLS-only; needs a CA bundle — see ALEPHIUM.md)  
 progpow-z `miner --stratum="ethproxy" --host=pool.eu.woolypooly.com --port=3146 --algo="progpow-z" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
 
 ## evrpool
@@ -27,6 +27,7 @@ progpow-z `miner --stratum="ethproxy" --host=zano.luckypool.io --port=8866 --alg
 
 ## HEROMINERS
 kawpow `miner --host=de.quai.herominers.com --port=1185 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
+alephium `miner --host=alephium.herominers.com --port=1199 --algo="blake3" --wallet=YOUR_BASE58_ALPH_ADDRESS --workername="YOUR_WORKERNAME"`  (plaintext; verified live ~1.71 GH/s on RX 9070 XT)  
 
 ## Mining Stratum X
 kawpow `miner --internal_loop=1000 --internal_kernel_count=10 --host=mining.stratumx.org --port=3335 --algo="kawpow" --wallet=YOUR_WALLET --workername="YOUR_WORKERNAME"`  
