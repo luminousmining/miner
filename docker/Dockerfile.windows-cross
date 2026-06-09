@@ -32,7 +32,9 @@ FROM ${BASE_AMD}  AS base-amd
 FROM base-${GPU} AS build
 ARG GPU
 ARG DEBIAN_FRONTEND=noninteractive
-ARG VCPKG_REF=master
+# Pin the vcpkg registry to the same commit as vcpkg.json's builtin-baseline so
+# dependency versions are reproducible. Override at build time for a newer set.
+ARG VCPKG_REF=40dd49b0c9c7dbd79dc64cad5e82308eae04f67f
 # Build bin/unit_test too (googletest via FetchContent). Default OFF to match the
 # windows-cross preset; flip ON for CI/test builds.
 ARG BUILD_TESTS=OFF
@@ -51,8 +53,10 @@ RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERS
         | tar xz -C /opt \
     && ln -sf /opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/* /usr/local/bin/
 
-# llvm-mingw: clang/clang++/clang-cl/lld-link/llvm-* (LLVM 22). MSVC target, not
-# the mingw sysroot. Symlink clang-cl.
+# Windows toolchain = Clang, MSVC ABI (clang-cl + lld-link), NOT the GNU mingw
+# sysroot. "llvm-mingw" is just the distribution: mstorsjo's prebuilt LLVM 22
+# bundle that ships clang/clang++/clang-cl/lld-link/llvm-* (incl. llvm-ml) in one
+# tarball, targeting windows-msvc. Symlink clang-cl onto clang.
 RUN set -eux; \
     url="$(curl -fsSL https://api.github.com/repos/mstorsjo/llvm-mingw/releases/latest \
         | grep -oP '"browser_download_url":\s*"\K[^"]*ucrt-ubuntu-[0-9.]+-x86_64\.tar\.xz' | head -1)"; \

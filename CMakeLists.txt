@@ -169,8 +169,12 @@ if (WIN32)
     )
     else()
 ################################################################################
-### MINGW (cross-compile Windows from Linux: MinGW-w64 / llvm-mingw)        ####
+### WINDOWS, NON-MSVC ABI (GNU MinGW-w64 g++ fallback)                      ####
 ################################################################################
+    # NOTE: the supported Linux->Windows cross build uses clang-cl + xwin, which
+    # reports MSVC=true and therefore takes the Visual Studio branch above (MSVC
+    # ABI, single binary co-linking AMD + CUDA). This branch is only reached by a
+    # true GNU MinGW-w64 g++ compiler (GNU ABI) and is kept as a fallback.
     add_compile_definitions(
         _WIN32_WINNT=0x0A00 # Windows 10 API version
         NOMINMAX            # Disable min/max macros from Windows.h

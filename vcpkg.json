@@ -2,6 +2,7 @@
   "name": "luminousminer",
   "version-string": "0.10",
   "description": "Dependency manifest for LuminousMiner via vcpkg (Boost subset + optional OpenCL/OpenSSL). Enabled by -DUSE_VCPKG=ON + a vcpkg toolchain. OpenCL/OpenSSL are optional features selected per build by VCPKG_MANIFEST_FEATURES: the windows-cross image supplies OpenSSL prebuilt (no openssl feature) and adds opencl only for AMD; the linux image uses both.",
+  "builtin-baseline": "40dd49b0c9c7dbd79dc64cad5e82308eae04f67f",
   "dependencies": [
     "boost-asio",
     "boost-beast",

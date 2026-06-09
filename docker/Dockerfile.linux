@@ -24,7 +24,9 @@ FROM ${BASE_AMD}  AS base-amd
 FROM base-${GPU} AS build
 ARG GPU
 ARG DEBIAN_FRONTEND=noninteractive
-ARG VCPKG_REF=master
+# Pin the vcpkg registry to the same commit as vcpkg.json's builtin-baseline so
+# dependency versions are reproducible. Override at build time for a newer set.
+ARG VCPKG_REF=40dd49b0c9c7dbd79dc64cad5e82308eae04f67f
 
 # clang is the compiler the project forces on Linux (and the CUDA host compiler).
 RUN apt-get update && apt-get install -y --no-install-recommends \
