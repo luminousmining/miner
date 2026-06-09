@@ -78,6 +78,10 @@ void stratum::StratumAutolykosV2::onMiningNotify(boost::json::object const& root
     jobInfo.headerHash = algo::toHash256(params.at(2).as_string().c_str());
     jobInfo.boundary = algo::toHash2<algo::hash256, algo::hash512>(
         algo::toLittleEndian<algo::hash512>(algo::decimalToHash<algo::hash512>(params.at(6).as_string().c_str())));
+    // NiceHash sends no mining.set_difficulty/set_target -- the per-job target is
+    // embedded here in params[6]. Derive boundaryU64 from it (mirroring
+    // onMiningSetDifficulty) so isValidJob() does not drop the job for a 0 boundary.
+    jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
 
     jobInfo.cleanJob = params.at(8).as_bool();
 
