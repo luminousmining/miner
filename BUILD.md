@@ -133,7 +133,6 @@ mv 4_3 gpu_performance_api
   
 ## Windows
 ```sh
-git clone https://github.com/luminousmining/miner
 mkdir build
 cd build
 cmake .. -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release
@@ -142,7 +141,6 @@ cmake --build . --config Release
   
 ## Linux
 ```sh
-git clone https://github.com/luminousmining/miner
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
