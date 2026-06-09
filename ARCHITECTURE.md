@@ -417,14 +417,15 @@ Resolver  (abstract)
  │    ├─ ResolverAmdMeowPow
  │    ├─ ResolverAmdFiroPow
  │    ├─ ResolverAmdEvrProgPow
- │    └─ ResolverAmdAutolykosV2
+ │    ├─ ResolverAmdAutolykosV2
+ │    └─ ResolverAmdBlake3
  │
  └─ ResolverNvidia  (CUDA base)
       ├─ ResolverNvidiaEthash
       ├─ ResolverNvidiaEtchash
       ├─ ResolverNvidiaProgPow
       ├─ ResolverNvidiaKawPow
-      ├─ ResolverNvidiaBlake3        ← NVIDIA only
+      ├─ ResolverNvidiaBlake3
       └─ … (same set as AMD)
 
 Interface:
@@ -481,7 +482,7 @@ Loaded from CLI by `common::Cli`, supports per-device pool overrides:
 | FIROPOW | AMD, NVIDIA | Firo |
 | EVRPROGPOW | AMD, NVIDIA | Evermore |
 | AUTOLYKOS_V2 | AMD, NVIDIA | Ergo |
-| BLAKE3 | NVIDIA only | |
+| BLAKE3 | AMD, NVIDIA | Alephium (non-DAG) |
 | SHA256 | CPU | |
 
 All DAG-based algorithms (Ethash family) share a common `algo::DagContext` and `algo::ethash::ContextGenerator`. The epoch is derived from the seed hash.
