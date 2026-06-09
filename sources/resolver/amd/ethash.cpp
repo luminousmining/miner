@@ -101,8 +101,9 @@ bool resolver::ResolverAmdEthash::updateMemory(stratum::StratumJobInfo const& jo
     parameters.resultCache.free();
 
     ////////////////////////////////////////////////////////////////////////////
-    parameters.lightCache.setFlags(true == buildLightCacheOnCPU ? CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
-                                                                : CL_MEM_READ_WRITE | CL_MEM_HOST_WRITE_ONLY);
+    parameters.lightCache.setFlags(
+        true == buildLightCacheOnCPU ? CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+                                     : CL_MEM_READ_WRITE | CL_MEM_HOST_WRITE_ONLY);
     parameters.lightCache.setSize(context.lightCache.size);
     parameters.dagCache.setSize(context.dagCache.size);
 
@@ -118,8 +119,8 @@ bool resolver::ResolverAmdEthash::updateMemory(stratum::StratumJobInfo const& jo
     if (true == buildLightCacheOnCPU)
     {
         if (false
-            == parameters.lightCache.write(
-                context.lightCache.hash, context.lightCache.size, clQueue[currentIndexStream]))
+            == parameters.lightCache
+                   .write(context.lightCache.hash, context.lightCache.size, clQueue[currentIndexStream]))
         {
             return false;
         }
@@ -208,11 +209,8 @@ bool resolver::ResolverAmdEthash::buildLightCache()
     resolverInfo() << "Building light cache on GPU";
     common::Chrono chrono{};
     chrono.start();
-    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
-        clKernel,
-        cl::NullRange,
-        cl::NDRange(1, 1, 1),
-        cl::NDRange(1, 1, 1)));
+    OPENCL_ER(clQueue[currentIndexStream]
+                  ->enqueueNDRangeKernel(clKernel, cl::NullRange, cl::NDRange(1, 1, 1), cl::NDRange(1, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
     chrono.stop();
     resolverInfo() << "Built light cache on GPU in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
