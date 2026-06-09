@@ -5,6 +5,19 @@
 #include <CL/opencl.hpp>
 #endif
 
+#if defined(CUDA_ENABLE)
+#if defined(_WIN32)
+// WIN32_LEAN_AND_MEAN keeps windows.h from pulling in winsock.h (WinSock 1),
+// which would clash with the winsock2.h that Boost.Asio (via stratums.hpp) needs.
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+#endif
+
 #include <algo/algo_type.hpp>
 #include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
@@ -292,6 +305,33 @@ bool device::DeviceManager::initializeMocker()
 #if defined(CUDA_ENABLE)
 bool device::DeviceManager::initializeNvidia()
 {
+    ////////////////////////////////////////////////////////////////////////////
+    // The CUDA runtime (cudart) faults instead of returning an error when no
+    // NVIDIA driver is installed -- e.g. a combined AMD+NVIDIA binary run on an
+    // AMD-only host (cudaGetDeviceCount access-violates inside cudart). Probe the
+    // driver library first and skip NVIDIA init cleanly when it's absent.
+#if defined(_WIN32)
+    HMODULE nvcudaModule{ LoadLibraryA("nvcuda.dll") };
+    if (nullptr == nvcudaModule)
+    {
+        logInfo() << "NVIDIA driver (nvcuda.dll) not present; skipping NVIDIA devices";
+        return true;
+    }
+    FreeLibrary(nvcudaModule);
+#else
+    void* nvcudaModule{ dlopen("libcuda.so.1", RTLD_LAZY) };
+    if (nullptr == nvcudaModule)
+    {
+        nvcudaModule = dlopen("libcuda.so", RTLD_LAZY);
+    }
+    if (nullptr == nvcudaModule)
+    {
+        logInfo() << "NVIDIA driver (libcuda.so) not present; skipping NVIDIA devices";
+        return true;
+    }
+    dlclose(nvcudaModule);
+#endif
+
     ////////////////////////////////////////////////////////////////////////////
     int32_t numberDevice{ 0 };
     CUDA_ER(cudaGetDeviceCount(&numberDevice));

@@ -455,3 +455,6 @@ bin/
 bin_*/
 build/
 build_*/
+
+# Build artifacts exported by scripts/docker-build.ps1
+dist/

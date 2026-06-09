@@ -2,17 +2,28 @@
 ###  LIB CUDA ETHASH                                                        ####
 ################################################################################
 if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
-    cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
-        algo/autolykos/cuda/autolykos_v2.cu
-        algo/blake3/cuda/blake3.cu
-        algo/ethash/cuda/ethash.cu
-        algo/progpow/cuda/progpow.cu
-    )
+    if (USE_CLANG_CUDA)
+        # Cross path: CMake can't drive clang+CUDA on Windows (#20776), so compile
+        # each .cu with clang directly (helper defined in the top-level CMakeLists).
+        lm_clang_cuda_library(${LIB_CRYPTO_NVIDIA}
+            algo/autolykos/cuda/autolykos_v2.cu
+            algo/blake3/cuda/blake3.cu
+            algo/ethash/cuda/ethash.cu
+            algo/progpow/cuda/progpow.cu
+        )
+    else()
+        cuda_add_library(${LIB_CRYPTO_NVIDIA} STATIC
+            algo/autolykos/cuda/autolykos_v2.cu
+            algo/blake3/cuda/blake3.cu
+            algo/ethash/cuda/ethash.cu
+            algo/progpow/cuda/progpow.cu
+        )
 
-    target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE
-        __LIB_CUDA
-        CUDA_ENABLE
-    )
+        target_compile_definitions(${LIB_CRYPTO_NVIDIA} PRIVATE
+            __LIB_CUDA
+            CUDA_ENABLE
+        )
+    endif()
 
     target_include_directories(${LIB_CRYPTO_NVIDIA} PUBLIC
         ${Boost_INCLUDE_DIR}
@@ -26,7 +37,7 @@ endif()
 ###  LIB CUDA BENCH                                                        ####
 ################################################################################
 if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
-    cuda_add_library(${LIB_BENCH_NVIDIA} STATIC
+    set(_bench_cu
         benchmark/cuda/argon2d/argon2d_lm1.cu
         benchmark/cuda/argon2d/argon2d_lm2.cu
         benchmark/cuda/argon2d/argon2d_lm3.cu
@@ -82,7 +93,14 @@ if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
         benchmark/cuda/keccak/keccak_f800_lm9.cu
     )
 
-    target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
+    # Same gate as the crypto CUDA lib: clang-direct on the cross path (cuda_add_library
+    # is undefined when FindCUDA isn't loaded), nvcc/FindCUDA otherwise.
+    if (USE_CLANG_CUDA)
+        lm_clang_cuda_library(${LIB_BENCH_NVIDIA} ${_bench_cu})
+    else()
+        cuda_add_library(${LIB_BENCH_NVIDIA} STATIC ${_bench_cu})
+        target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
+    endif()
 
     target_include_directories(${LIB_BENCH_NVIDIA} PUBLIC
         ${Boost_INCLUDE_DIR}
@@ -128,6 +146,20 @@ if (BUILD_EXE_UNIT_TEST)
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
+
+    # clang-cl (windows-cross) is stricter than cl.exe and escalates benign
+    # warnings googletest itself doesn't expect -- e.g. a char8_t -> char32_t
+    # conversion in gtest-printers.h -- which is fatal because upstream gtest
+    # builds its own targets with -WX (warnings as errors). Drop -Werror for
+    # googletest's targets only, and only under clang-cl, so unit_test can build.
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+        foreach (gtest_target IN ITEMS gtest gtest_main gmock gmock_main)
+            if (TARGET ${gtest_target})
+                target_compile_options(${gtest_target} PRIVATE -Wno-error)
+            endif()
+        endforeach()
+    endif()
+
     enable_testing()
     include(GoogleTest)
 
@@ -408,5 +440,22 @@ if (UNIX)
             ${GNUTLS_LIBRARIES}
             "stdc++fs"
         )
+    endif()
+endif()
+
+
+if (WIN32 AND NOT MSVC)
+    # MinGW / llvm-mingw cross builds don't honor MSVC's #pragma comment(lib, ...)
+    # auto-linking (e.g. crypt32 in network.cpp), so link the Windows system
+    # libraries the code and static deps (OpenSSL, Boost.Asio) need explicitly.
+    set(LM_WIN_SYSLIBS crypt32 ws2_32 mswsock bcrypt secur32 advapi32 user32 crypt32)
+    if (BUILD_EXE_MINER)
+        target_link_libraries(${MINER_EXE} PRIVATE ${LM_WIN_SYSLIBS})
+    endif()
+    if (BUILD_EXE_BENCHMARK)
+        target_link_libraries(${BENCH_EXE} PRIVATE ${LM_WIN_SYSLIBS})
+    endif()
+    if (BUILD_EXE_UNIT_TEST)
+        target_link_libraries(${UNIT_TEST_EXE} PRIVATE ${LM_WIN_SYSLIBS})
     endif()
 endif()

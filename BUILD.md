@@ -1,5 +1,9 @@
 # Requirements
-  
+
+> **Just want a binary?** See [Docker (no local toolchain)](#docker-no-local-toolchain)
+> below — it builds every variant in containers and needs none of the manually
+> installed libraries/compilers in this section.
+
 ## Libraires
 - cuda 13.1 => Windows
 - cuda 13.1 => Ubuntu
@@ -130,8 +134,49 @@ mv 4_4 gpu_performance_api
 ```
   
 # Platforms
-  
-## Windows
+
+## Docker (no local toolchain)
+
+Every variant builds in Docker with **no local compilers or SDKs** — only Docker
+(BuildKit) is required. Windows binaries are **cross-compiled** from a Linux container
+(clang-cl + xwin), so Docker stays in **Linux container mode** for all targets; there is
+no engine-mode switch and no Windows host needed.
+
+Two Dockerfiles, selected by a `GPU` build-arg (`amd` | `nvidia` | `both`, default
+`both`):
+
+| Dockerfile | Output | Backends |
+|---|---|---|
+| `docker/Dockerfile.windows-cross` | `miner.exe` (PE32+) | AMD (OpenCL), NVIDIA (CUDA), or **both in one binary** |
+| `docker/Dockerfile.linux` | `miner` (ELF) | AMD, NVIDIA, or both |
+
+`GPU=amd` uses a lean `ubuntu:24.04` base; `GPU=nvidia`/`both` use
+`nvidia/cuda:13.1.2-devel-ubuntu24.04`.
+
+### Helper script (PowerShell)
+```powershell
+scripts/docker-build.ps1 -Os windows-cross -Gpu both   # combined AMD+NVIDIA miner.exe
+scripts/docker-build.ps1 -Os linux         -Gpu amd    # AMD-only ELF
+scripts/docker-build.ps1 -Os all           -Gpu both   # both OSes
+```
+Binaries are extracted to `dist/<os>-<gpu>/` (e.g. `dist/windows-cross-both/`).
+
+### Direct docker build
+```sh
+# Windows, combined AMD+NVIDIA  ->  dist/windows-cross-both/
+DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile.windows-cross \
+    --build-arg GPU=both --target artifact -o dist/windows-cross-both .
+
+# Linux, AMD only  ->  dist/linux-amd/
+DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile.linux \
+    --build-arg GPU=amd --target artifact -o dist/linux-amd .
+```
+The artifact contains `miner[.exe]`, the OpenCL `kernel/` directory, and (on Windows)
+the required OpenSSL + CUDA runtime DLLs. The combined `miner.exe` runs on a host that
+has only one vendor's GPU — it probes for the NVIDIA driver and skips NVIDIA cleanly when
+absent; pass `--nvidia=false` or `--amd=false` to force a single backend.
+
+## Windows (native toolchain)
 ```sh
 mkdir build
 cd build
@@ -139,7 +184,7 @@ cmake .. -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 ```
   
-## Linux
+## Linux (native toolchain)
 ```sh
 mkdir build
 cd build

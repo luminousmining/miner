@@ -1,0 +1,56 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 22, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "vcpkg-base",
+      "hidden": true,
+      "cacheVariables": {
+        "USE_VCPKG": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "BUILD_EXE_MINER": "ON",
+        "BUILD_EXE_UNIT_TEST": "OFF",
+        "BUILD_EXE_BENCHMARK": "OFF"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux (native clang; GPU selected via -D)",
+      "inherits": "vcpkg-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux",
+      "cacheVariables": {
+        "BUILD_AMD": "ON",
+        "BUILD_NVIDIA": "ON",
+        "BUILD_CPU": "OFF",
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opencl;openssl"
+      }
+    },
+    {
+      "name": "windows-cross",
+      "displayName": "Windows cross (clang-cl + xwin, MSVC ABI; GPU selected via -D)",
+      "description": "OpenCL (Khronos ICD loader) and OpenSSL (MSVC libs) are staged by the Docker image, not vcpkg, so no vcpkg manifest features are needed here; vcpkg supplies only Boost.",
+      "inherits": "vcpkg-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/windows-cross",
+      "cacheVariables": {
+        "BUILD_AMD": "ON",
+        "BUILD_NVIDIA": "ON",
+        "BUILD_CPU": "OFF",
+        "USE_CLANG_CUDA": "ON",
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": "",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-clangcl",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-clang-cl-xwin.cmake",
+        "VCPKG_APPLOCAL_DEPS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "linux",         "configurePreset": "linux",         "configuration": "Release" },
+    { "name": "windows-cross", "configurePreset": "windows-cross", "configuration": "Release" }
+  ]
+}

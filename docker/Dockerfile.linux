@@ -1,0 +1,76 @@
+# syntax=docker/dockerfile:1
+#
+# Build LuminousMiner natively for Linux (ELF) in a container. One image for AMD
+# (OpenCL), NVIDIA (CUDA), or BOTH. Select with --build-arg GPU=amd|nvidia|both
+# (default both). No GPU needed to build.
+#
+#   GPU=amd     -> lean ubuntu:24.04 base
+#   GPU=nvidia  -> nvidia/cuda devel base (nvcc), CUDA only
+#   GPU=both    -> nvidia/cuda devel base, AMD + CUDA in one binary
+#
+# Usage:
+#   docker build -f docker/Dockerfile.linux --build-arg GPU=both \
+#       --target artifact -o dist/linux-both .
+
+# GPU must be declared in global scope (before the first FROM) so it can be used
+# in the stage-selector FROM below.
+ARG GPU=both
+ARG BASE_AMD=ubuntu:24.04
+ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
+
+FROM ${BASE_CUDA} AS base-both
+FROM ${BASE_CUDA} AS base-nvidia
+FROM ${BASE_AMD}  AS base-amd
+FROM base-${GPU} AS build
+ARG GPU
+ARG DEBIAN_FRONTEND=noninteractive
+# Pin the vcpkg registry to the same commit as vcpkg.json's builtin-baseline so
+# dependency versions are reproducible. Override at build time for a newer set.
+ARG VCPKG_REF=40dd49b0c9c7dbd79dc64cad5e82308eae04f67f
+
+# clang is the compiler the project forces on Linux (and the CUDA host compiler).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates curl zip unzip tar git pkg-config \
+        build-essential ninja-build python3 \
+        clang lld \
+        linux-libc-dev libgnutls28-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# CMakeLists FORCE-sets clang-15/clang++-15 (a no-op after project()); alias the
+# distro clang to that name so the forced compiler resolves on Ubuntu 24.04.
+RUN ln -sf "$(command -v clang)"   /usr/local/bin/clang-15 \
+    && ln -sf "$(command -v clang++)" /usr/local/bin/clang++-15
+ENV CC=clang-15 CXX=clang++-15
+
+ARG CMAKE_VERSION=3.30.5
+RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
+        | tar xz -C /opt \
+    && ln -sf /opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/* /usr/local/bin/
+
+ENV VCPKG_ROOT=/opt/vcpkg
+RUN git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT" \
+    && git -C "$VCPKG_ROOT" checkout "$VCPKG_REF" \
+    && "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+ENV PATH="$VCPKG_ROOT:${PATH}"
+
+WORKDIR /src
+COPY vcpkg.json CMakePresets.json CMakeLists.txt ./
+COPY cmake ./cmake
+COPY sources ./sources
+
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    --mount=type=cache,target=/opt/vcpkg/downloads \
+    set -eux; \
+    case "$GPU" in \
+      amd)    AMD=ON;  NV=OFF; FEAT="opencl;openssl" ;; \
+      nvidia) AMD=OFF; NV=ON;  FEAT="openssl" ;; \
+      both)   AMD=ON;  NV=ON;  FEAT="opencl;openssl" ;; \
+      *) echo "GPU must be amd|nvidia|both" >&2; exit 2 ;; \
+    esac; \
+    cmake --preset linux \
+        -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV \
+        -DVCPKG_MANIFEST_FEATURES="$FEAT"; \
+    cmake --build --preset linux
+
+FROM scratch AS artifact
+COPY --from=build /src/build/linux/bin /

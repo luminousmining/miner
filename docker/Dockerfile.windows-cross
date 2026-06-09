@@ -1,0 +1,197 @@
+# syntax=docker/dockerfile:1
+#
+# Cross-compile LuminousMiner for WINDOWS from a Linux container, MSVC ABI
+# (clang-cl + xwin). One toolchain for AMD (OpenCL), NVIDIA (CUDA), or BOTH in a
+# single miner.exe. Select with --build-arg GPU=amd|nvidia|both (default both).
+#
+#   GPU=amd     -> lean ubuntu:24.04 base, no CUDA layers
+#   GPU=nvidia  -> nvidia/cuda devel base, CUDA only
+#   GPU=both    -> nvidia/cuda devel base, AMD + CUDA in one binary
+#
+# AMD .cl kernels compile at runtime; NVIDIA .cu compile at build time via
+# clang-CUDA (CMake can't drive clang+CUDA on Windows, issue #20776 -> see
+# lm_clang_cuda_library in CMakeLists.txt). Boost et al. cross-build for the MSVC
+# ABI via vcpkg + x64-windows-clangcl. OpenSSL is prebuilt MSVC libs; OpenCL is
+# vcpkg's ICD loader. nvcc CANNOT do this; clang-CUDA can.
+#
+# Usage:
+#   docker build -f docker/Dockerfile.windows-cross --build-arg GPU=both \
+#       --target artifact -o dist/windows-cross-both .
+
+# GPU must be declared in global scope (before the first FROM) so it can be used
+# in the stage-selector FROM below.
+ARG GPU=both
+ARG BASE_AMD=ubuntu:24.04
+ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
+
+# Map GPU -> concrete base image. amd is lean ubuntu; nvidia/both use the CUDA
+# devel base. Both are Ubuntu 24.04, so the toolchain layers below are identical.
+FROM ${BASE_CUDA} AS base-both
+FROM ${BASE_CUDA} AS base-nvidia
+FROM ${BASE_AMD}  AS base-amd
+FROM base-${GPU} AS build
+ARG GPU
+ARG DEBIAN_FRONTEND=noninteractive
+# Pin the vcpkg registry to the same commit as vcpkg.json's builtin-baseline so
+# dependency versions are reproducible. Override at build time for a newer set.
+ARG VCPKG_REF=40dd49b0c9c7dbd79dc64cad5e82308eae04f67f
+# Build bin/unit_test too (googletest via FetchContent). Default OFF to match the
+# windows-cross preset; flip ON for CI/test builds.
+ARG BUILD_TESTS=OFF
+
+# --- Common toolchain (identical on either Ubuntu 24.04 base) ---------------
+# g++ is the HOST (x64-linux) compiler vcpkg probes before building anything --
+# even for a pure cross target. The CUDA devel base ships it; the lean ubuntu
+# base does not, so install it here (harmless/no-op on the CUDA base).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates curl zip unzip tar xz-utils git pkg-config python3 \
+        ninja-build perl bison file libicu74 g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG CMAKE_VERSION=3.30.5
+RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
+        | tar xz -C /opt \
+    && ln -sf /opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/* /usr/local/bin/
+
+# Windows toolchain = Clang, MSVC ABI (clang-cl + lld-link), NOT the GNU mingw
+# sysroot. "llvm-mingw" is just the distribution: mstorsjo's prebuilt LLVM 22
+# bundle that ships clang/clang++/clang-cl/lld-link/llvm-* (incl. llvm-ml) in one
+# tarball, targeting windows-msvc. Symlink clang-cl onto clang.
+RUN set -eux; \
+    url="$(curl -fsSL https://api.github.com/repos/mstorsjo/llvm-mingw/releases/latest \
+        | grep -oP '"browser_download_url":\s*"\K[^"]*ucrt-ubuntu-[0-9.]+-x86_64\.tar\.xz' | head -1)"; \
+    curl -fsSL "$url" -o /tmp/llvm.tar.xz; mkdir -p /opt/llvm-mingw; \
+    tar xJf /tmp/llvm.tar.xz -C /opt/llvm-mingw --strip-components=1; rm /tmp/llvm.tar.xz; \
+    ln -sf /opt/llvm-mingw/bin/clang /opt/llvm-mingw/bin/clang-cl
+ENV PATH="/opt/llvm-mingw/bin:${PATH}"
+
+# boost-context .asm assembles with ml64 (MSVC MASM) -> shim to llvm-ml.
+RUN printf '#!/bin/sh\nexec /opt/llvm-mingw/bin/llvm-ml -m64 "$@"\n' > /usr/local/bin/ml64 \
+    && chmod +x /usr/local/bin/ml64
+
+# xwin: MSVC CRT + Windows SDK headers/libs.
+RUN set -eux; \
+    url="$(curl -fsSL https://api.github.com/repos/Jake-Shadle/xwin/releases/latest \
+        | grep -oP '"browser_download_url":\s*"\K[^"]*x86_64-unknown-linux-musl\.tar\.gz' | head -1)"; \
+    curl -fsSL "$url" -o /tmp/xwin.tgz; tar xzf /tmp/xwin.tgz -C /tmp; \
+    mv /tmp/xwin-*/xwin /usr/local/bin/xwin; rm -rf /tmp/xwin*
+RUN xwin --accept-license splat --output /opt/xwin
+ENV XWIN_ROOT=/opt/xwin
+
+# Prebuilt MSVC OpenSSL (FireDaemon). vcpkg can't cross-build OpenSSL to
+# windows-msvc from Linux. Linked via import libs; DLLs shipped in the artifact.
+ARG OPENSSL_WIN_URL="https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.5.6.zip"
+ARG OPENSSL_WIN_SHA256="31de50c939a40564961988d20383aff7c5086e0bdf5449569c5d5c0d8db30b5c"
+RUN set -eux; cd /tmp; \
+    curl -fsSL "$OPENSSL_WIN_URL" -o ossl.zip; \
+    echo "$OPENSSL_WIN_SHA256  ossl.zip" | sha256sum -c -; \
+    python3 -c "import zipfile;zipfile.ZipFile('ossl.zip').extractall('ossl')"; \
+    mkdir -p /opt/openssl-win/lib /opt/openssl-win/include /opt/openssl-win/bin; \
+    sslimp="$(find /tmp/ossl -ipath '*x64*' -iname 'libssl*.lib'    ! -iname '*static*' | head -1)"; \
+    cryimp="$(find /tmp/ossl -ipath '*x64*' -iname 'libcrypto*.lib' ! -iname '*static*' | head -1)"; \
+    cp "$sslimp" /opt/openssl-win/lib/libssl.lib; \
+    cp "$cryimp" /opt/openssl-win/lib/libcrypto.lib; \
+    osslv="$(find /tmp/ossl -ipath '*x64*' -path '*include/openssl/opensslv.h' | head -1)"; \
+    cp -r "$(dirname "$(dirname "$osslv")")/openssl" /opt/openssl-win/include/; \
+    find /tmp/ossl -ipath '*x64*' \( -iname 'libssl*.dll' -o -iname 'libcrypto*.dll' \) -exec cp {} /opt/openssl-win/bin/ \; ; \
+    ls /opt/openssl-win/lib /opt/openssl-win/bin
+ENV OPENSSL_WIN_ROOT=/opt/openssl-win
+
+# --- CUDA-only staging (skipped for GPU=amd) -------------------------------
+# Windows CUDA import libs + runtime DLLs from the redist, and the clang-CUDA
+# cmath forward-declares patch. Guarded so AMD-only images stay lean and never
+# require the CUDA layers.
+RUN set -eux; \
+    if [ "$GPU" != "amd" ]; then \
+      H="$(echo /opt/llvm-mingw/lib/clang/*/include/__clang_cuda_math_forward_declares.h)"; \
+      sed -i 's|__DEVICE__ float fma(float, float, float);|__DEVICE__ float fma(float, float, float);\n__DEVICE__ long double fma(long double, long double, long double);|' "$H"; \
+      grep -q 'long double fma' "$H"; \
+      mkdir -p /opt/cuda-win/lib/x64 /opt/cuda-win/bin; cd /tmp; \
+      base=https://developer.download.nvidia.com/compute/cuda/redist; \
+      j="$(curl -fsSL $base/redistrib_13.1.2.json)"; \
+      for comp in cuda_cudart cuda_nvrtc; do \
+        rel="$(echo "$j" | grep -oE "${comp}/windows-x86_64/[^\"]+\.zip" | head -1)"; \
+        curl -fsSL "$base/$rel" -o c.zip; \
+        python3 -c "import zipfile;zipfile.ZipFile('c.zip').extractall('x_'+'${comp}')"; \
+      done; \
+      find /tmp/x_* -path '*/lib/x64/*' -name '*.lib' -exec cp {} /opt/cuda-win/lib/x64/ \; ; \
+      find /tmp/x_* -path '*/bin/*'    -name '*.dll' -exec cp {} /opt/cuda-win/bin/ \; ; \
+      ls /opt/cuda-win/lib/x64; \
+    else \
+      echo "GPU=amd: skipping CUDA staging"; \
+      mkdir -p /opt/cuda-win/lib/x64 /opt/cuda-win/bin; \
+    fi
+ENV CUDA_WIN_LIB=/opt/cuda-win/lib/x64
+
+# --- vcpkg ------------------------------------------------------------------
+ENV VCPKG_ROOT=/opt/vcpkg
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1
+RUN git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT" \
+    && git -C "$VCPKG_ROOT" checkout "$VCPKG_REF" \
+    && "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+ENV PATH="$VCPKG_ROOT:${PATH}"
+
+WORKDIR /src
+COPY vcpkg.json CMakePresets.json CMakeLists.txt ./
+COPY cmake ./cmake
+
+# --- OpenCL provisioning for AMD (skipped for GPU=nvidia) ------------------
+# Build the Khronos OpenCL ICD loader (-> OpenCL.lib) and stage the C and C++
+# (CLHPP) headers with our clang-cl+xwin toolchain. We build the loader directly
+# rather than via vcpkg's opencl port: that port compiles fine here but fails its
+# final `cllayerinfo` tool-copy under cross-compilation (a debug CLI we don't
+# need). At runtime the AMD driver's OpenCL.dll (System32) satisfies the import
+# lib. Cached independently of the source tree (depends only on cmake/).
+ARG OPENCL_REF=v2024.10.24
+RUN if [ "$GPU" != "nvidia" ]; then set -eux; \
+      for r in OpenCL-Headers OpenCL-CLHPP OpenCL-ICD-Loader; do \
+        git clone --depth 1 -b "$OPENCL_REF" "https://github.com/KhronosGroup/$r" "/tmp/$r"; \
+      done; \
+      cmake -S /tmp/OpenCL-ICD-Loader -B /tmp/icd-build -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=/src/cmake/toolchain-clang-cl-xwin.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DOPENCL_ICD_LOADER_HEADERS_DIR=/tmp/OpenCL-Headers \
+        -DOPENCL_ICD_LOADER_BUILD_TESTING=OFF; \
+      cmake --build /tmp/icd-build --target OpenCL; \
+      mkdir -p /opt/opencl-win/lib /opt/opencl-win/include/CL; \
+      cp "$(find /tmp/icd-build -name OpenCL.lib | head -1)" /opt/opencl-win/lib/OpenCL.lib; \
+      cp -r /tmp/OpenCL-Headers/CL/. /opt/opencl-win/include/CL/; \
+      cp /tmp/OpenCL-CLHPP/include/CL/*.hpp /opt/opencl-win/include/CL/; \
+      ls /opt/opencl-win/lib /opt/opencl-win/include/CL; \
+    else echo "GPU=nvidia: skipping OpenCL loader"; mkdir -p /opt/opencl-win/lib /opt/opencl-win/include; fi
+ENV OPENCL_WIN_ROOT=/opt/opencl-win
+
+COPY triplets ./triplets
+COPY sources ./sources
+
+# Derive the -D overrides from GPU and configure+build. USE_CLANG_CUDA only when
+# NVIDIA is in; OpenCL (prebuilt loader above) pointed at via FindOpenCL cache
+# hints when AMD is in. vcpkg installs only Boost (no opencl feature -- the loader
+# is prebuilt; OpenSSL is prebuilt too), so VCPKG_MANIFEST_FEATURES is empty.
+RUN --mount=type=cache,target=/root/.cache/vcpkg \
+    --mount=type=cache,target=/opt/vcpkg/downloads \
+    set -eux; \
+    case "$GPU" in \
+      amd)    AMD=ON;  NV=OFF; CC=OFF ;; \
+      nvidia) AMD=OFF; NV=ON;  CC=ON  ;; \
+      both)   AMD=ON;  NV=ON;  CC=ON  ;; \
+      *) echo "GPU must be amd|nvidia|both" >&2; exit 2 ;; \
+    esac; \
+    OCL=""; \
+    if [ "$GPU" != "nvidia" ]; then \
+      OCL="-DOpenCL_INCLUDE_DIR=/opt/opencl-win/include -DOpenCL_LIBRARY=/opt/opencl-win/lib/OpenCL.lib"; \
+    fi; \
+    cmake --preset windows-cross \
+        -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV -DUSE_CLANG_CUDA=$CC \
+        -DBUILD_EXE_UNIT_TEST=${BUILD_TESTS} \
+        -DVCPKG_MANIFEST_FEATURES="" $OCL; \
+    cmake --build --preset windows-cross
+
+# Ship runtime DLLs next to miner.exe (separate RUN so a build failure above is
+# never masked). OpenSSL always; CUDA DLLs only exist when NVIDIA was staged.
+RUN set -eux; \
+    cp /opt/openssl-win/bin/*.dll /src/build/windows-cross/bin/; \
+    if [ "$GPU" != "amd" ]; then cp /opt/cuda-win/bin/*.dll /src/build/windows-cross/bin/; fi
+
+FROM scratch AS artifact
+COPY --from=build /src/build/windows-cross/bin /

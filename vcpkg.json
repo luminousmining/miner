@@ -1,0 +1,44 @@
+{
+  "name": "luminousminer",
+  "version-string": "0.10",
+  "description": "Dependency manifest for LuminousMiner via vcpkg (Boost subset + optional OpenCL/OpenSSL). Enabled by -DUSE_VCPKG=ON + a vcpkg toolchain. OpenCL/OpenSSL are optional features selected per build by VCPKG_MANIFEST_FEATURES: the windows-cross image supplies OpenSSL prebuilt (no openssl feature) and adds opencl only for AMD; the linux image uses both.",
+  "builtin-baseline": "40dd49b0c9c7dbd79dc64cad5e82308eae04f67f",
+  "dependencies": [
+    "boost-asio",
+    "boost-beast",
+    "boost-json",
+    "boost-thread",
+    "boost-atomic",
+    "boost-chrono",
+    "boost-system",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-program-options",
+    "boost-endian",
+    "boost-lockfree",
+    "boost-property-tree",
+    "boost-bind",
+    "boost-algorithm",
+    "boost-multiprecision",
+    "boost-exception",
+    "boost-date-time"
+  ],
+  "default-features": [
+    "opencl",
+    "openssl"
+  ],
+  "features": {
+    "opencl": {
+      "description": "OpenCL ICD loader (AMD GPU path).",
+      "dependencies": [
+        "opencl"
+      ]
+    },
+    "openssl": {
+      "description": "OpenSSL via vcpkg (stratum TLS). Omitted on the windows-cross build (OpenSSL is supplied there as prebuilt MSVC libs, not by vcpkg); used on linux.",
+      "dependencies": [
+        "openssl"
+      ]
+    }
+  }
+}
