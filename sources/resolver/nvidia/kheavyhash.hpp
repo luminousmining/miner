@@ -23,7 +23,7 @@ namespace resolver
         void submit(stratum::StratumSmartMining* const stratum) final;
 
       protected:
-        algo::kheavyhash::ResultShare               resultShare{};
+        algo::kheavyhash::ResultShare                  resultShare{};
         resolver::nvidia::kheavyhash::KernelParameters parameters{};
     };
 }

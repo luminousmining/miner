@@ -56,6 +56,6 @@ namespace kheavyhash
                 return powValueLe[i] < targetLe[i];
             }
         }
-        return true;  // equal => pow <= target
+        return true; // equal => pow <= target
     }
 }

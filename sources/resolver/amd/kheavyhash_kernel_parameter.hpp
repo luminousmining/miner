@@ -21,7 +21,7 @@ namespace resolver
             // pre-pow header and the 32-byte little-endian target. No DAG.
             struct KernelParameters
             {
-                common::opencl::Buffer<uint16_t> matrixCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+                common::opencl::Buffer<uint16_t>            matrixCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
                                                               64u * 64u * sizeof(uint16_t) };
                 common::opencl::BufferMapped<algo::hash256> headerCache{ CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
                                                                          | CL_MEM_ALLOC_HOST_PTR };

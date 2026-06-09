@@ -14,9 +14,12 @@ namespace kheavyhash
             0x8000000080008081ull, 0x8000000000008080ull, 0x0000000080000001ull, 0x8000000080008008ull,
         };
 
-        constexpr int ROTATIONS[24]{ 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 2, 14, 27, 41, 56, 8, 25, 43, 62, 18, 39, 61, 20, 44 };
+        constexpr int ROTATIONS[24]{ 1,  3,  6,  10, 15, 21, 28, 36, 45, 55, 2,  14,
+                                     27, 41, 56, 8,  25, 43, 62, 18, 39, 61, 20, 44 };
 
-        constexpr int PI_LANE[24]{ 10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4, 15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1 };
+        constexpr int PI_LANE[24]{
+            10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4, 15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1
+        };
 
         inline uint64_t rotl(uint64_t const x, int const k)
         {
@@ -48,7 +51,7 @@ namespace kheavyhash
             uint64_t t{ a[1] };
             for (int i{ 0 }; i < 24; ++i)
             {
-                int const j{ PI_LANE[i] };
+                int const      j{ PI_LANE[i] };
                 uint64_t const tmp{ a[j] };
                 a[j] = rotl(t, ROTATIONS[i]);
                 t = tmp;

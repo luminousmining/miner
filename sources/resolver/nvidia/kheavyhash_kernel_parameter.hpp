@@ -20,10 +20,10 @@ namespace resolver
                 algo::hash256 hostTarget{};
                 uint16_t      hostMatrix[64u * 64u]{};
 
-                uint16_t*                 matrix{ nullptr };       // device, 4096 x u16
-                algo::hash256*            header{ nullptr };       // device
-                algo::hash256*            target{ nullptr };       // device
-                algo::kheavyhash::Result* resultCache{ nullptr };  // pinned host, [2] (double-buffered)
+                uint16_t*                 matrix{ nullptr };      // device, 4096 x u16
+                algo::hash256*            header{ nullptr };      // device
+                algo::hash256*            target{ nullptr };      // device
+                algo::kheavyhash::Result* resultCache{ nullptr }; // pinned host, [2] (double-buffered)
             };
         }
     }

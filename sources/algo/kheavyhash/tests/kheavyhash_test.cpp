@@ -1,14 +1,16 @@
+#include "kheavyhash_test_vectors.hpp"
 #include <gtest/gtest.h>
 
 #include <algo/kheavyhash/kheavyhash.hpp>
-#include "kheavyhash_test_vectors.hpp"
 
 
 // Layer 2: heavy step (matrix multiply + XOR + KHeavyHash).
 // rusty-kaspa matrix.rs::test_heavy_hash literal.
 TEST(KHeavyHashPipeline, HeavyHashMatchesReference)
 {
-    kheavyhash::Hash256 const out{ kheavyhash::heavyHash(kheavyhash::kat::HEAVY_TEST_MATRIX, kheavyhash::kat::HEAVY_INPUT) };
+    kheavyhash::Hash256 const out{
+        kheavyhash::heavyHash(kheavyhash::kat::HEAVY_TEST_MATRIX, kheavyhash::kat::HEAVY_INPUT)
+    };
     EXPECT_EQ(out, kheavyhash::kat::HEAVY_EXPECTED);
 }
 

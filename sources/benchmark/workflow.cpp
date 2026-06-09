@@ -138,12 +138,11 @@ void benchmark::BenchmarkWorkflow::stopChrono(common::Dashboard& dashboard)
     snapshots.emplace_back(snapshot);
 
     ////////////////////////////////////////////////////////////////////////////
-    dashboard.addLine(
-        { currentBenchName,
-          std::to_string(blocks),
-          std::to_string(threads),
-          common::hashrateToString(hashrate),
-          std::to_string(stats.getElapsed()) });
+    dashboard.addLine({ currentBenchName,
+                        std::to_string(blocks),
+                        std::to_string(threads),
+                        common::hashrateToString(hashrate),
+                        std::to_string(stats.getElapsed()) });
 }
 
 

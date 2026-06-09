@@ -1,7 +1,7 @@
+#include "kheavyhash_test_vectors.hpp"
 #include <gtest/gtest.h>
 
 #include <algo/kheavyhash/hashers.hpp>
-#include "kheavyhash_test_vectors.hpp"
 
 
 namespace

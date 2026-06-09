@@ -10,11 +10,11 @@
 #include <cstdint>
 #include <vector>
 
+#include "kheavyhash_test_vectors.hpp"
 #include <gtest/gtest.h>
 
 #include <algo/kheavyhash/cuda/kheavyhash_device.cuh>
 #include <algo/kheavyhash/matrix.hpp>
-#include "kheavyhash_test_vectors.hpp"
 
 namespace
 {
@@ -48,8 +48,11 @@ namespace
 TEST(CudaDeviceKat, PowHashMatchesReference)
 {
     uint8_t out[32];
-    kheavyhash_cuda::powHash(kheavyhash::kat::POW_KAT_PRE, kheavyhash::kat::POW_KAT_TIMESTAMP,
-                             kheavyhash::kat::POW_KAT_NONCE, out);
+    kheavyhash_cuda::powHash(
+        kheavyhash::kat::POW_KAT_PRE,
+        kheavyhash::kat::POW_KAT_TIMESTAMP,
+        kheavyhash::kat::POW_KAT_NONCE,
+        out);
     EXPECT_EQ(toArr(out), kheavyhash::kat::POW_KAT_EXPECTED);
 }
 
@@ -83,12 +86,15 @@ TEST(CudaDeviceKat, FullPipelineMatchesReference)
 {
     // The matrix is generated host-side (CPU reference); the CUDA device funcs do
     // powHash -> heavyHash, mirroring the on-GPU per-nonce path.
-    kheavyhash::Matrix const     matrix{ kheavyhash::generateMatrix(kheavyhash::kat::FP_PRE) };
-    std::vector<uint16_t> const  flat{ flatten(matrix) };
+    kheavyhash::Matrix const    matrix{ kheavyhash::generateMatrix(kheavyhash::kat::FP_PRE) };
+    std::vector<uint16_t> const flat{ flatten(matrix) };
 
     uint8_t h1[32];
-    kheavyhash_cuda::powHash(kheavyhash::kat::FP_PRE.data(), kheavyhash::kat::FP_TIMESTAMP,
-                             kheavyhash::kat::FP_NONCE, h1);
+    kheavyhash_cuda::powHash(
+        kheavyhash::kat::FP_PRE.data(),
+        kheavyhash::kat::FP_TIMESTAMP,
+        kheavyhash::kat::FP_NONCE,
+        h1);
     EXPECT_EQ(toArr(h1), kheavyhash::kat::FP_HASH1);
 
     uint8_t pow[32];
@@ -100,5 +106,6 @@ TEST(CudaDeviceKat, FullPipelineMatchesReference)
 TEST(CudaDeviceKat, MeetsTargetCompare)
 {
     EXPECT_TRUE(kheavyhash_cuda::meetsTarget(kheavyhash::kat::FP_FINAL.data(), kheavyhash::kat::FP_TARGET_PASS.data()));
-    EXPECT_FALSE(kheavyhash_cuda::meetsTarget(kheavyhash::kat::FP_FINAL.data(), kheavyhash::kat::FP_TARGET_FAIL.data()));
+    EXPECT_FALSE(
+        kheavyhash_cuda::meetsTarget(kheavyhash::kat::FP_FINAL.data(), kheavyhash::kat::FP_TARGET_FAIL.data()));
 }

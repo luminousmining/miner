@@ -1,7 +1,7 @@
+#include "kheavyhash_test_vectors.hpp"
 #include <gtest/gtest.h>
 
 #include <algo/kheavyhash/stratum_math.hpp>
-#include "kheavyhash_test_vectors.hpp"
 
 
 // 4 little-endian u64 words rebuild the 32-byte pre-pow byte-for-byte.

@@ -93,8 +93,7 @@ bool resolver::ResolverAmdKHeavyHash::updateConstants(stratum::StratumJobInfo co
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false
-        == parameters.matrixCache.write(flat.data(), flat.size() * sizeof(uint16_t), clQueue[currentIndexStream]))
+    if (false == parameters.matrixCache.write(flat.data(), flat.size() * sizeof(uint16_t), clQueue[currentIndexStream]))
     {
         return false;
     }
@@ -156,11 +155,8 @@ bool resolver::ResolverAmdKHeavyHash::executeSync(stratum::StratumJobInfo const&
     ////////////////////////////////////////////////////////////////////////////
     size_t const globalSize{ static_cast<size_t>(getBlocks()) * static_cast<size_t>(getThreads()) };
     size_t const localSize{ static_cast<size_t>(getThreads()) };
-    OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
-        clKernel,
-        cl::NullRange,
-        cl::NDRange(globalSize),
-        cl::NDRange(localSize)));
+    OPENCL_ER(clQueue[currentIndexStream]
+                  ->enqueueNDRangeKernel(clKernel, cl::NullRange, cl::NDRange(globalSize), cl::NDRange(localSize)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
     ////////////////////////////////////////////////////////////////////////////

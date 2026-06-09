@@ -115,7 +115,7 @@ void stratum::StratumKHeavyHash::onMiningNotify(boost::json::object const& root)
     else if (true == jobField.is_string())
     {
         std::string const blob{ jobField.as_string().c_str() };
-        if (80u > blob.size())  // 32-byte header + 8-byte timestamp = 80 hex chars
+        if (80u > blob.size()) // 32-byte header + 8-byte timestamp = 80 hex chars
         {
             logErr() << "mining.notify: short BIG job blob " << root;
             return;

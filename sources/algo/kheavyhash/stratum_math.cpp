@@ -24,7 +24,7 @@ namespace kheavyhash
         Hash256 out{};
         if (diff <= 0.0)
         {
-            return out;  // impossible target
+            return out; // impossible target
         }
 
         // Quantise diff to Q16.16 so fractional difficulties are honoured while
