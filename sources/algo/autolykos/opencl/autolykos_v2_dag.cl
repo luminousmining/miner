@@ -79,5 +79,10 @@ void autolykos_v2_build_dag(
     {
         ((__global ulong *)dag)[(tid + 1) * 4 - i - 1] = as_ulong(as_uchar8(h[i]).s76543210);
     }
-    ((__global uchar *)dag)[tid * 32 + 31] = 0;
+    // (ulong) cast is required: tid*32 overflows 32-bit for tid >= 2^27 (the 4 GiB
+    // byte boundary), which silently retargets this zeroing write to a low element
+    // and leaves the high elements' top byte = H[0] instead of 0 -- corrupting the
+    // verify kernel's element sum. See ResolverAutolykosv2AmdTest.dagFullyGeneratedAtLiveHeight1803848.
+    // The CUDA path (cuda/dag.cuh) has the same overflow: luminousmining/miner#159.
+    ((__global uchar *)dag)[(ulong)tid * 32 + 31] = 0;
 }

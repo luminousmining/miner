@@ -117,6 +117,12 @@ bool resolver::ResolverAmdAutolykosV2::updateConstants(stratum::StratumJobInfo c
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // getResultCache() re-checks GPU candidates on the CPU via isValidShare(), which
+    // reads parameters.hostHeader. It must track the job header (the NVIDIA resolver
+    // does the same in updateMemory); without this it stayed zero-initialised, so the
+    // CPU re-check hashed the wrong header and rejected every valid GPU share.
+    parameters.hostHeader = jobInfo.headerHash;
+
     uint32_t const* const header{ jobInfo.headerHash.word32 };
     if (false == parameters.headerCache.setBufferDevice(clQueue[currentIndexStream], header))
     {
