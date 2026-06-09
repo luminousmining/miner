@@ -1,8 +1,3 @@
-#if defined(_WIN32)
-#pragma comment(lib, "crypt32.lib")
-#endif
-
-
 #include <boost/asio/buffer.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/chrono.hpp>
@@ -14,10 +9,6 @@
 #include <network/network.hpp>
 #include <network/socks5.hpp>
 #include <stratum/stratum_type.hpp>
-
-#if defined(_WIN32)
-#include <wincrypt.h>
-#endif
 
 
 network::NetworkTCPClient::~NetworkTCPClient()
@@ -230,31 +221,13 @@ bool network::NetworkTCPClient::doSecureConnection()
             boost::bind(&NetworkTCPClient::onVerifySSL, this, std::placeholders::_1, std::placeholders::_2));
 
 #if defined(_WIN32)
-        auto certStore{ CertOpenSystemStore(0, "ROOT") };
-        if (certStore == nullptr)
-        {
-            logErr() << "Certifcat Store \"ROOT\" was not found !";
-            return false;
-        }
-
-        auto*          store{ X509_STORE_new() };
-        PCCERT_CONTEXT certContext{ nullptr };
-        while (nullptr != (certContext = CertEnumCertificatesInStore(certStore, certContext)))
-        {
-            auto* x509{ d2i_X509(
-                nullptr,
-                const_cast<unsigned char const**>(&(certContext->pbCertEncoded)),
-                certContext->cbCertEncoded) };
-            if (nullptr != x509)
-            {
-                X509_STORE_add_cert(store, x509);
-                X509_free(x509);
-            }
-        }
-
-        CertFreeCertificateContext(certContext);
-        CertCloseStore(certStore, 0);
-        SSL_CTX_set_cert_store(context.native_handle(), store);
+        // No static trust store is seeded on Windows. OpenSSL cannot complete a chain whose
+        // intermediate the server omits (it has no AIA fetching), a very common pool
+        // misconfiguration. Instead onVerifySSL() hands the peer chain to the Windows chain
+        // engine (CertGetCertificateChain), which supplies the system roots, AIA-fetches any
+        // missing intermediate, and validates the hostname. verify_peer (set above) is still
+        // required so the callback runs; the empty OpenSSL store just makes `preverified`
+        // always false, which onVerifySSL expects on Windows.
 #elif defined(__linux__)
         // Fall back to OpenSSL's built-in default trust paths if the explicit
         // bundle below is absent, so verification still succeeds (fail-closed).
