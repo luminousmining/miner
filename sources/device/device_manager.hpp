@@ -75,13 +75,12 @@ namespace device
         void updateDevice(uint32_t const stratumUUID, bool const updateMemory, bool const updateConstants);
         bool containStratum(uint32_t const deviceId) const;
         std::shared_ptr<stratum::Stratum> getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId);
-        void                              loopStatistical();
-        void                              showMiningStats(
-                                         common::Dashboard&                         board,
-                                         device::Device* const                      device,
-                                         double const                               hashrate,
-                                         std::string const&                         host,
-                                         statistical::Statistical::ShareInfo const& shareInfo);
+        void loopStatistical();
+        void showMiningStats(common::Dashboard&                         board,
+                             device::Device* const                      device,
+                             double const                               hashrate,
+                             std::string const&                         host,
+                             statistical::Statistical::ShareInfo const& shareInfo);
         void showDeviceStats(common::Dashboard& board, device::Device* const device, double const hashrate);
     };
 }
