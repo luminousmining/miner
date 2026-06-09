@@ -158,14 +158,13 @@ void network::NetworkTCPClient::asyncReceive()
 }
 
 
-bool network::NetworkTCPClient::onVerifySSL(bool preverified, boost_verify_context& ctx)
+bool network::NetworkTCPClient::onVerifySSL([[maybe_unused]] bool preverified, boost_verify_context& ctx)
 {
 #if defined(_WIN32)
     // OpenSSL has no trust anchors on Windows (see doSecureConnection), so `preverified`
     // is always false here. The real trust decision is delegated to the Windows chain
     // engine, made once at the leaf (depth 0); let the higher chain levels pass so OpenSSL
     // keeps walking down to the leaf.
-    (void) preverified;
     if (0 != X509_STORE_CTX_get_error_depth(ctx.native_handle()))
     {
         return true;
