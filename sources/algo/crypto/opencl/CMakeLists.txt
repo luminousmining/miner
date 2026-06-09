@@ -35,3 +35,5 @@ add_custom_target(copy_crypto_opencl_files ALL
     ${OUT_CRYPTO}/keccak_f800.cl
     ${OUT_CRYPTO}/kiss99.cl
 )
+
+add_subdirectory(tests)
