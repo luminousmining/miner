@@ -1,84 +1,42 @@
-// Blake3 (Alephium) OpenCL kernels. BIT-IDENTICAL to sources/algo/blake3/blake3_pow.cpp.
+// Blake3 (Alephium) OpenCL mining kernels. The BLAKE3 compression primitive is the
+// shared crypto kernel (sources/algo/crypto/opencl/blake3.cl); only the Alephium
+// mining orchestration (double-BLAKE3 over the 326-byte input) lives here.
 // PoW = BLAKE3(BLAKE3(nonce(24) || headerBlob(302))) over 326 bytes. The 24-byte nonce is
 // prepended: big-endian 8-byte search value + 16 zero bytes (== the 48-hex submit string);
 // headerBlob is left-aligned in the header buffer (words 0..75).
+//
+// NOTE: the miner's kernel generator resolves this include; the host KAT
+// (opencl/tests/blake3_kat.cpp) concatenates the primitive source instead.
+#include "kernel/crypto/blake3.cl"
 
 #ifndef MAX_RESULT
 #define MAX_RESULT 4
 #endif
-
-#define IV0 0x6A09E667u
-#define IV1 0xBB67AE85u
-#define IV2 0x3C6EF372u
-#define IV3 0xA54FF53Au
-#define IV4 0x510E527Fu
-#define IV5 0x9B05688Cu
-#define IV6 0x1F83D9ABu
-#define IV7 0x5BE0CD19u
-
-__constant uchar SCHEDULE[7][16] = {
-    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 },
-    { 2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8 },
-    { 3, 4, 10, 12, 13, 2, 7, 14, 6, 5, 9, 0, 11, 15, 8, 1 },
-    { 10, 7, 12, 9, 14, 3, 13, 15, 4, 0, 11, 2, 5, 8, 1, 6 },
-    { 12, 13, 9, 11, 15, 10, 14, 8, 7, 2, 5, 3, 0, 1, 6, 4 },
-    { 9, 14, 11, 5, 8, 12, 15, 1, 13, 3, 0, 10, 2, 6, 4, 7 },
-    { 11, 15, 5, 0, 1, 9, 8, 6, 14, 10, 2, 12, 3, 4, 7, 13 },
-};
-
-inline uint ror32(uint const x, uint const n)
-{
-    return (x >> n) | (x << (32u - n));
-}
 
 inline uint bswap32(uint const x)
 {
     return (x >> 24) | ((x >> 8) & 0x0000FF00u) | ((x << 8) & 0x00FF0000u) | (x << 24);
 }
 
-#define G(st, a, b, c, d, x, y)                 \
-    {                                           \
-        st[a] = st[a] + st[b] + x;              \
-        st[d] = ror32(st[d] ^ st[a], 16u);      \
-        st[c] = st[c] + st[d];                  \
-        st[b] = ror32(st[b] ^ st[c], 12u);      \
-        st[a] = st[a] + st[b] + y;              \
-        st[d] = ror32(st[d] ^ st[a], 8u);       \
-        st[c] = st[c] + st[d];                  \
-        st[b] = ror32(st[b] ^ st[c], 7u);       \
-    }
-
-void compress(uint* vector, uint const* block, uint const blockLen, uint const flags)
+// Thin adapter over the shared full-XOF blake3_compress: keep only the 8-word chaining
+// value, matching the Alephium single-chunk orchestration below (counter always 0).
+// Pointers are explicitly __private: blake3_compress's array parameters decay to
+// const __private uint*, and the ROCm/comgr compiler (unlike AMD-APP) rejects passing
+// generic-address-space pointers to them. All call sites below pass private locals.
+void compress8(__private uint* vector, __private uint const* block, uint const blockLen, uint const flags)
 {
-    uint st[16];
-    st[0] = vector[0]; st[1] = vector[1]; st[2] = vector[2]; st[3] = vector[3];
-    st[4] = vector[4]; st[5] = vector[5]; st[6] = vector[6]; st[7] = vector[7];
-    st[8] = IV0; st[9] = IV1; st[10] = IV2; st[11] = IV3;
-    st[12] = 0u; st[13] = 0u; st[14] = blockLen; st[15] = flags;
-
-    for (uint r = 0u; r < 7u; ++r)
-    {
-        __constant uchar* s = SCHEDULE[r];
-        G(st, 0u, 4u, 8u,  12u, block[s[0]],  block[s[1]]);
-        G(st, 1u, 5u, 9u,  13u, block[s[2]],  block[s[3]]);
-        G(st, 2u, 6u, 10u, 14u, block[s[4]],  block[s[5]]);
-        G(st, 3u, 7u, 11u, 15u, block[s[6]],  block[s[7]]);
-        G(st, 0u, 5u, 10u, 15u, block[s[8]],  block[s[9]]);
-        G(st, 1u, 6u, 11u, 12u, block[s[10]], block[s[11]]);
-        G(st, 2u, 7u, 8u,  13u, block[s[12]], block[s[13]]);
-        G(st, 3u, 4u, 9u,  14u, block[s[14]], block[s[15]]);
-    }
-
+    uint out16[16];
+    blake3_compress(vector, block, 0u, 0u, blockLen, flags, out16);
     for (uint i = 0u; i < 8u; ++i)
     {
-        vector[i] = st[i] ^ st[i + 8u];
+        vector[i] = out16[i];
     }
 }
 
 void initVector(uint* v)
 {
-    v[0] = IV0; v[1] = IV1; v[2] = IV2; v[3] = IV3;
-    v[4] = IV4; v[5] = IV5; v[6] = IV6; v[7] = IV7;
+    v[0] = B3_IV0; v[1] = B3_IV1; v[2] = B3_IV2; v[3] = B3_IV3;
+    v[4] = B3_IV4; v[5] = B3_IV5; v[6] = B3_IV6; v[7] = B3_IV7;
 }
 
 // Alephium mining input (326 B) = nonce(24) || headerBlob(302). nonce = big-endian
@@ -102,22 +60,22 @@ void powHash(__global uint const* header, ulong const nonce, uint* out8)
 
     uint vector[8];
     initVector(vector);
-    compress(vector, &buf[0], 64u, 1u);                 // CHUNK_START
+    compress8(vector, &buf[0], 64u, 1u);                 // CHUNK_START
     for (uint i = 0u; i < 4u; ++i)
     {
-        compress(vector, &buf[16u * (i + 1u)], 64u, 0u);// EMPTY
+        compress8(vector, &buf[16u * (i + 1u)], 64u, 0u);// EMPTY
     }
     uint last[16];
     for (uint i = 0u; i < 16u; ++i) { last[i] = 0u; }
     last[0] = buf[80];
     last[1] = buf[81] & 0x0000FFFFu;
-    compress(vector, last, 6u, 10u);                    // CHUNK_END | ROOT
+    compress8(vector, last, 6u, 10u);                    // CHUNK_END | ROOT
 
     uint block2[16];
     for (uint i = 0u; i < 16u; ++i) { block2[i] = 0u; }
     for (uint i = 0u; i < 8u; ++i)  { block2[i] = vector[i]; }
     initVector(vector);
-    compress(vector, block2, 32u, 11u);                 // CHUNK_START|END|ROOT
+    compress8(vector, block2, 32u, 11u);                 // CHUNK_START|END|ROOT
 
     for (uint i = 0u; i < 8u; ++i)
     {

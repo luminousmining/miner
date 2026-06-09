@@ -71,19 +71,36 @@ namespace
             queue = clCreateCommandQueueWithProperties(context, device, nullptr, &err);
             clCheck(err, "clCreateCommandQueue");
 
-            // Prefer the kernel deployed next to the binary (works for the shipped
-            // exe); fall back to the in-tree source path baked at build time (CI).
-            std::ifstream in{ "kernel/blake3/blake3.cl" };
-            if (false == in.good())
+            // The mining kernel #includes the shared BLAKE3 primitive. The miner's
+            // kernel generator resolves that include, but clCreateProgramWithSource
+            // does not -- so read both and prepend the primitive (dropping the
+            // mining kernel's #include line). Prefer the copies deployed next to the
+            // binary (shipped exe); fall back to the in-tree source paths (CI).
+            auto readKernel = [](char const* deployed, char const* fallback) -> std::string
             {
-                in.clear();
-                in.open(BLAKE3_CL_PATH);
+                std::ifstream f{ deployed };
+                if (false == f.good())
+                {
+                    f.clear();
+                    f.open(fallback);
+                }
+                EXPECT_TRUE(f.good()) << "cannot open kernel source (tried " << deployed << " and " << fallback << ")";
+                std::stringstream s;
+                s << f.rdbuf();
+                return s.str();
+            };
+
+            std::string const crypto{ readKernel("kernel/crypto/blake3.cl", BLAKE3_CRYPTO_CL_PATH) };
+            std::string       mining{ readKernel("kernel/blake3/blake3.cl", BLAKE3_CL_PATH) };
+
+            std::string const include{ "#include \"kernel/crypto/blake3.cl\"" };
+            size_t const      incPos{ mining.find(include) };
+            if (std::string::npos != incPos)
+            {
+                mining.erase(incPos, include.size());
             }
-            ASSERT_TRUE(in.good()) << "cannot open kernel source (tried kernel/blake3/blake3.cl and " << BLAKE3_CL_PATH
-                                   << ")";
-            std::stringstream ss;
-            ss << in.rdbuf();
-            std::string const src{ ss.str() };
+
+            std::string const src{ crypto + "\n" + mining };
             char const*       srcPtr{ src.c_str() };
             size_t const      srcLen{ src.size() };
 
