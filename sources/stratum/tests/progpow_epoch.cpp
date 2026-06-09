@@ -4,26 +4,25 @@
 #include <gtest/gtest.h>
 
 #include <algo/progpow/progpow_quai.hpp>
-#include <stratum/progpow.hpp>
+#include <stratum/firopow.hpp>
 #include <stratum/progpow_quai.hpp>
 #include <stratum/stratum_type.hpp>
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Regression coverage for the progpow-quai DAG-epoch derivation.
+// Regression coverage for the ProgPoW DAG-epoch derivation.
 //
-// progpow-quai must key its DAG epoch off the block number, not the pool seed
-// hash. Quai's seed hash is keccak-iterated on a much shorter cadence than its
-// DAG-size epoch, so matching the seed (findEpoch) returns a wildly inflated
-// epoch (586 at the block below) and the DAG balloons past the device's max
-// single allocation -> clCreateBuffer fails with CL_INVALID_BUFFER_SIZE. The
-// official quai-gpu-miner derives the epoch from blockNumber / EPOCH_LENGTH
-// (388800) -> 11, and ignores the seed hash.
+// progpow-quai keys its DAG epoch off the block number, not the pool seed hash.
+// Quai's seed hash is keccak-iterated on a much shorter cadence than its DAG-size
+// epoch, so matching the seed (findEpoch) returns a wildly inflated epoch (586 at
+// the block below) and the DAG balloons past the device's max single allocation
+// -> clCreateBuffer fails with CL_INVALID_BUFFER_SIZE. The official quai-gpu-miner
+// derives the epoch from blockNumber / EPOCH_LENGTH (388800) -> 11. That is the
+// base StratumProgPOW behaviour, shared by kawpow/meowpow/evrprogpow.
 //
-// The other ProgPoW coins keep the seed-hash-first derivation FiroPoW needs
-// (its EPOCH_LENGTH changed across the chain), so the base stratum must still
-// recover the epoch from the seed hash. Both paths are exercised below; no
-// network or GPU is required.
+// FiroPoW is the exception: its EPOCH_LENGTH changed across the chain's history,
+// so StratumFiroPOW overrides deriveEpoch to recover the authoritative epoch from
+// the seed hash. Both paths are exercised below; no network or GPU is required.
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace
@@ -61,12 +60,14 @@ TEST(StratumProgpowQuaiEpoch, derivesEpochFromBlockNumberNotSeedHash)
 }
 
 
-TEST(StratumProgpowQuaiEpoch, baseProgpowStillPrefersSeedHash)
+TEST(StratumFiroPowEpoch, prefersSeedHashOverBlockNumber)
 {
-    stratum::StratumProgPOW stratum{};
+    stratum::StratumFiroPOW stratum{};
     stratum.stratumType = stratum::STRATUM_TYPE::ETHEREUM_V1;
 
     stratum.onMiningNotify(makeQuaiNotify());
 
+    // FiroPoW recovers the epoch the seed hash encodes (keccak256^586) rather than
+    // blockNumber / EPOCH_LENGTH.
     EXPECT_EQ(586, stratum.jobInfo.epoch);
 }

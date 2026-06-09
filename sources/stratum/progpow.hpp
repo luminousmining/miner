@@ -26,14 +26,11 @@ namespace stratum
         uint32_t maxEthashEpoch{ algo::ethash::EPOCH_LENGTH };
         uint32_t maxEpochLength{ algo::progpow::EPOCH_LENGTH };
 
-        // Quai decouples the network seed hash from the DAG-size epoch: its pool
-        // seed hash is keccak-iterated far more than blockNumber/EPOCH_LENGTH, so
-        // matching the seed (findEpoch) yields a hugely inflated epoch and an
-        // un-allocatable multi-tens-of-GiB DAG. The official quai-gpu-miner derives
-        // the epoch from blockNumber/EPOCH_LENGTH and ignores the seed hash. Set
-        // this for such chains; leave false to keep the seed-first derivation that
-        // FiroPoW relies on (its EPOCH_LENGTH changed across the chain's history).
-        bool deriveEpochFromBlockNumber{ false };
+        // Derive the DAG epoch for the current job. The base maps the block number
+        // onto EPOCH_LENGTH (what kawpow/meowpow/evrprogpow and progpow-quai expect);
+        // FiroPoW overrides this to prefer the network seed hash. Returns -1 when no
+        // epoch can be determined.
+        virtual int32_t deriveEpoch(stratum::StratumJobInfo const& jobInfo) const;
 
       private:
         void onResponseEthereumV1(boost::json::object const& root);

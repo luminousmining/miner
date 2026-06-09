@@ -283,6 +283,19 @@ void stratum::StratumProgPOW::miningSubmit(uint32_t const deviceId, boost::json:
 }
 
 
+int32_t stratum::StratumProgPOW::deriveEpoch(stratum::StratumJobInfo const& jobInfo) const
+{
+    ////////////////////////////////////////////////////////////////////////////
+    // Map the block number onto EPOCH_LENGTH. kawpow/meowpow/evrprogpow and
+    // progpow-quai all agree with this; FiroPoW overrides to prefer the seed hash.
+    if (jobInfo.blockNumber > 0ull)
+    {
+        return cast32(jobInfo.blockNumber / castU64(maxEpochLength));
+    }
+    return algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
+}
+
+
 void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -317,32 +330,7 @@ void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
             }
 
             ////////////////////////////////////////////////////////////////////
-            // The DAG epoch is whatever the network seedHash encodes — authoritative
-            // even when a chain changes its epoch length. Firo's FiroPoW epoch length
-            // differs between early and current blocks, so blockNumber/EPOCH_LENGTH
-            // derives the wrong epoch (wrong DAG -> "Invalid Mixhash" reject) for live
-            // Firo. Prefer the seed hash; fall back to blockNumber/EPOCH_LENGTH only if
-            // the seed isn't recognized.
-            //
-            // Quai is the exception: its pool seed hash is keccak-iterated on a much
-            // shorter cadence than its DAG-size epoch, so findEpoch returns a wildly
-            // inflated number (e.g. 586 vs the real 11) and the DAG balloons to tens
-            // of GiB — clCreateBuffer then rejects it (CL_INVALID_BUFFER_SIZE). The
-            // official quai-gpu-miner derives the epoch from blockNumber/EPOCH_LENGTH
-            // and ignores the seed hash, so do the same when the chain asks for it.
-            int32_t epoch{ -1 };
-            if (true == deriveEpochFromBlockNumber && jobInfo.blockNumber > 0ull)
-            {
-                epoch = cast32(jobInfo.blockNumber / castU64(maxEpochLength));
-            }
-            else
-            {
-                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
-                if (-1 == epoch && jobInfo.blockNumber > 0ull)
-                {
-                    epoch = cast32(jobInfo.blockNumber / castU64(maxEpochLength));
-                }
-            }
+            int32_t const epoch{ deriveEpoch(jobInfo) };
             if (-1 != epoch)
             {
                 jobInfo.epoch = epoch;
@@ -401,15 +389,7 @@ void stratum::StratumProgPOW::onMiningNotify(boost::json::object const& root)
             setExtraNonce(ss.str());
 
             ////////////////////////////////////////////////////////////////////
-            int32_t epoch{ 0 };
-            if (jobInfo.blockNumber > 0ull)
-            {
-                epoch = cast32(jobInfo.blockNumber / castU64(maxEpochLength));
-            }
-            else
-            {
-                epoch = algo::ethash::ContextGenerator::instance().findEpoch(jobInfo.seedHash, maxEthashEpoch);
-            }
+            int32_t const epoch{ deriveEpoch(jobInfo) };
             if (-1 != epoch)
             {
                 jobInfo.epoch = epoch;
