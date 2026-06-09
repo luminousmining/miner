@@ -35,24 +35,55 @@ void api::ServerAPI::loopAccept()
     namespace boost_http = boost::beast::http;
 
     boost_io_context ioContext{};
-    boost_acceptor   acceptor{ ioContext, { boost_tcp::v4(), castU16(port) } };
+    boost_acceptor   acceptor{ ioContext };
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Bind the acceptor defensively: the stats API is non-essential, so a bind
+    // failure (port already in use, or reserved by the OS) must not terminate
+    // the miner. Log and disable the API instead.
+    try
+    {
+        boost_endpoint const endpoint{ boost_tcp::v4(), castU16(port) };
+        acceptor.open(endpoint.protocol());
+        acceptor.set_option(boost::asio::socket_base::reuse_address{ true });
+        acceptor.bind(endpoint);
+        acceptor.listen();
+    }
+    catch (boost::system::system_error const& exception)
+    {
+        logErr() << "Cannot start API on port " << port << ": " << exception.what()
+                 << ". API disabled, mining continues. On Windows the port may sit "
+                    "in a reserved range (check `netsh int ipv4 show excludedportrange tcp`); "
+                    "pick another port with --api_port.";
+        alive.store(false, boost::memory_order::seq_cst);
+        return;
+    }
 
     while (true == alive.load(boost::memory_order::relaxed))
     {
         ////////////////////////////////////////////////////////////////////////
-        boost_socket socket{ ioContext };
-        acceptor.accept(socket);
+        // A malformed or aborted client request must not bring down the miner
+        // either, so handle each connection inside its own guard.
+        try
+        {
+            boost_socket socket{ ioContext };
+            acceptor.accept(socket);
 
-        ////////////////////////////////////////////////////////////////////////
-        boost::beast::flat_buffer                    buffer{};
-        boost_http::request<boost_http::string_body> request{};
-        boost_http::read(socket, buffer, request);
+            ////////////////////////////////////////////////////////////////////
+            boost::beast::flat_buffer                    buffer{};
+            boost_http::request<boost_http::string_body> request{};
+            boost_http::read(socket, buffer, request);
 
-        ////////////////////////////////////////////////////////////////////////
-        onMessage(socket, request);
+            ////////////////////////////////////////////////////////////////////
+            onMessage(socket, request);
 
-        ////////////////////////////////////////////////////////////////////////
-        socket.shutdown(boost_tcp::socket::shutdown_send);
+            ////////////////////////////////////////////////////////////////////
+            socket.shutdown(boost_tcp::socket::shutdown_send);
+        }
+        catch (boost::system::system_error const& exception)
+        {
+            logWarn() << "API request handling error: " << exception.what();
+        }
     }
 }
 
