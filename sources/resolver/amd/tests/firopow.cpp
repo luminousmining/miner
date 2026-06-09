@@ -55,7 +55,7 @@ struct ResolverFiropowAmdTest : public testing::Test
         jobInfo.headerHash = algo::toHash256("2d794e900dcad779e658de9078d9a88eee87d75f7b09a8fdd270d3a8e76650c7");
         jobInfo.boundary = algo::toHash256("0001869e7a058e2aaf266cd2f166fb85c98d651e60eadbbe72bb0a36f8802805");
         jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
-        jobInfo.epoch = static_cast<int32_t>(jobInfo.blockNumber / algo::firopow::EPOCH_LENGTH);
+        jobInfo.epoch = cast32(jobInfo.blockNumber / algo::firopow::EPOCH_LENGTH);
         jobInfo.period = jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
     }
 };
@@ -119,7 +119,7 @@ namespace resolver::test
         t.jobInfo.boundaryU64 = algo::toUINT64(t.jobInfo.boundary);
         // Derive the epoch from the block number, as production does
         // (StratumProgPOW::deriveEpoch), instead of hand-feeding it.
-        t.jobInfo.epoch       = static_cast<int32_t>(blockNumber / algo::firopow::EPOCH_LENGTH);
+        t.jobInfo.epoch       = cast32(blockNumber / algo::firopow::EPOCH_LENGTH);
         t.jobInfo.period      = t.jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
 
         ASSERT_TRUE(t.resolver.updateMemory(t.jobInfo));
