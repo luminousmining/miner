@@ -39,5 +39,7 @@ add_custom_target(copy_progpow_cpp_files ALL
 
 add_subdirectory(cuda)
 add_subdirectory(opencl)
+add_subdirectory(tests)
 
 set(SOURCES_ALGO_PROGPOW ${HEADERS} ${SOURCES} PARENT_SCOPE)
+set(SOURCES_ALGO_PROGPOW_TESTS ${SOURCES_ALGO_PROGPOW_TESTS} PARENT_SCOPE)
