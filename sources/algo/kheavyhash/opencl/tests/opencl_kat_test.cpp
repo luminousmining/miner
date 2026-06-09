@@ -1,41 +1,39 @@
-// Host harness that runs the kHeavyHash OpenCL kernels on whatever OpenCL
-// device the ICD exposes (POCL/CPU in CI, a real GPU otherwise) and asserts
-// each stage is BIT-IDENTICAL to the CPU reference's known-answer vectors.
+// Host harness that runs the kHeavyHash OpenCL kernels on whatever OpenCL device the
+// ICD exposes (POCL/CPU in the cross-build & dev harness, a real GPU on the rig) and
+// asserts each stage is BIT-IDENTICAL to the CPU reference's known-answer vectors.
 //
-// Single source of truth: the .cl file shipped to the miner is loaded at
-// runtime (path baked in as KH_CL_PATH), so there is no second copy of the
-// kernel to drift.
-
-#define CL_TARGET_OPENCL_VERSION 300
+// The program is assembled and compiled through common::KernelGeneratorOpenCL -- the
+// same path the production resolver uses -- instead of a hand-rolled
+// clCreateProgramWithSource. The shipped .cl is loaded at runtime (self-contained, no
+// inner #include), so there is no second copy of the kernel to drift. CL errors are
+// decoded with opencl_error.hpp (openclShowError).
 
 #include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <vector>
 
-#include <CL/cl.h>
+#include <CL/opencl.hpp>
 #include <gtest/gtest.h>
 
 #include <algo/kheavyhash/matrix.hpp>
+#include <algo/kheavyhash/result.hpp>
+#include <common/error/opencl_error.hpp>
+#include <common/kernel_generator/opencl.hpp>
 #include "kheavyhash_test_vectors.hpp"
+
 
 namespace
 {
     using kheavyhash::Hash256;
     using kheavyhash::Matrix;
 
-    void clCheck(cl_int const err, char const* what)
-    {
-        ASSERT_EQ(CL_SUCCESS, err) << what << " failed: " << err;
-    }
-
 
     std::vector<uint16_t> flatten(Matrix const& matrix)
     {
-        std::vector<uint16_t> flat;
+        std::vector<uint16_t> flat{};
         flat.reserve(64 * 64);
         for (int r{ 0 }; r < 64; ++r)
         {
@@ -48,108 +46,82 @@ namespace
     }
 
 
-    // One OpenCL context/program, built once and shared by every test.
+    // Resolve the shipped .cl: env override (fast iteration on the rig) first, then the
+    // compile-time in-tree source path (POCL/dev), then the deployed path next to the
+    // binary. First that opens wins, so the same unit_test runs in the dev harness and on
+    // a real GPU. Returns "" if none open.
+    std::string resolveKernelPath()
+    {
+        char const* const candidates[3]{ std::getenv("KH_CL_PATH"), KH_CL_PATH,
+                                         "kernel/kheavyhash/kheavyhash.cl" };
+        for (char const* const cand : candidates)
+        {
+            if (nullptr != cand && std::ifstream{ cand }.good())
+            {
+                return cand;
+            }
+        }
+        return "";
+    }
+
+
+    // One built program, shared by every test; each test pulls its kernel by name.
     class OpenClKat : public ::testing::Test
     {
-    protected:
-        static cl_context       context;
-        static cl_command_queue queue;
-        static cl_program       program;
-        static cl_device_id     device;
+      protected:
+        static cl::Device                    device;
+        static cl::Context                   context;
+        static cl::CommandQueue              queue;
+        static common::KernelGeneratorOpenCL generator;
 
         static void SetUpTestSuite()
         {
-            cl_platform_id platform{};
-            cl_uint        numPlatforms{ 0 };
-            clCheck(clGetPlatformIDs(1, &platform, &numPlatforms), "clGetPlatformIDs");
-            ASSERT_GT(numPlatforms, 0u) << "no OpenCL platform";
-
-            cl_uint numDevices{ 0 };
-            clCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, &numDevices), "clGetDeviceIDs");
-            ASSERT_GT(numDevices, 0u) << "no OpenCL device";
-
-            cl_int err{ CL_SUCCESS };
-            context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &err);
-            clCheck(err, "clCreateContext");
-            queue = clCreateCommandQueueWithProperties(context, device, nullptr, &err);
-            clCheck(err, "clCreateCommandQueue");
-
-            // Resolve the .cl: env override (fast iteration on the rig) first,
-            // then the compile-time source path (standalone/POCL CI), then the
-            // path the miner build deploys next to the binary. First that opens
-            // wins, so the same unit_test.exe works in CI and on a real GPU.
-            std::string       clPath{};
+            try
             {
-                char const*                    candidates[3]{ std::getenv("KH_CL_PATH"),
-                                                              KH_CL_PATH,
-                                                              "kernel/kheavyhash/kheavyhash.cl" };
-                for (char const* const cand : candidates)
-                {
-                    if (nullptr != cand && std::ifstream{ cand }.good())
-                    {
-                        clPath = cand;
-                        break;
-                    }
-                }
+                std::vector<cl::Platform> platforms{};
+                cl::Platform::get(&platforms);
+                ASSERT_FALSE(platforms.empty()) << "no OpenCL platform";
+
+                std::vector<cl::Device> devices{};
+                platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &devices);
+                ASSERT_FALSE(devices.empty()) << "no OpenCL device";
+
+                device  = devices[0];
+                context = cl::Context(device);
+                queue   = cl::CommandQueue(context, device);
+
+                std::string const clPath{ resolveKernelPath() };
+                ASSERT_FALSE(clPath.empty()) << "cannot open kernel source (tried env KH_CL_PATH, " << KH_CL_PATH
+                                             << ", kernel/kheavyhash/kheavyhash.cl)";
+
+                generator.clear();
+                generator.setKernelName("search");
+                generator.addDefine("MAX_RESULT", algo::kheavyhash::MAX_RESULT);
+                ASSERT_TRUE(generator.appendFile(clPath)) << "cannot append kernel source: " << clPath;
+                ASSERT_TRUE(generator.build(&device, &context)) << "kernel build failed (see build log above)";
             }
-            ASSERT_FALSE(clPath.empty()) << "cannot open kernel source (tried env KH_CL_PATH, "
-                                         << KH_CL_PATH << ", kernel/kheavyhash/kheavyhash.cl)";
-            std::ifstream     in{ clPath };
-            ASSERT_TRUE(in.good()) << "cannot open kernel source: " << clPath;
-            std::stringstream ss;
-            ss << in.rdbuf();
-            std::string const src{ ss.str() };
-            char const*       srcPtr{ src.c_str() };
-            size_t const      srcLen{ src.size() };
-
-            program = clCreateProgramWithSource(context, 1, &srcPtr, &srcLen, &err);
-            clCheck(err, "clCreateProgramWithSource");
-            err = clBuildProgram(program, 1, &device, "", nullptr, nullptr);
-            if (CL_SUCCESS != err)
+            catch (cl::Error const& clErr)
             {
-                size_t logSize{ 0 };
-                clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
-                std::string log(logSize, '\0');
-                clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log.data(), nullptr);
-                FAIL() << "clBuildProgram failed:\n" << log;
+                FAIL() << openclShowError(clErr.err()) << " - " << clErr.what();
             }
         }
 
-        static void TearDownTestSuite()
+        cl::Kernel kernel(char const* name)
         {
-            clReleaseProgram(program);
-            clReleaseCommandQueue(queue);
-            clReleaseContext(context);
+            return cl::Kernel(generator.clProgram, name);
         }
 
-        cl_mem makeBuf(cl_mem_flags const flags, size_t const bytes, void const* host)
+        void run(cl::Kernel& k, size_t const global)
         {
-            cl_int err{ CL_SUCCESS };
-            cl_mem buf{ clCreateBuffer(context, flags, bytes, const_cast<void*>(host), &err) };
-            clCheck(err, "clCreateBuffer");
-            return buf;
-        }
-
-        cl_kernel kernel(char const* name)
-        {
-            cl_int    err{ CL_SUCCESS };
-            cl_kernel k{ clCreateKernel(program, name, &err) };
-            clCheck(err, "clCreateKernel");
-            return k;
-        }
-
-        void run(cl_kernel k, size_t const global)
-        {
-            clCheck(clEnqueueNDRangeKernel(queue, k, 1, nullptr, &global, nullptr, 0, nullptr, nullptr),
-                    "clEnqueueNDRangeKernel");
-            clCheck(clFinish(queue), "clFinish");
+            queue.enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(global), cl::NullRange);
+            queue.finish();
         }
     };
 
-    cl_context       OpenClKat::context{ nullptr };
-    cl_command_queue OpenClKat::queue{ nullptr };
-    cl_program       OpenClKat::program{ nullptr };
-    cl_device_id     OpenClKat::device{ nullptr };
+    cl::Device                    OpenClKat::device{};
+    cl::Context                   OpenClKat::context{};
+    cl::CommandQueue              OpenClKat::queue{};
+    common::KernelGeneratorOpenCL OpenClKat::generator{};
 
 
     Hash256 toHash(std::array<uint8_t, 32> const& a)
@@ -166,85 +138,93 @@ namespace
 
 TEST_F(OpenClKat, PowHashMatchesReference)
 {
-    std::array<uint8_t, 32> pre{};
-    for (int i{ 0 }; i < 32; ++i)
+    try
     {
-        pre[i] = kheavyhash::kat::POW_KAT_PRE[i];
+        std::array<uint8_t, 32> pre{};
+        for (int i{ 0 }; i < 32; ++i)
+        {
+            pre[i] = kheavyhash::kat::POW_KAT_PRE[i];
+        }
+        std::array<uint8_t, 32> out{};
+
+        cl::Buffer preBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, pre.size(), pre.data() };
+        cl::Buffer outBuf{ context, CL_MEM_WRITE_ONLY, out.size() };
+        cl::Kernel k{ kernel("test_pow_hash") };
+        cl_ulong   ts{ kheavyhash::kat::POW_KAT_TIMESTAMP };
+        cl_ulong   nonce{ kheavyhash::kat::POW_KAT_NONCE };
+        k.setArg(0u, preBuf);
+        k.setArg(1u, ts);
+        k.setArg(2u, nonce);
+        k.setArg(3u, outBuf);
+        run(k, 1);
+        queue.enqueueReadBuffer(outBuf, CL_TRUE, 0, out.size(), out.data());
+
+        EXPECT_EQ(out, kheavyhash::kat::POW_KAT_EXPECTED);
     }
-    std::array<uint8_t, 32> out{};
-
-    cl_mem    preBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32, pre.data()) };
-    cl_mem    outBuf{ makeBuf(CL_MEM_WRITE_ONLY, 32, nullptr) };
-    cl_kernel k{ kernel("test_pow_hash") };
-    cl_ulong  ts{ kheavyhash::kat::POW_KAT_TIMESTAMP };
-    cl_ulong  nonce{ kheavyhash::kat::POW_KAT_NONCE };
-    clCheck(clSetKernelArg(k, 0, sizeof(cl_mem), &preBuf), "arg0");
-    clCheck(clSetKernelArg(k, 1, sizeof(cl_ulong), &ts), "arg1");
-    clCheck(clSetKernelArg(k, 2, sizeof(cl_ulong), &nonce), "arg2");
-    clCheck(clSetKernelArg(k, 3, sizeof(cl_mem), &outBuf), "arg3");
-    run(k, 1);
-    clCheck(clEnqueueReadBuffer(queue, outBuf, CL_TRUE, 0, 32, out.data(), 0, nullptr, nullptr), "read");
-
-    EXPECT_EQ(out, kheavyhash::kat::POW_KAT_EXPECTED);
-
-    clReleaseKernel(k);
-    clReleaseMemObject(preBuf);
-    clReleaseMemObject(outBuf);
+    catch (cl::Error const& clErr)
+    {
+        FAIL() << openclShowError(clErr.err()) << " - " << clErr.what();
+    }
 }
 
 
 TEST_F(OpenClKat, KHeavyHashMatchesReference)
 {
-    std::array<uint8_t, 32> out{};
-    cl_mem    inBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32,
-                             const_cast<uint8_t*>(kheavyhash::kat::HEAVY_INPUT.data())) };
-    cl_mem    outBuf{ makeBuf(CL_MEM_WRITE_ONLY, 32, nullptr) };
-    cl_kernel k{ kernel("test_kheavy") };
-    clCheck(clSetKernelArg(k, 0, sizeof(cl_mem), &inBuf), "arg0");
-    clCheck(clSetKernelArg(k, 1, sizeof(cl_mem), &outBuf), "arg1");
-    run(k, 1);
-    clCheck(clEnqueueReadBuffer(queue, outBuf, CL_TRUE, 0, 32, out.data(), 0, nullptr, nullptr), "read");
+    try
+    {
+        std::array<uint8_t, 32> out{};
+        cl::Buffer inBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, kheavyhash::kat::HEAVY_INPUT.size(),
+                          const_cast<uint8_t*>(kheavyhash::kat::HEAVY_INPUT.data()) };
+        cl::Buffer outBuf{ context, CL_MEM_WRITE_ONLY, out.size() };
+        cl::Kernel k{ kernel("test_kheavy") };
+        k.setArg(0u, inBuf);
+        k.setArg(1u, outBuf);
+        run(k, 1);
+        queue.enqueueReadBuffer(outBuf, CL_TRUE, 0, out.size(), out.data());
 
-    EXPECT_EQ(out, kheavyhash::kat::KHEAVY_EXPECTED);
-
-    clReleaseKernel(k);
-    clReleaseMemObject(inBuf);
-    clReleaseMemObject(outBuf);
+        EXPECT_EQ(out, kheavyhash::kat::KHEAVY_EXPECTED);
+    }
+    catch (cl::Error const& clErr)
+    {
+        FAIL() << openclShowError(clErr.err()) << " - " << clErr.what();
+    }
 }
 
 
 TEST_F(OpenClKat, HeavyHashMatchesReference)
 {
-    std::vector<uint16_t> const flat{ flatten(kheavyhash::kat::HEAVY_TEST_MATRIX) };
-    std::array<uint8_t, 32>     out{};
+    try
+    {
+        std::vector<uint16_t> const flat{ flatten(kheavyhash::kat::HEAVY_TEST_MATRIX) };
+        std::array<uint8_t, 32>     out{};
 
-    cl_mem    matBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flat.size() * sizeof(uint16_t),
-                              const_cast<uint16_t*>(flat.data())) };
-    cl_mem    h1Buf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32,
-                             const_cast<uint8_t*>(kheavyhash::kat::HEAVY_INPUT.data())) };
-    cl_mem    outBuf{ makeBuf(CL_MEM_WRITE_ONLY, 32, nullptr) };
-    cl_kernel k{ kernel("test_heavy_hash") };
-    clCheck(clSetKernelArg(k, 0, sizeof(cl_mem), &matBuf), "arg0");
-    clCheck(clSetKernelArg(k, 1, sizeof(cl_mem), &h1Buf), "arg1");
-    clCheck(clSetKernelArg(k, 2, sizeof(cl_mem), &outBuf), "arg2");
-    run(k, 1);
-    clCheck(clEnqueueReadBuffer(queue, outBuf, CL_TRUE, 0, 32, out.data(), 0, nullptr, nullptr), "read");
+        cl::Buffer matBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flat.size() * sizeof(uint16_t),
+                           const_cast<uint16_t*>(flat.data()) };
+        cl::Buffer h1Buf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, kheavyhash::kat::HEAVY_INPUT.size(),
+                          const_cast<uint8_t*>(kheavyhash::kat::HEAVY_INPUT.data()) };
+        cl::Buffer outBuf{ context, CL_MEM_WRITE_ONLY, out.size() };
+        cl::Kernel k{ kernel("test_heavy_hash") };
+        k.setArg(0u, matBuf);
+        k.setArg(1u, h1Buf);
+        k.setArg(2u, outBuf);
+        run(k, 1);
+        queue.enqueueReadBuffer(outBuf, CL_TRUE, 0, out.size(), out.data());
 
-    EXPECT_EQ(out, kheavyhash::kat::HEAVY_EXPECTED);
-
-    clReleaseKernel(k);
-    clReleaseMemObject(matBuf);
-    clReleaseMemObject(h1Buf);
-    clReleaseMemObject(outBuf);
+        EXPECT_EQ(out, kheavyhash::kat::HEAVY_EXPECTED);
+    }
+    catch (cl::Error const& clErr)
+    {
+        FAIL() << openclShowError(clErr.err()) << " - " << clErr.what();
+    }
 }
 
 
-// Full per-nonce mining kernel: given the job's matrix/header/target, the work
-// item whose nonce reproduces FP_FINAL must report a hit at exactly FP_NONCE,
-// and must NOT report one against a target one unit below FP_FINAL.
+// Full per-nonce mining kernel: given the job's matrix/header/target, the work item
+// whose nonce reproduces FP_FINAL must report a hit at exactly FP_NONCE, and must NOT
+// report one against a target one unit below FP_FINAL.
 class SearchKernel : public OpenClKat, public ::testing::WithParamInterface<char const*>
 {
-protected:
+  protected:
     // Mirrors the kernel's Result struct (and algo::ethash::Result layout).
     struct alignas(8) Result
     {
@@ -259,65 +239,73 @@ protected:
         Matrix const                matrix{ kheavyhash::generateMatrix(toHash(kheavyhash::kat::FP_PRE)) };
         std::vector<uint16_t> const flat{ flatten(matrix) };
 
-        Result result{};
-        cl_mem matBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flat.size() * sizeof(uint16_t),
-                               const_cast<uint16_t*>(flat.data())) };
-        cl_mem preBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32,
-                               const_cast<uint8_t*>(kheavyhash::kat::FP_PRE.data())) };
-        cl_mem tgtBuf{ makeBuf(CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 32,
-                               const_cast<uint8_t*>(target.data())) };
-        cl_mem resBuf{ makeBuf(CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Result), &result) };
+        Result     result{};
+        cl::Buffer matBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flat.size() * sizeof(uint16_t),
+                           const_cast<uint16_t*>(flat.data()) };
+        cl::Buffer preBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, kheavyhash::kat::FP_PRE.size(),
+                           const_cast<uint8_t*>(kheavyhash::kat::FP_PRE.data()) };
+        cl::Buffer tgtBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, target.size(),
+                           const_cast<uint8_t*>(target.data()) };
+        cl::Buffer resBuf{ context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Result), &result };
 
-        cl_kernel k{ kernel(GetParam()) };
-        cl_ulong  ts{ kheavyhash::kat::FP_TIMESTAMP };
-        clCheck(clSetKernelArg(k, 0, sizeof(cl_mem), &matBuf), "arg0");
-        clCheck(clSetKernelArg(k, 1, sizeof(cl_mem), &preBuf), "arg1");
-        clCheck(clSetKernelArg(k, 2, sizeof(cl_mem), &tgtBuf), "arg2");
-        clCheck(clSetKernelArg(k, 3, sizeof(cl_ulong), &ts), "arg3");
-        clCheck(clSetKernelArg(k, 4, sizeof(cl_ulong), &nonceStart), "arg4");
-        clCheck(clSetKernelArg(k, 5, sizeof(cl_mem), &resBuf), "arg5");
+        cl::Kernel k{ kernel(GetParam()) };
+        cl_ulong   ts{ kheavyhash::kat::FP_TIMESTAMP };
+        k.setArg(0u, matBuf);
+        k.setArg(1u, preBuf);
+        k.setArg(2u, tgtBuf);
+        k.setArg(3u, ts);
+        k.setArg(4u, nonceStart);
+        k.setArg(5u, resBuf);
         run(k, globalSize);
-        clCheck(clEnqueueReadBuffer(queue, resBuf, CL_TRUE, 0, sizeof(Result), &result, 0, nullptr, nullptr),
-                "read result");
+        queue.enqueueReadBuffer(resBuf, CL_TRUE, 0, sizeof(Result), &result);
 
-        clReleaseKernel(k);
-        clReleaseMemObject(matBuf);
-        clReleaseMemObject(preBuf);
-        clReleaseMemObject(tgtBuf);
-        clReleaseMemObject(resBuf);
         foundCount = result.count;
         return result.nonces[0];
     }
 };
 
 
-// FP_TARGET_PASS == FP_FINAL and FP_TARGET_FAIL == FP_FINAL - 1 (LSB decremented).
-// A single work-item at exactly FP_NONCE that passes the first and fails the
-// second pins the kernel's end-to-end pow output to FP_FINAL bit-for-bit, and
-// proves the hit-reporting (atomic_inc + foundNonce = nonceStart + gid) path.
+// FP_TARGET_PASS == FP_FINAL and FP_TARGET_FAIL == FP_FINAL - 1 (LSB decremented). A
+// single work-item at exactly FP_NONCE that passes the first and fails the second pins
+// the kernel's end-to-end pow output to FP_FINAL bit-for-bit, and proves the
+// hit-reporting (atomic_inc + foundNonce = nonceStart + gid) path.
 TEST_P(SearchKernel, ReportsHitAtWinningNonce)
 {
-    cl_uint        count{ 0 };
-    cl_ulong const found{ runSearch(kheavyhash::kat::FP_TARGET_PASS, kheavyhash::kat::FP_NONCE, 1, count) };
+    try
+    {
+        cl_uint        count{ 0 };
+        cl_ulong const found{ runSearch(kheavyhash::kat::FP_TARGET_PASS, kheavyhash::kat::FP_NONCE, 1, count) };
 
-    EXPECT_EQ(1u, count);
-    EXPECT_EQ(kheavyhash::kat::FP_NONCE, found);
+        EXPECT_EQ(1u, count);
+        EXPECT_EQ(kheavyhash::kat::FP_NONCE, found);
+    }
+    catch (cl::Error const& clErr)
+    {
+        FAIL() << openclShowError(clErr.err()) << " - " << clErr.what();
+    }
 }
 
 
 TEST_P(SearchKernel, NoHitWhenPowExceedsTarget)
 {
-    cl_uint count{ 0 };
-    runSearch(kheavyhash::kat::FP_TARGET_FAIL, kheavyhash::kat::FP_NONCE, 1, count);
+    try
+    {
+        cl_uint count{ 0 };
+        runSearch(kheavyhash::kat::FP_TARGET_FAIL, kheavyhash::kat::FP_NONCE, 1, count);
 
-    EXPECT_EQ(0u, count);
+        EXPECT_EQ(0u, count);
+    }
+    catch (cl::Error const& clErr)
+    {
+        FAIL() << openclShowError(clErr.err()) << " - " << clErr.what();
+    }
 }
 
 
-// The shipped `search` kernel is pinned bit-identical against the CPU reference:
-// the winning-nonce / boundary vectors must hold end-to-end. A drift of a single
-// bit in its LDS staging, udot4 matmul, or unrolled keccak fails here. The
-// optimisation variants that led to it are exercised by the AMD benchmark.
+// The shipped `search` kernel is pinned bit-identical against the CPU reference: the
+// winning-nonce / boundary vectors must hold end-to-end. A drift of a single bit in its
+// LDS staging, udot4 matmul, or unrolled keccak fails here. The optimisation variants
+// that led to it are exercised by the AMD benchmark.
 INSTANTIATE_TEST_SUITE_P(Search,
                          SearchKernel,
                          ::testing::Values("search"),
