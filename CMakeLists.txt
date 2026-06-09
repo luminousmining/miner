@@ -24,11 +24,7 @@ option(BUILD_EXE_BENCHMARK "Build benchmark executable" ON)
 option(TOOL_TRACE_MEMORY "Tool for develloper, trace memory allocation" OFF)
 option(TOOL_MOCKER "Tool for develloper, insert devices fake" OFF)
 option(TOOL_ANALYZER "Tool for develloper, analyzer source code" OFF)
-### DEPENDENCY PROVISIONING
-# When ON, Boost/OpenSSL/OpenCL are resolved through a vcpkg toolchain file
-# (CMAKE_TOOLCHAIN_FILE) instead of the hard-coded C:\Boost / /usr/local paths
-# below. Used by the Docker images and CMake presets.
-option(USE_VCPKG "Resolve Boost/OpenSSL/OpenCL via a vcpkg toolchain instead of hard-coded paths" OFF)
+option(USE_VCPKG "Resolve dependencies via a vcpkg toolchain instead of hard-coded paths" OFF)
 
 ################################################################################
 ### DEFAULT BUILD TYPE                                                      ####
@@ -122,79 +118,79 @@ endif()
 
 if (WIN32)
     if (MSVC)
-################################################################################
-### VISUAL STUDIO                                                           ####
-################################################################################
-    # Only the Visual Studio multi-config generators honour the platform spec
-    # (the `-A x64` arg). clang-cl also reports MSVC=true, but its windows-cross
-    # preset drives Ninja, where a non-empty CMAKE_GENERATOR_PLATFORM leaks into
-    # FetchContent/try_compile sub-builds (e.g. googletest) and fails with
-    # "Ninja does not support platform specification". Gate on the generator.
-    if (CMAKE_GENERATOR MATCHES "Visual Studio")
-        set(CMAKE_GENERATOR_PLATFORM "x64")
-    endif()
-    set(VISUAL_STUDIO_VERSION 143)
-    set(CMAKE_SYSTEM_VERSION 10.0.22621.0)
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
-    else()
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-    endif()
+        ################################################################################
+        ### VISUAL STUDIO                                                           ####
+        ################################################################################
+        # Only the Visual Studio multi-config generators honour the platform spec
+        # (the `-A x64` arg). clang-cl also reports MSVC=true, but its windows-cross
+        # preset drives Ninja, where a non-empty CMAKE_GENERATOR_PLATFORM leaks into
+        # FetchContent/try_compile sub-builds (e.g. googletest) and fails with
+        # "Ninja does not support platform specification". Gate on the generator.
+        if (CMAKE_GENERATOR MATCHES "Visual Studio")
+            set(CMAKE_GENERATOR_PLATFORM "x64")
+        endif()
+        set(VISUAL_STUDIO_VERSION 143)
+        set(CMAKE_SYSTEM_VERSION 10.0.22621.0)
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+        else()
+            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+        endif()
 
-    macro(get_WIN32_WINNT version)
-    if(CMAKE_SYSTEM_VERSION)
-        set(ver ${CMAKE_SYSTEM_VERSION})
-        string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-        string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-        # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-        if("${verMajor}" MATCHES "10")
-        set(verMajor "A")
-        string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-        endif("${verMajor}" MATCHES "10")
-        # Remove all remaining '.' characters.
-        string(REPLACE "." "" ver ${ver})
-        # Prepend each digit with a zero.
-        string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-        set(${version} "0x${ver}")
-    endif(CMAKE_SYSTEM_VERSION)
-    endmacro(get_WIN32_WINNT)
-    get_win32_winnt(WIN32_VERSION)
-    add_compile_definitions(
-        _WIN32_WINNT=${WIN32_VERSION} # Set Windows API version
-        NOMINMAX                      # Disable min/max macros from Windows.h
-    )
-    add_compile_options(
-        /W4 # Warning level 4 (high)
-        /MP # Multi-processor compilation
-    )
+        macro(get_WIN32_WINNT version)
+        if(CMAKE_SYSTEM_VERSION)
+            set(ver ${CMAKE_SYSTEM_VERSION})
+            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
+            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
+            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
+            if("${verMajor}" MATCHES "10")
+            set(verMajor "A")
+            string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
+            endif("${verMajor}" MATCHES "10")
+            # Remove all remaining '.' characters.
+            string(REPLACE "." "" ver ${ver})
+            # Prepend each digit with a zero.
+            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
+            set(${version} "0x${ver}")
+        endif(CMAKE_SYSTEM_VERSION)
+        endmacro(get_WIN32_WINNT)
+        get_win32_winnt(WIN32_VERSION)
+        add_compile_definitions(
+            _WIN32_WINNT=${WIN32_VERSION} # Set Windows API version
+            NOMINMAX                      # Disable min/max macros from Windows.h
+        )
+        add_compile_options(
+            /W4 # Warning level 4 (high)
+            /MP # Multi-processor compilation
+        )
     else()
-################################################################################
-### WINDOWS, NON-MSVC ABI (GNU MinGW-w64 g++ fallback)                      ####
-################################################################################
-    # NOTE: the supported Linux->Windows cross build uses clang-cl + xwin, which
-    # reports MSVC=true and therefore takes the Visual Studio branch above (MSVC
-    # ABI, single binary co-linking AMD + CUDA). This branch is only reached by a
-    # true GNU MinGW-w64 g++ compiler (GNU ABI) and is kept as a fallback.
-    add_compile_definitions(
-        _WIN32_WINNT=0x0A00 # Windows 10 API version
-        NOMINMAX            # Disable min/max macros from Windows.h
-    )
-    add_compile_options(
-        -Wall
-        -Wextra
-        -Wshadow
-        -Wdouble-promotion
-        -Wformat=2
-        -Wnull-dereference
-    )
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_compile_options(-O0 -g3 -ggdb)
-    else()
-        add_compile_options(-O3)
-    endif()
-    # Produce a self-contained .exe: statically link the toolchain runtimes so we
-    # don't have to ship libc++/libunwind/compiler-rt DLLs next to the binary.
-    add_link_options(-static)
+        ################################################################################
+        ### WINDOWS, NON-MSVC ABI (GNU MinGW-w64 g++ fallback)                      ####
+        ################################################################################
+        # NOTE: the supported Linux->Windows cross build uses clang-cl + xwin, which
+        # reports MSVC=true and therefore takes the Visual Studio branch above (MSVC
+        # ABI, single binary co-linking AMD + CUDA). This branch is only reached by a
+        # true GNU MinGW-w64 g++ compiler (GNU ABI) and is kept as a fallback.
+        add_compile_definitions(
+            _WIN32_WINNT=0x0A00 # Windows 10 API version
+            NOMINMAX            # Disable min/max macros from Windows.h
+        )
+        add_compile_options(
+            -Wall
+            -Wextra
+            -Wshadow
+            -Wdouble-promotion
+            -Wformat=2
+            -Wnull-dereference
+        )
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            add_compile_options(-O0 -g3 -ggdb)
+        else()
+            add_compile_options(-O3)
+        endif()
+        # Produce a self-contained .exe: statically link the toolchain runtimes so we
+        # don't have to ship libc++/libunwind/compiler-rt DLLs next to the binary.
+        add_link_options(-static)
     endif()
 else()
 ################################################################################
@@ -288,7 +284,13 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
         set(CLANG_CUDA_PATH "/usr/local/cuda")
     endif()
     set(CLANG_CUDA_COMPILER "/opt/llvm-mingw/bin/clang++")
-    set(CLANG_CUDA_GPU_ARCHS sm_75 sm_86 sm_89 sm_120 sm_121)
+    # Mirror the nvcc path: NVCC_ARCH_COMPUTE narrows the build to a single GPU
+    # target for fast dev iteration; unset builds the full default arch set.
+    if (NVCC_ARCH_COMPUTE)
+        set(CLANG_CUDA_GPU_ARCHS sm_${NVCC_ARCH_COMPUTE})
+    else()
+        set(CLANG_CUDA_GPU_ARCHS sm_75 sm_86 sm_89 sm_120 sm_121)
+    endif()
     set(CLANG_CUDA_XWIN_INC
         "-I${_xwin}/crt/include" "-I${_xwin}/sdk/include/ucrt"
         "-I${_xwin}/sdk/include/um" "-I${_xwin}/sdk/include/shared")
@@ -314,15 +316,30 @@ if (BUILD_NVIDIA AND USE_CLANG_CUDA)
                 # Release device codegen: -O3 -DNDEBUG matches the nvcc release path
                 # (CUDA_NVCC_FLAGS_RELEASE). Without it clang defaults to -O0 and the
                 # mining kernels -- the hot path -- ship unoptimized.
-                COMMAND "${CLANG_CUDA_COMPILER}" --target=x86_64-pc-windows-msvc -x cuda
-                        "${CMAKE_CURRENT_SOURCE_DIR}/${src}" -c -o "${_obj}"
-                        --cuda-path=${CLANG_CUDA_PATH} ${_archflags}
-                        -O3 -DNDEBUG
-                        -Wno-unknown-cuda-version -std=c++20 -fms-compatibility -fms-extensions
-                        -fms-runtime-lib=dll -Wno-unknown-attributes -D_MT -D_DLL
+                COMMAND "${CLANG_CUDA_COMPILER}"
+                        --target=x86_64-pc-windows-msvc
+                        -x cuda
+                        "${CMAKE_CURRENT_SOURCE_DIR}/${src}"
+                        -c
+                        -o "${_obj}"
+                        --cuda-path=${CLANG_CUDA_PATH}
+                        ${_archflags}
+                        -O3
+                        -DNDEBUG
+                        -Wno-unknown-cuda-version
+                        -std=c++20
+                        -fms-compatibility
+                        -fms-extensions
+                        -fms-runtime-lib=dll
+                        -Wno-unknown-attributes
+                        -D_MT
+                        -D_DLL
                         ${CLANG_CUDA_XWIN_INC}
-                        "-I${CMAKE_SOURCE_DIR}/sources" "-I${Boost_INCLUDE_DIR}"
-                        "-I${CUDA_INCLUDE_DIRS}" -D__LIB_CUDA -DCUDA_ENABLE
+                        "-I${CMAKE_SOURCE_DIR}/sources"
+                        "-I${Boost_INCLUDE_DIR}"
+                        "-I${CUDA_INCLUDE_DIRS}"
+                        -D__LIB_CUDA
+                        -DCUDA_ENABLE
                 DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${src}"
                 VERBATIM)
             list(APPEND _objs "${_obj}")
@@ -409,8 +426,14 @@ if (USE_VCPKG)
     find_package(Boost CONFIG REQUIRED COMPONENTS atomic chrono filesystem system json thread serialization program_options)
     if (NOT Boost_LIBRARIES)
         set(Boost_LIBRARIES
-            Boost::atomic Boost::chrono Boost::filesystem Boost::system
-            Boost::json Boost::thread Boost::serialization Boost::program_options)
+            Boost::atomic
+            Boost::chrono
+            Boost::filesystem
+            Boost::system
+            Boost::json
+            Boost::thread
+            Boost::serialization
+            Boost::program_options)
     endif()
     # The legacy FindCUDA/nvcc path (sources/CMakeLists.txt feeds it
     # ${Boost_INCLUDE_DIR}) does NOT pick up include dirs from imported targets,
@@ -449,9 +472,10 @@ endif()
 if (UNIX)
     find_package(GnuTLS)
 endif()
-# Only needed for AMD builds, and only if find_package(OpenCL) above didn't
-# already populate OpenCL_LIBRARIES (it does under vcpkg). The previous
-# unconditional form also forced an OpenCL dependency onto NVIDIA/CPU-only builds.
+# find_package(OpenCL) above already sets OpenCL_LIBRARIES under vcpkg. On the
+# hard-coded-path build it may set only the include dir, so fall back to a manual
+# search -- AMD-only, since the old unconditional form forced an OpenCL dependency
+# onto NVIDIA/CPU-only builds too.
 if (BUILD_AMD AND NOT OpenCL_LIBRARIES)
     find_library(OpenCL_LIBRARIES NAMES OpenCL PATHS ${OpenCL_LIBRARY_DIR} PATH_SUFFIXES lib REQUIRED)
 endif()

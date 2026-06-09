@@ -31,6 +31,7 @@
     {
       "name": "windows-cross",
       "displayName": "Windows cross (clang-cl + xwin, MSVC ABI; GPU selected via -D)",
+      "description": "OpenCL (Khronos ICD loader) and OpenSSL (MSVC libs) are staged by the Docker image, not vcpkg, so no vcpkg manifest features are needed here; vcpkg supplies only Boost.",
       "inherits": "vcpkg-base",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/windows-cross",

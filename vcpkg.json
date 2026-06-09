@@ -35,7 +35,7 @@
       ]
     },
     "openssl": {
-      "description": "OpenSSL via vcpkg (stratum TLS). Omitted on windows-cross (prebuilt MSVC libs); used on linux.",
+      "description": "OpenSSL via vcpkg (stratum TLS). Omitted on the windows-cross build (OpenSSL is supplied there as prebuilt MSVC libs, not by vcpkg); used on linux.",
       "dependencies": [
         "openssl"
       ]
