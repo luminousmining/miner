@@ -79,7 +79,7 @@ sudo ln -s /opt/cmake-3.26.4-linux-x86_64/bin/* /usr/local/bin
   
 compiler :
 ```sh
-sudo apt install -y build-essential libstdc++-12-dev libc++abi-12-dev gnutls-dev cppcheck checkinstall clang-15 libx11-dev
+sudo apt install -y build-essential libstdc++-12-dev libc++abi-12-dev gnutls-dev cppcheck checkinstall clang-15 libx11-dev git
 ```
   
 openssl :
@@ -87,7 +87,7 @@ openssl :
 git clone https://github.com/openssl/openssl.git
 cd openssl
 ./Configure
-make
+make -j$(nproc)
 sudo make install
 ```
   
@@ -102,7 +102,7 @@ git submodule update
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DOPENCL_SDK_BUILD_SAMPLES=OFF -DOPENCL_SDK_TEST_SAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
-sudo cmake --build . --target install
+sudo cmake --build . --target install -j$(nproc)
 ```
   
 cuda :
@@ -130,7 +130,7 @@ gpu performance api:
 ```sh
 wget https://github.com/GPUOpen-Tools/gpu_performance_api/releases/download/v4.3-tag/GPUPerfAPI-Linux-4.3.0.2.tgz
 tar -xvf GPUPerfAPI-Linux-4.3.0.2.tgz
-mv 4_4 gpu_performance_api
+mv 4_3 gpu_performance_api
 ```
   
 # Platforms
