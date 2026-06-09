@@ -84,7 +84,7 @@ TEST_F(ResolverFiropowAmdTest, findNonce)
 TEST_F(ResolverFiropowAmdTest, notFindNonce)
 {
     initializeJob(0x85f22c9b3cd2f123);
-    jobInfo.boundaryU64 = 1ull;  // unsatisfiable boundary -> no share can clear it
+    jobInfo.boundaryU64 = 1ull; // unsatisfiable boundary -> no share can clear it
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -112,15 +112,15 @@ namespace resolver::test
         char const* const       expectedNonce,
         char const* const       expectedMix)
     {
-        t.jobInfo.nonce       = nonce;
+        t.jobInfo.nonce = nonce;
         t.jobInfo.blockNumber = blockNumber;
-        t.jobInfo.headerHash  = algo::toHash256(headerHashHex);
-        t.jobInfo.boundary    = algo::toHash256(boundaryHex);
+        t.jobInfo.headerHash = algo::toHash256(headerHashHex);
+        t.jobInfo.boundary = algo::toHash256(boundaryHex);
         t.jobInfo.boundaryU64 = algo::toUINT64(t.jobInfo.boundary);
         // Derive the epoch from the block number, as production does
         // (StratumProgPOW::deriveEpoch), instead of hand-feeding it.
-        t.jobInfo.epoch       = cast32(blockNumber / algo::firopow::EPOCH_LENGTH);
-        t.jobInfo.period      = t.jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
+        t.jobInfo.epoch = cast32(blockNumber / algo::firopow::EPOCH_LENGTH);
+        t.jobInfo.period = t.jobInfo.blockNumber / algo::firopow::MAX_PERIOD;
 
         ASSERT_TRUE(t.resolver.updateMemory(t.jobInfo));
         ASSERT_TRUE(t.resolver.updateConstants(t.jobInfo));
@@ -149,7 +149,7 @@ namespace resolver::test
 using resolver::test::checkFiroVector;
 
 
-TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector)  // block 1, epoch 0
+TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector) // block 1, epoch 0
 {
     checkFiroVector(
         *this,
@@ -162,7 +162,7 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector)  // block 1, epoch 0
 }
 
 
-TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1)  // block 1300, epoch 1
+TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1) // block 1300, epoch 1
 {
     checkFiroVector(
         *this,
@@ -175,7 +175,7 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1)  // block 1300,
 }
 
 
-TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10)  // block 13000, epoch 10
+TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10) // block 13000, epoch 10
 {
     checkFiroVector(
         *this,
@@ -193,7 +193,7 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10)  // block 1300
 // silently clamps the build launch at ~2^24 pages, leaving most of a multi-GB DAG
 // zero, so the digest was self-consistent but wrong (epoch 0/1/10 with smaller
 // DAGs passed; this and the live Firo epoch failed). Without the fix this fails.
-TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch419)  // block 545860
+TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch419) // block 545860
 {
     checkFiroVector(
         *this,
