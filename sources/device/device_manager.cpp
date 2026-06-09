@@ -44,10 +44,6 @@ device::DeviceManager& device::DeviceManager::instance()
 
 device::DeviceManager::~DeviceManager()
 {
-    for (auto [_, stratum] : stratums)
-    {
-        SAFE_DELETE(stratum);
-    }
 }
 
 
@@ -104,6 +100,7 @@ bool device::DeviceManager::initialize()
     ////////////////////////////////////////////////////////////////////////////
     if (common::PROFILE::SMART_MINING == config.profile)
     {
+        stratumSmartMining = std::make_shared<stratum::StratumSmartMining>();
         initializeStratumSmartMining();
         for (device::Device* device : devices)
         {
@@ -111,7 +108,7 @@ bool device::DeviceManager::initialize()
             {
                 continue;
             }
-            device->setStratumSmartMining(&stratumSmartMining);
+            device->setStratumSmartMining(stratumSmartMining.get());
         }
     }
     else
@@ -178,7 +175,7 @@ bool device::DeviceManager::initialize()
                 return false;
             }
 
-            stratum::Stratum* stratum{ stratums.at(customDeviceID) };
+            stratum::Stratum* stratum{ stratums.at(customDeviceID).get() };
             device->setAlgorithm(customAlgorithm);
             device->setStratum(stratum);
         }
@@ -192,18 +189,18 @@ bool device::DeviceManager::initializeStratumSmartMining()
 {
     common::Config const& config{ common::Config::instance() };
 
-    stratumSmartMining.host.assign(config.mining.host);
-    stratumSmartMining.port = config.mining.port;
-    stratumSmartMining.workerName.assign(config.mining.workerName);
-    stratumSmartMining.password.assign(config.mining.password);
+    stratumSmartMining->host.assign(config.mining.host);
+    stratumSmartMining->port = config.mining.port;
+    stratumSmartMining->workerName.assign(config.mining.workerName);
+    stratumSmartMining->password.assign(config.mining.password);
 
-    stratumSmartMining.setCallbackSetAlgorithm(
+    stratumSmartMining->setCallbackSetAlgorithm(
         std::bind(&device::DeviceManager::onSmartMiningSetAlgorithm, this, std::placeholders::_1));
 
-    stratumSmartMining.setCallbackUpdateJob(
+    stratumSmartMining->setCallbackUpdateJob(
         std::bind(&device::DeviceManager::onSmartMiningUpdateJob, this, std::placeholders::_1));
 
-    stratumSmartMining.setCallbackShareStatus(std::bind(
+    stratumSmartMining->setCallbackShareStatus(std::bind(
         &device::DeviceManager::onShareStatus,
         this,
         std::placeholders::_1,
@@ -216,8 +213,8 @@ bool device::DeviceManager::initializeStratumSmartMining()
 
 bool device::DeviceManager::initializeStratum(uint32_t const deviceId, algo::ALGORITHM const algorithm)
 {
-    stratum::Stratum*     stratum{ nullptr };
-    common::Config const& config{ common::Config::instance() };
+    std::shared_ptr<stratum::Stratum> stratum{ nullptr };
+    common::Config const&             config{ common::Config::instance() };
 
     if (true == containStratum(deviceId))
     {
@@ -442,7 +439,9 @@ bool device::DeviceManager::initializeAmd()
             device->id = castU32(devices.size());
 
             ////////////////////////////////////////////////////////////////////////////
-            cl_char topology[24]{0, };
+            cl_char topology[24]{
+                0,
+            };
             OPENCL_ER(
                 clGetDeviceInfo(device->clDevice.get(), CL_DEVICE_TOPOLOGY_AMD, sizeof(topology), &topology, nullptr));
             device->pciBus = castU32(topology[21]);
@@ -517,9 +516,9 @@ void device::DeviceManager::connectToPools()
 
 void device::DeviceManager::connectToSmartMining()
 {
-    if (true == stratumSmartMining.connect())
+    if (true == stratumSmartMining->connect())
     {
-        stratumSmartMining.wait();
+        stratumSmartMining->wait();
     }
 }
 
@@ -651,7 +650,7 @@ void device::DeviceManager::onSmartMiningSetAlgorithm(algo::ALGORITHM const algo
             continue;
         }
 
-        device->setStratumSmartMining(&stratumSmartMining);
+        device->setStratumSmartMining(stratumSmartMining.get());
         device->setAlgorithm(algorithm);
     }
 
@@ -703,10 +702,11 @@ bool device::DeviceManager::containStratum(uint32_t const deviceId) const
 }
 
 
-stratum::Stratum* device::DeviceManager::getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId)
+std::shared_ptr<stratum::Stratum>
+device::DeviceManager::getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId)
 {
     ////////////////////////////////////////////////////////////////////////////
-    stratum::Stratum* stratum{ nullptr };
+    std::shared_ptr<stratum::Stratum> stratum{ nullptr };
 
     ////////////////////////////////////////////////////////////////////////////
     auto it{ stratums.find(deviceId) };

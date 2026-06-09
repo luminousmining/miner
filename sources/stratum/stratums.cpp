@@ -4,71 +4,71 @@
 #include <stratum/stratums.hpp>
 
 
-stratum::Stratum* stratum::NewStratum(algo::ALGORITHM const algorithm)
+std::shared_ptr<stratum::Stratum> stratum::NewStratum(algo::ALGORITHM const algorithm)
 {
-    stratum::Stratum* stratum{ nullptr };
-    auto const&       config{ common::Config::instance() };
+    std::shared_ptr<stratum::Stratum> stratum{ nullptr };
+    auto const&                       config{ common::Config::instance() };
 
     switch (algorithm)
     {
         case algo::ALGORITHM::SHA256:
         {
-            stratum = NEW(stratum::StratumSha256);
+            stratum = std::make_shared<stratum::StratumSha256>();
             break;
         }
         case algo::ALGORITHM::ETHASH:
         {
-            stratum = NEW(stratum::StratumEthash);
+            stratum = std::make_shared<stratum::StratumEthash>();
             break;
         }
         case algo::ALGORITHM::ETCHASH:
         {
-            stratum = NEW(stratum::StratumEtchash);
+            stratum = std::make_shared<stratum::StratumEtchash>();
             break;
         }
         case algo::ALGORITHM::PROGPOW:
         {
-            stratum = NEW(stratum::StratumProgPOW);
+            stratum = std::make_shared<stratum::StratumProgPOW>();
             break;
         }
         case algo::ALGORITHM::PROGPOWQUAI:
         {
-            stratum = NEW(stratum::StratumProgpowQuai);
+            stratum = std::make_shared<stratum::StratumProgpowQuai>();
             break;
         }
         case algo::ALGORITHM::PROGPOWZ:
         {
-            stratum = NEW(stratum::StratumProgpowZ);
+            stratum = std::make_shared<stratum::StratumProgpowZ>();
             break;
         }
         case algo::ALGORITHM::KAWPOW:
         {
-            stratum = NEW(stratum::StratumKawPOW);
+            stratum = std::make_shared<stratum::StratumKawPOW>();
             break;
         }
         case algo::ALGORITHM::MEOWPOW:
         {
-            stratum = NEW(stratum::StratumMeowPOW);
+            stratum = std::make_shared<stratum::StratumMeowPOW>();
             break;
         }
         case algo::ALGORITHM::FIROPOW:
         {
-            stratum = NEW(stratum::StratumFiroPOW);
+            stratum = std::make_shared<stratum::StratumFiroPOW>();
             break;
         }
         case algo::ALGORITHM::EVRPROGPOW:
         {
-            stratum = NEW(stratum::StratumEvrprogPOW);
+            stratum = std::make_shared<stratum::StratumEvrprogPOW>();
             break;
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
         {
-            stratum = NEW(stratum::StratumAutolykosV2);
+            stratum = std::make_shared<stratum::StratumAutolykosV2>();
             break;
         }
         case algo::ALGORITHM::BLAKE3:
         {
-            stratum = NEW(stratum::StratumBlake3);
+            stratum = std::make_shared<stratum::StratumBlake3>();
             break;
         }
         case algo::ALGORITHM::UNKNOWN:

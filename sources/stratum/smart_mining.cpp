@@ -102,7 +102,7 @@ bool stratum::StratumSmartMining::onSmartMiningSetAlgo(boost::json::object const
     currentAlgorithm = algo::toEnum(algorithm);
     doSetAlgorithm(currentAlgorithm);
 
-    SAFE_DELETE(stratumPool);
+    stratumPool.reset();
     stratumPool = stratum::NewStratum(currentAlgorithm);
     IS_NULL(stratumPool);
 
