@@ -134,7 +134,7 @@
 #define B3_Z6E 7
 #define B3_Z6F 13
 
-inline uint b3_ror(uint x, uint n)
+static inline uint b3_ror(uint x, uint n)
 {
     return (x >> n) | (x << (32u - n));
 }
@@ -166,7 +166,7 @@ inline uint b3_ror(uint x, uint n)
     }
 
 // out[16] = full compression output (first 8 = chaining value, all 16 = XOF block 0).
-inline void blake3_compress(
+static inline void blake3_compress(
     uint const cv[8],
     uint const m[16],
     uint const counter_lo,
@@ -221,7 +221,7 @@ inline void blake3_compress(
 
 // Single-chunk BLAKE3 of `len` (<=1024) bytes from private buffer `data`.
 // Writes `out_len` (<=64) bytes little-endian into `out`.
-inline void blake3_hash_chunk(uchar const* data, uint len, uint out_len, uchar* out)
+static inline void blake3_hash_chunk(uchar const* data, uint len, uint out_len, uchar* out)
 {
     uint cv[8] = { B3_IV0, B3_IV1, B3_IV2, B3_IV3, B3_IV4, B3_IV5, B3_IV6, B3_IV7 };
 

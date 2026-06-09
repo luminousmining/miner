@@ -32,10 +32,18 @@ namespace
     }
 
 
-    std::string readFile(char const* path)
+    // The shipped exe carries the kernels next to it (kernel/...), but the in-tree
+    // source paths (BLAKE3_*_CL_PATH) only exist in the build tree. Prefer the deployed
+    // copy so the test runs from an installed/cross-built artifact; fall back to source.
+    std::string readKernel(char const* deployed, char const* fallback)
     {
-        std::ifstream in{ path };
-        EXPECT_TRUE(in.good()) << "cannot open " << path;
+        std::ifstream in{ deployed };
+        if (false == in.good())
+        {
+            in.clear();
+            in.open(fallback);
+        }
+        EXPECT_TRUE(in.good()) << "cannot open kernel source (tried " << deployed << " and " << fallback << ")";
         std::stringstream ss;
         ss << in.rdbuf();
         return ss.str();
@@ -67,7 +75,8 @@ namespace
             queue = clCreateCommandQueueWithProperties(context, device, nullptr, &err);
             clCheck(err, "clCreateCommandQueue");
 
-            std::string const src{ readFile(BLAKE3_CRYPTO_CL_PATH) + "\n" + readFile(BLAKE3_KAT_CL_PATH) };
+            std::string const src{ readKernel("kernel/crypto/blake3.cl", BLAKE3_CRYPTO_CL_PATH) + "\n"
+                                   + readKernel("kernel/crypto/tests/blake3_kat.cl", BLAKE3_KAT_CL_PATH) };
             char const*  srcPtr{ src.c_str() };
             size_t const srcLen{ src.size() };
 

@@ -11,4 +11,20 @@ if (BUILD_EXE_UNIT_TEST AND BUILD_AMD)
         "BLAKE3_CRYPTO_CL_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/../blake3.cl\""
         "BLAKE3_KAT_CL_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/blake3_kat.cl\""
     )
+
+    # Deploy the test wrapper kernel next to the binary so the KAT can run from an
+    # installed/cross-built artifact (not just the build tree). The host harness
+    # prefers kernel/crypto/tests/blake3_kat.cl, falling back to BLAKE3_KAT_CL_PATH.
+    set(OUT_CRYPTO_TESTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernel/crypto/tests)
+    file(MAKE_DIRECTORY ${OUT_CRYPTO_TESTS})
+    add_custom_command(
+        OUTPUT ${OUT_CRYPTO_TESTS}/blake3_kat.cl
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${CMAKE_CURRENT_SOURCE_DIR}/blake3_kat.cl ${OUT_CRYPTO_TESTS}/blake3_kat.cl
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/blake3_kat.cl
+        COMMENT "Copy blake3_kat.cl"
+    )
+    add_custom_target(copy_blake3_kat_opencl_file ALL
+        DEPENDS ${OUT_CRYPTO_TESTS}/blake3_kat.cl
+    )
 endif()
