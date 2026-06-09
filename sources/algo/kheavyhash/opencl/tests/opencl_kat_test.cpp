@@ -314,13 +314,13 @@ TEST_P(SearchKernel, NoHitWhenPowExceedsTarget)
 }
 
 
-// The optimized variants (search_lm1/2/3) are gated bit-identical to the
-// reference `search`: the same winning-nonce / boundary vectors must hold for
+// The optimized variants (kHeavyHash_lm1/2/3) are gated bit-identical to the
+// reference `kHeavyHash_lm0`: the same winning-nonce / boundary vectors must hold for
 // every kernel. A variant whose LDS staging, udot4 matmul, or unrolled keccak
 // drifted by a single bit fails here.
 INSTANTIATE_TEST_SUITE_P(AllVariants,
                          SearchKernel,
-                         ::testing::Values("search", "search_lm1", "search_lm2", "search_lm3", "search_lm4",
-                                           "search_lm5"),
+                         ::testing::Values("kHeavyHash_lm0", "kHeavyHash_lm1", "kHeavyHash_lm2", "kHeavyHash_lm3", "kHeavyHash_lm4",
+                                           "kHeavyHash_lm5"),
                          [](::testing::TestParamInfo<char const*> const& info)
                          { return std::string{ info.param }; });

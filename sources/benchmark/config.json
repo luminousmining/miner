@@ -108,7 +108,7 @@
                 "loop": 200,
                 "threads": 256,
                 "blocks": 8192,
-                "kernels": ["search", "search_lm1", "search_lm2", "search_lm3", "search_lm4", "search_lm5"]
+                "kernels": ["kHeavyHash_lm0", "kHeavyHash_lm1", "kHeavyHash_lm2", "kHeavyHash_lm3", "kHeavyHash_lm4", "kHeavyHash_lm5"]
             }
         }
     }

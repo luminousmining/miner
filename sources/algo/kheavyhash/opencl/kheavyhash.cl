@@ -271,7 +271,7 @@ typedef struct __attribute__((aligned(8)))
 
 // Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
 // On a hit (pow <= target, little-endian) it publishes its nonce into result.
-__kernel void search(__global ushort const* matrix,
+__kernel void kHeavyHash_lm0(__global ushort const* matrix,
                      __global uchar const*  header,
                      __global uchar const*  target,
                      ulong const            timestamp,
@@ -306,9 +306,9 @@ __kernel void search(__global ushort const* matrix,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// OPTIMIZATION VARIANTS (search_lm1..lm3)
+// OPTIMIZATION VARIANTS (kHeavyHash_lm1..lm3)
 //
-// Each is BIT-IDENTICAL to `search` above (same powHash -> heavyHash -> compare),
+// Each is BIT-IDENTICAL to `kHeavyHash_lm0` above (same powHash -> heavyHash -> compare),
 // gated by the same KAT vectors. They differ only in HOW the 64x64 nibble matmul
 // and keccak are computed:
 //   lm1 = stage the matrix in LDS once per workgroup (kill per-nonce global re-read)
@@ -379,7 +379,7 @@ void heavyHashLds(__local uchar const* matrix, uchar const* hash1, uchar* out)
 }
 
 
-__kernel void search_lm1(__global ushort const* matrix,
+__kernel void kHeavyHash_lm1(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,
@@ -493,7 +493,7 @@ void matmulDot(__local uint const* matU, uchar const* hash1, uchar* product)
 }
 
 
-__kernel void search_lm2(__global ushort const* matrix,
+__kernel void kHeavyHash_lm2(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,
@@ -641,7 +641,7 @@ void kHeavyHashU(uchar const* input, uchar* out)
 }
 
 
-__kernel void search_lm3(__global ushort const* matrix,
+__kernel void kHeavyHash_lm3(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,
@@ -774,7 +774,7 @@ inline void keccakF1600FromTheta1(ulong* a)
 }
 
 
-__kernel void search_lm4(__global ushort const* matrix,
+__kernel void kHeavyHash_lm4(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,
@@ -932,7 +932,7 @@ inline void kHeavyHashHoisted(uchar const* input, uchar* out)
 }
 
 
-__kernel void search_lm5(__global ushort const* matrix,
+__kernel void kHeavyHash_lm5(__global ushort const* matrix,
                          __global uchar const*  header,
                          __global uchar const*  target,
                          ulong const            timestamp,

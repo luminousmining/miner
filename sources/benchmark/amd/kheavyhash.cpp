@@ -169,12 +169,12 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     // Reference kernel + the optimization variants, each gated bit-identical by
     // the OpenCL KAT. All share the same 6-arg signature, so only the name and
     // the LDS/matmul/keccak internals differ.
-    runKernel("search");
-    runKernel("search_lm1");
-    runKernel("search_lm2");
-    runKernel("search_lm3");
-    runKernel("search_lm4");
-    runKernel("search_lm5");
+    runKernel("kHeavyHash_lm0");
+    runKernel("kHeavyHash_lm1");
+    runKernel("kHeavyHash_lm2");
+    runKernel("kHeavyHash_lm3");
+    runKernel("kHeavyHash_lm4");
+    runKernel("kHeavyHash_lm5");
 
     ////////////////////////////////////////////////////////////////////////////
     matrixCache.free();
