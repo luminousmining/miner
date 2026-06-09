@@ -128,8 +128,8 @@ jobs:
       - name: Run unit tests
         run: |
           FILTER=$(echo "${{ env.TEST_FILTER }}" | tr -d '\n' | tr -s ' ' | sed 's/ //g')
-          echo "Running: ./bin/unit_test --gtest_filter=${FILTER}"
-          ./bin/unit_test \
+          echo "Running: build/bin/unit_test --gtest_filter=${FILTER}"
+          build/bin/unit_test \
             --gtest_filter="${FILTER}" \
             --gtest_output="xml:test-results.xml"
 
