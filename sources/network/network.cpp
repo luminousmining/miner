@@ -133,7 +133,8 @@ bool network::NetworkTCPClient::connect()
         // socketTCP, so a rebuilt socket is picked up automatically.
         if (nullptr == pump)
         {
-            pump = std::make_shared<network::WritePump>(
+            pump = NEW_SHARED(
+                network::WritePump,
                 [this](std::shared_ptr<std::string const> const& payload)
                 {
                     transmit(payload);
@@ -362,7 +363,7 @@ void network::NetworkTCPClient::send(char const* data, size_t size)
 
     // Hand the frame to the pump, which serializes writes (only one async_write
     // in flight at a time) and owns the buffer for the duration of the write.
-    auto payload{ std::make_shared<std::string const>(data, size) };
+    auto payload{ NEW_SHARED(std::string const, data, size) };
     pump->enqueue(std::move(payload));
 }
 

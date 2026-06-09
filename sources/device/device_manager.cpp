@@ -100,7 +100,7 @@ bool device::DeviceManager::initialize()
     ////////////////////////////////////////////////////////////////////////////
     if (common::PROFILE::SMART_MINING == config.profile)
     {
-        stratumSmartMining = std::make_shared<stratum::StratumSmartMining>();
+        stratumSmartMining = NEW_SHARED(stratum::StratumSmartMining);
         initializeStratumSmartMining();
         for (device::Device* device : devices)
         {
