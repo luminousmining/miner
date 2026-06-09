@@ -35,6 +35,7 @@ jobs:
         Kiss.*:
         MathTest.*:
         RotateByteTest.*:
+        StratumEthashSubmitNonce.*:
         StratumProgpowSeed.*
 
     steps:
