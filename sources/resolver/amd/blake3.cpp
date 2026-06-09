@@ -79,7 +79,11 @@ bool resolver::ResolverAmdBlake3::buildSearch()
     kernelGenerator.setKernelName("search");
     kernelGenerator.addDefine("MAX_RESULT", algo::blake3::MAX_RESULT);
 
-    if (false == kernelGenerator.appendFile("kernel/blake3/blake3.cl"))
+    // Prepend the shared BLAKE3 primitive, then the Alephium mining kernel (which no
+    // longer #includes it) -- autolykos-style chaining. Order matters: crypto first so
+    // its definitions are visible to the mining orchestration below.
+    if (false == kernelGenerator.appendFile("kernel/crypto/blake3.cl")
+        || false == kernelGenerator.appendFile("kernel/blake3/blake3.cl"))
     {
         return false;
     }

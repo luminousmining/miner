@@ -5,9 +5,12 @@
 // prepended: big-endian 8-byte search value + 16 zero bytes (== the 48-hex submit string);
 // headerBlob is left-aligned in the header buffer (words 0..75).
 //
-// NOTE: the miner's kernel generator resolves this include; the host KAT
-// (opencl/tests/blake3_kat.cpp) concatenates the primitive source instead.
-#include "kernel/crypto/blake3.cl"
+// The shared BLAKE3 primitive (sources/algo/crypto/opencl/blake3.cl) is prepended
+// by the builder, not #include'd: both the production resolver (resolver/amd/blake3.cpp)
+// and the host KAT (opencl/tests/blake3_kat.cpp) chain appendFile(crypto) + appendFile(this),
+// the same way autolykos chains its files. This keeps the assembled source self-contained
+// so it compiles without an -I/-deployed-tree dependency (the KAT runs from a CWD that has
+// no kernel/ tree). The LM_BLAKE3_CL include guard still makes prepending idempotent.
 
 #ifndef MAX_RESULT
 #define MAX_RESULT 4
