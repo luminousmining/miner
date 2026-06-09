@@ -127,8 +127,8 @@ TEST(WritePump, ConcurrentEnqueueAndCompleteNeverStalls)
                                  transmitted.fetch_add(1, std::memory_order_relaxed);
                              } };
 
-    constexpr int producers{ 8 };
-    constexpr int perThread{ 1000 };
+    int const producers{ 8 };
+    int const perThread{ 1000 };
 
     std::vector<std::thread> threads{};
     for (int t{ 0 }; t < producers; ++t)

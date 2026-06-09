@@ -1,5 +1,6 @@
 #include <utility>
 
+#include <common/custom.hpp>
 #include <network/write_pump.hpp>
 
 
@@ -12,7 +13,7 @@ void network::WritePump::enqueue(Payload payload)
 {
     Payload next{};
     {
-        std::lock_guard<std::mutex> const lock{ mutex };
+        UNIQUE_LOCK(mutex);
         queue.push(std::move(payload));
         if (true == writeInFlight)
         {
@@ -29,7 +30,7 @@ void network::WritePump::onComplete(bool const success)
 {
     Payload next{};
     {
-        std::lock_guard<std::mutex> const lock{ mutex };
+        UNIQUE_LOCK(mutex);
         if (false == queue.empty())
         {
             queue.pop();

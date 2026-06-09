@@ -2,9 +2,10 @@
 
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <queue>
 #include <string>
+
+#include <boost/thread.hpp>
 
 
 namespace network
@@ -31,7 +32,7 @@ namespace network
         void onComplete(bool success);
 
       private:
-        std::mutex          mutex{};
+        boost::mutex        mutex{};
         std::queue<Payload> queue{};
         bool                writeInFlight{ false };
         Transmit            transmit{};
