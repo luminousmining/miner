@@ -11,10 +11,10 @@
 // the same way autolykos chains its files, from the kernel/ tree deployed next to the binary.
 // bswap32 lives in kernel/common/rotate_byte.cl; the LM_BLAKE3_CL guard in crypto/blake3.cl
 // keeps its prepend idempotent.
-
-#ifndef MAX_RESULT
-#define MAX_RESULT 4
-#endif
+//
+// MAX_RESULT is injected by the kernel generator (addDefine), like the other OpenCL
+// kernels, sourced from algo::blake3::MAX_RESULT so the host Result buffer and the kernel
+// stay in sync from one constant.
 
 // Thin adapter over the shared full-XOF blake3_compress: keep only the 8-word chaining
 // value, matching the Alephium single-chunk orchestration below (counter always 0).
