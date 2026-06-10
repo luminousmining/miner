@@ -131,17 +131,21 @@ namespace
 
 void network::NetworkTCPClient::asyncReceive()
 {
+    // Run the completion handler on the strand so reads share one executor with
+    // writes (see transmit()): never concurrent access to the ssl::stream.
     if (true == secureConnection)
     {
         boost::asio::async_read_until(
             *socketTCP,
             recvBuffer,
             '\n',
-            boost::bind(
-                &NetworkTCPClient::onReceiveAsync,
-                this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
+            boost::asio::bind_executor(
+                strand,
+                boost::bind(
+                    &NetworkTCPClient::onReceiveAsync,
+                    this,
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred)));
     }
     else
     {
@@ -149,11 +153,13 @@ void network::NetworkTCPClient::asyncReceive()
             socketTCP->next_layer(),
             recvBuffer,
             '\n',
-            boost::bind(
-                &NetworkTCPClient::onReceiveAsync,
-                this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
+            boost::asio::bind_executor(
+                strand,
+                boost::bind(
+                    &NetworkTCPClient::onReceiveAsync,
+                    this,
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred)));
     }
 }
 
@@ -252,5 +258,9 @@ void network::NetworkTCPClient::onSend(boost_error_code const& ec, [[maybe_unuse
     if (boost::system::errc::errc_t::success != ec)
     {
         logErr() << "Fail on send message to " << host << ":" << port;
+    }
+    if (nullptr != pump)
+    {
+        pump->onComplete(boost::system::errc::errc_t::success == ec);
     }
 }

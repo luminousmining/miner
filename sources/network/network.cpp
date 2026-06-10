@@ -119,6 +119,19 @@ bool network::NetworkTCPClient::connect()
             }
         }
 
+        // Create the write pump once and reuse it across reconnects so a child
+        // (SmartMining) that aliased it stays valid. transmit() reads the live
+        // socketTCP, so a rebuilt socket is picked up automatically.
+        if (nullptr == pump)
+        {
+            pump = NEW_SHARED(
+                network::WritePump,
+                [this](std::shared_ptr<std::string const> const& payload)
+                {
+                    transmit(payload);
+                });
+        }
+
         countRetryConnect = 0;
         onConnect();
 
@@ -315,34 +328,59 @@ bool network::NetworkTCPClient::handshake()
 
 void network::NetworkTCPClient::send(char const* data, size_t size)
 {
-    UNIQUE_LOCK(txMutex);
-
-    if (nullptr == socketTCP) [[unlikely]]
+    if (nullptr == pump) [[unlikely]]
     {
-        logErr() << "Cannot send packet, socketTCP is nullptr!";
+        logErr() << "Cannot send packet, pump is not initialized!";
         return;
     }
 
-    // async_write does NOT copy the buffer it is given: the storage must stay
-    // valid until the operation completes. Callers pass pointers to temporaries
-    // (e.g. send(boost_json) hands over a local string's c_str()), so the data
-    // was being freed before the write finished -- a use-after-free. Own a copy
-    // for the lifetime of the async op by capturing it in the completion handler.
-    // shared_ptr (not unique_ptr) keeps the handler copyable: async_write is a
-    // composed operation that may copy the handler through its internal layers,
-    // and a captured unique_ptr would make the lambda move-only.
-    auto payload{ std::make_shared<std::string>(data, size) };
-    auto handler{ [this, payload](boost_error_code const& ec, std::size_t bytes)
-                  { onSend(ec, bytes); } };
+    // Hand the frame to the pump, which serializes writes (only one async_write
+    // in flight at a time) and owns the buffer for the duration of the write.
+    auto payload{ NEW_SHARED(std::string const, data, size) };
+    pump->enqueue(std::move(payload));
+}
 
-    if (true == secureConnection)
-    {
-        boost::asio::async_write(*socketTCP, boost::asio::buffer(*payload), std::move(handler));
-    }
-    else
-    {
-        boost::asio::async_write(socketTCP->next_layer(), boost::asio::buffer(*payload), std::move(handler));
-    }
+
+void network::NetworkTCPClient::transmit(std::shared_ptr<std::string const> const& payload)
+{
+    // Run the actual write on the strand. socketTCP is an ssl::stream (not
+    // thread-safe); the reads already run on the strand, so dispatching the write
+    // there too means the stream is only ever touched by one thread at a time.
+    // dispatch() runs inline when already on the strand (the onSend->onComplete
+    // drain path) and posts otherwise (a device thread calling send()). `self`
+    // (shared_from_this) and `payload` are captured so the client and the buffer
+    // outlive the in-flight write.
+    auto self{ shared_from_this() };
+    boost::asio::dispatch(
+        strand,
+        [self, payload]()
+        {
+            if (nullptr == self->socketTCP) [[unlikely]]
+            {
+                logErr() << "Cannot send packet, socketTCP is nullptr!";
+                self->pump->onComplete(false);
+                return;
+            }
+
+            auto handler{ boost::asio::bind_executor(
+                self->strand,
+                [self, payload](boost_error_code const& ec, std::size_t bytes)
+                {
+                    self->onSend(ec, bytes);
+                }) };
+
+            if (true == self->secureConnection)
+            {
+                boost::asio::async_write(*self->socketTCP, boost::asio::buffer(*payload), std::move(handler));
+            }
+            else
+            {
+                boost::asio::async_write(
+                    self->socketTCP->next_layer(),
+                    boost::asio::buffer(*payload),
+                    std::move(handler));
+            }
+        });
 }
 
 

@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include <map>
+#include <memory>
 #include <vector>
 
 #include <boost/thread/mutex.hpp>
@@ -49,8 +51,8 @@ namespace device
         std::vector<Device*>    devices{};
         stratum::StratumJobInfo jobInfos[MAX_STRATUMS];
 
-        stratum::StratumSmartMining                         stratumSmartMining{};
-        std::map<uint32_t /*DEVICE ID*/, stratum::Stratum*> stratums{};
+        std::shared_ptr<stratum::StratumSmartMining>                        stratumSmartMining{};
+        std::map<uint32_t /*DEVICE ID*/, std::shared_ptr<stratum::Stratum>> stratums{};
 
 #if defined(AMD_ENABLE)
         profiler::Amd profilerAmd{};
@@ -70,16 +72,15 @@ namespace device
 #if defined(AMD_ENABLE)
         bool initializeAmd();
 #endif
-        void              updateDevice(uint32_t const stratumUUID, bool const updateMemory, bool const updateConstants);
-        bool              containStratum(uint32_t const deviceId) const;
-        stratum::Stratum* getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId);
-        void              loopStatistical();
-        void              showMiningStats(
-                         common::Dashboard&                         board,
-                         device::Device* const                      device,
-                         double const                               hashrate,
-                         std::string const&                         host,
-                         statistical::Statistical::ShareInfo const& shareInfo);
+        void updateDevice(uint32_t const stratumUUID, bool const updateMemory, bool const updateConstants);
+        bool containStratum(uint32_t const deviceId) const;
+        std::shared_ptr<stratum::Stratum> getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId);
+        void loopStatistical();
+        void showMiningStats(common::Dashboard&                         board,
+                             device::Device* const                      device,
+                             double const                               hashrate,
+                             std::string const&                         host,
+                             statistical::Statistical::ShareInfo const& shareInfo);
         void showDeviceStats(common::Dashboard& board, device::Device* const device, double const hashrate);
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <algo/algo_type.hpp>
 #include <stratum/autolykos_v2.hpp>
 #include <stratum/blake3.hpp>
@@ -18,5 +20,5 @@
 
 namespace stratum
 {
-    stratum::Stratum* NewStratum(algo::ALGORITHM const algorithm);
+    std::shared_ptr<stratum::Stratum> NewStratum(algo::ALGORITHM const algorithm);
 }
