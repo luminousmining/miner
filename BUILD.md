@@ -197,8 +197,10 @@ cmake --build . --config Release
 > **Note:** macOS has neither CUDA nor a usable OpenCL 3.0 GPU runtime, so this is a
 > **CPU-only** build (both GPU backends OFF). It produces a Mach-O `miner` binary for
 > build-system parity and artifact coverage; it does **not** perform GPU mining.
-> macOS cannot build in Docker, so it uses the same vcpkg + CMake-preset flow natively
-> rather than a Dockerfile.
+> A native macOS binary cannot be produced inside a container: Docker and podman both
+> run a **Linux** VM on macOS (so they build the *Linux* miner, not a Mach-O one), and
+> Apple's licensing forbids running macOS in a container regardless. This target therefore
+> uses the same vcpkg + CMake-preset flow **natively** rather than a Dockerfile.
 
 Requirements (via [Homebrew](https://brew.sh)):
 ```sh
