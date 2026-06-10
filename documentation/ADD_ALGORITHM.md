@@ -213,7 +213,7 @@ See `sources/stratum/progpow.cpp` and `sources/stratum/autolykos_v2.cpp` for com
 ```cpp
 case algo::ALGORITHM::MYNEWPOW:
 {
-    stratum = NEW(stratum::StratumMyNewPOW);
+    stratum = NEW_SHARED(stratum::StratumMyNewPOW);
     break;
 }
 ```

@@ -10,8 +10,8 @@ Free GPU mining with 0% fees! Enjoy your mining time.
 Project aims for learning and sharing about mining software.  
   
 See the [roadmap](https://github.com/luminousmining/miner/tree/main/ROADMAP.md) of luminousminer.  
-See the [pools](https://github.com/luminousmining/miner/tree/main/POOLS.md) tested!  
-See the [hiveos](https://github.com/luminousmining/miner/tree/main/HIVEOS.md) to install on HiveOS!  
+See the [pools](https://github.com/luminousmining/miner/tree/main/documentation/POOLS.md) tested!  
+See the [hiveos](https://github.com/luminousmining/miner/tree/main/documentation/HIVEOS.md) to install on HiveOS!  
   
 Different profiles are available:
 * STANDAR
@@ -31,9 +31,14 @@ Different profiles are available:
 - progpow_quai
 
 ## Internal Documentation
-[Build](https://github.com/luminousmining/miner/tree/main/BUILD.md)  
-[Parameteres](https://github.com/luminousmining/miner/tree/main/PARAMETERS.md)  
-[Examples](https://github.com/luminousmining/miner/tree/main/EXAMPLES.md)  
+[Build](https://github.com/luminousmining/miner/tree/main/documentation/BUILD.md)  
+[Parameters](https://github.com/luminousmining/miner/tree/main/documentation/PARAMETERS.md)  
+[Examples](https://github.com/luminousmining/miner/tree/main/documentation/EXAMPLES.md)  
+[Benchmark](https://github.com/luminousmining/miner/tree/main/documentation/BENCHMARK.md)  
+[Architecture](https://github.com/luminousmining/miner/tree/main/documentation/ARCHITECTURE.md)  
+[Add Algorithm](https://github.com/luminousmining/miner/tree/main/documentation/ADD_ALGORITHM.md)  
+[Smart Mining](https://github.com/luminousmining/miner/tree/main/documentation/SMART_MINING.md)  
+[Coding Style](https://github.com/luminousmining/miner/tree/main/documentation/CODING_STYLE.md)  
 
 ## References - Miners
 [ethminer](https://github.com/ethereum-mining/ethminer)  

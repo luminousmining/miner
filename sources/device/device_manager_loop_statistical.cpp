@@ -76,11 +76,11 @@ void device::DeviceManager::loopStatistical()
                 auto const& itStratum{ stratums.find(device->id) };
                 if (itStratum != stratums.end())
                 {
-                    stratum = itStratum->second;
+                    stratum = itStratum->second.get();
                 }
                 else
                 {
-                    stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID);
+                    stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID).get();
                 }
 
                 if (nullptr == stratum)

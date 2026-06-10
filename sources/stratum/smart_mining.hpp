@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include <boost/json.hpp>
 #include <boost/thread/mutex.hpp>
@@ -22,10 +23,10 @@ namespace stratum
         using callbackSetAlgorithm = std::function<void(algo::ALGORITHM const)>;
         using callbackShareStatus =
             std::function<void(bool const isValid, uint32_t const requestID, uint32_t const stratumUUID)>;
-        std::string             workerName{};
-        std::string             password{};
-        stratum::StratumJobInfo jobInfo{};
-        stratum::Stratum*       stratumPool{ nullptr };
+        std::string                       workerName{};
+        std::string                       password{};
+        stratum::StratumJobInfo           jobInfo{};
+        std::shared_ptr<stratum::Stratum> stratumPool{ nullptr };
 
         void setCallbackSetAlgorithm(callbackSetAlgorithm callback);
         void setCallbackUpdateJob(callbackUpdateJob callback);

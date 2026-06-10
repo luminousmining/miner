@@ -273,7 +273,7 @@ source_group("statistical" FILES ${SOURCES_STRATISTICAL})
 ################################################################################
 ###  LINK LIBRARIES                                                         ####
 ################################################################################
-if (NOT WIN32)
+if (NOT WIN32 AND NOT APPLE)
     if (BUILD_EXE_MINER)
         target_link_options(${MINER_EXE} PUBLIC -static-libstdc++ -static-libgcc)
     endif()
@@ -422,7 +422,7 @@ if (BUILD_EXE_UNIT_TEST)
 endif()
 
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
     if (BUILD_EXE_MINER)
         target_link_libraries(${MINER_EXE} PRIVATE
             ${GNUTLS_LIBRARIES}

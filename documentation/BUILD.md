@@ -79,7 +79,7 @@ sudo ln -s /opt/cmake-3.26.4-linux-x86_64/bin/* /usr/local/bin
   
 compiler :
 ```sh
-sudo apt install -y build-essential libstdc++-12-dev libc++abi-12-dev gnutls-dev cppcheck checkinstall clang-15 libx11-dev
+sudo apt install -y build-essential libstdc++-12-dev libc++abi-12-dev gnutls-dev cppcheck checkinstall clang-15 libx11-dev git
 ```
   
 openssl :
@@ -87,7 +87,7 @@ openssl :
 git clone https://github.com/openssl/openssl.git
 cd openssl
 ./Configure
-make
+make -j$(nproc)
 sudo make install
 ```
   
@@ -102,7 +102,7 @@ git submodule update
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DOPENCL_SDK_BUILD_SAMPLES=OFF -DOPENCL_SDK_TEST_SAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
-sudo cmake --build . --target install
+sudo cmake --build . --target install -j$(nproc)
 ```
   
 cuda :
@@ -130,7 +130,7 @@ gpu performance api:
 ```sh
 wget https://github.com/GPUOpen-Tools/gpu_performance_api/releases/download/v4.3-tag/GPUPerfAPI-Linux-4.3.0.2.tgz
 tar -xvf GPUPerfAPI-Linux-4.3.0.2.tgz
-mv 4_4 gpu_performance_api
+mv 4_3 gpu_performance_api
 ```
   
 # Platforms
@@ -191,3 +191,30 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 ```
+
+## macOS (Apple Silicon, CPU-only)
+
+> **Note:** macOS has neither CUDA nor a usable OpenCL 3.0 GPU runtime, so this is a
+> **CPU-only** build (both GPU backends OFF). It produces a Mach-O `miner` binary for
+> build-system parity and artifact coverage; it does **not** perform GPU mining.
+> A native macOS binary cannot be produced inside a container: Docker and podman both
+> run a **Linux** VM on macOS (so they build the *Linux* miner, not a Mach-O one), and
+> Apple's licensing forbids running macOS in a container regardless. This target therefore
+> uses the same vcpkg + CMake-preset flow **natively** rather than a Dockerfile.
+
+Requirements (via [Homebrew](https://brew.sh)):
+```sh
+brew install cmake ninja pkg-config   # pkg-config is needed by vcpkg's openssl port
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+export VCPKG_ROOT=~/vcpkg
+```
+
+Configure and build with the `macos-cpu` preset (Boost + OpenSSL are resolved by vcpkg
+from `vcpkg.json`):
+```sh
+cmake --preset macos-cpu
+cmake --build --preset macos-cpu -j$(sysctl -n hw.ncpu)
+```
+The binary is written to `bin/miner`. CI builds this on a native
+Apple Silicon runner via `.github/workflows/miner_macos.yml`.

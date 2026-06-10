@@ -1,9 +1,3 @@
-# Auto Start
-Script to start miner when system start.
-
-## Windows
-Set the variables `PATH_EXE` and `MINER_PARAMETERS`.
-```bat
 @echo off
 set PATH_EXE="FULLPATH MINER EXE"
 set MINER_PARAMETERS="YOUR PARAMETERS"
@@ -22,4 +16,3 @@ start "" /high "%PATH_EXE%\miner.exe" %MINER_PARAMETERS%
 
 timeout /t 5 /nobreak >nul
 goto loop
-```
