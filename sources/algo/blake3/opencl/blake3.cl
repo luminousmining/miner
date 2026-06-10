@@ -5,27 +5,23 @@
 // prepended: big-endian 8-byte search value + 16 zero bytes (== the 48-hex submit string);
 // headerBlob is left-aligned in the header buffer (words 0..75).
 //
-// The shared BLAKE3 primitive (sources/algo/crypto/opencl/blake3.cl) is prepended
-// by the builder, not #include'd: both the production resolver (resolver/amd/blake3.cpp)
-// and the host KAT (opencl/tests/blake3_kat.cpp) chain appendFile(crypto) + appendFile(this),
-// the same way autolykos chains its files. This keeps the assembled source self-contained
-// so it compiles without an -I/-deployed-tree dependency (the KAT runs from a CWD that has
-// no kernel/ tree). The LM_BLAKE3_CL include guard still makes prepending idempotent.
+// The shared helpers are prepended by the builder, not #include'd: the resolver
+// (resolver/amd/blake3.cpp), the AMD benchmark, and the host KAT (opencl/tests/blake3_kat.cpp)
+// all chain appendFile(common/rotate_byte) + appendFile(crypto/blake3) + appendFile(this),
+// the same way autolykos chains its files, from the kernel/ tree deployed next to the binary.
+// bswap32 lives in kernel/common/rotate_byte.cl; the LM_BLAKE3_CL guard in crypto/blake3.cl
+// keeps its prepend idempotent.
 
 #ifndef MAX_RESULT
 #define MAX_RESULT 4
 #endif
-
-inline uint bswap32(uint const x)
-{
-    return (x >> 24) | ((x >> 8) & 0x0000FF00u) | ((x << 8) & 0x00FF0000u) | (x << 24);
-}
 
 // Thin adapter over the shared full-XOF blake3_compress: keep only the 8-word chaining
 // value, matching the Alephium single-chunk orchestration below (counter always 0).
 // Pointers are explicitly __private: blake3_compress's array parameters decay to
 // const __private uint*, and the ROCm/comgr compiler (unlike AMD-APP) rejects passing
 // generic-address-space pointers to them. All call sites below pass private locals.
+inline
 void compress8(__private uint* vector, __private uint const* block, uint const blockLen, uint const flags)
 {
     uint out16[16];
@@ -36,6 +32,7 @@ void compress8(__private uint* vector, __private uint const* block, uint const b
     }
 }
 
+inline
 void initVector(uint* v)
 {
     v[0] = B3_IV0; v[1] = B3_IV1; v[2] = B3_IV2; v[3] = B3_IV3;
@@ -46,6 +43,7 @@ void initVector(uint* v)
 // 8-byte search value + 16 zero bytes; header holds headerBlob left-aligned (words 0..75,
 // read straight from global). out8 = 8 u32 digest = BLAKE3(BLAKE3(mining input)).
 // Only buf[0..81] (82 words) are hashed; kept small to ease register pressure/occupancy.
+inline
 void powHash(__global uint const* header, ulong const nonce, uint* out8)
 {
     uint buf[82];
@@ -69,14 +67,23 @@ void powHash(__global uint const* header, ulong const nonce, uint* out8)
         compress8(vector, &buf[16u * (i + 1u)], 64u, 0u);// EMPTY
     }
     uint last[16];
-    for (uint i = 0u; i < 16u; ++i) { last[i] = 0u; }
+    for (uint i = 0u; i < 16u; ++i)
+    {
+        last[i] = 0u;
+    }
     last[0] = buf[80];
     last[1] = buf[81] & 0x0000FFFFu;
     compress8(vector, last, 6u, 10u);                    // CHUNK_END | ROOT
 
     uint block2[16];
-    for (uint i = 0u; i < 16u; ++i) { block2[i] = 0u; }
-    for (uint i = 0u; i < 8u; ++i)  { block2[i] = vector[i]; }
+    for (uint i = 0u; i < 16u; ++i)
+    {
+        block2[i] = 0u;
+    }
+    for (uint i = 0u; i < 8u; ++i)
+    {
+        block2[i] = vector[i];
+    }
     initVector(vector);
     compress8(vector, block2, 32u, 11u);                 // CHUNK_START|END|ROOT
 
@@ -87,7 +94,8 @@ void powHash(__global uint const* header, ulong const nonce, uint* out8)
 }
 
 // digest <= target, byte-wise from index 0 (matches common/cuda/compare.cuh).
-inline bool isLowerOrEqual(uchar const* r, uchar const* l)
+inline
+bool isLowerOrEqual(uchar const* r, uchar const* l)
 {
     for (uint i = 0u; i < 32u; ++i)
     {
@@ -105,33 +113,41 @@ typedef struct __attribute__((aligned(8)))
 } Result;
 
 // KAT entry: digest for one nonce. header = headerBlob words (left-aligned), out = 8 u32.
-__kernel void test_hash(__global uint const* header, ulong const nonce, __global uint* out)
+__kernel
+void test_hash(__global uint const* header, ulong const nonce, __global uint* out)
 {
-    uint h[8];
-    powHash(header, nonce, h);
-    for (uint i = 0u; i < 8u; ++i) { out[i] = h[i]; }
+    uint hash[8];
+    powHash(header, nonce, hash);
+    for (uint i = 0u; i < 8u; ++i)
+    {
+        out[i] = hash[i];
+    }
 }
 
 // Mining kernel: nonce = startNonce + gid. Hit iff digest <= target AND the
 // chain index (digest byte 31 % 16) maps to (fromGroup, toGroup).
-__kernel void search(__global uint const*  header,
-                     __global uchar const* target,
-                     ulong const           startNonce,
-                     uint const            fromGroup,
-                     uint const            toGroup,
-                     __global Result*      result)
+__kernel
+void search(__global uint const*  header,
+            __global uchar const* target,
+            __global Result*      result,
+            ulong const           startNonce,
+            uint const            fromGroup,
+            uint const            toGroup)
 {
     ulong const nonce = startNonce + (ulong)get_global_id(0);
 
-    uint h[8];
-    powHash(header, nonce, h);
+    uint hash[8];
+    powHash(header, nonce, hash);
 
     uchar tgt[32];
-    for (uint i = 0u; i < 32u; ++i) { tgt[i] = target[i]; }
-
-    if (isLowerOrEqual((uchar const*)h, tgt))
+    for (uint i = 0u; i < 32u; ++i)
     {
-        uint const bigIndex = (h[7] >> 24) % 16u;
+        tgt[i] = target[i];
+    }
+
+    if (isLowerOrEqual((uchar const*)hash, tgt))
+    {
+        uint const bigIndex = (hash[7] >> 24) % 16u;
         if ((bigIndex / 4u) == fromGroup && (bigIndex % 4u) == toGroup)
         {
             uint const idx = atomic_inc(&result->count);

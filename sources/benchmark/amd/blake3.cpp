@@ -70,9 +70,11 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
         generator.addDefine("MAX_RESULT", algo::blake3::MAX_RESULT);
 
         ////////////////////////////////////////////////////////////////////////
-        // Production Alephium kernel; it #includes kernel/crypto/blake3.cl, which
-        // the generator resolves.
-        if (false == generator.appendFile("kernel/blake3/blake3.cl"))
+        // Same assembly as the resolver: common byte-rotate helper, then the shared
+        // BLAKE3 primitive, then the Alephium mining kernel (appendFile chaining).
+        if (false == generator.appendFile("kernel/common/rotate_byte.cl")
+            || false == generator.appendFile("kernel/crypto/blake3.cl")
+            || false == generator.appendFile("kernel/blake3/blake3.cl"))
         {
             return false;
         }
@@ -85,10 +87,10 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
         auto& clKernel{ generator.clKernel };
         OPENCL_ER(clKernel.setArg(0u, *headerCache.getBuffer()));
         OPENCL_ER(clKernel.setArg(1u, *targetCache.getBuffer()));
-        OPENCL_ER(clKernel.setArg(2u, 0ull));
-        OPENCL_ER(clKernel.setArg(3u, 0u));
+        OPENCL_ER(clKernel.setArg(2u, *resultCache.getBuffer()));
+        OPENCL_ER(clKernel.setArg(3u, 0ull));
         OPENCL_ER(clKernel.setArg(4u, 0u));
-        OPENCL_ER(clKernel.setArg(5u, *resultCache.getBuffer()));
+        OPENCL_ER(clKernel.setArg(5u, 0u));
 
         ////////////////////////////////////////////////////////////////////////
         setGrid(threads, blocks);
@@ -96,8 +98,8 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
         ////////////////////////////////////////////////////////////////////////
         // Alephium search uses get_global_id(0): launch 1D (matches the resolver's
         // executeSync), NOT the 2D grid the kawpow bench uses.
-        size_t const globalSize{ static_cast<size_t>(threads) * static_cast<size_t>(blocks) };
-        size_t const localSize{ static_cast<size_t>(threads) };
+        size_t const globalSize{ castSize(threads) * castSize(blocks) };
+        size_t const localSize{ castSize(threads) };
         for (uint32_t i{ 0u }; i < loop; ++i)
         {
             startChrono(variant);
@@ -123,7 +125,7 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
     };
 
     ////////////////////////////////////////////////////////////////////////////
-    runKernel("blake3"); // Alephium production search kernel — throughput baseline
+    runKernel("blake3");
 
     ////////////////////////////////////////////////////////////////////////////
     headerCache.free();

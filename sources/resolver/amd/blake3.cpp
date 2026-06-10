@@ -79,10 +79,11 @@ bool resolver::ResolverAmdBlake3::buildSearch()
     kernelGenerator.setKernelName("search");
     kernelGenerator.addDefine("MAX_RESULT", algo::blake3::MAX_RESULT);
 
-    // Prepend the shared BLAKE3 primitive, then the Alephium mining kernel (which no
-    // longer #includes it) -- autolykos-style chaining. Order matters: crypto first so
-    // its definitions are visible to the mining orchestration below.
-    if (false == kernelGenerator.appendFile("kernel/crypto/blake3.cl")
+    // Prepend the common byte-rotate helper (bswap32), then the shared BLAKE3 primitive,
+    // then the Alephium mining kernel (which #includes none of them) -- autolykos-style
+    // chaining. Order matters: dependencies first so their definitions are visible below.
+    if (false == kernelGenerator.appendFile("kernel/common/rotate_byte.cl")
+        || false == kernelGenerator.appendFile("kernel/crypto/blake3.cl")
         || false == kernelGenerator.appendFile("kernel/blake3/blake3.cl"))
     {
         return false;
@@ -101,13 +102,13 @@ bool resolver::ResolverAmdBlake3::executeSync(stratum::StratumJobInfo const& job
     auto& clKernel{ kernelGenerator.clKernel };
     OPENCL_ER(clKernel.setArg(0u, *(parameters.headerCache.getBuffer())));
     OPENCL_ER(clKernel.setArg(1u, *(parameters.targetCache.getBuffer())));
-    OPENCL_ER(clKernel.setArg(2u, jobInfo.nonce));
-    OPENCL_ER(clKernel.setArg(3u, jobInfo.fromGroup));
-    OPENCL_ER(clKernel.setArg(4u, jobInfo.toGroup));
-    OPENCL_ER(clKernel.setArg(5u, *(parameters.resultCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(2u, *(parameters.resultCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(3u, jobInfo.nonce));
+    OPENCL_ER(clKernel.setArg(4u, jobInfo.fromGroup));
+    OPENCL_ER(clKernel.setArg(5u, jobInfo.toGroup));
 
-    size_t const globalSize{ static_cast<size_t>(getBlocks()) * static_cast<size_t>(getThreads()) };
-    size_t const localSize{ static_cast<size_t>(getThreads()) };
+    size_t const globalSize{ castSize(getBlocks()) * castSize(getThreads()) };
+    size_t const localSize{ castSize(getThreads()) };
     OPENCL_ER(clQueue[currentIndexStream]
                   ->enqueueNDRangeKernel(clKernel, cl::NullRange, cl::NDRange(globalSize), cl::NDRange(localSize)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());

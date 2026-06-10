@@ -43,21 +43,6 @@ namespace
     };
 
 
-    // Prefer the kernel deployed next to the binary (shipped exe / CWD with a kernel/
-    // tree); fall back to the in-tree source path baked at compile time. This reproduces
-    // the old readKernel dual-path lookup so the KAT runs where no kernel/ tree sits next
-    // to unit_test (POCL/dev). appendFile checks the stream BEFORE appending, so a failed
-    // first try leaves the assembled source untouched.
-    bool appendWithFallback(common::KernelGeneratorOpenCL& gen, char const* deployed, char const* inTree)
-    {
-        if (true == gen.appendFile(deployed))
-        {
-            return true;
-        }
-        return gen.appendFile(inTree);
-    }
-
-
     class Blake3Cl : public ::testing::Test
     {
       protected:
@@ -85,11 +70,10 @@ namespace
                 generator.clear();
                 generator.setKernelName("search");
                 generator.addDefine("MAX_RESULT", algo::blake3::MAX_RESULT);
-                ASSERT_TRUE(appendWithFallback(generator, "kernel/crypto/blake3.cl", BLAKE3_CRYPTO_CL_PATH))
-                    << "cannot open crypto blake3.cl (tried kernel/crypto/blake3.cl and " << BLAKE3_CRYPTO_CL_PATH
-                    << ")";
-                ASSERT_TRUE(appendWithFallback(generator, "kernel/blake3/blake3.cl", BLAKE3_CL_PATH))
-                    << "cannot open mining blake3.cl (tried kernel/blake3/blake3.cl and " << BLAKE3_CL_PATH << ")";
+                ASSERT_TRUE(generator.appendFile("kernel/common/rotate_byte.cl"))
+                    << "cannot open kernel/common/rotate_byte.cl";
+                ASSERT_TRUE(generator.appendFile("kernel/crypto/blake3.cl")) << "cannot open kernel/crypto/blake3.cl";
+                ASSERT_TRUE(generator.appendFile("kernel/blake3/blake3.cl")) << "cannot open kernel/blake3/blake3.cl";
                 ASSERT_TRUE(generator.build(&device, &context)) << "kernel build failed (see build log above)";
             }
             catch (cl::Error const& clErr)
@@ -98,7 +82,7 @@ namespace
             }
         }
 
-        cl::Kernel kernel(char const* name)
+        cl::Kernel makeKernel(char const* name)
         {
             return cl::Kernel(generator.clProgram, name);
         }
@@ -120,18 +104,18 @@ TEST_F(Blake3Cl, TestHashMatchesHostReference)
         algo::blake3::hashRef(header, NONCE, expected);
 
         uint32_t   out[8]{};
-        cl::Buffer hdrBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(header),
-                           const_cast<uint32_t*>(header.word32) };
-        cl::Buffer outBuf{ context, CL_MEM_WRITE_ONLY, sizeof(out) };
+        cl::Buffer headerBuffer{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(header),
+                                 const_cast<uint32_t*>(header.word32) };
+        cl::Buffer outBuffer{ context, CL_MEM_WRITE_ONLY, sizeof(out) };
 
-        cl::Kernel k{ kernel("test_hash") };
+        cl::Kernel kernel{ makeKernel("test_hash") };
         cl_ulong   nonce{ NONCE };
-        k.setArg(0u, hdrBuf);
-        k.setArg(1u, nonce);
-        k.setArg(2u, outBuf);
-        queue.enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(1), cl::NullRange);
+        kernel.setArg(0u, headerBuffer);
+        kernel.setArg(1u, nonce);
+        kernel.setArg(2u, outBuffer);
+        queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(1), cl::NullRange);
         queue.finish();
-        queue.enqueueReadBuffer(outBuf, CL_TRUE, 0, sizeof(out), out);
+        queue.enqueueReadBuffer(outBuffer, CL_TRUE, 0, sizeof(out), out);
 
         EXPECT_EQ(0, std::memcmp(out, expected.word32, sizeof(out)));
     }
@@ -155,22 +139,23 @@ TEST_F(Blake3Cl, SearchReportsHitAtWinningNonce)
         uint32_t const toGroup{ bigIndex % 4u };
 
         Result     result{};
-        cl::Buffer hdrBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(header),
-                           const_cast<uint32_t*>(header.word32) };
-        cl::Buffer tgtBuf{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(digest.ubytes), digest.ubytes };
-        cl::Buffer resBuf{ context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Result), &result };
+        cl::Buffer headerBuffer{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(header),
+                                 const_cast<uint32_t*>(header.word32) };
+        cl::Buffer targetBuffer{ context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(digest.ubytes),
+                                 digest.ubytes };
+        cl::Buffer resultBuffer{ context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Result), &result };
 
-        cl::Kernel k{ kernel("search") };
+        cl::Kernel kernel{ makeKernel("search") };
         cl_ulong   startNonce{ NONCE };
-        k.setArg(0u, hdrBuf);
-        k.setArg(1u, tgtBuf);
-        k.setArg(2u, startNonce);
-        k.setArg(3u, fromGroup);
-        k.setArg(4u, toGroup);
-        k.setArg(5u, resBuf);
-        queue.enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(1), cl::NullRange);
+        kernel.setArg(0u, headerBuffer);
+        kernel.setArg(1u, targetBuffer);
+        kernel.setArg(2u, resultBuffer);
+        kernel.setArg(3u, startNonce);
+        kernel.setArg(4u, fromGroup);
+        kernel.setArg(5u, toGroup);
+        queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(1), cl::NullRange);
         queue.finish();
-        queue.enqueueReadBuffer(resBuf, CL_TRUE, 0, sizeof(Result), &result);
+        queue.enqueueReadBuffer(resultBuffer, CL_TRUE, 0, sizeof(Result), &result);
 
         EXPECT_EQ(1u, result.count);
         EXPECT_EQ(NONCE, result.nonces[0]);

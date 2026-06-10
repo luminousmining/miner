@@ -2,7 +2,7 @@
 // (sources/algo/crypto/opencl/blake3.cl). Runs blake3_hash_chunk on whatever OpenCL
 // device the ICD exposes (POCL/CPU in the cross-build & dev harness, a real GPU on the
 // rig) and asserts it is BIT-IDENTICAL to the vendored reference
-// (crypto/reference/blake3, the official BLAKE3 C implementation) for several
+// (algo/blake3/cpu, the official BLAKE3 C implementation) for several
 // single-chunk input sizes, including a 64-byte output that exercises the XOF upper
 // words.
 //

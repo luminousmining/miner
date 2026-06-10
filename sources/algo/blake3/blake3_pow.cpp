@@ -3,17 +3,10 @@
 
 #include "blake3.h" // vendored reference, via blake3_ref lib
 
+#include <algo/bitwise.hpp>       // bswap32 (native __builtin_bswap32 / _byteswap_ulong)
 #include <algo/blake3/blake3.hpp> // CHAIN_NUMBER
 #include <algo/blake3/blake3_pow.hpp>
-
-
-namespace
-{
-    inline uint32_t bswap32(uint32_t const x)
-    {
-        return (x >> 24) | ((x >> 8) & 0x0000FF00u) | ((x << 8) & 0x00FF0000u) | (x << 24);
-    }
-}
+#include <common/cast.hpp> // castU8 / castU32
 
 
 void algo::blake3::hashRef(algo::hash3072 header, uint64_t const nonce, algo::hash256& out)
@@ -23,8 +16,8 @@ void algo::blake3::hashRef(algo::hash3072 header, uint64_t const nonce, algo::ha
     // word[6..81] = headerBlob (header.word32[0..75]). 326 bytes = 81 little-endian
     // words + the low 2 bytes of word[81].
     uint32_t words[96]{};
-    words[0] = bswap32(static_cast<uint32_t>(nonce >> 32));
-    words[1] = bswap32(static_cast<uint32_t>(nonce & 0xFFFFFFFFu));
+    words[0] = bswap32(castU32(nonce >> 32));
+    words[1] = bswap32(castU32(nonce & 0xFFFFFFFFu));
     for (uint32_t i{ 0u }; i < 76u; ++i)
     {
         words[6u + i] = header.word32[i];
@@ -33,13 +26,13 @@ void algo::blake3::hashRef(algo::hash3072 header, uint64_t const nonce, algo::ha
     uint8_t msg[326]{};
     for (uint32_t i{ 0u }; i < 81u; ++i)
     {
-        msg[4u * i + 0u] = static_cast<uint8_t>(words[i]);
-        msg[4u * i + 1u] = static_cast<uint8_t>(words[i] >> 8);
-        msg[4u * i + 2u] = static_cast<uint8_t>(words[i] >> 16);
-        msg[4u * i + 3u] = static_cast<uint8_t>(words[i] >> 24);
+        msg[4u * i + 0u] = castU8(words[i]);
+        msg[4u * i + 1u] = castU8(words[i] >> 8);
+        msg[4u * i + 2u] = castU8(words[i] >> 16);
+        msg[4u * i + 3u] = castU8(words[i] >> 24);
     }
-    msg[324] = static_cast<uint8_t>(words[81]);
-    msg[325] = static_cast<uint8_t>(words[81] >> 8);
+    msg[324] = castU8(words[81]);
+    msg[325] = castU8(words[81] >> 8);
 
     // out = BLAKE3(BLAKE3(msg)). On little-endian hosts the 32 output bytes copied
     // into word32 reproduce the kernel's 8 chaining-value words exactly.
