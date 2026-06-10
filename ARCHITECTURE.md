@@ -363,7 +363,7 @@ Callbacks exposed to DeviceManager:
 DeviceManager (singleton)
  │
  ├─ std::vector<Device*> devices
- ├─ std::map<uint32_t, Stratum*> stratums    ← UUID → pool
+ ├─ std::map<uint32_t, std::shared_ptr<Stratum>> stratums    ← UUID → pool
  │
  ├─ initialize()
  │    ├─ Enumerate NVIDIA (CUDA/NVML)
