@@ -1,0 +1,64 @@
+name: macOS Miner (CPU-only)
+
+# macOS cannot run inside a Docker container (Apple licensing + no Linux->Mach-O
+# cross-compile in this repo), so unlike the Linux/Windows builds this mirrors the
+# same vcpkg + CMake-preset pattern on a *native* Apple Silicon runner instead of
+# a Dockerfile. CUDA and OpenCL do not exist on macOS: this is a CPU-only build
+# (BUILD_CPU=ON, GPU backends OFF) and produces a Mach-O `miner` that does not
+# perform GPU mining -- it exists for build-system parity and artifact coverage.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-miner-macos:
+    runs-on: macos-14   # Apple Silicon (arm64)
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ===============================
+      # Install build tools
+      # ===============================
+      - name: Install build tools
+        # pkg-config is required by vcpkg's openssl (unix) port.
+        run: brew install cmake ninja pkg-config
+
+      # ===============================
+      # Bootstrap vcpkg (manifest mode; deps come from vcpkg.json)
+      # ===============================
+      - name: Bootstrap vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}"
+          "${VCPKG_ROOT}/bootstrap-vcpkg.sh" -disableMetrics
+
+      # ===============================
+      # Cache vcpkg binary artifacts
+      # ===============================
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-macos-arm64-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-macos-arm64-
+
+      # ===============================
+      # Configure and build (CPU-only)
+      # ===============================
+      - name: Configure CMake (macos-cpu)
+        run: cmake --preset macos-cpu
+
+      - name: Build Miner (macos-cpu)
+        run: cmake --build --preset macos-cpu -j$(sysctl -n hw.ncpu)
+
+      # ===============================
+      # Upload artifact
+      # ===============================
+      - name: Upload macOS Miner artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: miner-cpu-macos-arm64
+          path: build/macos-cpu/bin/miner

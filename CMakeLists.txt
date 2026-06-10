@@ -196,8 +196,14 @@ else()
 ################################################################################
 ### CLANG                                                                   ####
 ################################################################################
-    set(CMAKE_C_COMPILER "clang-15" CACHE STRING "C compiler" FORCE)
-    set(CMAKE_CXX_COMPILER "clang++-15" CACHE STRING "C++ compiler" FORCE)
+    if (APPLE)
+        # macOS ships clang as `clang`/`clang++` (Xcode) -- there is no `clang-15`
+        # binary, so forcing it would fail configuration. Use the toolchain's
+        # default compiler (already detected by enable_language above).
+    else()
+        set(CMAKE_C_COMPILER "clang-15" CACHE STRING "C compiler" FORCE)
+        set(CMAKE_CXX_COMPILER "clang++-15" CACHE STRING "C++ compiler" FORCE)
+    endif()
     add_compile_options(
         -Wall              # Enable common warnings
         -Wextra            # Enable additional warnings not covered by -Wall

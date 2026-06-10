@@ -273,7 +273,9 @@ source_group("statistical" FILES ${SOURCES_STRATISTICAL})
 ################################################################################
 ###  LINK LIBRARIES                                                         ####
 ################################################################################
-if (NOT WIN32)
+# macOS (Apple clang + libc++) does not support -static-libstdc++/-static-libgcc;
+# those are GNU libstdc++ options for the Linux toolchain only.
+if (NOT WIN32 AND NOT APPLE)
     if (BUILD_EXE_MINER)
         target_link_options(${MINER_EXE} PUBLIC -static-libstdc++ -static-libgcc)
     endif()
@@ -422,7 +424,9 @@ if (BUILD_EXE_UNIT_TEST)
 endif()
 
 
-if (UNIX)
+# Linux links the separate libstdc++fs for std::filesystem; macOS (libc++) has
+# <filesystem> built in and has no stdc++fs library, so exclude Apple here.
+if (UNIX AND NOT APPLE)
     if (BUILD_EXE_MINER)
         target_link_libraries(${MINER_EXE} PRIVATE
             ${GNUTLS_LIBRARIES}

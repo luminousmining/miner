@@ -247,6 +247,24 @@ bool network::NetworkTCPClient::doSecureConnection()
                      << "\n"
                      << "It is possible that certificate verification can fail.";
         }
+#elif defined(__APPLE__)
+        // macOS: OpenSSL (vcpkg/Homebrew) is not wired into the system Keychain,
+        // but ships its own CA bundle and honours SSL_CERT_FILE/SSL_CERT_DIR. Use
+        // its default trust paths, and load an explicit bundle only when the user
+        // points SSL_CERT_FILE at one.
+        context.set_default_verify_paths();
+        if (char const* const certPath{ common::getEnv("SSL_CERT_FILE") }; nullptr != certPath)
+        {
+            try
+            {
+                context.load_verify_file(certPath);
+            }
+            catch (...)
+            {
+                logErr() << "SSL_CERT_FILE is set but the file could not be loaded;"
+                         << " certificate verification may fail.";
+            }
+        }
 #endif
     }
     catch (boost::exception const& e)

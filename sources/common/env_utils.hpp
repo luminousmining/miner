@@ -36,7 +36,8 @@ namespace common
             logErr() << "Can not set varibale environment [" << variable << "] = [" << value << "]";
             return;
         }
-#elif defined(__linux__)
+#else
+        // POSIX (Linux, macOS): setenv is available; do not overwrite (third arg 0).
         if (0 != setenv(variable.c_str(), value.c_str(), 0))
         {
             logErr() << "Can not set varibale environment [" << variable << "] = [" << value << "]";
