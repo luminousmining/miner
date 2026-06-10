@@ -73,7 +73,7 @@ std::shared_ptr<stratum::Stratum> stratum::NewStratum(algo::ALGORITHM const algo
         }
         case algo::ALGORITHM::KHEAVYHASH:
         {
-            stratum = NEW(stratum::StratumKHeavyHash);
+            stratum = NEW_SHARED(stratum::StratumKHeavyHash);
             break;
         }
         case algo::ALGORITHM::UNKNOWN:
