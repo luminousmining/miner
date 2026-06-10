@@ -52,17 +52,8 @@ endif()
 ################################################################################
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-# Output into the build tree (not the source tree) so that separate build
-# directories for each variant (linux-amd, linux-nvidia, windows-amd, ...) do
-# not overwrite one another's binaries/kernels.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# macOS is a single CPU-only variant (no multi-variant overwrite risk), so keep the
-# historical repo-root bin/ layout instead of nesting under build/.
-if (APPLE)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-endif()
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 ################################################################################
 ### TOOL FORMAT                                                             ####

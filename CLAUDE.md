@@ -57,7 +57,7 @@ cmake --build build --target format-check   # Check formatting only (CI)
 
 ## Code Style
 
-Enforced by `.clang-format` and `.clang-tidy`. See `CODING_STYLE.md` for the full spec. Key rules:
+Enforced by `.clang-format` and `.clang-tidy`. See `documentation/CODING_STYLE.md` for the full spec. Key rules:
 
 - **Naming**: `camelCase` for variables/functions/members, `UpperCase` for types/structs/enums, `UPPER_CASE` for `constexpr` constants, `lower_case` for namespaces
 - **Brace style**: Allman (opening brace on its own line); always use braces even for single-line bodies
@@ -137,4 +137,4 @@ Each GPU has two streams (CUDA) or two command queues (OpenCL). Iteration N runs
 | OpenCL | 3.0.19 | AMD GPU kernels |
 | Google Test | — | Unit tests |
 
-See `BUILD.md` for full installation instructions per platform.
+See `documentation/BUILD.md` for full installation instructions per platform.
