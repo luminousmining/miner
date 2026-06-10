@@ -216,5 +216,5 @@ from `vcpkg.json`):
 cmake --preset macos-cpu
 cmake --build --preset macos-cpu -j$(sysctl -n hw.ncpu)
 ```
-The binary is written to `build/macos-cpu/bin/miner`. CI builds this on a native
+The binary is written to `bin/miner`. CI builds this on a native
 Apple Silicon runner via `.github/workflows/miner_macos.yml`.

@@ -57,6 +57,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # not overwrite one another's binaries/kernels.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+# macOS is a single CPU-only variant (no multi-variant overwrite risk), so keep the
+# historical repo-root bin/ layout instead of nesting under build/.
+if (APPLE)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+endif()
 
 ################################################################################
 ### TOOL FORMAT                                                             ####
@@ -196,11 +202,9 @@ else()
 ################################################################################
 ### CLANG                                                                   ####
 ################################################################################
-    if (APPLE)
-        # macOS ships clang as `clang`/`clang++` (Xcode) -- there is no `clang-15`
-        # binary, so forcing it would fail configuration. Use the toolchain's
-        # default compiler (already detected by enable_language above).
-    else()
+    # macOS has no `clang-15` binary (Xcode ships plain `clang`); only force the
+    # versioned compiler on non-Apple UNIX.
+    if (UNIX AND NOT APPLE)
         set(CMAKE_C_COMPILER "clang-15" CACHE STRING "C compiler" FORCE)
         set(CMAKE_CXX_COMPILER "clang++-15" CACHE STRING "C++ compiler" FORCE)
     endif()

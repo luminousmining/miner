@@ -61,4 +61,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: miner-cpu-macos-arm64
-          path: build/macos-cpu/bin/miner
+          path: bin/miner
