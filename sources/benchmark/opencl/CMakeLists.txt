@@ -5,6 +5,7 @@ file(MAKE_DIRECTORY ${OUT_COMMON})
 set(BENCHMARK_OPENCL_FILES
     common/init_array.cl
     common/result.cl
+    ethash_light_cache/ethash_light_cache_lm0.cl
     kawpow/kawpow_lm1.cl
     kawpow/kawpow_lm2.cl
     kawpow/kawpow_lm3.cl
@@ -26,6 +27,7 @@ add_custom_target(copy_benchmark_opencl ALL
     DEPENDS
     ${OUT_COMMON}/common/init_array.cl
     ${OUT_COMMON}/common/result.cl
+    ${OUT_COMMON}/ethash_light_cache/ethash_light_cache_lm0.cl
     ${OUT_COMMON}/kawpow/kawpow_lm1.cl
     ${OUT_COMMON}/kawpow/kawpow_lm2.cl
     ${OUT_COMMON}/kawpow/kawpow_lm3.cl

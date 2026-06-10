@@ -70,6 +70,11 @@
         "enabled": false,
         "device_index": 0,
         "algorithms": {
+            "ethash_light_cache": {
+                "enabled": false,
+                "loop": 10,
+                "kernels": ["ethash_light_cache_lm0"]
+            },
             "kawpow": {
                 "enabled": false,
                 "loop": 1,

@@ -352,6 +352,10 @@ void benchmark::BenchmarkWorkflow::runAmd()
     currentdeviceType = device::DEVICE_TYPE::AMD;
 
     ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdEthashLightCache())
+    {
+        logErr() << "AMD ethash light cache failed";
+    }
     if (false == runAmdKawpow())
     {
         logErr() << "AMD kawpow failed";

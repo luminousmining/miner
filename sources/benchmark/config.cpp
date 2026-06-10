@@ -177,6 +177,7 @@ benchmark::Config benchmark::Config::makeDefault()
 
     cfg.amd.enabled = true;
     cfg.amd.deviceIndex = 0u;
+    cfg.amd.algorithms["ethash_light_cache"] = { true, { 10u, 1u, 1u }, {} };
     cfg.amd.algorithms["kawpow"] = { true, { 1u, 256u, 1024u }, {} };
 
     return cfg;
