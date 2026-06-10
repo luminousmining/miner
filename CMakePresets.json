@@ -47,10 +47,26 @@
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-clang-cl-xwin.cmake",
         "VCPKG_APPLOCAL_DEPS": "OFF"
       }
+    },
+    {
+      "name": "macos-cpu",
+      "displayName": "macOS (Apple Silicon, native clang; CPU-only, no GPU backend)",
+      "description": "Native macOS build. CUDA and OpenCL are unavailable on macOS, so both GPU backends are OFF and only OpenSSL is pulled from vcpkg (no opencl feature). Produces a Mach-O `miner` binary; GPU mining is not supported on this platform.",
+      "inherits": "vcpkg-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-cpu",
+      "cacheVariables": {
+        "BUILD_AMD": "OFF",
+        "BUILD_NVIDIA": "OFF",
+        "BUILD_CPU": "ON",
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": "openssl"
+      }
     }
   ],
   "buildPresets": [
     { "name": "linux",         "configurePreset": "linux",         "configuration": "Release" },
-    { "name": "windows-cross", "configurePreset": "windows-cross", "configuration": "Release" }
+    { "name": "windows-cross", "configurePreset": "windows-cross", "configuration": "Release" },
+    { "name": "macos-cpu",     "configurePreset": "macos-cpu",     "configuration": "Release" }
   ]
 }
