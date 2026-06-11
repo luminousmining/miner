@@ -35,7 +35,8 @@ sources/
     │   ├── autolykos.cpp            # 3 kernel variants
     │   └── ethash_light_cache.cpp   # 3 kernel variants
     ├── amd/
-    │   └── kawpow.cpp               # 4 OpenCL kernel variants
+    │   ├── kawpow.cpp               # 4 OpenCL kernel variants
+    │   └── blake3.cpp               # Alephium search throughput (DAG-free)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources
@@ -86,7 +87,8 @@ run()
     │   ├── runNvidiaAutolykosv2()
     │   └── runNvidiaKawpow()
     ├── runAmd()
-    │   └── runAmdKawpow()
+    │   ├── runAmdKawpow()
+    │   └── runAmdBlake3()
     ├── display all dashboards
     └── writeReport() → benchmark.json
 ```
@@ -238,7 +240,9 @@ AMD kernels are compiled at runtime via `KernelGeneratorOpenCL`. This class:
 
 This allows defines such as `GROUP_SIZE`, `WAVEFRONT`, `DAG_SIZE`, and `WORK_ITEM_COLLABORATE` to be set at runtime based on the actual device properties and DAG context.
 
-The AMD workflow requires an additional DAG build step before any mining kernel can run:
+DAG-based AMD workflows (e.g. KAWPOW) require an additional DAG build step before any
+mining kernel can run. Non-DAG algorithms (e.g. BLAKE3/Alephium) skip this and bind the
+header/target buffers directly:
 
 ```
 Build DAG kernel (ethash_build_dag.cl)
@@ -273,6 +277,7 @@ For each kawpow_lmN kernel:
 | Algorithm | Variants | Notes |
 |---|---|---|
 | KAWPOW | 4 (lm1–lm4) | LDS caching and sub-group strategies |
+| BLAKE3 | 1 (blake3) | Alephium `search` kernel throughput. DAG-free. |
 
 ---
 

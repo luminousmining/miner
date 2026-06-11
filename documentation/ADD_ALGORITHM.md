@@ -2,7 +2,7 @@
 
 This guide describes every step required to integrate a new mining algorithm into LuminousMiner. The fictional algorithm **MyNewPOW** is used as the running example throughout.
 
-> **Recommended reference**: KawPOW is the simplest existing implementation to read — it inherits from ProgPOW without adding any logic of its own. For a non-DAG algorithm, see BLAKE3 (NVIDIA only) or AUTOLYKOS_V2.
+> **Recommended reference**: KawPOW is the simplest existing implementation to read — it inherits from ProgPOW without adding any logic of its own. For a non-DAG algorithm, see BLAKE3 (AMD + NVIDIA) or AUTOLYKOS_V2.
 
 ---
 
@@ -400,7 +400,7 @@ case algo::ALGORITHM::MYNEWPOW:
 }
 ```
 
-> If the algorithm is not supported on one platform (e.g. BLAKE3 is NVIDIA only), leave the AMD case empty with just `break;`. The device will be killed with `RESOLVER_NULLPTR` if no resolver is instantiated.
+> If the algorithm is not supported on one platform, leave that platform's case empty with just `break;`. The device will be killed with `RESOLVER_NULLPTR` if no resolver is instantiated.
 
 ---
 

@@ -360,5 +360,11 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD kawpow failed";
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdBlake3())
+    {
+        logErr() << "AMD blake3 failed";
+    }
 }
 #endif

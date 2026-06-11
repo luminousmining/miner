@@ -39,6 +39,10 @@ ARG VCPKG_REF=40dd49b0c9c7dbd79dc64cad5e82308eae04f67f
 # windows-cross preset; flip ON for CI/test builds.
 ARG BUILD_TESTS=OFF
 
+# Build bin/benchmark too (offline kernel A/B harness). Default OFF to match the
+# windows-cross preset; flip ON for tuning builds.
+ARG BUILD_BENCH=OFF
+
 # --- Common toolchain (identical on either Ubuntu 24.04 base) ---------------
 # g++ is the HOST (x64-linux) compiler vcpkg probes before building anything --
 # even for a pure cross target. The CUDA devel base ships it; the lean ubuntu
@@ -184,6 +188,7 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
     cmake --preset windows-cross \
         -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV -DUSE_CLANG_CUDA=$CC \
         -DBUILD_EXE_UNIT_TEST=${BUILD_TESTS} \
+        -DBUILD_EXE_BENCHMARK=${BUILD_BENCH} \
         -DVCPKG_MANIFEST_FEATURES="" $OCL; \
     cmake --build --preset windows-cross
 

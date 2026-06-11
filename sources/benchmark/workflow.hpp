@@ -116,6 +116,7 @@ namespace benchmark
         void runAmd();
         bool runAmdEthashLightCache();
         bool runAmdKawpow();
+        bool runAmdBlake3();
 #endif
     };
 }

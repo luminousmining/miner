@@ -18,11 +18,11 @@ void stratum::StratumBlake3::onResponse([[maybe_unused]] boost::json::object con
     {
         case stratum::Stratum::ID_MINING_AUTHORIZE:
         {
-            if (false == root.contains("error") || true == root.at("params").as_bool())
-            {
-                authenticated = true;
-            }
-            else
+            // Stratum responses carry "result" (+ "error"), not "params" (matches
+            // the ethash/progpow/autolykos handlers). Reading "params" here threw
+            // out_of_range on every authorize reply, leaving the session unauthenticated.
+            authenticated = root.contains("result") && root.at("result").is_bool() && root.at("result").as_bool();
+            if (false == authenticated)
             {
                 logErr() << "Authorize failed : " << root;
             }
@@ -63,25 +63,28 @@ void stratum::StratumBlake3::onMiningNotify(boost::json::object const& root)
     jobInfo.fromGroup = common::boostJsonGetNumber<uint32_t>(jobParam.at("fromGroup"));
     jobInfo.toGroup = common::boostJsonGetNumber<uint32_t>(jobParam.at("toGroup"));
     jobInfo.targetBlob = algo::toHash256(common::boostGetString(jobParam, "targetBlob"));
+    // Left-aligned: headerBlob occupies ubytes[0..301]; the kernel prepends the 24-byte
+    // nonce in front of it to form the 326-byte Alephium mining input.
     jobInfo.headerBlob =
-        algo::toHash<algo::hash3072>(common::boostGetString(jobParam, "headerBlob"), algo::HASH_SHIFT::RIGHT);
+        algo::toHash<algo::hash3072>(common::boostGetString(jobParam, "headerBlob"), algo::HASH_SHIFT::LEFT);
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Alephium (woolypooly) ships the share target per-job via targetBlob and sends no
+    // mining.set_difficulty, so seed the boundary from it — otherwise isValidJob() sees an
+    // empty boundary and updateJob() drops every job (no work ever reaches the device).
+    jobInfo.boundary = jobInfo.targetBlob;
+    jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
 
     ////////////////////////////////////////////////////////////////////////////
     jobInfo.jobID = algo::toHash256(jobInfo.jobIDStr);
 
     ////////////////////////////////////////////////////////////////////////////
-    // fake data
+    // Blake3/Alephium is not memory-hard (no DAG): keep the epoch constant so the
+    // device runs updateMemory() (a ~1s OpenCL kernel rebuild) exactly once. The old
+    // per-notify increment retriggered it on every job (~2x/s), starving the miner.
     if (-1 == jobInfo.epoch)
     {
-        jobInfo.epoch = 1u;
-    }
-    else
-    {
-        ++jobInfo.epoch;
-        if (jobInfo.epoch >= std::numeric_limits<int32_t>::max())
-        {
-            jobInfo.epoch = 1u;
-        }
+        jobInfo.epoch = 1;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -91,8 +94,8 @@ void stratum::StratumBlake3::onMiningNotify(boost::json::object const& root)
 
 void stratum::StratumBlake3::onMiningSetDifficulty(boost::json::object const& root)
 {
-    auto const   params{ root.at("params").as_array() };
-    double const difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
+    boost::json::array const& params(root.at("params").as_array());
+    double const              difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
     jobInfo.boundary = algo::toHash256(difficulty);
     jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
