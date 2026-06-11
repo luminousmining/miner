@@ -33,6 +33,12 @@ namespace common
             }
 
             inline
+            void setFlags(cl_mem_flags const _flags)
+            {
+                flags = _flags;
+            }
+
+            inline
             void setSize(size_t const _size)
             {
                 size = _size;

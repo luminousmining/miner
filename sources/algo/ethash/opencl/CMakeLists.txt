@@ -4,6 +4,7 @@ file(MAKE_DIRECTORY ${OUT_ETHASH})
 
 set(ETHASH_FILES
   ethash_dag.cl
+  ethash_light_cache.cl
   ethash_result.cl
   ethash_search.cl
 )
@@ -20,6 +21,7 @@ endforeach()
 add_custom_target(copy_ethash_opencl_files ALL
   DEPENDS
     ${OUT_ETHASH}/ethash_dag.cl
+    ${OUT_ETHASH}/ethash_light_cache.cl
     ${OUT_ETHASH}/ethash_result.cl
     ${OUT_ETHASH}/ethash_search.cl
 )

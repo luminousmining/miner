@@ -4,6 +4,7 @@
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/progpow/progpow.hpp>
+#include <common/config.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
 #include <resolver/amd/progpow.hpp>
@@ -19,6 +20,11 @@ struct ResolverProgpowZAmdTest : public testing::Test
 
     ResolverProgpowZAmdTest()
     {
+        ////////////////////////////////////////////////////////////////////////////
+        common::Config& config{ common::Config::instance() };
+        config.deviceAlgorithm.ethashBuildLightCacheCPU = true;
+
+        ////////////////////////////////////////////////////////////////////////////
         common::setLogLevel(common::TYPELOG::__DEBUG);
     }
 
