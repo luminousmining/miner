@@ -22,7 +22,7 @@ jobs:
   build-boost:
     uses: ./.github/workflows/boost_linux.yml
     with:
-      boost_version: "1.90.0"
+      boost_version: "1.91.0"
 
   build-openssl:
     uses: ./.github/workflows/openssl_linux.yml
@@ -67,7 +67,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: boost-install
-          key: boost-${{ runner.os }}-1.90.0
+          key: boost-${{ runner.os }}-1.91.0
 
       - name: Install Boost
         run: |
@@ -183,7 +183,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: boost-install
-          key: boost-${{ runner.os }}-1.90.0
+          key: boost-${{ runner.os }}-1.91.0
 
       - name: Install Boost
         run: |
@@ -322,7 +322,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: boost-install
-          key: boost-${{ runner.os }}-1.90.0
+          key: boost-${{ runner.os }}-1.91.0
 
       - name: Install Boost
         run: |

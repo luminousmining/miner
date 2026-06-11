@@ -75,7 +75,6 @@ bool network::NetworkTCPClient::connect()
         }
         else
         {
-            // from_string is no longer a memeber of boost::asio::ip::address in 1.90.
             auto const address{ boost::asio::ip::make_address(host, ec) };
             if (boost_error::success != ec)
             {

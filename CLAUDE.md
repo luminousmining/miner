@@ -131,7 +131,7 @@ Each GPU has two streams (CUDA) or two command queues (OpenCL). Iteration N runs
 
 | Library | Version | Purpose |
 |---|---|---|
-| Boost | 1.90.0 | ASIO, JSON, Thread, LockFree |
+| Boost | 1.91.0 | ASIO, JSON, Thread, LockFree |
 | OpenSSL | 1.1.1 | TLS for stratum connections |
 | CUDA | 13.1 | NVIDIA GPU kernels |
 | OpenCL | 3.0.19 | AMD GPU kernels |
