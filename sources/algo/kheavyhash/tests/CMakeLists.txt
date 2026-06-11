@@ -1,5 +1,3 @@
-# Fold the kHeavyHash CPU known-answer tests into the main unit_test target.
-# These are pure CPU (no GPU/OpenCL), so they add no toolchain requirements.
 file(GLOB HEADERS "*.hpp")
 file(GLOB SOURCES "*.cpp")
 

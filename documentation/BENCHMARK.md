@@ -389,12 +389,12 @@ Measured on 2026-03-16, 10 iterations per kernel, config: `sources/benchmark/con
 
 ## Reference Results — AMD Radeon RX 9070 XT (RDNA4 / gfx1201)
 
+### kHeavyHash — 256 threads × 8192 blocks
+
 200 iterations per kernel, steady-state median (first 40 ramp iterations dropped),
 idle GPU. All six kernels are gated bit-identical by the OpenCL KAT. See the
 [kHeavyHash AMD study](reasearch_and_development/kheavyhash/amd.md) for the full
 analysis.
-
-### kHeavyHash — 256 threads × 8192 blocks
 
 | Kernel          | Hashrate (steady) | vs baseline | Notes |
 |-----------------|-------------------|-------------|-------|

@@ -60,12 +60,12 @@ void stratum::StratumKHeavyHash::onUnknownMethod(boost::json::object const& root
     {
         onResponse(root);
     }
-    // NiceHash delivers the extranonce as the subscribe reply with the bare
-    // method name "set_extranonce" (no "mining." prefix), so the base router
-    // misses it. Without applying it the high nonce bytes are wrong and every
-    // share is rejected. (Verified against kheavyhash.auto.nicehash.com:9200.)
     else if ("set_extranonce" == method)
     {
+        // NiceHash delivers the extranonce as the subscribe reply with the bare
+        // method name "set_extranonce" (no "mining." prefix), so the base router
+        // misses it. Without applying it the high nonce bytes are wrong and every
+        // share is rejected. (Verified against kheavyhash.auto.nicehash.com:9200.)
         onMiningSetExtraNonce(root);
     }
 }
