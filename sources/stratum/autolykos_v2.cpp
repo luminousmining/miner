@@ -78,6 +78,7 @@ void stratum::StratumAutolykosV2::onMiningNotify(boost::json::object const& root
     jobInfo.headerHash = algo::toHash256(params.at(2).as_string().c_str());
     jobInfo.boundary = algo::toHash2<algo::hash256, algo::hash512>(
         algo::toLittleEndian<algo::hash512>(algo::decimalToHash<algo::hash512>(params.at(6).as_string().c_str())));
+    jobInfo.boundaryU64 = algo::toUINT64(jobInfo.boundary);
 
     jobInfo.cleanJob = params.at(8).as_bool();
 

@@ -76,7 +76,12 @@ void autolykos_v2_fill_dag(
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ((uint8_t *)hashes)[tid * 32 + 31] = 0;
+    // (uint64_t) cast is required: tid*32 overflows 32-bit for tid >= 2^27 (the 4 GiB
+    // byte boundary), silently retargeting this zeroing write to a low element and
+    // leaving the high elements' top byte = H[0] instead of 0 -- corrupting the verify
+    // sum (pool "Share above target"). Mirrors the OpenCL fix in autolykos_v2_dag.cl.
+    // luminousmining/miner#159 -- NOT yet verified on NVIDIA hardware.
+    ((uint8_t *)hashes)[(uint64_t)tid * 32 + 31] = 0;
 }
 
 

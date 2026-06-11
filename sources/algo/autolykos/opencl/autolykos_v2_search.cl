@@ -75,10 +75,14 @@ void autolykos_v2_search(
 
         //--------------------------read hash from lookup
         uint tmpL;
+        // (ulong) cast is required: h3*32 overflows 32-bit for h3 >= 2^27, which would
+        // read the wrong DAG element (and thus a wrong first-hash element f) for any
+        // nonce whose seed index lands in the upper part of a >4 GiB table.
+        ulong const dagByteBase = (ulong)h3 * 32;
         #pragma unroll 8
         for (int i = 0; i < 32; ++i)
         {
-            ((uchar *)r)[31-i] = ((__global uchar const* const)dag)[h3 * 32 + i];
+            ((uchar *)r)[31-i] = ((__global uchar const* const)dag)[dagByteBase + i];
         }
 
         B2B_IV(aux);
