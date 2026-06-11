@@ -1,11 +1,13 @@
-name: macOS Miner (CPU-only)
+name: miner-macos-vcpkg
 
-# macOS cannot run inside a Docker container (Apple licensing + no Linux->Mach-O
-# cross-compile in this repo), so unlike the Linux/Windows builds this mirrors the
+# Validates the macOS vcpkg + CMake-preset build (issue #169). macOS cannot run
+# inside a Docker container (Apple licensing + no Linux->Mach-O cross-compile in
+# this repo), so unlike the Linux/Windows vcpkg Docker images this mirrors the
 # same vcpkg + CMake-preset pattern on a *native* Apple Silicon runner instead of
 # a Dockerfile. CUDA and OpenCL do not exist on macOS: this is a CPU-only build
 # (BUILD_CPU=ON, GPU backends OFF) and produces a Mach-O `miner` that does not
-# perform GPU mining -- it exists for build-system parity and artifact coverage.
+# perform GPU mining -- it exists for build-system parity. Build-only validation:
+# no artifact is pushed, matching the other vcpkg actions (issue #169).
 
 on:
   workflow_dispatch:
@@ -53,12 +55,3 @@ jobs:
 
       - name: Build Miner (macos-cpu)
         run: cmake --build --preset macos-cpu -j$(sysctl -n hw.ncpu)
-
-      # ===============================
-      # Upload artifact
-      # ===============================
-      - name: Upload macOS Miner artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: miner-cpu-macos-arm64
-          path: bin/miner

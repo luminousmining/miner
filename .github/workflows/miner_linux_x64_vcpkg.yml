@@ -1,10 +1,11 @@
-name: miner-regression-x64
+name: miner-linux-x64-vcpkg
 
-# Non-regression guard for the x86-64 default of docker/Dockerfile.linux. The
-# linux-arm64 work parameterized that Dockerfile (TARGETARCH, GPU=cpu, runtime
-# stage) with amd64 as the unchanged default; this builds the amd64 CPU path so a
-# change that breaks it is caught. CPU-only (fast): no CUDA/OpenCL. The GPU=both
-# path is exercised by the existing miner_linux.yml.
+# Validates the x86-64 path of the vcpkg Docker image docker/Dockerfile.linux
+# (issue #169). amd64 is the Dockerfile's default TARGETARCH; this builds the
+# CPU-only path so a change that breaks it is caught, and doubles as the x64
+# counterpart to miner-linux-arm64-vcpkg. Build-only: no artifact is pushed; the
+# image is loaded locally and smoke-run. CPU-only (fast): no CUDA/OpenCL. The
+# GPU=both artifact build is exercised by the non-vcpkg miner_linux.yml.
 
 on:
   workflow_dispatch:

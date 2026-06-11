@@ -1,4 +1,8 @@
-name: miner-linux-arm64
+name: miner-linux-arm64-vcpkg
+
+# Validates that the vcpkg Docker image docker/Dockerfile.linux builds for
+# linux/arm64 (CPU-only). Build-only validation per issue #169: no artifact is
+# pushed; the image is loaded locally and smoke-run to confirm the binary works.
 
 on:
   workflow_dispatch:
