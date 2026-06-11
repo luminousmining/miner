@@ -382,5 +382,11 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD kheavyhash failed";
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdAutolykos())
+    {
+        logErr() << "AMD autolykos failed";
+    }
 }
 #endif

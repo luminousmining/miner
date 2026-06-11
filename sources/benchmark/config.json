@@ -109,6 +109,11 @@
                 "threads": 256,
                 "blocks": 8192,
                 "kernels": ["kHeavyHash_lm0", "kHeavyHash_lm1", "kHeavyHash_lm2", "kHeavyHash_lm3", "kHeavyHash_lm4", "kHeavyHash_lm5"]
+            },
+            "autolykos_v2": {
+                "enabled": false,
+                "loop": 10,
+                "kernels": ["autolykos_v2_search", "autolykos_v2_verify"]
             }
         }
     }
