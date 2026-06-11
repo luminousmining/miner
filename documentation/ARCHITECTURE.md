@@ -483,6 +483,7 @@ Loaded from CLI by `common::Cli`, supports per-device pool overrides:
 | EVRPROGPOW | AMD, NVIDIA | Evermore |
 | AUTOLYKOS_V2 | AMD, NVIDIA | Ergo |
 | BLAKE3 | AMD, NVIDIA | Alephium (non-DAG) |
+| KHEAVYHASH | AMD, NVIDIA | Kaspa |
 | SHA256 | CPU | |
 
 All DAG-based algorithms (Ethash family) share a common `algo::DagContext` and `algo::ethash::ContextGenerator`. The epoch is derived from the seed hash.

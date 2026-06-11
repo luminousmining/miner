@@ -14,8 +14,9 @@ namespace common
       public:
         cl::Kernel  clKernel{};
         // Public so a single built program can yield more than one kernel by name
-        // (the OpenCL KATs pull test_hash/search/etc. from one build). Production
-        // code only reads clKernel; widening visibility changes nothing for it.
+        // (the OpenCL KATs pull test_hash/test_pow_hash/test_kheavy/test_heavy_hash/
+        // search/etc. from one build). Production code only reads clKernel; widening
+        // visibility changes nothing for it.
         cl::Program clProgram{};
 
         void clear() final;

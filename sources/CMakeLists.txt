@@ -9,6 +9,7 @@ if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
             algo/autolykos/cuda/autolykos_v2.cu
             algo/blake3/cuda/blake3.cu
             algo/ethash/cuda/ethash.cu
+            algo/kheavyhash/cuda/kheavyhash.cu
             algo/progpow/cuda/progpow.cu
         )
     else()
@@ -16,6 +17,7 @@ if (BUILD_NVIDIA AND (BUILD_EXE_MINER OR BUILD_EXE_UNIT_TEST))
             algo/autolykos/cuda/autolykos_v2.cu
             algo/blake3/cuda/blake3.cu
             algo/ethash/cuda/ethash.cu
+            algo/kheavyhash/cuda/kheavyhash.cu
             algo/progpow/cuda/progpow.cu
         )
 

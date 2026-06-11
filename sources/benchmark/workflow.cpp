@@ -376,5 +376,11 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD progpow failed";
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdKHeavyHash())
+    {
+        logErr() << "AMD kheavyhash failed";
+    }
 }
 #endif

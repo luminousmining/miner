@@ -1,0 +1,16 @@
+#define ALGO_KHEAVYHASH
+
+////////////////////////////////////////////////////////////////////////////////
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+////////////////////////////////////////////////////////////////////////////////
+#include <algo/hash.hpp>
+#include <algo/kheavyhash/result.hpp>
+#include <common/custom.hpp>
+#include <common/error/cuda_error.hpp>
+#include <resolver/nvidia/kheavyhash_kernel_parameter.hpp>
+
+////////////////////////////////////////////////////////////////////////////////
+#include <algo/kheavyhash/cuda/memory.cuh>
+#include <algo/kheavyhash/cuda/search.cuh>
