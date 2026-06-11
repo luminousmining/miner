@@ -39,7 +39,8 @@ sources/
     │   ├── blake3.cpp               # Alephium search throughput (DAG-free)
     │   ├── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
     │   ├── progpow.cpp              # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
-    │   └── kheavyhash.cpp           # 6 OpenCL kernel variants (lm0–lm5)
+    │   ├── kheavyhash.cpp           # 6 OpenCL kernel variants (lm0–lm5)
+    │   └── autolykos_v2.cpp         # production search + verify kernels (throughput)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources
@@ -95,7 +96,8 @@ run()
     │   ├── runAmdBlake3()
     │   ├── runAmdEthash()
     │   ├── runAmdProgpow()
-    │   └── runAmdKHeavyHash()
+    │   ├── runAmdKHeavyHash()
+    │   └── runAmdAutolykos()
     ├── display all dashboards
     └── writeReport() → benchmark.json
 ```
@@ -288,6 +290,7 @@ For each kawpow_lmN kernel:
 | Ethash | 2 (lm_0, lm_1) | barrier vs sub_group_barrier |
 | ProgPOW | 2 (lm_0, lm_1) | barrier vs sub_group_barrier |
 | kHeavyHash | 6 (lm0–lm5) | ALU-bound; `v_dot4` matmul + keccak midstate ([study](reasearch_and_development/kheavyhash/amd.md)) |
+| Autolykos V2 | 2 (search, verify) | production Ergo kernels — DAG-bound throughput coverage |
 
 ---
 
@@ -404,3 +407,20 @@ analysis.
 | `kHeavyHash_lm3`| ~481 MH | 1.23× | + register-resident keccak — no gain |
 | `kHeavyHash_lm4`| **~573 MH** | **1.46×** | + powHash keccak midstate — **shipped** |
 | `kHeavyHash_lm5`| ~574 MH | 1.46× | + heavy keccak round-0 hoist — ties lm4 |
+
+### Autolykos V2 — logical nonce grid 65536 blocks × 64 threads
+
+10 iterations per kernel, steady-state median (first ramp iteration dropped),
+idle GPU. The ~4 GiB DAG (134,217,728 items × 32 B) is built once (untimed),
+then the two production kernels are timed back to back. The grid is expressed in
+nonce terms so the report reads nonces/s.
+
+| Kernel                | Hashrate (steady) | Notes |
+|-----------------------|-------------------|-------|
+| `autolykos_v2_search` | **~1.05 GH** | blake2b prehash over the DAG → BHashes; tracks the GPU boost clock, so it varies run to run |
+| `autolykos_v2_verify` | ~69 MH | final blake2b + boundary test over the full grid |
+
+> These are raw per-kernel throughputs over the full nonce space, not the
+> end-to-end mining rate — in production `verify` only runs on the candidates
+> `search` flags, so the realised hashrate is far higher than the standalone
+> `verify` figure.
