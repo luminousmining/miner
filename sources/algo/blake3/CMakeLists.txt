@@ -5,6 +5,14 @@ if (BUILD_EXE_MINER)
     target_sources(${MINER_EXE} PUBLIC
         ${HEADERS}
     )
+    if (BUILD_CPU)
+        # The CPU Blake3 resolver calls algo::blake3::hashRef (blake3_pow.cpp), which
+        # links the vendored blake3_ref C lib. Both are otherwise unit-test-only.
+        target_sources(${MINER_EXE} PUBLIC
+            ${SOURCES}
+        )
+        target_link_libraries(${MINER_EXE} PUBLIC blake3_ref)
+    endif()
 endif()
 
 if (BUILD_EXE_UNIT_TEST)
