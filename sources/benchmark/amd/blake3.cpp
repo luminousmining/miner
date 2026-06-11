@@ -61,7 +61,7 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    auto benchBlake3 =
+    auto benchBlake3{
         [&](std::string const& variant, uint32_t const loop, uint32_t const threads, uint32_t const blocks) -> bool
     {
         ////////////////////////////////////////////////////////////////////////
@@ -111,10 +111,10 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
         }
 
         return true;
-    };
+    } };
 
     ////////////////////////////////////////////////////////////////////////////
-    auto const runKernel = [&](std::string const& name)
+    auto const runKernel{ [&](std::string const& name)
     {
         if (false == algo.isKernelEnabled(name))
         {
@@ -122,7 +122,7 @@ bool benchmark::BenchmarkWorkflow::runAmdBlake3()
         }
         KernelParams const p{ algo.resolveKernel(name) };
         benchBlake3(name, p.loop, p.threads, p.blocks);
-    };
+    } };
 
     ////////////////////////////////////////////////////////////////////////////
     runKernel("blake3");
