@@ -24,8 +24,6 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      # List of test suites to run — separate multiple suites with ":"
-      # Example: "HashTest.*:AlgoTypeTest.*:EthashTest.*"
       TEST_FILTER: >-
         AlgoTypeTest.*:
         EthashTest.*:
