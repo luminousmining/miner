@@ -108,7 +108,7 @@ Synchronization uses `AtomicCounter<uint64_t>` to signal job/memory/constant upd
 | `sources/device/` | `DeviceManager` singleton + `Device` base + `DeviceNvidia`/`DeviceAmd` |
 | `sources/resolver/amd/` | OpenCL resolvers — one per algorithm |
 | `sources/resolver/nvidia/` | CUDA resolvers — one per algorithm |
-| `sources/resolver/cpu/` | OpenMP CPU resolver |
+| `sources/resolver/cpu/` | CPU resolver (std::thread pool, `--cpu_threads`/`--cpu_affinity`) |
 | `sources/profiler/` | NVML (NVIDIA) / ADL (AMD) GPU monitoring |
 | `sources/statistical/` | Hashrate and share counters |
 | `sources/api/` | HTTP REST API (default port 8080) backed by Boost.ASIO |

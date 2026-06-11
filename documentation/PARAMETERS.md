@@ -27,6 +27,8 @@ N/A : No default value is set.
 | `--nvidia` | ✅ | true | Enable or disable device nvidia. | `--nvidia=<true\|false>` |
 | `--amd` | ✅ | true | Enable or disable device amd. | `--amd=<true\|false>` |
 | `--cpu` | ✅ | false | Enable or disable device cpu. | `--cpu=<true\|false>` |
+| `--cpu_threads` | ✅ | all cores | Number of CPU worker threads (pool size). | `--cpu_threads=8` |
+| `--cpu_affinity` | ✅ | none | Hex bitmask of logical cores to pin CPU workers to (bit i = core i). See [CPU_TUNING.md](CPU_TUNING.md). | `--cpu_affinity=0xFF` |
 | `--socks5` | ✅ | false | Enable pool connection through a SOCKS5 proxy server on localhost. | `--socks5=<true\|false>` |
 | `--socks_port` | ✅ | 9050 | The port of the SOCKS5 proxy server on localhost. | `--socks_port=9050` |
 | `--socks_host` | ✅ | 127.0.0.1 | The host address of the SOCKS5 proxy server. | `--socks_host=127.0.0.1` |
