@@ -9,6 +9,7 @@
 #include <algo/progpow/kawpow.hpp>
 #include <algo/progpow/progpow.hpp>
 #include <benchmark/workflow.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/kernel_generator/opencl.hpp>
 #include <common/opencl/buffer_mapped.hpp>
@@ -69,7 +70,7 @@ bool benchmark::BenchmarkWorkflow::runAmdProgpow()
         algo::ethash::DAG_COUNT_ITEMS_INIT,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT,
-        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
+        common::Config::instance().deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     ////////////////////////////////////////////////////////////////////////////
@@ -148,10 +149,10 @@ bool benchmark::BenchmarkWorkflow::runAmdProgpow()
                                         + std::to_string(benchPeriod) + ".cl"s };
 
     ///////////////////////////////////////////////////////////////////////////
-    auto benchProgpow = [&](std::string const& variantName,
-                            uint32_t const     loop,
-                            uint32_t const     groupSize,
-                            uint32_t const     workerGroupCount) -> bool
+    auto benchProgpow{ [&](std::string const& variantName,
+                           uint32_t const     loop,
+                           uint32_t const     groupSize,
+                           uint32_t const     workerGroupCount) -> bool
     {
         ///////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
@@ -160,7 +161,7 @@ bool benchmark::BenchmarkWorkflow::runAmdProgpow()
         uint32_t const batchGroupLane{ groupSize / algo::progpow::LANES };
 
         ///////////////////////////////////////////////////////////////////////
-        generator.setKernelName("progpow_search");
+        generator.setKernelName(variantName);
         generator.declareDefine("__KERNEL_KAWPOW");
 
         ///////////////////////////////////////////////////////////////////////
@@ -228,12 +229,12 @@ bool benchmark::BenchmarkWorkflow::runAmdProgpow()
         }
 
         return true;
-    };
+    } };
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == dagInitialized)
     {
-        auto const runKernel = [&](std::string const& name)
+        auto const runKernel{ [&](std::string const& name)
         {
             if (false == algo.isKernelEnabled(name))
             {
@@ -241,10 +242,10 @@ bool benchmark::BenchmarkWorkflow::runAmdProgpow()
             }
             KernelParams const p{ algo.resolveKernel(name) };
             benchProgpow(name, p.loop, p.threads, p.blocks);
-        };
+        } };
 
-        runKernel("progpow_baseline");
-        runKernel("progpow_subgroup");
+        runKernel("progpow_lm_0");
+        runKernel("progpow_lm_1");
     }
 
     ////////////////////////////////////////////////////////////////////////////

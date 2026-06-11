@@ -376,11 +376,5 @@ void benchmark::BenchmarkWorkflow::runAmd()
     {
         logErr() << "AMD progpow failed";
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    if (false == runAmdAutolykos())
-    {
-        logErr() << "AMD autolykos failed";
-    }
 }
 #endif

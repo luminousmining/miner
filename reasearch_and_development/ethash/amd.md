@@ -5,9 +5,9 @@
 This document covers the OpenCL search-kernel optimisation developed for Ethash on
 AMD GPUs (RDNA/RDNA4). Two variants are benchmarked head-to-head:
 
-- **`ethash_search_baseline`** — the original kernel, using a full work-group
+- **`ethash_lm_0`** — the original kernel, using a full work-group
   `barrier(CLK_LOCAL_MEM_FENCE)` at every lane-exchange point.
-- **`ethash_search_subgroup`** — identical, except the three intra-wavefront
+- **`ethash_lm_1`** — identical, except the three intra-wavefront
   lane exchanges use `sub_group_barrier(CLK_LOCAL_MEM_FENCE)` instead. Each
   thread only ever reads its own `LANE_PARALLEL`-lane group's slots, so a
   work-group-wide barrier is stronger than required; a sub-group barrier
@@ -87,8 +87,8 @@ hashrate over a fixed window) cancels the same drift.
 
 | variant                   | median-of-medians (MH/s) | per-run median range |
 |---------------------------|--------------------------|----------------------|
-| `ethash_search_baseline`  | 39.49                    | 38.03 – 39.53        |
-| `ethash_search_subgroup`  | 39.94                    | 38.28 – 40.01        |
+| `ethash_lm_0`  | 39.49                    | 38.03 – 39.53        |
+| `ethash_lm_1`  | 39.94                    | 38.28 – 40.01        |
 
 Per-run paired Δ (subgroup vs baseline, same run): **+0.7%, +1.0%, +1.3%, +1.1%,
 +1.1%** → **+1.0%** (paired mean), 5/5 runs positive. The tight pairing is the

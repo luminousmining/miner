@@ -108,7 +108,7 @@ void initialize_header(
 
 
 __kernel
-void progpow_search(
+void progpow_lm_1(
     ulong const start_nonce,
     ulong const boundary,
     __constant uint4 const* const restrict header,

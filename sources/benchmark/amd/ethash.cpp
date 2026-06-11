@@ -7,6 +7,7 @@
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <benchmark/workflow.hpp>
+#include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/kernel_generator/opencl.hpp>
 #include <common/opencl/buffer_mapped.hpp>
@@ -57,7 +58,7 @@ bool benchmark::BenchmarkWorkflow::runAmdEthash()
         algo::ethash::DAG_COUNT_ITEMS_INIT,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_GROWTH,
         algo::ethash::LIGHT_CACHE_COUNT_ITEMS_INIT,
-        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
+        common::Config::instance().deviceAlgorithm.ethashBuildLightCacheCPU
     );
 
     ////////////////////////////////////////////////////////////////////////////
@@ -121,13 +122,13 @@ bool benchmark::BenchmarkWorkflow::runAmdEthash()
 
     ///////////////////////////////////////////////////////////////////////////
     // Each variant is a self-contained copy of the production ethash_search
-    // kernel; the kernel function is always named "ethash_search" while the
-    // file (and the dashboard label) carries the variant name. This lets us
-    // A/B the barrier vs sub_group_barrier change against an identical harness.
-    auto benchEthash = [&](std::string const& variantName,
-                           uint32_t const     loop,
-                           uint32_t const     groupSize,
-                           uint32_t const     workerGroupCount) -> bool
+    // kernel; the kernel function and its file share the variant name
+    // (also used as the dashboard label). This lets us A/B the barrier vs
+    // sub_group_barrier change against an identical harness.
+    auto benchEthash{ [&](std::string const& variantName,
+                          uint32_t const     loop,
+                          uint32_t const     groupSize,
+                          uint32_t const     workerGroupCount) -> bool
     {
         ///////////////////////////////////////////////////////////////////////
         common::KernelGeneratorOpenCL generator{};
@@ -139,7 +140,7 @@ bool benchmark::BenchmarkWorkflow::runAmdEthash()
         uint32_t const lenState{ 25u };
 
         ///////////////////////////////////////////////////////////////////////
-        generator.setKernelName("ethash_search");
+        generator.setKernelName(variantName);
 
         ///////////////////////////////////////////////////////////////////////
         generator.addDefine("GROUP_SIZE", groupSize);
@@ -188,12 +189,12 @@ bool benchmark::BenchmarkWorkflow::runAmdEthash()
         }
 
         return true;
-    };
+    } };
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == dagInitialized)
     {
-        auto const runKernel = [&](std::string const& name)
+        auto const runKernel{ [&](std::string const& name)
         {
             if (false == algo.isKernelEnabled(name))
             {
@@ -201,10 +202,10 @@ bool benchmark::BenchmarkWorkflow::runAmdEthash()
             }
             KernelParams const p{ algo.resolveKernel(name) };
             benchEthash(name, p.loop, p.threads, p.blocks);
-        };
+        } };
 
-        runKernel("ethash_search_baseline");
-        runKernel("ethash_search_subgroup");
+        runKernel("ethash_lm_0");
+        runKernel("ethash_lm_1");
     }
 
     ////////////////////////////////////////////////////////////////////////////

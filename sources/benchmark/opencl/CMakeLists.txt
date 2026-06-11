@@ -5,6 +5,8 @@ file(MAKE_DIRECTORY ${OUT_COMMON})
 set(BENCHMARK_OPENCL_FILES
     common/init_array.cl
     common/result.cl
+    ethash/ethash_lm_0.cl
+    ethash/ethash_lm_1.cl
     ethash_light_cache/ethash_light_cache_lm0.cl
     kawpow/kawpow_lm1.cl
     kawpow/kawpow_lm2.cl
@@ -12,10 +14,8 @@ set(BENCHMARK_OPENCL_FILES
     kawpow/kawpow_lm4.cl
     kawpow/sequence_dynamic.cl
     kawpow/sequence_dynamic_local.cl
-    ethash/ethash_search_baseline.cl
-    ethash/ethash_search_subgroup.cl
-    progpow/progpow_baseline.cl
-    progpow/progpow_subgroup.cl
+    progpow/progpow_lm_0.cl
+    progpow/progpow_lm_1.cl
 )
 
 foreach(FILE ${BENCHMARK_OPENCL_FILES})
@@ -31,6 +31,8 @@ add_custom_target(copy_benchmark_opencl ALL
     DEPENDS
     ${OUT_COMMON}/common/init_array.cl
     ${OUT_COMMON}/common/result.cl
+    ${OUT_COMMON}/ethash/ethash_lm_0.cl
+    ${OUT_COMMON}/ethash/ethash_lm_1.cl
     ${OUT_COMMON}/ethash_light_cache/ethash_light_cache_lm0.cl
     ${OUT_COMMON}/kawpow/kawpow_lm1.cl
     ${OUT_COMMON}/kawpow/kawpow_lm2.cl
@@ -38,8 +40,6 @@ add_custom_target(copy_benchmark_opencl ALL
     ${OUT_COMMON}/kawpow/kawpow_lm4.cl
     ${OUT_COMMON}/kawpow/sequence_dynamic.cl
     ${OUT_COMMON}/kawpow/sequence_dynamic_local.cl
-    ${OUT_COMMON}/ethash/ethash_search_baseline.cl
-    ${OUT_COMMON}/ethash/ethash_search_subgroup.cl
-    ${OUT_COMMON}/progpow/progpow_baseline.cl
-    ${OUT_COMMON}/progpow/progpow_subgroup.cl
+    ${OUT_COMMON}/progpow/progpow_lm_0.cl
+    ${OUT_COMMON}/progpow/progpow_lm_1.cl
 )

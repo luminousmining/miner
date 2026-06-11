@@ -355,7 +355,7 @@ void load_item(
 
 
 __kernel
-void ethash_search(
+void ethash_lm_1(
     __global uint4 const* const restrict dag,
     __global t_result* const restrict result,
     __constant ulong const* const restrict header,

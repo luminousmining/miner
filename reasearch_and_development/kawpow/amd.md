@@ -150,10 +150,10 @@ optimisation in this PR. Both variants are byte-for-byte copies of the productio
 `progpow.cl`; the rest of the kernel (result struct, `kawpow_functions.cl`, and the
 per-period generated math sequence) is shared, so the delta is exactly the change:
 
-- **`progpow_baseline`** — original: strided AoS LDS header store (4 words/lane,
+- **`progpow_lm_0`** — original: strided AoS LDS header store (4 words/lane,
   bank-conflicting) + full work-group `barrier(CLK_LOCAL_MEM_FENCE)` at the three
   lane-exchange points.
-- **`progpow_subgroup`** — this PR: coalesced one-uint-per-lane LDS store
+- **`progpow_lm_1`** — this PR: coalesced one-uint-per-lane LDS store
   (bank-conflict-free, coalesced global read) + `sub_group_barrier` on the three
   intra-wavefront exchanges.
 
@@ -171,12 +171,12 @@ baseline↔subgroup ratio is meaningful).
 
 | variant             | median-of-medians (MH/s) | per-run median range |
 |---------------------|--------------------------|----------------------|
-| `progpow_baseline`  | 37.91                    | 34.46 – 38.16        |
-| `progpow_subgroup`  | 38.60                    | 37.02 – 38.93        |
+| `progpow_lm_0`  | 37.91                    | 34.46 – 38.16        |
+| `progpow_lm_1`  | 38.60                    | 37.02 – 38.93        |
 
 Per-run paired Δ (subgroup vs baseline, same run): **+7.4%, +1.9%, +1.1%, +2.5%,
 −1.3%** → **+2.3% mean / +1.8% median**, positive in 4/5 runs. The coalesced LDS
 store + `sub_group_barrier` is consistently a small win; the outliers (+7.4% from
 a cold-cache baseline, −1.3% from a low subgroup sample) are the run-to-run noise
-the pairing is designed to bound. Notably `progpow_baseline` runs *first* (cooler)
+the pairing is designed to bound. Notably `progpow_lm_0` runs *first* (cooler)
 each run, so the gain shows up despite a slight thermal handicap.
