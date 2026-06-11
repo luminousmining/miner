@@ -67,7 +67,6 @@ struct StratumEthashSubmitNonceTest : public testing::Test
 // start nonce and records its hex width. This is what the resolver hashes, so it
 // must carry the extranonce -- otherwise the pool recomputes a different hash.
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST_F(StratumEthashSubmitNonceTest, ExtraNonceOccupiesHighBytesOfStartNonce)
 {
     stratum::StratumEthash stratum{};
@@ -86,7 +85,6 @@ TEST_F(StratumEthashSubmitNonceTest, ExtraNonceOccupiesHighBytesOfStartNonce)
 // Gluing the pool extranonce (high) with the miner's minernonce (low) must
 // reconstruct the absolute 64-bit nonce the pool verifies.
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST_F(StratumEthashSubmitNonceTest, StartNonceGluedWithMinerNonceIsAbsoluteNonce)
 {
     stratum::StratumEthash stratum{};
@@ -104,7 +102,6 @@ TEST_F(StratumEthashSubmitNonceTest, StartNonceGluedWithMinerNonceIsAbsoluteNonc
 // stripped: lower-case hex, NO "0x", width == 16 - extraNonceSize hex chars
 // (i.e. 8 - extranonceBytes). Matches the spec's mining.submit params[2].
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST_F(StratumEthashSubmitNonceTest, MinerNonceIsSuffixOnlyWithoutHexPrefix)
 {
     stratum::StratumEthash stratum{};
@@ -125,7 +122,6 @@ TEST_F(StratumEthashSubmitNonceTest, MinerNonceIsSuffixOnlyWithoutHexPrefix)
 // Minernonce width tracks the extranonce width: a 3-byte extranonce leaves a
 // 5-byte (10 hex) minernonce; a 2-byte extranonce leaves a 6-byte (12 hex) one.
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST_F(StratumEthashSubmitNonceTest, MinerNonceWidthTracksExtraNonceWidth)
 {
     {

@@ -146,12 +146,9 @@ namespace resolver::test
 }
 
 
-using resolver::test::checkFiroVector;
-
-
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector) // block 1, epoch 0
 {
-    checkFiroVector(
+    resolver::test::checkFiroVector(
         *this,
         0x85f22c9b3cd2f123ull,
         1ull,
@@ -164,7 +161,7 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVector) // block 1, epoch 0
 
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1) // block 1300, epoch 1
 {
-    checkFiroVector(
+    resolver::test::checkFiroVector(
         *this,
         0xdec25420bac29b01ull,
         1300ull,
@@ -177,7 +174,7 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch1) // block 1300, 
 
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10) // block 13000, epoch 10
 {
-    checkFiroVector(
+    resolver::test::checkFiroVector(
         *this,
         0x10d0835970ff1254ull,
         13000ull,
@@ -195,7 +192,7 @@ TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch10) // block 13000
 // DAGs passed; this and the live Firo epoch failed). Without the fix this fails.
 TEST_F(ResolverFiropowAmdTest, submitMixMatchesFiroVectorEpoch419) // block 545860
 {
-    checkFiroVector(
+    resolver::test::checkFiroVector(
         *this,
         0x844c83fd15ddbc98ull,
         545860ull,
