@@ -36,29 +36,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-namespace
+constexpr uint64_t SPEC_FULL_NONCE{ 0xa2eea0cfae7df760ull };
+constexpr char     SPEC_EXTRA_NONCE[]{ "a2eea0" };
+constexpr char     SPEC_MINER_NONCE[]{ "cfae7df760" };
+
+
+// Mirror of resolver::ResolverAmdEthash::submit(): the found nonce is printed
+// as lower-case hex and the leading extranonce hex chars are dropped to leave
+// the minernonce that goes into mining.submit params[2].
+static std::string toMinerNonce(uint64_t const nonce, uint32_t const extraNonceSize)
 {
-    constexpr uint64_t SPEC_FULL_NONCE{ 0xa2eea0cfae7df760ull };
-    constexpr char     SPEC_EXTRA_NONCE[]{ "a2eea0" };
-    constexpr char     SPEC_MINER_NONCE[]{ "cfae7df760" };
-
-
-    // Mirror of resolver::ResolverAmdEthash::submit(): the found nonce is printed
-    // as lower-case hex and the leading extranonce hex chars are dropped to leave
-    // the minernonce that goes into mining.submit params[2].
-    std::string toMinerNonce(uint64_t const nonce, uint32_t const extraNonceSize)
-    {
-        std::stringstream nonceHexa;
-        nonceHexa << std::hex << nonce;
-        return nonceHexa.str().substr(extraNonceSize);
-    }
+    std::stringstream nonceHexa;
+    nonceHexa << std::hex << nonce;
+    return nonceHexa.str().substr(extraNonceSize);
 }
 
 
 struct StratumEthashSubmitNonceTest : public testing::Test
 {
     StratumEthashSubmitNonceTest() = default;
-    ~StratumEthashSubmitNonceTest() override = default;
+    ~StratumEthashSubmitNonceTest() = default;
 };
 
 
