@@ -28,44 +28,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-namespace
+struct ProbeStratumAutolykosV2 final : public stratum::StratumAutolykosV2
 {
-    struct ProbeStratumAutolykosV2 final : public stratum::StratumAutolykosV2
+    void updateJob() override
     {
-        void updateJob() override
-        {
-            // Skip dispatch/callback; the test inspects jobInfo directly.
-        }
-    };
-
-
-    // A NiceHash-style mining.notify with the target embedded in params[6] and no
-    // preceding set_difficulty. Layout matches StratumAutolykosV2::onMiningNotify:
-    // [jobID, blockNumber, headerHash, "", "", _, boundaryDecimal, "", cleanJob].
-    boost::json::object makeNiceHashNotify()
-    {
-        boost::json::object root;
-        root["method"] = "mining.notify";
-        root["params"] = boost::json::array{
-            "0000000073fd34ab",                                                      // 0: job id
-            1803772,                                                                 // 1: block number
-            "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80",      // 2: header hash
-            "",                                                                      // 3
-            "",                                                                      // 4
-            2,                                                                       // 5
-            "107839786668602559178668060348078522694548577690162289924414440996863", // 6: boundary
-            "",                                                                      // 7
-            true                                                                     // 8: clean job
-        };
-        return root;
+        // Skip dispatch/callback; the test inspects jobInfo directly.
     }
+};
+
+
+// A NiceHash-style mining.notify with the target embedded in params[6] and no
+// preceding set_difficulty. Layout matches StratumAutolykosV2::onMiningNotify:
+// [jobID, blockNumber, headerHash, "", "", _, boundaryDecimal, "", cleanJob].
+boost::json::object makeNiceHashNotify()
+{
+    boost::json::object root;
+    root["method"] = "mining.notify";
+    root["params"] = boost::json::array{
+        "0000000073fd34ab",                                                      // 0: job id
+        1803772,                                                                 // 1: block number
+        "6f109ba5226d1e0814cdeec79f1231d1d48196b5979a6d816e3621a1ef47ad80",      // 2: header hash
+        "",                                                                      // 3
+        "",                                                                      // 4
+        2,                                                                       // 5
+        "107839786668602559178668060348078522694548577690162289924414440996863", // 6: boundary
+        "",                                                                      // 7
+        true                                                                     // 8: clean job
+    };
+    return root;
 }
 
 
 struct StratumAutolykosV2NotifyTest : public testing::Test
 {
     StratumAutolykosV2NotifyTest() = default;
-    ~StratumAutolykosV2NotifyTest() override = default;
+    ~StratumAutolykosV2NotifyTest() = default;
 };
 
 
