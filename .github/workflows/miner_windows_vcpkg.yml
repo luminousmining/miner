@@ -1,0 +1,32 @@
+name: miner-windows-vcpkg
+
+# Validates that the vcpkg Docker image docker/Dockerfile.windows-cross builds
+# (issue #169). This image cross-compiles miner.exe for the Windows MSVC ABI from
+# Linux (clang-cl + xwin + vcpkg). Build-only validation: no artifact is pushed
+# and the resulting .exe cannot be smoke-run on a Linux runner, so the build
+# succeeding is the assertion.
+#
+# GPU=amd is built here: it exercises the full cross toolchain (llvm-mingw, xwin
+# MSVC SDK, vcpkg Boost cross-build, Khronos OpenCL ICD loader) while staying lean
+# -- it skips the multi-GB CUDA redist layers. The GPU=nvidia/both CUDA paths are
+# heavier and left to on-demand artifact builds.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows-cross:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build windows-cross (AMD) image -- validate vcpkg cross build
+        run: |
+          # --target build stops at the compile stage: nothing is exported
+          # (no -o / --load), so the step asserts the cross build succeeds
+          # without producing or pushing an artifact.
+          docker buildx build --platform linux/amd64 \
+            -f docker/Dockerfile.windows-cross --build-arg GPU=amd \
+            --target build -t lm:windows-cross-amd .

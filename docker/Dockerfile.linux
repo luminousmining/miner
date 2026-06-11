@@ -1,16 +1,21 @@
 # syntax=docker/dockerfile:1
 #
 # Build LuminousMiner natively for Linux (ELF) in a container. One image for AMD
-# (OpenCL), NVIDIA (CUDA), or BOTH. Select with --build-arg GPU=amd|nvidia|both
-# (default both). No GPU needed to build.
+# (OpenCL), NVIDIA (CUDA), BOTH, or CPU-only. Select with
+# --build-arg GPU=amd|nvidia|both|cpu (default both). No GPU needed to build.
 #
 #   GPU=amd     -> lean ubuntu:24.04 base
 #   GPU=nvidia  -> nvidia/cuda devel base (nvcc), CUDA only
 #   GPU=both    -> nvidia/cuda devel base, AMD + CUDA in one binary
+#   GPU=cpu     -> lean ubuntu:24.04 base, CPU-only (used for arm64 via TARGETARCH)
+#
+# Build arch follows buildx TARGETARCH (amd64 default; arm64 for Apple Silicon).
 #
 # Usage:
 #   docker build -f docker/Dockerfile.linux --build-arg GPU=both \
 #       --target artifact -o dist/linux-both .
+#   docker buildx build --platform linux/arm64 --build-arg GPU=cpu \
+#       --target runtime -t lm:linux-arm64 --load .
 
 # GPU must be declared in global scope (before the first FROM) so it can be used
 # in the stage-selector FROM below.
@@ -21,6 +26,7 @@ ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
 FROM ${BASE_CUDA} AS base-both
 FROM ${BASE_CUDA} AS base-nvidia
 FROM ${BASE_AMD}  AS base-amd
+FROM ${BASE_AMD}  AS base-cpu
 FROM base-${GPU} AS build
 ARG GPU
 ARG DEBIAN_FRONTEND=noninteractive
@@ -43,9 +49,16 @@ RUN ln -sf "$(command -v clang)"   /usr/local/bin/clang-15 \
 ENV CC=clang-15 CXX=clang++-15
 
 ARG CMAKE_VERSION=3.30.5
-RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
-        | tar xz -C /opt \
-    && ln -sf /opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/* /usr/local/bin/
+ARG TARGETARCH
+RUN set -eux; \
+    case "${TARGETARCH:-amd64}" in \
+      amd64) CM_ARCH=x86_64 ;; \
+      arm64) CM_ARCH=aarch64 ;; \
+      *) echo "unsupported TARGETARCH=${TARGETARCH}" >&2; exit 2 ;; \
+    esac; \
+    curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${CM_ARCH}.tar.gz" \
+        | tar xz -C /opt; \
+    ln -sf /opt/cmake-${CMAKE_VERSION}-linux-${CM_ARCH}/bin/* /usr/local/bin/
 
 ENV VCPKG_ROOT=/opt/vcpkg
 RUN git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT" \
@@ -62,15 +75,27 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
     --mount=type=cache,target=/opt/vcpkg/downloads \
     set -eux; \
     case "$GPU" in \
-      amd)    AMD=ON;  NV=OFF; FEAT="opencl;openssl" ;; \
-      nvidia) AMD=OFF; NV=ON;  FEAT="openssl" ;; \
-      both)   AMD=ON;  NV=ON;  FEAT="opencl;openssl" ;; \
-      *) echo "GPU must be amd|nvidia|both" >&2; exit 2 ;; \
+      amd)    AMD=ON;  NV=OFF; FEAT="opencl;openssl"; PRESET=linux ;; \
+      nvidia) AMD=OFF; NV=ON;  FEAT="openssl";        PRESET=linux ;; \
+      both)   AMD=ON;  NV=ON;  FEAT="opencl;openssl"; PRESET=linux ;; \
+      cpu)    AMD=OFF; NV=OFF; FEAT="openssl";        PRESET=linux-cpu ;; \
+      *) echo "GPU must be amd|nvidia|both|cpu" >&2; exit 2 ;; \
     esac; \
-    cmake --preset linux \
+    cmake --preset $PRESET \
         -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV \
         -DVCPKG_MANIFEST_FEATURES="$FEAT"; \
-    cmake --build --preset linux
+    cmake --build --preset $PRESET
+
+# Runnable image (native on the target arch). Used for linux-arm64 `docker run`.
+# CMAKE_RUNTIME_OUTPUT_DIRECTORY is the repo-root bin/ (i.e. /src/bin) for every
+# preset, so the binary + kernels land there regardless of GPU/cpu mode.
+FROM ubuntu:24.04 AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /src/bin /opt/miner
+WORKDIR /opt/miner
+ENTRYPOINT ["/opt/miner/miner"]
 
 FROM scratch AS artifact
-COPY --from=build /src/build/linux/bin /
+COPY --from=build /src/bin /

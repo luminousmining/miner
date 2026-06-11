@@ -1,0 +1,31 @@
+name: miner-linux-arm64-vcpkg
+
+# Validates that the vcpkg Docker image docker/Dockerfile.linux builds for
+# linux/arm64 (CPU-only). Build-only validation per issue #169: no artifact is
+# pushed; the image is loaded locally and smoke-run to confirm the binary works.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux-arm64:
+    # Native arm64 runner — builds the arm64 image without QEMU emulation.
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build linux-arm64 (CPU-only) runtime image
+        run: |
+          docker buildx build --platform linux/arm64 \
+            -f docker/Dockerfile.linux --build-arg GPU=cpu \
+            --target runtime -t lm:linux-arm64 --load .
+
+      - name: Smoke-run miner --help (native arm64)
+        run: |
+          # miner --help exits non-zero by convention; assert it runs (prints banner),
+          # not that it returns 0.
+          out="$(docker run --rm lm:linux-arm64 --help 2>&1 || true)"
+          echo "$out" | head -3
+          echo "$out" | grep -q "LuminousMiner"
