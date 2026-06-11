@@ -31,7 +31,17 @@ Different profiles are available:
 - progpow_quai
 
 ## Internal Documentation
-[Build](https://github.com/luminousmining/miner/tree/main/documentation/BUILD.md)  
+## Build
+From scratch (native toolchain):  
+[Linux](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_LINUX.md)  
+[Windows](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_WINDOWS.md)  
+
+Docker toolchain (no local toolchain):  
+[Docker Linux](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_LINUX.md)  
+[Docker Windows](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_WINDOWS.md)  
+[Docker macOS](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_MACOS.md)  
+[Docker Linux ARM64](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_LINUX_ARM64.md)  
+
 [Parameters](https://github.com/luminousmining/miner/tree/main/documentation/PARAMETERS.md)  
 [Examples](https://github.com/luminousmining/miner/tree/main/documentation/EXAMPLES.md)  
 [Benchmark](https://github.com/luminousmining/miner/tree/main/documentation/BENCHMARK.md)  

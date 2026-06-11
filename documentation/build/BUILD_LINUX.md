@@ -1,0 +1,98 @@
+# Build — Linux (from scratch, native toolchain)
+
+This guide builds the miner natively on Linux with the GPU SDKs and libraries
+installed manually on the host.
+
+> **Just want a binary?** See [Docker — Linux](BUILD_DOCKER_LINUX.md) instead — it
+> builds the miner in a container and needs none of the manually installed
+> libraries/compilers below.
+
+## Libraries
+
+- cuda 13.1
+- OpenSSL 1.1.1
+- boost 1.91.0
+- OpenCL 3.0.19
+
+## Requirements
+
+- clang++ == 11
+- CMake >= 3.22
+
+## Install
+
+cmake :
+```sh
+wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh --no-check-certificate
+sudo mv cmake-3.26.4-linux-x86_64.sh /opt/cmake-3.26.4-linux-x86_64.sh
+sudo chmod +x /opt/cmake-3.26.4-linux-x86_64.sh
+sudo /opt/cmake-3.26.4-linux-x86_64.sh
+sudo cp -r cmake-3.26.4-linux-x86_64 /opt/
+sudo rm -rf cmake-3.26.4-linux-x86_64
+sudo ln -s /opt/cmake-3.26.4-linux-x86_64/bin/* /usr/local/bin
+```
+
+compiler :
+```sh
+sudo apt install -y build-essential libstdc++-12-dev libc++abi-12-dev gnutls-dev cppcheck checkinstall clang-15 libx11-dev git
+```
+
+openssl :
+```sh
+git clone https://github.com/openssl/openssl.git
+cd openssl
+./Configure
+make -j$(nproc)
+sudo make install
+```
+
+opencl :
+```sh
+git clone https://github.com/KhronosGroup/OpenCL-SDK.git
+cd OpenCL-SDK
+git fetch --all
+git checkout tags/v2025.07.23
+git submodule init
+git submodule update
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DOPENCL_SDK_BUILD_SAMPLES=OFF -DOPENCL_SDK_TEST_SAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
+sudo cmake --build . --target install -j$(nproc)
+```
+
+cuda :
+```sh
+wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-wsl-ubuntu.pin
+sudo mv cuda-wsl-ubuntu.pin /etc/apt/preferences.d/cuda-repository-pin-600
+wget --no-check-certificate https://developer.download.nvidia.com/compute/cuda/13.1.0/local_installers/cuda-repo-wsl-ubuntu-13-1-local_13.1.0-1_amd64.deb
+sudo dpkg -i cuda-repo-wsl-ubuntu-13-1-local_13.1.0-1_amd64.deb
+sudo cp /var/cuda-repo-wsl-ubuntu-13-1-local/cuda-*-keyring.gpg /usr/share/keyrings/
+sudo apt-get update
+sudo apt-get -y install cuda-toolkit-13-1
+```
+
+boost :
+```sh
+wget --no-check-certificate https://archives.boost.io/release/1.91.0/source/boost_1_91_0.tar.gz
+tar -xvf boost_1_91_0.tar.gz
+cd boost_1_91_0
+./bootstrap.sh --prefix=/usr/local
+./b2 debug release -j$(nproc)
+sudo ./b2 install
+```
+
+gpu performance api:
+```sh
+wget https://github.com/GPUOpen-Tools/gpu_performance_api/releases/download/v4.3-tag/GPUPerfAPI-Linux-4.3.0.2.tgz
+tar -xvf GPUPerfAPI-Linux-4.3.0.2.tgz
+mv 4_3 gpu_performance_api
+```
+
+## Build
+
+```sh
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
+```
