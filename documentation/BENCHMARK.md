@@ -36,7 +36,9 @@ sources/
     │   └── ethash_light_cache.cpp   # 3 kernel variants
     ├── amd/
     │   ├── kawpow.cpp               # 4 OpenCL kernel variants
-    │   └── blake3.cpp               # Alephium search throughput (DAG-free)
+    │   ├── blake3.cpp               # Alephium search throughput (DAG-free)
+    │   ├── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
+    │   └── progpow.cpp              # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources
@@ -88,7 +90,9 @@ run()
     │   └── runNvidiaKawpow()
     ├── runAmd()
     │   ├── runAmdKawpow()
-    │   └── runAmdBlake3()
+    │   ├── runAmdBlake3()
+    │   ├── runAmdEthash()
+    │   └── runAmdProgpow()
     ├── display all dashboards
     └── writeReport() → benchmark.json
 ```
@@ -278,6 +282,8 @@ For each kawpow_lmN kernel:
 |---|---|---|
 | KAWPOW | 4 (lm1–lm4) | LDS caching and sub-group strategies |
 | BLAKE3 | 1 (blake3) | Alephium `search` kernel throughput. DAG-free. |
+| Ethash | 2 (lm_0, lm_1) | barrier vs sub_group_barrier |
+| ProgPOW | 2 (lm_0, lm_1) | barrier vs sub_group_barrier |
 
 ---
 

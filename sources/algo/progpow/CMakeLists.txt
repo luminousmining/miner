@@ -15,6 +15,13 @@ if (BUILD_EXE_UNIT_TEST)
   )
 endif()
 
+if (BUILD_EXE_BENCHMARK)
+  target_sources(${BENCH_EXE} PUBLIC
+    ${HEADERS}
+    ${SOURCES}
+  )
+endif()
+
 set(OUT_PROGPOW ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernel/progpow)
 
 file(MAKE_DIRECTORY ${OUT_PROGPOW})

@@ -344,7 +344,7 @@ void load_item(
     {                                               \
         swapper[thread_group_id] = value_reference; \
     }                                               \
-    sub_group_barrier(CLK_LOCAL_MEM_FENCE);         \
+    barrier(CLK_LOCAL_MEM_FENCE);                   \
     load_item(                                      \
         dag,                                        \
         &matrix,                                    \
@@ -355,7 +355,7 @@ void load_item(
 
 
 __kernel
-void ethash_search(
+void ethash_lm_0(
     __global uint4 const* const restrict dag,
     __global t_result* const restrict result,
     __constant ulong const* const restrict header,
@@ -402,8 +402,7 @@ void ethash_search(
 
     // On assign le word0 correspond a son thread / nonce.
     words0[thread_id_max] = seed[0].x;
-    // each thread reads only its own LANE_PARALLEL-lane group's words0 -> intra-wavefront.
-    sub_group_barrier(CLK_LOCAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     __attribute__((opencl_unroll_hint(1)))
     for (size_t lane_id = 0ul; lane_id < LANE_PARALLEL; ++lane_id)
@@ -422,7 +421,7 @@ void ethash_search(
                 hashes[gap].w = seed[i].w;
             }
         }
-        sub_group_barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
         uint4 matrix = hashes[index_lane_hash];
 
         // On recupere le word0 de la LANE que l'on veux calculer.
@@ -443,7 +442,7 @@ void ethash_search(
 
         // On reduit la matrice @matrix en un uint32
         reduces[thread_id_max] = fnv1_reduce_u4(&matrix);
-        sub_group_barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         if (lane_id == thread_lane_id)
         {
