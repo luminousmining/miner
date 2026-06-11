@@ -217,7 +217,7 @@ cmake --preset macos-cpu
 cmake --build --preset macos-cpu -j$(sysctl -n hw.ncpu)
 ```
 The binary is written to `bin/miner`. CI builds this on a native
-Apple Silicon runner via `.github/workflows/miner_macos.yml`.
+Apple Silicon runner via `.github/workflows/miner_macos_vcpkg.yml`.
 
 
 ## Linux ARM64 (CPU-only, in Docker)
@@ -234,4 +234,5 @@ docker run --rm lm:linux-arm64 --help
 
 The same `GPU=cpu` mode works for x86-64 (`--platform linux/amd64`). The existing
 `GPU=amd|nvidia|both` GPU builds are unchanged. CI builds the arm64 image on a native
-arm64 runner via `.github/workflows/miner_linux_arm64.yml`.
+arm64 runner via `.github/workflows/miner_linux_arm64_vcpkg.yml`, and the x86-64
+CPU path via `.github/workflows/miner_linux_x64_vcpkg.yml`.
