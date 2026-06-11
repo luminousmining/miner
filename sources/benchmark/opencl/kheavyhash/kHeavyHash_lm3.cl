@@ -1,15 +1,17 @@
-// kHeavyHash (Kaspa) OpenCL kernels.
+// kHeavyHash (Kaspa) OpenCL benchmark kernel -- lm3 (register-resident keccak).
 //
-// Correctness-only Layer 3: this kernel must be BIT-IDENTICAL to the CPU
-// reference in sources/algo/kheavyhash/*.cpp. The matrix is generated host-side
-// once per job (CPU reference generateMatrix) and uploaded; per nonce the kernel
-// computes powHash -> heavyHash -> little-endian target compare.
-//
-// The test_* entry points exist purely so the host KAT harness can check each
-// stage against the same known-answer vectors the CPU reference is gated on.
+// Correctness-only Layer 3: bit-identical to the CPU reference in
+// sources/algo/kheavyhash/*.cpp. Same pipeline as lm2 (udot4 matmul) but the
+// keccak permutation is fully unrolled with the lane/rotation constants baked in
+// so the state stays in registers.
 //
 // Constants below are copied verbatim from the CPU reference (keccak.cpp,
-// hashers.cpp / kheavyhash_test_vectors.hpp). They are NOT re-derived.
+// hashers.cpp). They are NOT re-derived.
+
+#include "kernel/common/rotate_byte.cl"
+#include "kernel/common/load_store_le.cl"
+#include "kernel/common/result.cl"
+
 
 __constant ulong POW_INITIAL_STATE[25] = {
     0x113cff0da1f6d83dUL, 0x29bf8855b7027e3cUL, 0x1e5f2e720efb44d2UL, 0x1ba5a4a3f59869a0UL,
@@ -37,156 +39,6 @@ __constant ulong ROUND_CONSTANTS[24] = {
     0x8000000000008002UL, 0x8000000000000080UL, 0x000000000000800aUL, 0x800000008000000aUL,
     0x8000000080008081UL, 0x8000000000008080UL, 0x0000000080000001UL, 0x8000000080008008UL };
 
-__constant int ROTATIONS[24] = { 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 2, 14,
-                                 27, 41, 56, 8, 25, 43, 62, 18, 39, 61, 20, 44 };
-
-__constant int PI_LANE[24] = { 10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4,
-                               15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1 };
-
-
-inline ulong rotl64(ulong const x, int const k)
-{
-    return (x << k) | (x >> (64 - k));
-}
-
-
-inline ulong loadLe64(uchar const* p)
-{
-    ulong v = 0;
-    for (int b = 0; b < 8; ++b)
-    {
-        v |= ((ulong)p[b]) << (8 * b);
-    }
-    return v;
-}
-
-
-inline void storeLe256(ulong const* state, uchar* out)
-{
-    for (int w = 0; w < 4; ++w)
-    {
-        for (int b = 0; b < 8; ++b)
-        {
-            out[w * 8 + b] = (uchar)((state[w] >> (8 * b)) & 0xFF);
-        }
-    }
-}
-
-
-void keccakF1600(ulong* a)
-{
-    for (int round = 0; round < 24; ++round)
-    {
-        // Theta
-        ulong bc[5];
-        for (int i = 0; i < 5; ++i)
-        {
-            bc[i] = a[i] ^ a[i + 5] ^ a[i + 10] ^ a[i + 15] ^ a[i + 20];
-        }
-        for (int i = 0; i < 5; ++i)
-        {
-            ulong const t = bc[(i + 4) % 5] ^ rotl64(bc[(i + 1) % 5], 1);
-            for (int j = 0; j < 25; j += 5)
-            {
-                a[j + i] ^= t;
-            }
-        }
-
-        // Rho + Pi
-        ulong t = a[1];
-        for (int i = 0; i < 24; ++i)
-        {
-            int const   j = PI_LANE[i];
-            ulong const tmp = a[j];
-            a[j] = rotl64(t, ROTATIONS[i]);
-            t = tmp;
-        }
-
-        // Chi
-        for (int j = 0; j < 25; j += 5)
-        {
-            for (int i = 0; i < 5; ++i)
-            {
-                bc[i] = a[j + i];
-            }
-            for (int i = 0; i < 5; ++i)
-            {
-                a[j + i] ^= (~bc[(i + 1) % 5]) & bc[(i + 2) % 5];
-            }
-        }
-
-        // Iota
-        a[0] ^= ROUND_CONSTANTS[round];
-    }
-}
-
-
-// hash1 = cSHAKE256("ProofOfWorkHash") over pre_pow_hash | timestamp | zero[32] | nonce.
-void powHash(uchar const* prePowHash, ulong const timestamp, ulong const nonce, uchar* out)
-{
-    ulong state[25];
-    for (int i = 0; i < 25; ++i)
-    {
-        state[i] = POW_INITIAL_STATE[i];
-    }
-    for (int w = 0; w < 4; ++w)
-    {
-        state[w] ^= loadLe64(prePowHash + w * 8);
-    }
-    state[4] ^= timestamp;
-    state[9] ^= nonce;
-    keccakF1600(state);
-    storeLe256(state, out);
-}
-
-
-// hash2 step = cSHAKE256("HeavyHash") over 32 bytes.
-void kHeavyHash(uchar const* input, uchar* out)
-{
-    ulong state[25];
-    for (int i = 0; i < 25; ++i)
-    {
-        state[i] = HEAVY_INITIAL_STATE[i];
-    }
-    for (int w = 0; w < 4; ++w)
-    {
-        state[w] ^= loadLe64(input + w * 8);
-    }
-    keccakF1600(state);
-    storeLe256(state, out);
-}
-
-
-// Heavy step: matrix * nibble-vector, collapse two rows to one byte (>>10), XOR
-// with hash1, then KHeavyHash. matrix is row-major ushort[64*64], values 0..15.
-void heavyHash(__global ushort const* matrix, uchar const* hash1, uchar* out)
-{
-    ushort vec[64];
-    for (int i = 0; i < 32; ++i)
-    {
-        vec[2 * i] = (ushort)(hash1[i] >> 4);
-        vec[2 * i + 1] = (ushort)(hash1[i] & 0x0F);
-    }
-
-    uchar product[32];
-    for (int i = 0; i < 32; ++i)
-    {
-        ushort sum1 = 0;
-        ushort sum2 = 0;
-        for (int j = 0; j < 64; ++j)
-        {
-            sum1 = (ushort)(sum1 + matrix[(2 * i) * 64 + j] * vec[j]);
-            sum2 = (ushort)(sum2 + matrix[(2 * i + 1) * 64 + j] * vec[j]);
-        }
-        product[i] = (uchar)(((sum1 >> 10) << 4) | (sum2 >> 10));
-    }
-    for (int i = 0; i < 32; ++i)
-    {
-        product[i] ^= hash1[i];
-    }
-    kHeavyHash(product, out);
-}
-
 
 // pow <= target as little-endian 256-bit integers (scan from most-significant byte).
 inline bool meetsTarget(uchar const* powLe, uchar const* targetLe)
@@ -202,24 +54,111 @@ inline bool meetsTarget(uchar const* powLe, uchar const* targetLe)
 }
 
 
-
-
-// Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
-// MAX_RESULT is overridable by the host kernel generator (addDefine).
-#ifndef MAX_RESULT
-#define MAX_RESULT 4
-#endif
-
-typedef struct __attribute__((aligned(8)))
+// Register-resident Keccak-f[1600]: theta/rho/pi/chi unrolled with constant lanes
+// and rotations so the 25-lane state can live in registers. rol_u64 comes from
+// kernel/common/rotate_byte.cl.
+inline void keccakF1600U(ulong* a)
 {
-    uchar found;
-    uint  count;
-    ulong nonces[MAX_RESULT];
-} Result;
+    for (int round = 0; round < 24; ++round)
+    {
+        // Theta
+        ulong const c0 = a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20];
+        ulong const c1 = a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21];
+        ulong const c2 = a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22];
+        ulong const c3 = a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23];
+        ulong const c4 = a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24];
+        ulong const d0 = c4 ^ rol_u64(c1, 1);
+        ulong const d1 = c0 ^ rol_u64(c2, 1);
+        ulong const d2 = c1 ^ rol_u64(c3, 1);
+        ulong const d3 = c2 ^ rol_u64(c4, 1);
+        ulong const d4 = c3 ^ rol_u64(c0, 1);
+        a[0] ^= d0;  a[5] ^= d0;  a[10] ^= d0; a[15] ^= d0; a[20] ^= d0;
+        a[1] ^= d1;  a[6] ^= d1;  a[11] ^= d1; a[16] ^= d1; a[21] ^= d1;
+        a[2] ^= d2;  a[7] ^= d2;  a[12] ^= d2; a[17] ^= d2; a[22] ^= d2;
+        a[3] ^= d3;  a[8] ^= d3;  a[13] ^= d3; a[18] ^= d3; a[23] ^= d3;
+        a[4] ^= d4;  a[9] ^= d4;  a[14] ^= d4; a[19] ^= d4; a[24] ^= d4;
+
+        // Rho + Pi: reference loop unrolled with constant lanes/rotations.
+        ulong t = a[1];
+        ulong tmp;
+        tmp = a[10]; a[10] = rol_u64(t, 1);  t = tmp;
+        tmp = a[7];  a[7]  = rol_u64(t, 3);  t = tmp;
+        tmp = a[11]; a[11] = rol_u64(t, 6);  t = tmp;
+        tmp = a[17]; a[17] = rol_u64(t, 10); t = tmp;
+        tmp = a[18]; a[18] = rol_u64(t, 15); t = tmp;
+        tmp = a[3];  a[3]  = rol_u64(t, 21); t = tmp;
+        tmp = a[5];  a[5]  = rol_u64(t, 28); t = tmp;
+        tmp = a[16]; a[16] = rol_u64(t, 36); t = tmp;
+        tmp = a[8];  a[8]  = rol_u64(t, 45); t = tmp;
+        tmp = a[21]; a[21] = rol_u64(t, 55); t = tmp;
+        tmp = a[24]; a[24] = rol_u64(t, 2);  t = tmp;
+        tmp = a[4];  a[4]  = rol_u64(t, 14); t = tmp;
+        tmp = a[15]; a[15] = rol_u64(t, 27); t = tmp;
+        tmp = a[23]; a[23] = rol_u64(t, 41); t = tmp;
+        tmp = a[19]; a[19] = rol_u64(t, 56); t = tmp;
+        tmp = a[13]; a[13] = rol_u64(t, 8);  t = tmp;
+        tmp = a[12]; a[12] = rol_u64(t, 25); t = tmp;
+        tmp = a[2];  a[2]  = rol_u64(t, 43); t = tmp;
+        tmp = a[20]; a[20] = rol_u64(t, 62); t = tmp;
+        tmp = a[14]; a[14] = rol_u64(t, 18); t = tmp;
+        tmp = a[22]; a[22] = rol_u64(t, 39); t = tmp;
+        tmp = a[9];  a[9]  = rol_u64(t, 61); t = tmp;
+        tmp = a[6];  a[6]  = rol_u64(t, 20); t = tmp;
+        tmp = a[1];  a[1]  = rol_u64(t, 44); t = tmp;
+
+        // Chi
+        for (int j = 0; j < 25; j += 5)
+        {
+            ulong const b0 = a[j + 0];
+            ulong const b1 = a[j + 1];
+            ulong const b2 = a[j + 2];
+            ulong const b3 = a[j + 3];
+            ulong const b4 = a[j + 4];
+            a[j + 0] ^= (~b1) & b2;
+            a[j + 1] ^= (~b2) & b3;
+            a[j + 2] ^= (~b3) & b4;
+            a[j + 3] ^= (~b4) & b0;
+            a[j + 4] ^= (~b0) & b1;
+        }
+
+        // Iota
+        a[0] ^= ROUND_CONSTANTS[round];
+    }
+}
 
 
-// Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
-// On a hit (pow <= target, little-endian) it publishes its nonce into result.
+void powHashU(uchar const* prePowHash, ulong const timestamp, ulong const nonce, uchar* out)
+{
+    ulong state[25];
+    for (int i = 0; i < 25; ++i)
+    {
+        state[i] = POW_INITIAL_STATE[i];
+    }
+    for (int w = 0; w < 4; ++w)
+    {
+        state[w] ^= load_le_u64(prePowHash + w * 8);
+    }
+    state[4] ^= timestamp;
+    state[9] ^= nonce;
+    keccakF1600U(state);
+    store_le_u256(state, out);
+}
+
+
+void kHeavyHashU(uchar const* input, uchar* out)
+{
+    ulong state[25];
+    for (int i = 0; i < 25; ++i)
+    {
+        state[i] = HEAVY_INITIAL_STATE[i];
+    }
+    for (int w = 0; w < 4; ++w)
+    {
+        state[w] ^= load_le_u64(input + w * 8);
+    }
+    keccakF1600U(state);
+    store_le_u256(state, out);
+}
 
 
 #define KH_MATRIX_N 64
@@ -228,18 +167,15 @@ typedef struct __attribute__((aligned(8)))
 #define KH_MATRIX_ELEMS (KH_MATRIX_N * KH_MATRIX_N)
 
 
-inline void publishHit(__global Result* result, ulong const nonce)
-{
-    uint const idx = atomic_inc(&result->count);
-    result->found = 1;
-    if (idx < MAX_RESULT)
-    {
-        result->nonces[idx] = nonce;
-    }
-}
-
-
 #define KH_MATRIX_WORDS (KH_MATRIX_ELEMS / 4)
+
+
+inline void publishHit(__global t_result* result, ulong const nonce)
+{
+    atomic_inc(&result->count);
+    result->found = true;
+    result->nonce = nonce;
+}
 
 
 #ifdef __AMDGCN__
@@ -303,116 +239,14 @@ void matmulDot(__local uint const* matU, uchar const* hash1, uchar* product)
 }
 
 
-inline void keccakF1600U(ulong* a)
-{
-    for (int round = 0; round < 24; ++round)
-    {
-        // Theta
-        ulong const c0 = a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20];
-        ulong const c1 = a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21];
-        ulong const c2 = a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22];
-        ulong const c3 = a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23];
-        ulong const c4 = a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24];
-        ulong const d0 = c4 ^ rotl64(c1, 1);
-        ulong const d1 = c0 ^ rotl64(c2, 1);
-        ulong const d2 = c1 ^ rotl64(c3, 1);
-        ulong const d3 = c2 ^ rotl64(c4, 1);
-        ulong const d4 = c3 ^ rotl64(c0, 1);
-        a[0] ^= d0;  a[5] ^= d0;  a[10] ^= d0; a[15] ^= d0; a[20] ^= d0;
-        a[1] ^= d1;  a[6] ^= d1;  a[11] ^= d1; a[16] ^= d1; a[21] ^= d1;
-        a[2] ^= d2;  a[7] ^= d2;  a[12] ^= d2; a[17] ^= d2; a[22] ^= d2;
-        a[3] ^= d3;  a[8] ^= d3;  a[13] ^= d3; a[18] ^= d3; a[23] ^= d3;
-        a[4] ^= d4;  a[9] ^= d4;  a[14] ^= d4; a[19] ^= d4; a[24] ^= d4;
-
-        // Rho + Pi: reference loop unrolled with constant lanes/rotations.
-        ulong t = a[1];
-        ulong tmp;
-        tmp = a[10]; a[10] = rotl64(t, 1);  t = tmp;
-        tmp = a[7];  a[7]  = rotl64(t, 3);  t = tmp;
-        tmp = a[11]; a[11] = rotl64(t, 6);  t = tmp;
-        tmp = a[17]; a[17] = rotl64(t, 10); t = tmp;
-        tmp = a[18]; a[18] = rotl64(t, 15); t = tmp;
-        tmp = a[3];  a[3]  = rotl64(t, 21); t = tmp;
-        tmp = a[5];  a[5]  = rotl64(t, 28); t = tmp;
-        tmp = a[16]; a[16] = rotl64(t, 36); t = tmp;
-        tmp = a[8];  a[8]  = rotl64(t, 45); t = tmp;
-        tmp = a[21]; a[21] = rotl64(t, 55); t = tmp;
-        tmp = a[24]; a[24] = rotl64(t, 2);  t = tmp;
-        tmp = a[4];  a[4]  = rotl64(t, 14); t = tmp;
-        tmp = a[15]; a[15] = rotl64(t, 27); t = tmp;
-        tmp = a[23]; a[23] = rotl64(t, 41); t = tmp;
-        tmp = a[19]; a[19] = rotl64(t, 56); t = tmp;
-        tmp = a[13]; a[13] = rotl64(t, 8);  t = tmp;
-        tmp = a[12]; a[12] = rotl64(t, 25); t = tmp;
-        tmp = a[2];  a[2]  = rotl64(t, 43); t = tmp;
-        tmp = a[20]; a[20] = rotl64(t, 62); t = tmp;
-        tmp = a[14]; a[14] = rotl64(t, 18); t = tmp;
-        tmp = a[22]; a[22] = rotl64(t, 39); t = tmp;
-        tmp = a[9];  a[9]  = rotl64(t, 61); t = tmp;
-        tmp = a[6];  a[6]  = rotl64(t, 20); t = tmp;
-        tmp = a[1];  a[1]  = rotl64(t, 44); t = tmp;
-
-        // Chi
-        for (int j = 0; j < 25; j += 5)
-        {
-            ulong const b0 = a[j + 0];
-            ulong const b1 = a[j + 1];
-            ulong const b2 = a[j + 2];
-            ulong const b3 = a[j + 3];
-            ulong const b4 = a[j + 4];
-            a[j + 0] ^= (~b1) & b2;
-            a[j + 1] ^= (~b2) & b3;
-            a[j + 2] ^= (~b3) & b4;
-            a[j + 3] ^= (~b4) & b0;
-            a[j + 4] ^= (~b0) & b1;
-        }
-
-        // Iota
-        a[0] ^= ROUND_CONSTANTS[round];
-    }
-}
-
-
-void powHashU(uchar const* prePowHash, ulong const timestamp, ulong const nonce, uchar* out)
-{
-    ulong state[25];
-    for (int i = 0; i < 25; ++i)
-    {
-        state[i] = POW_INITIAL_STATE[i];
-    }
-    for (int w = 0; w < 4; ++w)
-    {
-        state[w] ^= loadLe64(prePowHash + w * 8);
-    }
-    state[4] ^= timestamp;
-    state[9] ^= nonce;
-    keccakF1600U(state);
-    storeLe256(state, out);
-}
-
-
-void kHeavyHashU(uchar const* input, uchar* out)
-{
-    ulong state[25];
-    for (int i = 0; i < 25; ++i)
-    {
-        state[i] = HEAVY_INITIAL_STATE[i];
-    }
-    for (int w = 0; w < 4; ++w)
-    {
-        state[w] ^= loadLe64(input + w * 8);
-    }
-    keccakF1600U(state);
-    storeLe256(state, out);
-}
-
-
+// Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
+// On a hit (pow <= target, little-endian) it publishes its nonce into result.
 __kernel void kHeavyHash_lm3(__global ushort const* matrix,
-                         __global uchar const*  header,
-                         __global uchar const*  target,
-                         ulong const            timestamp,
-                         ulong const            startNonce,
-                         __global Result*       result)
+                             __global uchar const*  header,
+                             __global uchar const*  target,
+                             ulong const            timestamp,
+                             ulong const            startNonce,
+                             __global t_result*     result)
 {
     __local uint matU[KH_MATRIX_WORDS];
     loadMatrixToLdsPacked(matrix, matU);

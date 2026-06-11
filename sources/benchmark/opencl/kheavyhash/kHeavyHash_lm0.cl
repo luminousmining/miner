@@ -1,15 +1,19 @@
-// kHeavyHash (Kaspa) OpenCL kernels.
+// kHeavyHash (Kaspa) OpenCL benchmark kernel -- lm0 reference.
 //
-// Correctness-only Layer 3: this kernel must be BIT-IDENTICAL to the CPU
-// reference in sources/algo/kheavyhash/*.cpp. The matrix is generated host-side
-// once per job (CPU reference generateMatrix) and uploaded; per nonce the kernel
-// computes powHash -> heavyHash -> little-endian target compare.
-//
-// The test_* entry points exist purely so the host KAT harness can check each
-// stage against the same known-answer vectors the CPU reference is gated on.
+// Correctness-only Layer 3: bit-identical to the CPU reference in
+// sources/algo/kheavyhash/*.cpp. The matrix is generated host-side once per job
+// (CPU reference generateMatrix) and uploaded; per nonce the kernel computes
+// powHash -> heavyHash -> little-endian target compare.
 //
 // Constants below are copied verbatim from the CPU reference (keccak.cpp,
-// hashers.cpp / kheavyhash_test_vectors.hpp). They are NOT re-derived.
+// hashers.cpp). They are NOT re-derived.
+
+#include "kernel/common/rotate_byte.cl"
+#include "kernel/common/xor.cl"
+#include "kernel/common/load_store_le.cl"
+#include "kernel/crypto/keccak_f1600.cl"
+#include "kernel/common/result.cl"
+
 
 __constant ulong POW_INITIAL_STATE[25] = {
     0x113cff0da1f6d83dUL, 0x29bf8855b7027e3cUL, 0x1e5f2e720efb44d2UL, 0x1ba5a4a3f59869a0UL,
@@ -37,86 +41,14 @@ __constant ulong ROUND_CONSTANTS[24] = {
     0x8000000000008002UL, 0x8000000000000080UL, 0x000000000000800aUL, 0x800000008000000aUL,
     0x8000000080008081UL, 0x8000000000008080UL, 0x0000000080000001UL, 0x8000000080008008UL };
 
-__constant int ROTATIONS[24] = { 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 2, 14,
-                                 27, 41, 56, 8, 25, 43, 62, 18, 39, 61, 20, 44 };
 
-__constant int PI_LANE[24] = { 10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4,
-                               15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1 };
-
-
-inline ulong rotl64(ulong const x, int const k)
-{
-    return (x << k) | (x >> (64 - k));
-}
-
-
-inline ulong loadLe64(uchar const* p)
-{
-    ulong v = 0;
-    for (int b = 0; b < 8; ++b)
-    {
-        v |= ((ulong)p[b]) << (8 * b);
-    }
-    return v;
-}
-
-
-inline void storeLe256(ulong const* state, uchar* out)
-{
-    for (int w = 0; w < 4; ++w)
-    {
-        for (int b = 0; b < 8; ++b)
-        {
-            out[w * 8 + b] = (uchar)((state[w] >> (8 * b)) & 0xFF);
-        }
-    }
-}
-
-
-void keccakF1600(ulong* a)
+// Full Keccak-f[1600] permutation, reusing the shared round in
+// kernel/crypto/keccak_f1600.cl so the round logic is not duplicated here.
+inline void keccakF1600(ulong* state)
 {
     for (int round = 0; round < 24; ++round)
     {
-        // Theta
-        ulong bc[5];
-        for (int i = 0; i < 5; ++i)
-        {
-            bc[i] = a[i] ^ a[i + 5] ^ a[i + 10] ^ a[i + 15] ^ a[i + 20];
-        }
-        for (int i = 0; i < 5; ++i)
-        {
-            ulong const t = bc[(i + 4) % 5] ^ rotl64(bc[(i + 1) % 5], 1);
-            for (int j = 0; j < 25; j += 5)
-            {
-                a[j + i] ^= t;
-            }
-        }
-
-        // Rho + Pi
-        ulong t = a[1];
-        for (int i = 0; i < 24; ++i)
-        {
-            int const   j = PI_LANE[i];
-            ulong const tmp = a[j];
-            a[j] = rotl64(t, ROTATIONS[i]);
-            t = tmp;
-        }
-
-        // Chi
-        for (int j = 0; j < 25; j += 5)
-        {
-            for (int i = 0; i < 5; ++i)
-            {
-                bc[i] = a[j + i];
-            }
-            for (int i = 0; i < 5; ++i)
-            {
-                a[j + i] ^= (~bc[(i + 1) % 5]) & bc[(i + 2) % 5];
-            }
-        }
-
-        // Iota
-        a[0] ^= ROUND_CONSTANTS[round];
+        keccak_f1600_round(state, ROUND_CONSTANTS[round]);
     }
 }
 
@@ -131,12 +63,12 @@ void powHash(uchar const* prePowHash, ulong const timestamp, ulong const nonce, 
     }
     for (int w = 0; w < 4; ++w)
     {
-        state[w] ^= loadLe64(prePowHash + w * 8);
+        state[w] ^= load_le_u64(prePowHash + w * 8);
     }
     state[4] ^= timestamp;
     state[9] ^= nonce;
     keccakF1600(state);
-    storeLe256(state, out);
+    store_le_u256(state, out);
 }
 
 
@@ -150,10 +82,10 @@ void kHeavyHash(uchar const* input, uchar* out)
     }
     for (int w = 0; w < 4; ++w)
     {
-        state[w] ^= loadLe64(input + w * 8);
+        state[w] ^= load_le_u64(input + w * 8);
     }
     keccakF1600(state);
-    storeLe256(state, out);
+    store_le_u256(state, out);
 }
 
 
@@ -202,32 +134,14 @@ inline bool meetsTarget(uchar const* powLe, uchar const* targetLe)
 }
 
 
-
-
-// Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
-// MAX_RESULT is overridable by the host kernel generator (addDefine).
-#ifndef MAX_RESULT
-#define MAX_RESULT 4
-#endif
-
-typedef struct __attribute__((aligned(8)))
-{
-    uchar found;
-    uint  count;
-    ulong nonces[MAX_RESULT];
-} Result;
-
-
 // Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
 // On a hit (pow <= target, little-endian) it publishes its nonce into result.
-
-
 __kernel void kHeavyHash_lm0(__global ushort const* matrix,
-                     __global uchar const*  header,
-                     __global uchar const*  target,
-                     ulong const            timestamp,
-                     ulong const            startNonce,
-                     __global Result*       result)
+                             __global uchar const*  header,
+                             __global uchar const*  target,
+                             ulong const            timestamp,
+                             ulong const            startNonce,
+                             __global t_result*     result)
 {
     ulong const nonce = startNonce + (ulong)get_global_id(0);
 
@@ -246,11 +160,8 @@ __kernel void kHeavyHash_lm0(__global ushort const* matrix,
 
     if (meetsTarget(pow, tgt))
     {
-        uint const idx = atomic_inc(&result->count);
-        result->found = 1;
-        if (idx < MAX_RESULT)
-        {
-            result->nonces[idx] = nonce;
-        }
+        atomic_inc(&result->count);
+        result->found = true;
+        result->nonce = nonce;
     }
 }
