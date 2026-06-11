@@ -84,7 +84,7 @@ namespace kheavyhash_cuda
     }
 
 
-    KH_FN void keccakF1600(uint64_t* a)
+    KH_FN void keccakF1600(uint64_t* const a)
     {
         for (int round = 0; round < 24; ++round)
         {
@@ -166,7 +166,8 @@ namespace kheavyhash_cuda
 
     // Heavy step: matrix * nibble-vector, two rows collapse to one byte (>>10),
     // XOR with hash1, then KHeavyHash. matrix is row-major uint16_t[64*64], 0..15.
-    KH_FN void heavyHash(uint16_t const* matrix, uint8_t const* hash1, uint8_t* out)
+    KH_FN void heavyHash(uint16_t const* __restrict__ matrix, uint8_t const* __restrict__ hash1,
+                         uint8_t* __restrict__ out)
     {
         uint16_t vec[64];
         for (int i = 0; i < 32; ++i)
@@ -185,7 +186,9 @@ namespace kheavyhash_cuda
                 sum1 = (uint16_t)(sum1 + matrix[(2 * i) * 64 + j] * vec[j]);
                 sum2 = (uint16_t)(sum2 + matrix[(2 * i + 1) * 64 + j] * vec[j]);
             }
-            product[i] = (uint8_t)(((sum1 >> 10) << 4) | (sum2 >> 10));
+            uint8_t const highNibble = (uint8_t)((sum1 >> 10) & 0xF);
+            uint8_t const lowNibble = (uint8_t)((sum2 >> 10) & 0xF);
+            product[i] = (uint8_t)((highNibble << 4) | lowNibble);
         }
         for (int i = 0; i < 32; ++i)
         {
@@ -196,7 +199,7 @@ namespace kheavyhash_cuda
 
 
     // pow <= target as little-endian 256-bit integers (scan from MSB).
-    KH_FN bool meetsTarget(uint8_t const* powLe, uint8_t const* targetLe)
+    KH_FN bool meetsTarget(uint8_t const* __restrict__ powLe, uint8_t const* __restrict__ targetLe)
     {
         for (int i = 31; i >= 0; --i)
         {
