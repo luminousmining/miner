@@ -88,17 +88,9 @@ jobs:
       # Save Boost cache (main branch and workflow_dispatch only)
       # ===============================
       - name: Save Boost cache
-        if: steps.boost-cache.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+        if: steps.boost-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: boost-install
           key: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
 
-      # ===============================
-      # Upload artifact
-      # ===============================
-      - name: Upload Boost artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
-          path: boost-install

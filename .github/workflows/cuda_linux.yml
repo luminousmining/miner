@@ -61,17 +61,9 @@ jobs:
       # Save CUDA cache (main branch and workflow_dispatch only)
       # ===============================
       - name: Save CUDA cache
-        if: steps.cuda-cache.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+        if: steps.cuda-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: cuda-install
           key: cuda-${{ runner.os }}-13.1.0
 
-      # ===============================
-      # Upload artifact
-      # ===============================
-      - name: Upload CUDA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cuda-${{ runner.os }}-13.1.0
-          path: cuda-install

@@ -1,6 +1,12 @@
 name: Linux Miner
 
 on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -54,48 +60,48 @@ jobs:
           echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
 
       # ===============================
-      # Download and install Boost
+      # Restore and install Boost
       # ===============================
-      - name: Download Boost
-        uses: actions/download-artifact@v4
+      - name: Restore Boost from cache
+        uses: actions/cache/restore@v4
         with:
-          name: boost-Linux-1.90.0
-          path: deps/boost
+          path: boost-install
+          key: boost-${{ runner.os }}-1.90.0
 
       - name: Install Boost
         run: |
-          sudo cp -r deps/boost/include/* /usr/local/include/
-          sudo cp -r deps/boost/lib/* /usr/local/lib/
+          sudo cp -r boost-install/include/* /usr/local/include/
+          sudo cp -r boost-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install OpenSSL
+      # Restore and install OpenSSL
       # ===============================
-      - name: Download OpenSSL
-        uses: actions/download-artifact@v4
+      - name: Restore OpenSSL from cache
+        uses: actions/cache/restore@v4
         with:
-          name: openssl-Linux-1.1.1w
-          path: deps/openssl
+          path: openssl-install
+          key: openssl-${{ runner.os }}-1.1.1w
 
       - name: Install OpenSSL
         run: |
-          sudo cp -r deps/openssl/include/* /usr/local/include/
-          sudo cp -r deps/openssl/lib/* /usr/local/lib/
+          sudo cp -r openssl-install/include/* /usr/local/include/
+          sudo cp -r openssl-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install OpenCL
+      # Restore and install OpenCL
       # ===============================
-      - name: Download OpenCL
-        uses: actions/download-artifact@v4
+      - name: Restore OpenCL from cache
+        uses: actions/cache/restore@v4
         with:
-          name: opencl-Linux-3.0.19
-          path: deps/opencl
+          path: opencl-install
+          key: opencl-${{ runner.os }}-3.0.19
 
       - name: Install OpenCL
         run: |
-          sudo cp -r deps/opencl/include/* /usr/local/include/
-          sudo cp -r deps/opencl/lib/* /usr/local/lib/
+          sudo cp -r opencl-install/include/* /usr/local/include/
+          sudo cp -r opencl-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
@@ -170,63 +176,63 @@ jobs:
           echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
 
       # ===============================
-      # Download and install Boost
+      # Restore and install Boost
       # ===============================
-      - name: Download Boost
-        uses: actions/download-artifact@v4
+      - name: Restore Boost from cache
+        uses: actions/cache/restore@v4
         with:
-          name: boost-Linux-1.90.0
-          path: deps/boost
+          path: boost-install
+          key: boost-${{ runner.os }}-1.90.0
 
       - name: Install Boost
         run: |
-          sudo cp -r deps/boost/include/* /usr/local/include/
-          sudo cp -r deps/boost/lib/* /usr/local/lib/
+          sudo cp -r boost-install/include/* /usr/local/include/
+          sudo cp -r boost-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install OpenSSL
+      # Restore and install OpenSSL
       # ===============================
-      - name: Download OpenSSL
-        uses: actions/download-artifact@v4
+      - name: Restore OpenSSL from cache
+        uses: actions/cache/restore@v4
         with:
-          name: openssl-Linux-1.1.1w
-          path: deps/openssl
+          path: openssl-install
+          key: openssl-${{ runner.os }}-1.1.1w
 
       - name: Install OpenSSL
         run: |
-          sudo cp -r deps/openssl/include/* /usr/local/include/
-          sudo cp -r deps/openssl/lib/* /usr/local/lib/
+          sudo cp -r openssl-install/include/* /usr/local/include/
+          sudo cp -r openssl-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install OpenCL
+      # Restore and install OpenCL
       # ===============================
-      - name: Download OpenCL
-        uses: actions/download-artifact@v4
+      - name: Restore OpenCL from cache
+        uses: actions/cache/restore@v4
         with:
-          name: opencl-Linux-3.0.19
-          path: deps/opencl
+          path: opencl-install
+          key: opencl-${{ runner.os }}-3.0.19
 
       - name: Install OpenCL
         run: |
-          sudo cp -r deps/opencl/include/* /usr/local/include/
-          sudo cp -r deps/opencl/lib/* /usr/local/lib/
+          sudo cp -r opencl-install/include/* /usr/local/include/
+          sudo cp -r opencl-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install CUDA
+      # Restore and install CUDA
       # ===============================
-      - name: Download CUDA
-        uses: actions/download-artifact@v4
+      - name: Restore CUDA from cache
+        uses: actions/cache/restore@v4
         with:
-          name: cuda-Linux-13.1.0
-          path: deps/cuda
+          path: cuda-install
+          key: cuda-${{ runner.os }}-13.1.0
 
       - name: Install CUDA
         run: |
           sudo mkdir -p /usr/local/cuda-13.1
-          sudo cp -r deps/cuda/* /usr/local/cuda-13.1/
+          sudo cp -r cuda-install/* /usr/local/cuda-13.1/
           echo "/usr/local/cuda-13.1/bin" >> $GITHUB_PATH
 
       # ===============================
@@ -309,63 +315,63 @@ jobs:
           echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
 
       # ===============================
-      # Download and install Boost
+      # Restore and install Boost
       # ===============================
-      - name: Download Boost
-        uses: actions/download-artifact@v4
+      - name: Restore Boost from cache
+        uses: actions/cache/restore@v4
         with:
-          name: boost-Linux-1.90.0
-          path: deps/boost
+          path: boost-install
+          key: boost-${{ runner.os }}-1.90.0
 
       - name: Install Boost
         run: |
-          sudo cp -r deps/boost/include/* /usr/local/include/
-          sudo cp -r deps/boost/lib/* /usr/local/lib/
+          sudo cp -r boost-install/include/* /usr/local/include/
+          sudo cp -r boost-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install OpenSSL
+      # Restore and install OpenSSL
       # ===============================
-      - name: Download OpenSSL
-        uses: actions/download-artifact@v4
+      - name: Restore OpenSSL from cache
+        uses: actions/cache/restore@v4
         with:
-          name: openssl-Linux-1.1.1w
-          path: deps/openssl
+          path: openssl-install
+          key: openssl-${{ runner.os }}-1.1.1w
 
       - name: Install OpenSSL
         run: |
-          sudo cp -r deps/openssl/include/* /usr/local/include/
-          sudo cp -r deps/openssl/lib/* /usr/local/lib/
+          sudo cp -r openssl-install/include/* /usr/local/include/
+          sudo cp -r openssl-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install OpenCL
+      # Restore and install OpenCL
       # ===============================
-      - name: Download OpenCL
-        uses: actions/download-artifact@v4
+      - name: Restore OpenCL from cache
+        uses: actions/cache/restore@v4
         with:
-          name: opencl-Linux-3.0.19
-          path: deps/opencl
+          path: opencl-install
+          key: opencl-${{ runner.os }}-3.0.19
 
       - name: Install OpenCL
         run: |
-          sudo cp -r deps/opencl/include/* /usr/local/include/
-          sudo cp -r deps/opencl/lib/* /usr/local/lib/
+          sudo cp -r opencl-install/include/* /usr/local/include/
+          sudo cp -r opencl-install/lib/* /usr/local/lib/
           sudo ldconfig
 
       # ===============================
-      # Download and install CUDA
+      # Restore and install CUDA
       # ===============================
-      - name: Download CUDA
-        uses: actions/download-artifact@v4
+      - name: Restore CUDA from cache
+        uses: actions/cache/restore@v4
         with:
-          name: cuda-Linux-13.1.0
-          path: deps/cuda
+          path: cuda-install
+          key: cuda-${{ runner.os }}-13.1.0
 
       - name: Install CUDA
         run: |
           sudo mkdir -p /usr/local/cuda-13.1
-          sudo cp -r deps/cuda/* /usr/local/cuda-13.1/
+          sudo cp -r cuda-install/* /usr/local/cuda-13.1/
           echo "/usr/local/cuda-13.1/bin" >> $GITHUB_PATH
 
       # ===============================

@@ -67,20 +67,12 @@ jobs:
           echo "✅ OpenCL SDK 3.0.19 built successfully"
 
       # ===============================
-      # Save OpenCL cache (main branch and workflow_dispatch only)
+      # Save OpenCL cache
       # ===============================
       - name: Save OpenCL cache
-        if: steps.opencl-cache.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+        if: steps.opencl-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: opencl-install
           key: opencl-${{ runner.os }}-3.0.19
 
-      # ===============================
-      # Upload artifact
-      # ===============================
-      - name: Upload OpenCL artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: opencl-${{ runner.os }}-3.0.19
-          path: opencl-install

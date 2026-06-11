@@ -62,17 +62,9 @@ jobs:
       # Save OpenSSL cache (main branch and workflow_dispatch only)
       # ===============================
       - name: Save OpenSSL cache
-        if: steps.openssl-cache.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+        if: steps.openssl-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: openssl-install
           key: openssl-${{ runner.os }}-1.1.1w
 
-      # ===============================
-      # Upload artifact
-      # ===============================
-      - name: Upload OpenSSL artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: openssl-${{ runner.os }}-1.1.1w
-          path: openssl-install
