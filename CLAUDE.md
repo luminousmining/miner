@@ -137,4 +137,7 @@ Each GPU has two streams (CUDA) or two command queues (OpenCL). Iteration N runs
 | OpenCL | 3.0.19 | AMD GPU kernels |
 | Google Test | — | Unit tests |
 
-See `documentation/BUILD.md` for full installation instructions per platform.
+See `documentation/build/` for full installation instructions per platform and method:
+from scratch (`BUILD_LINUX.md`, `BUILD_WINDOWS.md`) and Docker toolchain
+(`BUILD_DOCKER_LINUX.md`, `BUILD_DOCKER_WINDOWS.md`, `BUILD_DOCKER_MACOS.md`,
+`BUILD_DOCKER_LINUX_ARM64.md`).
