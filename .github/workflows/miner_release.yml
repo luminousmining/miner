@@ -1,0 +1,78 @@
+name: Miner Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  # ============================================================
+  # Build the miner (AMD / NVIDIA / ALL)
+  # ============================================================
+  build:
+    uses: ./.github/workflows/miner_linux.yml
+
+  # ============================================================
+  # Create the GitHub draft release with the 3 binaries
+  # ============================================================
+  create-release:
+    needs: [build]
+    environment: release
+    runs-on: ubuntu-22.04
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    permissions:
+      contents: write
+
+    steps:
+      # ===============================
+      # Download miner binaries
+      # ===============================
+      - name: Download AMD miner
+        uses: actions/download-artifact@v4
+        with:
+          name: miner-amd-linux
+          path: artifacts/amd
+
+      - name: Download NVIDIA miner
+        uses: actions/download-artifact@v4
+        with:
+          name: miner-nvidia-linux
+          path: artifacts/nvidia
+
+      - name: Download ALL miner
+        uses: actions/download-artifact@v4
+        with:
+          name: miner-all-linux
+          path: artifacts/all
+
+      # ===============================
+      # Rename binaries for release
+      # ===============================
+      - name: Prepare release assets
+        run: |
+          cp artifacts/amd/miner   miner_amd
+          cp artifacts/nvidia/miner miner_nvidia
+          cp artifacts/all/miner   miner
+          chmod +x miner_amd miner_nvidia miner
+
+      # ===============================
+      # Create draft release
+      # ===============================
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ inputs.tag }} \
+            --repo ${{ github.repository }} \
+            --title "LuminousMiner ${{ inputs.tag }}" \
+            --generate-notes \
+            --draft \
+            miner_amd \
+            miner_nvidia \
+            miner
