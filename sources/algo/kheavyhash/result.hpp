@@ -12,6 +12,13 @@ namespace algo
     {
         constexpr uint32_t MAX_RESULT{ 4u };
 
+        // Side length of the square nibble matrix (matrix is MATRIX_DIM x MATRIX_DIM).
+        constexpr uint32_t MATRIX_DIM{ 64u };
+
+        // One device-side Result per in-flight stream (double-buffering, see
+        // resolver::Resolver::swapIndexStream). The host result cache holds this many.
+        constexpr uint32_t RESULT_BUFFER_COUNT{ 2u };
+
         // GPU-side result buffer. Layout must match the `Result` struct in
         // sources/algo/kheavyhash/opencl/kheavyhash.cl (found | count | nonces).
         struct alignas(8) Result

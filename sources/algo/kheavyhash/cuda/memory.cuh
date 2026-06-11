@@ -24,10 +24,12 @@ bool kheavyhashInitMemory(
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    CU_ALLOC(&params.matrix, 64u * 64u * sizeof(uint16_t));
+    CU_ALLOC(&params.matrix,
+             algo::kheavyhash::MATRIX_DIM * algo::kheavyhash::MATRIX_DIM * sizeof(uint16_t));
     CU_ALLOC(&params.header, algo::LEN_HASH_256);
     CU_ALLOC(&params.target, algo::LEN_HASH_256);
-    CU_ALLOC_HOST(&params.resultCache, sizeof(algo::kheavyhash::Result) * 2u);
+    CU_ALLOC_HOST(&params.resultCache,
+                  sizeof(algo::kheavyhash::Result) * algo::kheavyhash::RESULT_BUFFER_COUNT);
 
     ////////////////////////////////////////////////////////////////////////////
     return true;
@@ -40,7 +42,7 @@ bool kheavyhashUpdateConstants(
 {
     CUDA_ER(cudaMemcpy(params.matrix,
                        params.hostMatrix,
-                       64u * 64u * sizeof(uint16_t),
+                       algo::kheavyhash::MATRIX_DIM * algo::kheavyhash::MATRIX_DIM * sizeof(uint16_t),
                        cudaMemcpyHostToDevice));
 
     CUDA_ER(cudaMemcpy(params.header->ubytes,

@@ -11,21 +11,21 @@ namespace kheavyhash
         // Float Gaussian elimination, mirroring rusty-kaspa matrix.rs::compute_rank.
         constexpr double eps{ 1e-9 };
 
-        double matFloat[64][64];
-        for (size_t i{ 0 }; i < 64; ++i)
+        double matFloat[MATRIX_DIM][MATRIX_DIM];
+        for (size_t i{ 0 }; i < MATRIX_DIM; ++i)
         {
-            for (size_t j{ 0 }; j < 64; ++j)
+            for (size_t j{ 0 }; j < MATRIX_DIM; ++j)
             {
                 matFloat[i][j] = static_cast<double>(matrix[i][j]);
             }
         }
 
         int  rank{ 0 };
-        bool rowSelected[64]{};
-        for (size_t i{ 0 }; i < 64; ++i)
+        bool rowSelected[MATRIX_DIM]{};
+        for (size_t i{ 0 }; i < MATRIX_DIM; ++i)
         {
             size_t j{ 0 };
-            while (j < 64)
+            while (j < MATRIX_DIM)
             {
                 if (false == rowSelected[j] && std::abs(matFloat[j][i]) > eps)
                 {
@@ -33,19 +33,19 @@ namespace kheavyhash
                 }
                 ++j;
             }
-            if (j != 64)
+            if (j != MATRIX_DIM)
             {
                 ++rank;
                 rowSelected[j] = true;
-                for (size_t p{ i + 1 }; p < 64; ++p)
+                for (size_t p{ i + 1 }; p < MATRIX_DIM; ++p)
                 {
                     matFloat[j][p] /= matFloat[j][i];
                 }
-                for (size_t k{ 0 }; k < 64; ++k)
+                for (size_t k{ 0 }; k < MATRIX_DIM; ++k)
                 {
                     if (k != j && std::abs(matFloat[k][i]) > eps)
                     {
-                        for (size_t p{ i + 1 }; p < 64; ++p)
+                        for (size_t p{ i + 1 }; p < MATRIX_DIM; ++p)
                         {
                             matFloat[k][p] -= matFloat[j][p] * matFloat[k][i];
                         }
@@ -57,39 +57,42 @@ namespace kheavyhash
     }
 
 
-    namespace
+    static Matrix randMatrixNoRankCheck(Xoshiro256pp& generator)
     {
-        Matrix randMatrixNoRankCheck(Xoshiro256pp& generator)
+        Matrix mat{};
+        for (size_t i{ 0 }; i < MATRIX_DIM; ++i)
         {
-            Matrix mat{};
-            for (size_t i{ 0 }; i < 64; ++i)
+            uint64_t val{ 0 };
+            for (size_t j{ 0 }; j < MATRIX_DIM; ++j)
             {
-                uint64_t val{ 0 };
-                for (size_t j{ 0 }; j < 64; ++j)
+                if (0 == j % 16)
                 {
-                    if (0 == j % 16)
-                    {
-                        val = generator.next();
-                    }
-                    mat[i][j] = static_cast<uint16_t>((val >> (4 * (j % 16))) & 0x0Full);
+                    val = generator.next();
                 }
+                mat[i][j] = static_cast<uint16_t>((val >> (4 * (j % 16))) & 0x0Full);
             }
-            return mat;
         }
+        return mat;
     }
 
 
     Matrix generateMatrix(Hash256 const& seed)
     {
         // Regenerate from the SAME continuing stream until full rank, per matrix.rs::generate.
-        Xoshiro256pp generator{ seed };
-        while (true)
+        // A random nibble matrix is full-rank with overwhelming probability, so this
+        // converges in 1-2 draws; the bound only guards against a pathological stream
+        // (e.g. a degenerate seed) turning the retry into an infinite loop.
+        constexpr int maxAttempts{ 1024 };
+        Xoshiro256pp  generator{ seed };
+        Matrix        mat{};
+        for (int attempt{ 0 }; attempt < maxAttempts; ++attempt)
         {
-            Matrix const mat{ randMatrixNoRankCheck(generator) };
-            if (64 == computeRank(mat))
+            mat = randMatrixNoRankCheck(generator);
+            if (static_cast<int>(MATRIX_DIM) == computeRank(mat))
             {
                 return mat;
             }
         }
+        return mat;
     }
 }

@@ -10,6 +10,9 @@
 // the repo's algo::hash256 etc.
 namespace kheavyhash
 {
-    using Hash256 = std::array<uint8_t, 32>;
-    using Matrix = std::array<std::array<uint16_t, 64>, 64>;
+    constexpr std::size_t HASH_SIZE{ 32u };
+    constexpr std::size_t MATRIX_DIM{ 64u };
+
+    using Hash256 = std::array<uint8_t, HASH_SIZE>;
+    using Matrix = std::array<std::array<uint16_t, MATRIX_DIM>, MATRIX_DIM>;
 }
