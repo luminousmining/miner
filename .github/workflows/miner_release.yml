@@ -14,6 +14,8 @@ jobs:
   # ============================================================
   build:
     uses: ./.github/workflows/miner_linux.yml
+    with:
+      full_build: true
 
   # ============================================================
   # Create the GitHub draft release with the 3 binaries

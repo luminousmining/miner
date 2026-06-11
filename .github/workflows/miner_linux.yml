@@ -4,11 +4,42 @@ on:
   pull_request:
     branches:
       - main
+    # Docs-only changes don't affect the build: skip the ~45-min miner matrix.
+    paths-ignore:
+      - '**.md'
+      - 'documentation/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'documentation/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
   workflow_dispatch:
+    inputs:
+      full_build:
+        description: "Full build: all 3 backends (AMD/NVIDIA/ALL) with the complete multi-arch CUDA fat binary. Off (default) = single ALL build at one CUDA arch (fast CI validation)."
+        required: false
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      full_build:
+        description: "Full release build (3 backends, all CUDA archs)."
+        required: false
+        type: boolean
+        default: false
+
+# Supersede stale in-progress runs for the same PR; push-to-main and release
+# (workflow_call, event_name != pull_request) runs always complete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # ============================================================
@@ -37,6 +68,8 @@ jobs:
   # Build Miner AMD
   #==========================================================================
   build-miner-amd:
+    # Per-backend artifact only needed for releases; PR/push validate via build-miner-all.
+    if: ${{ inputs.full_build }}
     needs: [build-cmake, build-boost, build-openssl, build-opencl]
     runs-on: ubuntu-22.04
 
@@ -128,6 +161,8 @@ jobs:
           cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
             -DBUILD_EXE_BENCHMARK=OFF \
             -DBUILD_EXE_UNIT_TEST=OFF \
             -DBUILD_EXE_MINER=ON \
@@ -153,6 +188,8 @@ jobs:
   # Build Miner NVIDIA
   #==========================================================================
   build-miner-nvidia:
+    # Per-backend artifact only needed for releases; PR/push validate via build-miner-all.
+    if: ${{ inputs.full_build }}
     needs: [build-cmake, build-boost, build-openssl, build-opencl, build-cuda]
     runs-on: ubuntu-22.04
 
@@ -259,6 +296,8 @@ jobs:
           cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
             -DBUILD_EXE_BENCHMARK=OFF \
             -DBUILD_EXE_UNIT_TEST=OFF \
             -DBUILD_EXE_MINER=ON \
@@ -297,6 +336,8 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      # Empty on PR/push -> single CUDA arch (fast); "true" on release -> full fat binary.
+      FULL_BUILD: ${{ inputs.full_build }}
 
     steps:
       - uses: actions/checkout@v4
@@ -394,10 +435,17 @@ jobs:
       # ===============================
       - name: Configure CMake (ALL)
         run: |
+          # Runners have no GPU: a single CUDA arch is enough to validate that the
+          # code compiles. Release builds (full_build) omit this for the full fat binary.
+          ARCH_FLAG=""
+          if [ "$FULL_BUILD" != "true" ]; then ARCH_FLAG="-DNVCC_ARCH_COMPUTE=89"; fi
           mkdir build
           cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
+            $ARCH_FLAG \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
             -DBUILD_EXE_BENCHMARK=OFF \
             -DBUILD_EXE_UNIT_TEST=OFF \
             -DBUILD_EXE_MINER=ON \

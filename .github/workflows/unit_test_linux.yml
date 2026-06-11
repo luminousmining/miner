@@ -4,7 +4,19 @@ on:
   pull_request:
     branches:
       - main
+    # Docs-only changes can't break the tests: skip the build+test run.
+    paths-ignore:
+      - '**.md'
+      - 'documentation/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
   workflow_dispatch:
+
+# Supersede stale in-progress runs for the same PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build-cmake:

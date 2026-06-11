@@ -360,6 +360,9 @@ elseif (BUILD_NVIDIA)
     list(APPEND CUDA_NVCC_FLAGS "--ptxas-options=-v")
     list(APPEND CUDA_NVCC_FLAGS "-use_fast_math")
     list(APPEND CUDA_NVCC_FLAGS "-Xptxas -v")
+    # Parallelize per-arch device codegen across CPU threads; speeds the multi-arch
+    # release fat-binary build and is a no-op for single-arch CI builds.
+    list(APPEND CUDA_NVCC_FLAGS "-t0")
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         list(APPEND CUDA_NVCC_FLAGS_DEBUG -G -g -O0)
     else()
