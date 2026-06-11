@@ -190,8 +190,8 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
 # Ship runtime DLLs next to miner.exe (separate RUN so a build failure above is
 # never masked). OpenSSL always; CUDA DLLs only exist when NVIDIA was staged.
 RUN set -eux; \
-    cp /opt/openssl-win/bin/*.dll /src/build/windows-cross/bin/; \
-    if [ "$GPU" != "amd" ]; then cp /opt/cuda-win/bin/*.dll /src/build/windows-cross/bin/; fi
+    cp /opt/openssl-win/bin/*.dll /src/bin/; \
+    if [ "$GPU" != "amd" ]; then cp /opt/cuda-win/bin/*.dll /src/bin/; fi
 
 FROM scratch AS artifact
-COPY --from=build /src/build/windows-cross/bin /
+COPY --from=build /src/bin /
