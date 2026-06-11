@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <stratum/stratum.hpp>
 
 
@@ -9,9 +11,10 @@ namespace common
     {
         struct MockerStratum : public stratum::Stratum
         {
-            uint32_t            id{ 0u };
-            boost::json::array  paramSubmit{};
-            boost::json::object paramSubmitObject{};
+            uint32_t                        id{ 0u };
+            boost::json::array              paramSubmit{};
+            boost::json::object             paramSubmitObject{};
+            std::vector<boost::json::array> allSubmits{};
 
             inline void onResponse(boost::json::object const&) final
             {
@@ -21,6 +24,7 @@ namespace common
             {
                 id = deviceID;
                 paramSubmit = params;
+                allSubmits.push_back(params);
             }
 
             inline void miningSubmit(uint32_t const deviceID, boost::json::object const& params) final

@@ -33,59 +33,69 @@ void ethash_build_dag(
     uint const cache_number_item)
 {
     ////////////////////////////////////////////////////////////////////////////
-    uint const dag_index = get_global_id(0) + get_global_id(1) * GROUP_SIZE;
-    if (dag_index >= dag_number_item)
+    // Grid-stride over every DAG page. Some drivers (e.g. AMD on gfx1201/RDNA4)
+    // silently execute fewer work-groups than requested when a launch dimension is
+    // very large, leaving most of a big DAG (multi-GB ethash epochs) unwritten and
+    // zero. Striding by the real launch size makes coverage independent of how many
+    // work-items actually run. The host also caps the launch so it is fully
+    // dispatched (see resolver buildDAG).
+    uint const grid_stride = (uint)(get_global_size(0) * get_global_size(1));
+    for (uint dag_index = (uint)(get_global_id(0) + get_global_id(1) * get_global_size(0));
+         dag_index < dag_number_item;
+         dag_index += grid_stride)
     {
-        return;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    __attribute__((opencl_unroll_hint))
-    for (uchar loop = 0; loop < 2; ++loop)
-    {
         ////////////////////////////////////////////////////////////////////////
-        uint const cache_start_index = (dag_index * 2u) + loop;
-        uint const cache_index = (cache_start_index % cache_number_item) * 4u;
-
-        ////////////////////////////////////////////////////////////////////////
-        uint4 item[4];
         __attribute__((opencl_unroll_hint))
-        for (uchar i = 0; i < 4; ++i)
+        for (uchar loop = 0; loop < 2; ++loop)
         {
-            uint const index_tmp = cache_index + i;
-            item[i] = cache[index_tmp];
-        }
-        item[0].x ^= cache_start_index;
+            ////////////////////////////////////////////////////////////////////
+            uint const cache_start_index = (dag_index * 2u) + loop;
+            uint const cache_index = (cache_start_index % cache_number_item) * 4u;
 
-        ////////////////////////////////////////////////////////////////////////
-        keccak_f1600(item);
-
-        ////////////////////////////////////////////////////////////////////////
-        uint k = 0;
-        __attribute__((opencl_unroll_hint))
-        for (uchar i = 0; i < DAG_LOOP; ++i)
-        {
+            ////////////////////////////////////////////////////////////////////
+            uint4 item[4];
             __attribute__((opencl_unroll_hint))
-            for (uchar j = 0; j < 4u; ++j)
+            for (uchar i = 0; i < 4; ++i)
             {
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ k,        item[j & 3u].x));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 1u), item[j & 3u].y));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 2u), item[j & 3u].z));
-                build_item_mix(cache, item, cache_number_item, fnv1_u32(cache_start_index ^ (k + 3u), item[j & 3u].w));
-                k += 4u;
+                uint const index_tmp = cache_index + i;
+                item[i] = cache[index_tmp];
             }
+            item[0].x ^= cache_start_index;
+
+            ////////////////////////////////////////////////////////////////////
+            keccak_f1600(item);
+
+            ////////////////////////////////////////////////////////////////////
+            uint k = 0;
+            __attribute__((opencl_unroll_hint))
+            for (uchar i = 0; i < DAG_LOOP; ++i)
+            {
+                __attribute__((opencl_unroll_hint))
+                for (uchar j = 0; j < 4u; ++j)
+                {
+                    build_item_mix(cache, item, cache_number_item,
+                        fnv1_u32(cache_start_index ^ k, item[j & 3u].x));
+                    build_item_mix(cache, item, cache_number_item,
+                        fnv1_u32(cache_start_index ^ (k + 1u), item[j & 3u].y));
+                    build_item_mix(cache, item, cache_number_item,
+                        fnv1_u32(cache_start_index ^ (k + 2u), item[j & 3u].z));
+                    build_item_mix(cache, item, cache_number_item,
+                        fnv1_u32(cache_start_index ^ (k + 3u), item[j & 3u].w));
+                    k += 4u;
+                }
+            }
+
+            ////////////////////////////////////////////////////////////////////
+            keccak_f1600(item);
+
+            ////////////////////////////////////////////////////////////////////
+            uint const gap_index = (dag_index * 8u) + (loop * 4);
+            __attribute__((opencl_unroll_hint))
+            for (uint x = 0u; x < 4u; ++x)
+            {
+                dag[gap_index + x] = item[x];
+            }
+
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        keccak_f1600(item);
-
-        ////////////////////////////////////////////////////////////////////////
-        uint const gap_index = (dag_index * 8u) + (loop * 4);
-        __attribute__((opencl_unroll_hint))
-        for (uint x = 0u; x < 4u; ++x)
-        {
-            dag[gap_index + x] = item[x];
-        }
-
     }
 }

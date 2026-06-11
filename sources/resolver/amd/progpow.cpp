@@ -262,13 +262,29 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
     OPENCL_ER(clKernel.setArg(4u, castU32(context.lightCache.numberItem)));
 
     ////////////////////////////////////////////////////////////////////////////
-    // Run kernel to build DAG
-    uint32_t const maxGroupSize{ getMaxGroupSize() };
-    uint32_t const threadKernel{ castU32(context.dagCache.numberItem) / maxGroupSize };
+    // Run kernel to build DAG.
+    // The build kernel grid-strides over the DAG (for (i = gid; i < numberItem;
+    // i += stride)), so coverage is complete for any launch of at least one
+    // work-group. We cap the work-group count (the NDRange Y dimension) because
+    // some drivers (AMD on gfx1201/RDNA4) silently dispatch fewer work-groups than
+    // requested when a dimension is very large, which leaves most of a multi-GB
+    // DAG zero. MAX_BUILD_GROUPS is therefore a ceiling, not a tuning constant: it
+    // only has to stay below that silent-clamp threshold while still saturating the
+    // CUs. 32768 groups (~8M work-items) is already orders of magnitude above the
+    // simultaneous occupancy of any current GPU, so it saturates every model; the
+    // build is DRAM-bandwidth bound, so a larger or per-device value would not
+    // change throughput.
+    constexpr uint32_t MAX_BUILD_GROUPS{ 32768u };
+    uint32_t const     maxGroupSize{ getMaxGroupSize() };
+    uint32_t           buildGroups{ (castU32(context.dagCache.numberItem) + maxGroupSize - 1u) / maxGroupSize };
+    if (buildGroups > MAX_BUILD_GROUPS)
+    {
+        buildGroups = MAX_BUILD_GROUPS;
+    }
     OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
         clKernel,
         cl::NullRange,
-        cl::NDRange(maxGroupSize, threadKernel, 1),
+        cl::NDRange(maxGroupSize, buildGroups, 1),
         cl::NDRange(maxGroupSize, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 
