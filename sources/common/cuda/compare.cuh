@@ -36,9 +36,13 @@ bool isLowerLittleEndian(
     #pragma unroll
     for (int32_t i{ static_cast<int32_t>(N) - 1 }; 0 <= i; --i)
     {
-        if (r[i] != l[i])
+        if (r[i] < l[i])
         {
-            return r[i] < l[i];
+            return true;
+        }
+        if (l[i] < r[i])
+        {
+            return false;
         }
     }
 
