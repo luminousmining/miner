@@ -120,6 +120,10 @@ namespace common
         uint32_t    getMinimunKernelExecuted() const;
         std::string getCudaContext() const;
 
+        // CPU thread manager
+        std::optional<uint32_t>    getCpuThreads() const;
+        std::optional<std::string> getCpuAffinity() const;
+
         // Algorithm
         bool isEthashBuildLightCacheCPU() const;
 

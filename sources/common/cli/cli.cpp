@@ -271,7 +271,17 @@ common::Cli::Cli()
             value<std::string>(),
             "[OPTIONAL] Set CUDA context.\n"
             "Default value is auto\n"
-            "--cuda_context=<auto|blocking|yield|spin>")
+            "--cuda_context=<auto|blocking|yield|spin>")(
+            "cpu_threads",
+            value<uint32_t>(),
+            "[OPTIONAL] Number of CPU worker threads (pool size).\n"
+            "Default is the number of logical cores.\n"
+            "--cpu_threads=8")(
+            "cpu_affinity",
+            value<std::string>(),
+            "[OPTIONAL] Hex bitmask of logical cores to pin CPU workers to.\n"
+            "Bit i pins a worker to core i. Default: no pinning.\n"
+            "--cpu_affinity=0xFF")
 
         // Algorithm
         ("ethash_light_cache_cpu",

@@ -73,3 +73,27 @@ std::string common::Cli::getCudaContext() const
     }
     return context;
 }
+
+
+std::optional<uint32_t> common::Cli::getCpuThreads() const
+{
+    if (true == contains("cpu_threads"))
+    {
+        uint32_t const value{ params["cpu_threads"].as<uint32_t>() };
+        if (0u < value)
+        {
+            return value;
+        }
+    }
+    return std::nullopt;
+}
+
+
+std::optional<std::string> common::Cli::getCpuAffinity() const
+{
+    if (true == contains("cpu_affinity"))
+    {
+        return params["cpu_affinity"].as<std::string>();
+    }
+    return std::nullopt;
+}

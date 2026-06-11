@@ -61,6 +61,12 @@ namespace common
             bool ethashBuildLightCacheCPU{ true };
         };
 
+        struct CpuConfig
+        {
+            std::optional<uint32_t>    threads{};  // --cpu_threads (pool size); empty = all cores
+            std::optional<std::string> affinity{}; // --cpu_affinity raw hex; parsed at pool construction
+        };
+
         struct DeviceEnableSetting
         {
 #if defined(CUDA_ENABLE)
@@ -103,6 +109,7 @@ namespace common
         SmartMiningConfig              smartMining{};
         DeviceEnableSetting            deviceEnable{};
         DeviceAlgorithmConfig          deviceAlgorithm{};
+        CpuConfig                      cpu{};
         std::vector<uint32_t>          deviceDisable{};
         std::map<uint32_t, PoolConfig> deviceSettings{};
         PoolConfig                     amdSetting{};

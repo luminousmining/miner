@@ -72,6 +72,9 @@ namespace device
 #if defined(AMD_ENABLE)
         bool initializeAmd();
 #endif
+#if defined(CPU_ENABLE)
+        bool initializeCpu();
+#endif
         void updateDevice(uint32_t const stratumUUID, bool const updateMemory, bool const updateConstants);
         bool containStratum(uint32_t const deviceId) const;
         std::shared_ptr<stratum::Stratum> getOrCreateStratum(algo::ALGORITHM const algorithm, uint32_t const deviceId);

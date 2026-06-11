@@ -32,6 +32,9 @@
 #include <device/device_manager.hpp>
 #include <device/mocker.hpp>
 #include <device/nvidia.hpp>
+#if defined(CPU_ENABLE)
+#include <device/cpu.hpp>
+#endif
 #include <stratum/stratums.hpp>
 
 
@@ -86,6 +89,18 @@ bool device::DeviceManager::initialize()
         if (false == initializeNvidia())
         {
             logErr() << "Cannot initialize device Nvidia";
+        }
+        initialized = true;
+    }
+#endif
+
+    ////////////////////////////////////////////////////////////////////////////
+#if defined(CPU_ENABLE)
+    if (true == config.deviceEnable.cpuEnable)
+    {
+        if (false == initializeCpu())
+        {
+            logErr() << "Cannot initialize device CPU";
         }
         initialized = true;
     }
@@ -155,6 +170,13 @@ bool device::DeviceManager::initialize()
 #if defined(TOOL_MOCKER)
                     case device::DEVICE_TYPE::MOCKER:
                     {
+                        break;
+                    }
+#endif
+#if defined(CPU_ENABLE)
+                    case device::DEVICE_TYPE::CPU:
+                    {
+                        // CPU mines the global --algo on the global pool (config.mining).
                         break;
                     }
 #endif
@@ -295,6 +317,30 @@ bool device::DeviceManager::initializeMocker()
             devices.push_back(device);
         }
     }
+    return true;
+}
+#endif
+
+#if defined(CPU_ENABLE)
+bool device::DeviceManager::initializeCpu()
+{
+    ///////////////////////////////////////////////////////////////////////////
+    device::DeviceCpu* device{ NEW(device::DeviceCpu) };
+    if (nullptr == device) [[unlikely]]
+    {
+        logErr() << "Cannot alloc memory to create new CPU Device";
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    device->deviceType = device::DEVICE_TYPE::CPU;
+    device->memoryAvailable = 0ull; // Blake3 has no DAG: the resolver never reads this.
+    device->id = castU32(devices.size());
+
+    ///////////////////////////////////////////////////////////////////////////
+    logInfo() << "CPU[" << devices.size() << "] enabled";
+    devices.push_back(device);
+
     return true;
 }
 #endif
