@@ -16,38 +16,39 @@
 #include <algo/kheavyhash/cuda/kheavyhash_device.cuh>
 #include <algo/kheavyhash/matrix.hpp>
 
-namespace
+using kheavyhash::HASH_SIZE;
+using kheavyhash::MATRIX_DIM;
+
+
+static std::array<uint8_t, HASH_SIZE> toArr(uint8_t const* p)
 {
-    std::array<uint8_t, 32> toArr(uint8_t const* p)
+    std::array<uint8_t, HASH_SIZE> a{};
+    for (size_t i{ 0 }; i < HASH_SIZE; ++i)
     {
-        std::array<uint8_t, 32> a{};
-        for (int i{ 0 }; i < 32; ++i)
-        {
-            a[i] = p[i];
-        }
-        return a;
+        a[i] = p[i];
     }
-
-
-    std::vector<uint16_t> flatten(kheavyhash::Matrix const& m)
-    {
-        std::vector<uint16_t> f;
-        f.reserve(64 * 64);
-        for (int r{ 0 }; r < 64; ++r)
-        {
-            for (int c{ 0 }; c < 64; ++c)
-            {
-                f.push_back(m[r][c]);
-            }
-        }
-        return f;
-    }
+    return a;
 }
 
 
-TEST(CudaDeviceKat, PowHashMatchesReference)
+static std::vector<uint16_t> flatten(kheavyhash::Matrix const& m)
 {
-    uint8_t out[32];
+    std::vector<uint16_t> f;
+    f.reserve(MATRIX_DIM * MATRIX_DIM);
+    for (size_t r{ 0 }; r < MATRIX_DIM; ++r)
+    {
+        for (size_t c{ 0 }; c < MATRIX_DIM; ++c)
+        {
+            f.push_back(m[r][c]);
+        }
+    }
+    return f;
+}
+
+
+TEST(CudaDeviceKat, powHashMatchesReference)
+{
+    uint8_t out[HASH_SIZE];
     kheavyhash_cuda::powHash(
         kheavyhash::kat::POW_KAT_PRE,
         kheavyhash::kat::POW_KAT_TIMESTAMP,
@@ -57,18 +58,18 @@ TEST(CudaDeviceKat, PowHashMatchesReference)
 }
 
 
-TEST(CudaDeviceKat, KHeavyHashMatchesReference)
+TEST(CudaDeviceKat, kHeavyHashMatchesReference)
 {
-    uint8_t out[32];
+    uint8_t out[HASH_SIZE];
     kheavyhash_cuda::kHeavyHash(kheavyhash::kat::HEAVY_INPUT.data(), out);
     EXPECT_EQ(toArr(out), kheavyhash::kat::KHEAVY_EXPECTED);
 }
 
 
-TEST(CudaDeviceKat, HeavyHashMatchesReference)
+TEST(CudaDeviceKat, heavyHashMatchesReference)
 {
     std::vector<uint16_t> flat;
-    flat.reserve(64 * 64);
+    flat.reserve(MATRIX_DIM * MATRIX_DIM);
     for (auto const& row : kheavyhash::kat::HEAVY_TEST_MATRIX)
     {
         for (uint16_t const v : row)
@@ -76,20 +77,20 @@ TEST(CudaDeviceKat, HeavyHashMatchesReference)
             flat.push_back(v);
         }
     }
-    uint8_t out[32];
+    uint8_t out[HASH_SIZE];
     kheavyhash_cuda::heavyHash(flat.data(), kheavyhash::kat::HEAVY_INPUT.data(), out);
     EXPECT_EQ(toArr(out), kheavyhash::kat::HEAVY_EXPECTED);
 }
 
 
-TEST(CudaDeviceKat, FullPipelineMatchesReference)
+TEST(CudaDeviceKat, fullPipelineMatchesReference)
 {
     // The matrix is generated host-side (CPU reference); the CUDA device funcs do
     // powHash -> heavyHash, mirroring the on-GPU per-nonce path.
     kheavyhash::Matrix const    matrix{ kheavyhash::generateMatrix(kheavyhash::kat::FP_PRE) };
     std::vector<uint16_t> const flat{ flatten(matrix) };
 
-    uint8_t h1[32];
+    uint8_t h1[HASH_SIZE];
     kheavyhash_cuda::powHash(
         kheavyhash::kat::FP_PRE.data(),
         kheavyhash::kat::FP_TIMESTAMP,
@@ -97,13 +98,13 @@ TEST(CudaDeviceKat, FullPipelineMatchesReference)
         h1);
     EXPECT_EQ(toArr(h1), kheavyhash::kat::FP_HASH1);
 
-    uint8_t pow[32];
+    uint8_t pow[HASH_SIZE];
     kheavyhash_cuda::heavyHash(flat.data(), h1, pow);
     EXPECT_EQ(toArr(pow), kheavyhash::kat::FP_FINAL);
 }
 
 
-TEST(CudaDeviceKat, MeetsTargetCompare)
+TEST(CudaDeviceKat, meetsTargetCompare)
 {
     EXPECT_TRUE(kheavyhash_cuda::meetsTarget(kheavyhash::kat::FP_FINAL.data(), kheavyhash::kat::FP_TARGET_PASS.data()));
     EXPECT_FALSE(
