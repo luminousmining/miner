@@ -2,14 +2,15 @@
 
 #include <algo/kheavyhash/cuda/kheavyhash_device.cuh>
 #include <algo/kheavyhash/result.hpp>
+#include <common/cuda/compare.cuh>
 #include <resolver/nvidia/kheavyhash_kernel_parameter.hpp>
 
 
 // Per-nonce mining kernel: each thread tries nonce = startNonce + global thread id,
 // computes powHash -> heavyHash, and publishes a hit (pow <= target, little-endian)
 // into the shared Result. The matrix is generated host-side and uploaded; the GPU
-// never does matrix generation. The device hash functions are KAT-verified against
-// the CPU reference (see tests/cuda_device_test.cpp).
+// never does matrix generation. The device hash functions are a faithful port of
+// the CPU reference, which is the KAT-verified correctness oracle.
 __global__
 void kernel_kheavyhash_search(
     algo::kheavyhash::Result* __restrict__ result,
@@ -35,7 +36,7 @@ void kernel_kheavyhash_search(
     uint8_t pow[32];
     kheavyhash_cuda::heavyHash(matrix, h1, pow);
 
-    if (true == kheavyhash_cuda::meetsTarget(pow, tgt))
+    if (true == isLowerLittleEndian<uint8_t, algo::LEN_HASH_256>(pow, tgt))
     {
         uint32_t const index{ atomicAdd((uint32_t*)&result->count, 1u) };
         result->found = true;
