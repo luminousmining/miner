@@ -44,7 +44,7 @@
         "VCPKG_MANIFEST_FEATURES": "",
         "VCPKG_TARGET_TRIPLET": "x64-windows-clangcl",
         "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain-clang-cl-xwin.cmake",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchain/clang-cl-xwin.cmake",
         "VCPKG_APPLOCAL_DEPS": "OFF"
       }
     },
