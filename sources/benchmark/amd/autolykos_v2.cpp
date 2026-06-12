@@ -16,21 +16,20 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Throughput benchmark for the production Autolykos v2 AMD pipeline. Unlike the
-// ethash/progpow benchmarks there is no A/B variant to compare: the goal here is
-// to close the coverage gap (autolykos_v2 was the only supported AMD algorithm
-// with no in-tree benchmark) by exercising the real kernels.
+// Throughput benchmark for the Autolykos v2 AMD pipeline. The timed kernels are
+// self-contained snapshots under benchmark/opencl/autolykos_v2/ (autolykos_v2_lm1
+// = search, autolykos_v2_verify) -- frozen copies of the production assembly, so
+// the benchmark never tracks live mining-kernel edits. autolykos_v2_dag fills the
+// ~4 GiB DAG once (epoch-switch cost, untimed setup).
 //
-// The DAG is built once (epoch-switch cost, untimed setup) and then the two
-// hot-loop kernels are timed independently:
-//   * autolykos_v2_search  - blake2b prehash over the DAG into BHashes
+// The two hot-loop kernels are timed independently:
+//   * autolykos_v2_lm1     - blake2b prehash over the DAG into BHashes
 //   * autolykos_v2_verify  - final blake2b + boundary test
-// Defines, append order and launch geometry are byte-for-byte mirrors of
-// ResolverAmdAutolykosV2::buildKernelSearch / buildKernelVerify / fillDAG, so
-// the measured kernels are exactly what the miner runs. The displayed grid is
-// the logical nonce grid (AMD_BLOCK_DIM x AMD_NONCES_PER_ITER / AMD_BLOCK_DIM)
-// so the reported hashrate is nonces/s; the enqueue itself uses the production
-// strided launch (maxGroupSizeSearch / maxGroupSizeVerify work-items).
+// Defines, append order and launch geometry mirror ResolverAmdAutolykosV2, so the
+// measured kernels match what the miner runs. The displayed grid is the logical
+// nonce grid (AMD_BLOCK_DIM x AMD_NONCES_PER_ITER / AMD_BLOCK_DIM) so the reported
+// hashrate is nonces/s; the enqueue itself uses the production strided launch
+// (maxGroupSizeSearch / maxGroupSizeVerify work-items).
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -116,9 +115,7 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
         generator.setKernelName("autolykos_v2_build_dag");
 
         ///////////////////////////////////////////////////////////////////////
-        if (false == generator.appendFile("kernel/common/rotate_byte.cl")
-            || false == generator.appendFile("kernel/crypto/blake2b_compress.cl")
-            || false == generator.appendFile("kernel/autolykos/autolykos_v2_dag.cl"))
+        if (false == generator.appendFile("kernel/autolykos_v2/autolykos_v2_dag.cl"))
         {
             logErr() << "Fail to assemble Autolykos DAG kernel";
             return false;
@@ -149,18 +146,14 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
     common::KernelGeneratorOpenCL generatorSearch{};
     if (true == dagInitialized)
     {
-        generatorSearch.setKernelName("autolykos_v2_search");
+        generatorSearch.setKernelName("autolykos_v2_lm1");
         generatorSearch.addDefine("NONCES_PER_ITER", algo::autolykos_v2::AMD_NONCES_PER_ITER);
         generatorSearch.addDefine("THREADS_PER_ITER", algo::autolykos_v2::AMD_THREADS_PER_ITER);
         generatorSearch.addDefine("K_LEN", algo::autolykos_v2::K_LEN);
         generatorSearch.addDefine("NONCE_SIZE_32", algo::autolykos_v2::NONCE_SIZE_32);
         generatorSearch.addDefine("NUM_SIZE_32", algo::autolykos_v2::NUM_SIZE_32);
 
-        if (false == generatorSearch.appendFile("kernel/autolykos/autolykos_v2_result.cl")
-            || false == generatorSearch.appendFile("kernel/common/rotate_byte.cl")
-            || false == generatorSearch.appendFile("kernel/crypto/blake2b.cl")
-            || false == generatorSearch.appendFile("kernel/autolykos/autolykos_v2_var_global.cl")
-            || false == generatorSearch.appendFile("kernel/autolykos/autolykos_v2_search.cl")
+        if (false == generatorSearch.appendFile("kernel/autolykos_v2/autolykos_v2_lm1.cl")
             || false == generatorSearch.build(&propertiesAmd.clDevice, &propertiesAmd.clContext))
         {
             logErr() << "Fail to build Autolykos search kernel";
@@ -190,11 +183,7 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
         generatorVerify.addDefine("NUM_SIZE_32", algo::autolykos_v2::NUM_SIZE_32);
         generatorVerify.addDefine("NUM_SIZE_8", algo::autolykos_v2::NUM_SIZE_8);
 
-        if (false == generatorVerify.appendFile("kernel/autolykos/autolykos_v2_result.cl")
-            || false == generatorVerify.appendFile("kernel/common/rotate_byte.cl")
-            || false == generatorVerify.appendFile("kernel/crypto/blake2b.cl")
-            || false == generatorVerify.appendFile("kernel/autolykos/autolykos_v2_var_global.cl")
-            || false == generatorVerify.appendFile("kernel/autolykos/autolykos_v2_verify.cl")
+        if (false == generatorVerify.appendFile("kernel/autolykos_v2/autolykos_v2_verify.cl")
             || false == generatorVerify.build(&propertiesAmd.clDevice, &propertiesAmd.clContext))
         {
             logErr() << "Fail to build Autolykos verify kernel";
@@ -242,9 +231,9 @@ bool benchmark::BenchmarkWorkflow::runAmdAutolykos()
             return true;
         };
 
-        if (false == runStage("autolykos_v2_search", generatorSearch, globalSearch))
+        if (false == runStage("autolykos_v2_lm1", generatorSearch, globalSearch))
         {
-            logErr() << "autolykos_v2 autolykos_v2_search benchmark aborted (GPU error)";
+            logErr() << "autolykos_v2 autolykos_v2_lm1 benchmark aborted (GPU error)";
         }
         if (false == runStage("autolykos_v2_verify", generatorVerify, globalVerify))
         {

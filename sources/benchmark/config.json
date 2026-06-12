@@ -113,7 +113,7 @@
             "autolykos_v2": {
                 "enabled": false,
                 "loop": 10,
-                "kernels": ["autolykos_v2_search", "autolykos_v2_verify"]
+                "kernels": ["autolykos_v2_lm1", "autolykos_v2_verify"]
             }
         }
     }

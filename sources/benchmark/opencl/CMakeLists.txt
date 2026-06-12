@@ -22,6 +22,9 @@ set(BENCHMARK_OPENCL_FILES
     kheavyhash/kHeavyHash_lm3.cl
     kheavyhash/kHeavyHash_lm4.cl
     kheavyhash/kHeavyHash_lm5.cl
+    autolykos_v2/autolykos_v2_dag.cl
+    autolykos_v2/autolykos_v2_lm1.cl
+    autolykos_v2/autolykos_v2_verify.cl
 )
 
 foreach(FILE ${BENCHMARK_OPENCL_FILES})
@@ -54,4 +57,7 @@ add_custom_target(copy_benchmark_opencl ALL
     ${OUT_COMMON}/kheavyhash/kHeavyHash_lm3.cl
     ${OUT_COMMON}/kheavyhash/kHeavyHash_lm4.cl
     ${OUT_COMMON}/kheavyhash/kHeavyHash_lm5.cl
+    ${OUT_COMMON}/autolykos_v2/autolykos_v2_dag.cl
+    ${OUT_COMMON}/autolykos_v2/autolykos_v2_lm1.cl
+    ${OUT_COMMON}/autolykos_v2/autolykos_v2_verify.cl
 )

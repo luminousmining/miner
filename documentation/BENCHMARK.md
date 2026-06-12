@@ -412,12 +412,12 @@ analysis.
 
 10 iterations per kernel, steady-state median (first ramp iteration dropped),
 idle GPU. The ~4 GiB DAG (134,217,728 items × 32 B) is built once (untimed),
-then the two production kernels are timed back to back. The grid is expressed in
+then the two benchmark kernels are timed back to back. The grid is expressed in
 nonce terms so the report reads nonces/s.
 
 | Kernel                | Hashrate (steady) | Notes |
 |-----------------------|-------------------|-------|
-| `autolykos_v2_search` | **~1.05 GH** | blake2b prehash over the DAG → BHashes; tracks the GPU boost clock, so it varies run to run |
+| `autolykos_v2_lm1`    | **~1.05 GH** | blake2b prehash over the DAG → BHashes; tracks the GPU boost clock, so it varies run to run |
 | `autolykos_v2_verify` | ~69 MH | final blake2b + boundary test over the full grid |
 
 > These are raw per-kernel throughputs over the full nonce space, not the
