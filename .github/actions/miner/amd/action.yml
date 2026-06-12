@@ -1,0 +1,117 @@
+name: "Build Miner AMD"
+description: "Restore deps from cache and build the AMD (OpenCL) miner backend on Linux."
+
+runs:
+  using: "composite"
+  steps:
+    # ===============================
+    # Download CMake
+    # ===============================
+    - name: Download CMake
+      uses: actions/download-artifact@v4
+      with:
+        name: cmake-linux-3.26.4
+        path: deps/cmake
+
+    - name: Add CMake to PATH
+      shell: bash
+      run: |
+        chmod +x ${{ github.workspace }}/deps/cmake/bin/cmake
+        echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
+
+    # ===============================
+    # Restore and install Boost
+    # ===============================
+    - name: Restore Boost from cache
+      uses: actions/cache/restore@v4
+      with:
+        path: boost-install
+        key: boost-${{ runner.os }}-1.91.0
+
+    - name: Install Boost
+      shell: bash
+      run: |
+        sudo cp -r boost-install/include/* /usr/local/include/
+        sudo cp -r boost-install/lib/* /usr/local/lib/
+        sudo ldconfig
+
+    # ===============================
+    # Restore and install OpenSSL
+    # ===============================
+    - name: Restore OpenSSL from cache
+      uses: actions/cache/restore@v4
+      with:
+        path: openssl-install
+        key: openssl-${{ runner.os }}-1.1.1w
+
+    - name: Install OpenSSL
+      shell: bash
+      run: |
+        sudo cp -r openssl-install/include/* /usr/local/include/
+        sudo cp -r openssl-install/lib/* /usr/local/lib/
+        sudo ldconfig
+
+    # ===============================
+    # Restore and install OpenCL
+    # ===============================
+    - name: Restore OpenCL from cache
+      uses: actions/cache/restore@v4
+      with:
+        path: opencl-install
+        key: opencl-${{ runner.os }}-3.0.19
+
+    - name: Install OpenCL
+      shell: bash
+      run: |
+        sudo cp -r opencl-install/include/* /usr/local/include/
+        sudo cp -r opencl-install/lib/* /usr/local/lib/
+        sudo ldconfig
+
+    # ===============================
+    # Install system build tools
+    # ===============================
+    - name: Install build dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          libstdc++-12-dev \
+          clang-15 \
+          clang++-15 \
+          git \
+          libgnutls28-dev
+
+    # ===============================
+    # Configure and build (AMD)
+    # ===============================
+    - name: Configure CMake (AMD)
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=clang-15 \
+          -DCMAKE_CXX_COMPILER=clang++-15 \
+          -DBUILD_EXE_BENCHMARK=OFF \
+          -DBUILD_EXE_UNIT_TEST=OFF \
+          -DBUILD_EXE_MINER=ON \
+          -DBUILD_NVIDIA=OFF \
+          -DBUILD_AMD=ON \
+          -DBUILD_CPU=OFF \
+          -DENABLE_LTO=OFF \
+          -DENABLE_NATIVE=OFF
+
+    - name: Build Miner (AMD)
+      shell: bash
+      run: make -j$(nproc) -C build
+
+    # ===============================
+    # Upload artifact
+    # ===============================
+    - name: Upload AMD Miner artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: miner-amd-linux
+        path: build/miner
