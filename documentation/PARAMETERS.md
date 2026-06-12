@@ -20,7 +20,7 @@ N/A : No default value is set.
 | `--level_log` | ✅ | N/A | Set level of log. | `--level_log=<debug\|info\|error\|warning>` |
 | `--log_file` | ✅ | N/A | Set the log file path. | `--log_file=PATH` |
 | `--log_interval_hash` | ✅ | 10000 | Set the time interval (in milliseconds) between logs of information about the hashrate. | `--log_interval_hash=10000` |
-| `--log_new_job` | ✅ | true | Show log when receive new job |
+| `--log_new_job` | ✅ | true | Show log when receive new job | `--log_new_job=<true\|false>` |
 | `--password` | ✅ | N/A | Account password. | `--password="MyPassword"` |
 | `--ssl` | ✅ | false | Enable or not the SSL. | `--ssl=<true\|false>` |
 | `--stale` | ✅ | false | Enable stale share. | `--stale=<true\|false>` |
