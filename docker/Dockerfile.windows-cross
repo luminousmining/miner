@@ -152,7 +152,7 @@ RUN if [ "$GPU" != "nvidia" ]; then set -eux; \
         git clone --depth 1 -b "$OPENCL_REF" "https://github.com/KhronosGroup/$r" "/tmp/$r"; \
       done; \
       cmake -S /tmp/OpenCL-ICD-Loader -B /tmp/icd-build -G Ninja \
-        -DCMAKE_TOOLCHAIN_FILE=/src/cmake/toolchain-clang-cl-xwin.cmake \
+        -DCMAKE_TOOLCHAIN_FILE=/src/cmake/toolchain/clang-cl-xwin.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DOPENCL_ICD_LOADER_HEADERS_DIR=/tmp/OpenCL-Headers \
         -DOPENCL_ICD_LOADER_BUILD_TESTING=OFF; \
