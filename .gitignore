@@ -458,3 +458,8 @@ build_*/
 
 # Build artifacts exported by scripts/docker-build.ps1
 dist/
+
+# Composite-action source dirs whose names collide with the Visual Studio
+# build-output ignores above (x64/, arm64/). These are tracked source, not build
+# output, so re-include them.
+!.github/actions/**

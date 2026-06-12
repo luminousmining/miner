@@ -1,0 +1,22 @@
+name: "vcpkg linux/arm64 build"
+description: "Builds a linux-arm64 image to validate vcpkg build on CPU-only configuration"
+runs:
+  using: "composite"
+  steps:
+    - uses: docker/setup-buildx-action@v3
+
+    - name: Build linux-arm64 (CPU-only) runtime image
+      shell: bash
+      run: |
+        docker buildx build --platform linux/arm64 \
+          -f docker/Dockerfile.linux --build-arg GPU=cpu \
+          --target runtime -t lm:linux-arm64 --load .
+
+    - name: Smoke-run miner --help (native arm64)
+      shell: bash
+      run: |
+        # miner --help exits non-zero by convention; assert it runs (prints banner),
+        # not that it returns 0.
+        out="$(docker run --rm lm:linux-arm64 --help 2>&1 || true)"
+        echo "$out" | head -3
+        echo "$out" | grep -q "LuminousMiner"
