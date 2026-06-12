@@ -1,5 +1,8 @@
 #pragma once
 
+#if defined(CPU_ENABLE)
+
+
 #include <algo/blake3/result.hpp>
 #include <resolver/cpu/cpu.hpp>
 #include <resolver/cpu/thread_pool.hpp>
@@ -40,3 +43,5 @@ namespace resolver
         resolver::CpuThreadPool pool;
     };
 }
+
+#endif

@@ -32,9 +32,7 @@
 #include <device/device_manager.hpp>
 #include <device/mocker.hpp>
 #include <device/nvidia.hpp>
-#if defined(CPU_ENABLE)
 #include <device/cpu.hpp>
-#endif
 #include <stratum/stratums.hpp>
 
 
@@ -176,7 +174,6 @@ bool device::DeviceManager::initialize()
 #if defined(CPU_ENABLE)
                     case device::DEVICE_TYPE::CPU:
                     {
-                        // CPU mines the global --algo on the global pool (config.mining).
                         break;
                     }
 #endif
@@ -334,7 +331,7 @@ bool device::DeviceManager::initializeCpu()
 
     ///////////////////////////////////////////////////////////////////////////
     device->deviceType = device::DEVICE_TYPE::CPU;
-    device->memoryAvailable = 0ull; // Blake3 has no DAG: the resolver never reads this.
+    device->memoryAvailable = 0ull;
     device->id = castU32(devices.size());
 
     ///////////////////////////////////////////////////////////////////////////

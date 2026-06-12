@@ -27,9 +27,7 @@
 #include <resolver/nvidia/meowpow.hpp>
 #include <resolver/nvidia/progpow.hpp>
 #include <resolver/nvidia/progpow_quai.hpp>
-#if defined(CPU_ENABLE)
 #include <resolver/cpu/blake3.hpp>
-#endif
 
 
 void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
