@@ -40,7 +40,7 @@ sources/
     │   ├── ethash.cpp               # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
     │   ├── progpow.cpp              # 2 OpenCL kernel variants (barrier vs sub_group_barrier)
     │   ├── kheavyhash.cpp           # 6 OpenCL kernel variants (lm0–lm5)
-    │   └── autolykos_v2.cpp         # production search + verify kernels (throughput)
+    │   └── autolykos_v2.cpp         # self-contained search + verify kernels (throughput)
     └── cuda/
         ├── kernels.hpp              # Central CUDA kernel declarations
         ├── kawpow/                  # KAWPOW CUDA kernel sources
@@ -290,7 +290,7 @@ For each kawpow_lmN kernel:
 | Ethash | 2 (lm_0, lm_1) | barrier vs sub_group_barrier |
 | ProgPOW | 2 (lm_0, lm_1) | barrier vs sub_group_barrier |
 | kHeavyHash | 6 (lm0–lm5) | ALU-bound; `v_dot4` matmul + keccak midstate ([study](reasearch_and_development/kheavyhash/amd.md)) |
-| Autolykos V2 | 2 (search, verify) | production Ergo kernels — DAG-bound throughput coverage |
+| Autolykos V2 | 2 (search_lm0, verify_lm0) | self-contained Ergo kernels — DAG-bound throughput coverage |
 
 ---
 
@@ -417,8 +417,8 @@ nonce terms so the report reads nonces/s.
 
 | Kernel                | Hashrate (steady) | Notes |
 |-----------------------|-------------------|-------|
-| `autolykos_v2_lm1`    | **~1.05 GH** | blake2b prehash over the DAG → BHashes; tracks the GPU boost clock, so it varies run to run |
-| `autolykos_v2_verify` | ~69 MH | final blake2b + boundary test over the full grid |
+| `autolykos_v2_search_lm0` | **~1.05 GH** | blake2b prehash over the DAG → BHashes; tracks the GPU boost clock, so it varies run to run |
+| `autolykos_v2_verify_lm0` | ~69 MH | final blake2b + boundary test over the full grid |
 
 > These are raw per-kernel throughputs over the full nonce space, not the
 > end-to-end mining rate — in production `verify` only runs on the candidates

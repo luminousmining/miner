@@ -1,47 +1,11 @@
 // =============================================================================
 // Autolykos v2 - AMD DAG-fill kernel for the throughput benchmark (self-contained
-// snapshot of rotate_byte + blake2b_compress + autolykos_v2_dag). Untimed setup
-// that populates the ~4 GiB table the search kernel chases.
+// snapshot of blake2b_compress + autolykos_v2_dag). Untimed setup that populates
+// the ~4 GiB table the search kernel chases. The driver prepends the shared
+// common/rotate_byte.cl (rol/ror/bswap helpers) used by the blake2b mixing.
 // =============================================================================
 
 
-inline
-ulong rol_u64(
-    ulong const value,
-    uint const offset)
-{
-    return (value << offset) | (value >> (64 - offset));
-}
-
-
-inline
-ulong ror_u64(
-    ulong const value,
-    uint const offset)
-{
-    return ((value >> offset) ^ (value << (64 - offset)));
-}
-
-
-inline
-uint rol_u32(uint x, uint n)
-{
-    return rotate((x), (uint)(n));
-}
-
-
-inline
-uint ror_u32(uint x, uint n)
-{
-    return rotate((x), (uint)(32 - n));
-}
-
-
-inline
-uint bswap32(uint const x)
-{
-    return as_uint(as_uchar4(x).s3210);
-}
 __constant
 uint BLAKE_2B_SIGMA[12][16] =
 {
