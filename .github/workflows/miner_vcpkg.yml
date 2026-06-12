@@ -1,0 +1,36 @@
+name: Miner vcpkg
+
+# Build-only validation of the vcpkg toolchain across architectures (issue #169).
+# Each job runs on its own runner and delegates to a per-arch composite action
+# under .github/actions/toolchain/vcpkg/.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux-arm64:
+    # Native arm64 runner — builds the arm64 image without QEMU emulation.
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/toolchain/vcpkg/linux/arm64
+
+  build-linux-x64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/toolchain/vcpkg/linux/x64
+
+  build-macos:
+    runs-on: macos-14   # Apple Silicon (arm64)
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/toolchain/vcpkg/macos
+
+  build-windows-cross:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/toolchain/vcpkg/windows

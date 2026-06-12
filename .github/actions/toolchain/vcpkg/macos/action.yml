@@ -1,0 +1,43 @@
+name: "vcpkg macOS build"
+description: "Builds a macOS image to validate vcpkg build on Apple Silicon (arm64) CPU-only configuration"
+
+runs:
+  using: "composite"
+  steps:
+    # ===============================
+    # Install build tools
+    # ===============================
+    - name: Install build tools
+      shell: bash
+      # pkg-config is required by vcpkg's openssl (unix) port.
+      run: brew install cmake ninja pkg-config
+
+    # ===============================
+    # Bootstrap vcpkg (manifest mode; deps come from vcpkg.json)
+    # ===============================
+    - name: Bootstrap vcpkg
+      shell: bash
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}"
+        "${VCPKG_ROOT}/bootstrap-vcpkg.sh" -disableMetrics
+
+    # ===============================
+    # Cache vcpkg binary artifacts
+    # ===============================
+    - name: Cache vcpkg binaries
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/vcpkg/archives
+        key: vcpkg-macos-arm64-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-macos-arm64-
+
+    # ===============================
+    # Configure and build (CPU-only)
+    # ===============================
+    - name: Configure CMake (macos-cpu)
+      shell: bash
+      run: cmake --preset macos-cpu
+
+    - name: Build Miner (macos-cpu)
+      shell: bash
+      run: cmake --build --preset macos-cpu -j$(sysctl -n hw.ncpu)

@@ -1,0 +1,17 @@
+name: "vcpkg windows-cross build"
+description: "Builds a windows-cross image to validate vcpkg cross build on AMD GPU"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: docker/setup-buildx-action@v3
+
+    - name: Build windows-cross (AMD) image -- validate vcpkg cross build
+      shell: bash
+      run: |
+        # --target build stops at the compile stage: nothing is exported
+        # (no -o / --load), so the step asserts the cross build succeeds
+        # without producing or pushing an artifact.
+        docker buildx build --platform linux/amd64 \
+          -f docker/Dockerfile.windows-cross --build-arg GPU=amd \
+          --target build -t lm:windows-cross-amd .
