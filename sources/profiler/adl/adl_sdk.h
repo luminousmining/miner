@@ -28,7 +28,7 @@
 /// It also includes definitions of the respective structures and constants.\n
 /// <b> This is the only header file to be included in a C/C++ project using ADL </b>
 
-#ifndef ADL_SDK_H_
+#if !defined(ADL_SDK_H_)
 #define ADL_SDK_H_
 
 #include "adl_structures.h"

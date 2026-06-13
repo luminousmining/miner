@@ -1,4 +1,4 @@
-#ifndef BLAKE3_IMPL_H
+#if !defined(BLAKE3_IMPL_H)
 #define BLAKE3_IMPL_H
 
 #include <assert.h>
@@ -10,7 +10,8 @@
 #include "blake3.h"
 
 // internal flags
-enum blake3_flags {
+enum class Blake3Flags : uint8_t
+{
   CHUNK_START         = 1 << 0,
   CHUNK_END           = 1 << 1,
   PARENT              = 1 << 2,

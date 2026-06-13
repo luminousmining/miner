@@ -1,6 +1,6 @@
 {
     "nvidia": {
-        "enabled": true,
+        "enabled": f,
         "device_index": 0,
         "algorithms": {
             "argon2d": {
@@ -18,38 +18,38 @@
                 "kernels": ["lm1", "lm2", "lm3", "lm4", "lm5"]
             },
             "keccak": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "threads": 128,
                 "blocks": 1024,
                 "kernels": ["lm1", "lm2", "lm3", "lm4", "lm5", "lm6", "lm7", "lm8", "lm9"]
             },
             "fnv1": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "threads": 1024,
                 "blocks": 8192,
                 "kernels": ["lm1", "lm2"]
             },
             "ethash_light_cache": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 1,
                 "kernels": ["lm2", "lm3"]
             },
             "ethash": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "threads": 128,
                 "blocks": 8192,
                 "kernels": ["base", "ethminer", "lm1", "lm2", "lm3", "lm4", "lm5", "lm6"]
             },
             "autolykos_v2": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "kernels": ["mhssamadi", "lm1", "lm2"]
             },
             "kawpow": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "threads": 256,
                 "blocks": 1024,
@@ -82,12 +82,12 @@
         "device_index": 0,
         "algorithms": {
             "ethash_light_cache": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "kernels": ["ethash_light_cache_lm0"]
             },
             "kawpow": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 1,
                 "threads": 256,
                 "blocks": 1024,
@@ -101,21 +101,21 @@
                 "kernels": ["blake3"]
             },
             "ethash": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "threads": 256,
                 "blocks": 8192,
                 "kernels": ["ethash_lm_0", "ethash_lm_1"]
             },
             "progpow": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 10,
                 "threads": 256,
                 "blocks": 1024,
                 "kernels": ["progpow_lm_0", "progpow_lm_1"]
             },
             "kheavyhash": {
-                "enabled": false,
+                "enabled": true,
                 "loop": 200,
                 "threads": 256,
                 "blocks": 8192,

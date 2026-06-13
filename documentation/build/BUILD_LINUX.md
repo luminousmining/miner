@@ -3,10 +3,6 @@
 This guide builds the miner natively on Linux with the GPU SDKs and libraries
 installed manually on the host.
 
-> **Just want a binary?** See [Docker — Linux](BUILD_DOCKER_LINUX.md) instead — it
-> builds the miner in a container and needs none of the manually installed
-> libraries/compilers below.
-
 ## Libraries
 
 - cuda 13.1
@@ -14,7 +10,7 @@ installed manually on the host.
 - boost 1.91.0
 - OpenCL 3.0.19
 
-# Requirements
+## Requirements
 
 - clang++ == 11
 - CMake >= 3.22

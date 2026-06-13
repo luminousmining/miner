@@ -30,7 +30,7 @@
 /// \li Maximum limits
 ///
 
-#ifndef ADL_DEFINES_H_
+#if !defined(ADL_DEFINES_H_)
 #define ADL_DEFINES_H_
 
 /// \defgroup DEFINES Constants and Definitions
