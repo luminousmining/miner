@@ -78,15 +78,48 @@
         }
     },
     "amd": {
-        "enabled": false,
+        "enabled": true,
         "device_index": 0,
         "algorithms": {
+            "ethash_light_cache": {
+                "enabled": false,
+                "loop": 10,
+                "kernels": ["ethash_light_cache_lm0"]
+            },
             "kawpow": {
                 "enabled": false,
                 "loop": 1,
                 "threads": 256,
                 "blocks": 1024,
                 "kernels": ["lm1", "lm2", "lm3", "lm4"]
+            },
+            "blake3": {
+                "enabled": true,
+                "loop": 30,
+                "threads": 128,
+                "blocks": 8192,
+                "kernels": ["blake3"]
+            },
+            "ethash": {
+                "enabled": false,
+                "loop": 10,
+                "threads": 256,
+                "blocks": 8192,
+                "kernels": ["ethash_lm_0", "ethash_lm_1"]
+            },
+            "progpow": {
+                "enabled": false,
+                "loop": 10,
+                "threads": 256,
+                "blocks": 1024,
+                "kernels": ["progpow_lm_0", "progpow_lm_1"]
+            },
+            "kheavyhash": {
+                "enabled": false,
+                "loop": 200,
+                "threads": 256,
+                "blocks": 8192,
+                "kernels": ["kHeavyHash_lm0", "kHeavyHash_lm1", "kHeavyHash_lm2", "kHeavyHash_lm3", "kHeavyHash_lm4", "kHeavyHash_lm5"]
             }
         }
     }

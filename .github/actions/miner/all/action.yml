@@ -1,0 +1,63 @@
+name: "Build Miner (Nvidia / AMD / CPU) - Linux"
+description: "Restore all deps from cache and build the combined AMD + NVIDIA + CPU miner on Linux."
+
+inputs:
+  full_build:
+    description: "true = full multi-arch CUDA fat binary; false = single CUDA arch (fast CI validation)."
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: ./.github/actions/miner/setup-deps
+      with:
+        cuda: "true"
+
+    # ===============================
+    # Configure and build (ALL)
+    # ===============================
+    - name: Configure CMake (ALL)
+      shell: bash
+      env:
+        FULL_BUILD: ${{ inputs.full_build }}
+        CUDA_HOME: /usr/local/cuda-13.1
+        CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+        LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
+      run: |
+        # Runners have no GPU: a single CUDA arch is enough to validate that the
+        # code compiles. Release builds (full_build) omit this for the full fat binary.
+        ARCH_FLAG=""
+        if [ "$FULL_BUILD" != "true" ]; then ARCH_FLAG="-DNVCC_ARCH_COMPUTE=89"; fi
+        mkdir build
+        cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          $ARCH_FLAG \
+          -DCMAKE_C_COMPILER=clang-15 \
+          -DCMAKE_CXX_COMPILER=clang++-15 \
+          -DBUILD_EXE_BENCHMARK=OFF \
+          -DBUILD_EXE_UNIT_TEST=OFF \
+          -DBUILD_EXE_MINER=ON \
+          -DBUILD_NVIDIA=ON \
+          -DBUILD_AMD=ON \
+          -DBUILD_CPU=ON \
+          -DENABLE_LTO=OFF \
+          -DENABLE_NATIVE=OFF
+
+    - name: Build Miner (ALL)
+      shell: bash
+      env:
+        CUDA_HOME: /usr/local/cuda-13.1
+        CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+        LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
+      run: make -j$(nproc) -C build
+
+    # ===============================
+    # Upload artifact
+    # ===============================
+    - name: Upload ALL Miner artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: miner-all-linux
+        path: build/miner

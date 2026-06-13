@@ -1,0 +1,51 @@
+name: "Build Miner NVIDIA"
+description: "Restore deps (incl. CUDA) from cache and build the NVIDIA (CUDA) miner backend on Linux."
+
+runs:
+  using: "composite"
+  steps:
+    - uses: ./.github/actions/miner/setup-deps
+      with:
+        cuda: "true"
+
+    # ===============================
+    # Configure and build (NVIDIA)
+    # ===============================
+    - name: Configure CMake (NVIDIA)
+      shell: bash
+      env:
+        CUDA_HOME: /usr/local/cuda-13.1
+        CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+        LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
+      run: |
+        mkdir build
+        cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=clang-15 \
+          -DCMAKE_CXX_COMPILER=clang++-15 \
+          -DBUILD_EXE_BENCHMARK=OFF \
+          -DBUILD_EXE_UNIT_TEST=OFF \
+          -DBUILD_EXE_MINER=ON \
+          -DBUILD_NVIDIA=ON \
+          -DBUILD_AMD=OFF \
+          -DBUILD_CPU=OFF \
+          -DENABLE_LTO=OFF \
+          -DENABLE_NATIVE=OFF
+
+    - name: Build Miner (NVIDIA)
+      shell: bash
+      env:
+        CUDA_HOME: /usr/local/cuda-13.1
+        CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+        LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
+      run: make -j$(nproc) -C build
+
+    # ===============================
+    # Upload artifact
+    # ===============================
+    - name: Upload NVIDIA Miner artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: miner-nvidia-linux
+        path: build/miner

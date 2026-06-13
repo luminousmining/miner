@@ -1,5 +1,5 @@
 # LuminousMiner
-<img src="https://raw.githubusercontent.com/isocpp/logos/master/cpp_logo.png" width="40" height="40"> <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Windows_logo_-_2012.png" width="40" height="40"> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/200px-Tux.svg.png" width="40" height="40"> <img src="https://yt3.googleusercontent.com/plecdTXoOOv1_6XxAKdV1Pj3CITx2Be8IR3Npub5Y95e3rFkOWC8eT9l9AXHSVA9gN7QwroA=s900-c-k-c0x00ffffff-no-rj" width="40" height="40">
+<img src="https://raw.githubusercontent.com/isocpp/logos/master/cpp_logo.png" width="40" height="40"> <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Windows_logo_-_2012.png" width="40" height="40">
   
 [![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)  
 [![discord](https://img.shields.io/discord/1174669427032199188?logo=discord&logoColor=white&label=Chat&color=7289da)](https://discord.gg/F9y3rxBtGP)  
@@ -10,8 +10,8 @@ Free GPU mining with 0% fees! Enjoy your mining time.
 Project aims for learning and sharing about mining software.  
   
 See the [roadmap](https://github.com/luminousmining/miner/tree/main/ROADMAP.md) of luminousminer.  
-See the [pools](https://github.com/luminousmining/miner/tree/main/POOLS.md) tested!  
-See the [hiveos](https://github.com/luminousmining/miner/tree/main/HIVEOS.md) to install on HiveOS!  
+See the [pools](https://github.com/luminousmining/miner/tree/main/documentation/POOLS.md) tested!  
+See the [hiveos](https://github.com/luminousmining/miner/tree/main/documentation/HIVEOS.md) to install on HiveOS!  
   
 Different profiles are available:
 * STANDAR
@@ -31,9 +31,24 @@ Different profiles are available:
 - progpow_quai
 
 ## Internal Documentation
-[Build](https://github.com/luminousmining/miner/tree/main/BUILD.md)  
-[Parameteres](https://github.com/luminousmining/miner/tree/main/PARAMETERS.md)  
-[Examples](https://github.com/luminousmining/miner/tree/main/EXAMPLES.md)  
+## Build
+From scratch (native toolchain):  
+[Linux](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_LINUX.md)  
+[Windows](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_WINDOWS.md)  
+
+Docker toolchain (no local toolchain):  
+[Docker Linux](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_LINUX.md)  
+[Docker Windows](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_WINDOWS.md)  
+[Docker macOS](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_MACOS.md)  
+[Docker Linux ARM64](https://github.com/luminousmining/miner/tree/main/documentation/build/BUILD_DOCKER_LINUX_ARM64.md)  
+
+[Parameters](https://github.com/luminousmining/miner/tree/main/documentation/PARAMETERS.md)  
+[Examples](https://github.com/luminousmining/miner/tree/main/documentation/EXAMPLES.md)  
+[Benchmark](https://github.com/luminousmining/miner/tree/main/documentation/BENCHMARK.md)  
+[Architecture](https://github.com/luminousmining/miner/tree/main/documentation/ARCHITECTURE.md)  
+[Add Algorithm](https://github.com/luminousmining/miner/tree/main/documentation/ADD_ALGORITHM.md)  
+[Smart Mining](https://github.com/luminousmining/miner/tree/main/documentation/SMART_MINING.md)  
+[Coding Style](https://github.com/luminousmining/miner/tree/main/documentation/CODING_STYLE.md)  
 
 ## References - Miners
 [ethminer](https://github.com/ethereum-mining/ethminer)  
@@ -62,8 +77,9 @@ https://www.mdpi.com/2410-387X/7/4/60
 https://www.researchgate.net/publication/255971534_Parallel_Cloud_Computing_Exploiting_Parallelism_on_Keccak_FPGA_and_GPU_Comparison  
 https://ieeexplore.ieee.org/document/8391706  
 
-## References - Librairies
+## References - Libraries
 [asio-socks45-client](https://github.com/sehe/asio-socks45-client) - We recognize [Seth Heeren](https://github.com/sehe) for providing the SOCKS5 client implementation.
+[BLAKE3](https://github.com/BLAKE3-team/BLAKE3) - We recognize the [BLAKE3 team](https://github.com/BLAKE3-team) (Jack O'Connor, Jean-Philippe Aumasson, Samuel Neves, Zooko Wilcox-O'Hearn) for the official C reference implementation, vendored as the host oracle for the BLAKE3 kernel tests.
 
 ## SAST Tools
 [PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.

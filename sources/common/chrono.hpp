@@ -2,6 +2,8 @@
 
 
 #include <chrono>
+#include <cstdint>
+#include <string>
 
 
 namespace common

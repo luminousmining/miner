@@ -1,0 +1,144 @@
+name: Linux Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    # Docs-only changes can't break the tests: skip the build+test run.
+    paths-ignore:
+      - '**.md'
+      - 'documentation/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+  workflow_dispatch:
+
+# Supersede stale in-progress runs for the same PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-cmake:
+    uses: ./.github/workflows/cmake_linux.yml
+
+  build-boost:
+    uses: ./.github/workflows/boost_linux.yml
+    with:
+      boost_version: "1.91.0"
+
+  build-openssl:
+    uses: ./.github/workflows/openssl_linux.yml
+
+  unit-test:
+    needs: [build-cmake, build-boost, build-openssl]
+    runs-on: ubuntu-22.04
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      TEST_FILTER: >-
+        AlgoTypeTest.*:
+        EthashTest.*:
+        FastModTest.*:
+        Fnv.*:
+        HashTest.*:
+        Kiss.*:
+        MathTest.*:
+        RotateByteTest.*:
+        StratumEthashSubmitNonce.*:
+        StratumProgpowSeed.*
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ===============================
+      # Download CMake
+      # ===============================
+      - name: Download CMake
+        uses: actions/download-artifact@v4
+        with:
+          name: cmake-linux-3.26.4
+          path: deps/cmake
+
+      - name: Add CMake to PATH
+        run: |
+          chmod +x ${{ github.workspace }}/deps/cmake/bin/cmake
+          echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
+
+      # ===============================
+      # Restore and install Boost
+      # ===============================
+      - name: Restore Boost from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: boost-install
+          key: boost-${{ runner.os }}-1.91.0
+
+      - name: Install Boost
+        run: |
+          sudo cp -r boost-install/include/* /usr/local/include/
+          sudo cp -r boost-install/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Restore and install OpenSSL
+      # ===============================
+      - name: Restore OpenSSL from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: openssl-install
+          key: openssl-${{ runner.os }}-1.1.1w
+
+      - name: Install OpenSSL
+        run: |
+          sudo cp -r openssl-install/include/* /usr/local/include/
+          sudo cp -r openssl-install/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Install system build tools
+      # ===============================
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libstdc++-12-dev \
+            clang-15 \
+            clang++-15 \
+            git \
+            libgnutls28-dev
+
+      # ===============================
+      # Configure and build unit_test
+      # ===============================
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
+            -DBUILD_EXE_MINER=OFF \
+            -DBUILD_EXE_BENCHMARK=OFF \
+            -DBUILD_EXE_UNIT_TEST=ON \
+            -DBUILD_NVIDIA=OFF \
+            -DBUILD_AMD=OFF \
+            -DBUILD_CPU=OFF \
+            -DTOOL_MOCKER=OFF \
+            -DENABLE_LTO=OFF \
+            -DENABLE_NATIVE=OFF
+
+      - name: Build unit_test
+        run: make -j$(nproc) -C build unit_test
+
+      # ===============================
+      # Run tests
+      # ===============================
+      - name: Run unit tests
+        run: |
+          FILTER=$(echo "${{ env.TEST_FILTER }}" | tr -d '\n' | tr -s ' ' | sed 's/ //g')
+          echo "Running: bin/unit_test --gtest_filter=${FILTER}"
+          bin/unit_test \
+            --gtest_filter="${FILTER}"

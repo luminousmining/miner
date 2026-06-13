@@ -46,6 +46,9 @@ namespace stratum
         uint32_t       fromGroup{ 0u };
         uint32_t       toGroup{ 0u };
 
+        // KHEAVYHASH (Kaspa) — header reuses headerHash, target reuses boundary.
+        uint64_t timestamp{ 0ull };
+
         StratumJobInfo(StratumJobInfo&& obj) = delete;
         StratumJobInfo(StratumJobInfo const& obj) = delete;
         StratumJobInfo& operator=(StratumJobInfo&& obj) = delete;

@@ -6,6 +6,7 @@ set(COMMON_FILES
   cross_lane.cl
   debug.cl
   grid.cl
+  load_store_le.cl
   rotate_byte.cl
   to_u4.cl
   xor.cl
@@ -25,6 +26,7 @@ add_custom_target(copy_common_opencl_files ALL
     ${OUT_COMMON}/cross_lane.cl
     ${OUT_COMMON}/debug.cl
     ${OUT_COMMON}/grid.cl
+    ${OUT_COMMON}/load_store_le.cl
     ${OUT_COMMON}/rotate_byte.cl
     ${OUT_COMMON}/to_u4.cl
     ${OUT_COMMON}/xor.cl

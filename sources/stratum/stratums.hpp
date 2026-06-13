@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <algo/algo_type.hpp>
 #include <stratum/autolykos_v2.hpp>
 #include <stratum/blake3.hpp>
@@ -8,6 +10,7 @@
 #include <stratum/evrprogpow.hpp>
 #include <stratum/firopow.hpp>
 #include <stratum/kawpow.hpp>
+#include <stratum/kheavyhash.hpp>
 #include <stratum/meowpow.hpp>
 #include <stratum/progpow.hpp>
 #include <stratum/progpow_quai.hpp>
@@ -18,5 +21,5 @@
 
 namespace stratum
 {
-    stratum::Stratum* NewStratum(algo::ALGORITHM const algorithm);
+    std::shared_ptr<stratum::Stratum> NewStratum(algo::ALGORITHM const algorithm);
 }

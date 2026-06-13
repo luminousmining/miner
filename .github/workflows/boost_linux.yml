@@ -6,14 +6,14 @@ on:
       boost_version:
         description: "Boost version"
         required: true
-        default: "1.90.0"
+        default: "1.91.0"
   workflow_call:
     inputs:
       boost_version:
         description: "Boost version"
         required: false
         type: string
-        default: "1.90.0"
+        default: "1.91.0"
 
 jobs:
   build-linux:
@@ -40,7 +40,7 @@ jobs:
       # ===============================
       - name: Restore Boost cache
         id: boost-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: boost-install
           key: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
@@ -85,10 +85,12 @@ jobs:
           ls -la boost-install/lib
 
       # ===============================
-      # Upload artifact
+      # Save Boost cache (main branch and workflow_dispatch only)
       # ===============================
-      - name: Upload Boost artifact
-        uses: actions/upload-artifact@v4
+      - name: Save Boost cache
+        if: steps.boost-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
         with:
-          name: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
           path: boost-install
+          key: boost-${{ runner.os }}-${{ env.BOOST_VERSION }}
+

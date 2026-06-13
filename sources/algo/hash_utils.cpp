@@ -32,33 +32,31 @@ algo::hash256 algo::toHash256(std::string const& str)
 {
     algo::hash256 hash{};
     std::string   hex{ str };
-    size_t        index{ hex.length() };
-    uint64_t      pos{ algo::LEN_HASH_256 - 1 };
+
+    // Strip an optional 0x / 0X prefix (replaces the fragile per-chunk "0x" test).
+    if (hex.size() >= 2u && hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X'))
+    {
+        hex.erase(0u, 2u);
+    }
 
     if ((hex.length() % 2) != 0)
     {
-        ++index;
         hex.push_back('0');
     }
 
-    while (index > 0u)
+    // hash256 holds LEN_HASH_256 bytes; `pos` walks down from the most-significant
+    // byte. The pool controls `str` (header/seed/boundary come straight off the
+    // wire), so bound `pos` to the buffer: any excess high bytes are ignored
+    // instead of underflowing `pos` and writing out of bounds.
+    size_t  index{ hex.length() };
+    int64_t pos{ static_cast<int64_t>(algo::LEN_HASH_256) - 1 };
+
+    while (index >= 2u && pos >= 0)
     {
-        std::string strHex;
-        strHex += hex.at(index - 2);
-        strHex += hex.at(index - 1);
+        uint8_t const bits{ castU8(std::stoul(hex.substr(index - 2u, 2u), nullptr, 16)) };
+        hash.ubytes[pos] = bits;
 
-        if (strHex != "0x")
-        {
-            unsigned long const valHex{ std::stoul(strHex, nullptr, 16) };
-            uint8_t const       bits{ castU8(valHex) };
-            hash.ubytes[pos] = bits;
-        }
-        else
-        {
-            hash.ubytes[pos] = 0;
-        }
-
-        index -= 2;
+        index -= 2u;
         --pos;
     }
 

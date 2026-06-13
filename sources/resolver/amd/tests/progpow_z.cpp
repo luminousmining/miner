@@ -4,6 +4,7 @@
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/progpow/progpow.hpp>
+#include <common/config.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
 #include <resolver/amd/progpow.hpp>
@@ -19,6 +20,11 @@ struct ResolverProgpowZAmdTest : public testing::Test
 
     ResolverProgpowZAmdTest()
     {
+        ////////////////////////////////////////////////////////////////////////////
+        common::Config& config{ common::Config::instance() };
+        config.deviceAlgorithm.ethashBuildLightCacheCPU = true;
+
+        ////////////////////////////////////////////////////////////////////////////
         common::setLogLevel(common::TYPELOG::__DEBUG);
     }
 
@@ -59,7 +65,7 @@ struct ResolverProgpowZAmdTest : public testing::Test
 TEST_F(ResolverProgpowZAmdTest, findNonce)
 {
     initializeDevice(0u);
-    initializeJob(0x9f990000004cb6fa);
+    initializeJob(0x62114e8a70455eef);
 
     ASSERT_TRUE(resolver.updateMemory(jobInfo));
     ASSERT_TRUE(resolver.updateConstants(jobInfo));
@@ -71,7 +77,7 @@ TEST_F(ResolverProgpowZAmdTest, findNonce)
     std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
 
     using namespace std::string_literals;
-    EXPECT_EQ("0x9f990000004cb6fa"s, nonceStr);
+    EXPECT_EQ("0x62114e8a70455eef"s, nonceStr);
 }
 
 

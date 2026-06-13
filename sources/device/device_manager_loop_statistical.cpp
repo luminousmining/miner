@@ -76,11 +76,11 @@ void device::DeviceManager::loopStatistical()
                 auto const& itStratum{ stratums.find(device->id) };
                 if (itStratum != stratums.end())
                 {
-                    stratum = itStratum->second;
+                    stratum = itStratum->second.get();
                 }
                 else
                 {
-                    stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID);
+                    stratum = stratums.at(device::DeviceManager::DEVICE_MAX_ID).get();
                 }
 
                 if (nullptr == stratum)
@@ -239,10 +239,11 @@ void device::DeviceManager::showDeviceStats(
         {
             if (true == profilerAmd.valid)
             {
-                auto const activity{ profilerAmd.getCurrentActivity(device->id) };
-                coreClock = activity.iEngineClock;
-                memoryClock = activity.iMemoryClock;
-                utilizationPercent = activity.iActivityPercent;
+                auto const telemetry{ profilerAmd.getTelemetry(device->pciBus) };
+                coreClock = telemetry.coreClock;
+                memoryClock = telemetry.memoryClock;
+                utilizationPercent = telemetry.utilization;
+                power = telemetry.power;
             }
             break;
         }

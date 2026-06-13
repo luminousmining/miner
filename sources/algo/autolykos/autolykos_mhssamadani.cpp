@@ -435,14 +435,17 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     uint8_t nonce[algo::autolykos_v2::NONCE_SIZE_8]{
         0,
     };
-    char n_str[algo::autolykos_v2::NONCE_SIZE_8]{
+    // Holds the hex string of `nonce` (2 chars/byte) plus a NUL terminator; the
+    // hex helpers write inlen*2 chars + '\0'. Sizing this NONCE_SIZE_8 overflowed
+    // the stack (smashing the canary -> abort) once a candidate was verified.
+    char n_str[algo::autolykos_v2::NONCE_SIZE_8 * 2u + 1u]{
         0,
     };
 
     uint8_t height[HEIGHT_SIZE]{
         0,
     };
-    char h_str[HEIGHT_SIZE]{
+    char h_str[HEIGHT_SIZE * 2u + 1u]{
         0,
     };
 
@@ -457,6 +460,9 @@ bool algo::autolykos_v2::mhssamadani::isValidShare(
     HexStrToBigEndian(n_str, algo::autolykos_v2::NONCE_SIZE_8 * 2u, beN, algo::autolykos_v2::NONCE_SIZE_8);
 
     ///////////////////////////////////////////////////////////////////////////
+    // `height` arrives already byte-swapped to big-endian (callers pass
+    // algo::be::uint32(blockNumber)), so BigEndianToHexStr -> HexStrToBigEndian
+    // round-trips it to the canonical big-endian Ints.toByteArray(height) in beH.
     BigEndianToHexStr(height, HEIGHT_SIZE, h_str);
 
     ///////////////////////////////////////////////////////////////////////////

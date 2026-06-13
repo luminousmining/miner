@@ -14,7 +14,8 @@ void reduce_hash(
         value = fnv1a_u32(value, hash[i]);
     }
     share_fnv1a[get_global_id(0)] = value;
-    barrier(CLK_LOCAL_MEM_FENCE);
+    // is_same_lane reads only its own worker_group's LANES slots -> intra-wavefront.
+    sub_group_barrier(CLK_LOCAL_MEM_FENCE);
 
     if (true == is_same_lane)
     {
@@ -45,7 +46,10 @@ uint const l_id)
         {
             share_hash0[worker_group] = hash[0];
         }
-        barrier(CLK_LOCAL_MEM_FENCE);
+        // worker_group spans LANES (<= wavefront) consecutive lanes, so the
+        // exchange is intra-wavefront: a sub-group barrier is sufficient and
+        // avoids stalling the other wavefronts of the work-group every DAG read.
+        sub_group_barrier(CLK_LOCAL_MEM_FENCE);
 
         uint dag_index = share_hash0[worker_group];
         dag_index %= DAG_SIZE;
@@ -84,20 +88,20 @@ void initialize_header(
     __local uint * restrict const header_dag,
     uint const thread_id)
 {
+    // Fill the LDS cache word-by-word with consecutive lanes writing consecutive
+    // words. header_dag[w] must equal the w-th DAG word (the dynamic sequence reads
+    // header_dag[hash & (MODULE_CACHE-1)] at random offsets, so the flat layout is
+    // fixed). Writing one uint per lane in lane order makes the LDS store
+    // bank-conflict-free (lane w -> bank w%32) and the global read coalesced; the
+    // first 16 KB of the DAG is L2-resident across launches so the 4-byte read
+    // granularity costs nothing. The previous AoS store (4 strided words/lane)
+    // hit a 4-/8-way bank conflict on every component.
+    __global uint const* restrict const dag_words = (__global uint const* restrict const)dag;
+
     __attribute__((opencl_unroll_hint))
-    for (uint i = 0u; i < MODULE_LOOP; ++i)
+    for (uint w = thread_id; w < MODULE_CACHE; w += GROUP_SIZE)
     {
-        uint const dag_index = (GROUP_SIZE * i) + thread_id;
-        uint const header_index = dag_index * 4u;
-
-        uint4 const item = dag[dag_index];
-
-        // TODO : Bank conflits
-        // TODO : Uncoalesced
-        header_dag[header_index]      = item.x;
-        header_dag[header_index + 1u] = item.y;
-        header_dag[header_index + 2u] = item.z;
-        header_dag[header_index + 3u] = item.w;
+        header_dag[w] = dag_words[w];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 }
@@ -144,7 +148,8 @@ void progpow_search(
             {
                 share_msb_lsb[index_share_seed] = seed;
             }
-            barrier(CLK_LOCAL_MEM_FENCE);
+            // index_share_seed groups BATCH_GROUP_LANE (== LANES) lanes -> intra-wavefront.
+            sub_group_barrier(CLK_LOCAL_MEM_FENCE);
 
             ////////////////////////////////////////////////////////////////////////
             ulong const seedShare = share_msb_lsb[index_share_seed];

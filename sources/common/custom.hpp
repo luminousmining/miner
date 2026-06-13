@@ -1,6 +1,7 @@
 #pragma once
 
-#ifndef __LIB_CUDA
+#if !defined(__LIB_CUDA)
+#include <memory>
 #include <boost/thread.hpp>
 #endif
 
@@ -83,6 +84,11 @@
 #define NEW(type) new (std::nothrow) type
 
 #define NEW_ARRAY(type, size) new (std::nothrow) type[size]
+
+// Shared-ownership allocation routed through a single macro so the memory-tracing
+// tooling has one place to hook (mirrors NEW/NEW_ARRAY). Variadic so constructor
+// arguments forward through: NEW_SHARED(Type) or NEW_SHARED(Type, arg0, arg1).
+#define NEW_SHARED(type, ...) std::make_shared<type>(__VA_ARGS__)
 
 
 namespace common

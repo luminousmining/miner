@@ -20,7 +20,7 @@ jobs:
       # ===============================
       - name: Restore CUDA cache
         id: cuda-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: cuda-install
           key: cuda-${{ runner.os }}-13.1.0
@@ -58,10 +58,12 @@ jobs:
           echo "✅ CUDA 13.1 installed successfully"
 
       # ===============================
-      # Upload artifact
+      # Save CUDA cache (main branch and workflow_dispatch only)
       # ===============================
-      - name: Upload CUDA artifact
-        uses: actions/upload-artifact@v4
+      - name: Save CUDA cache
+        if: steps.cuda-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
         with:
-          name: cuda-${{ runner.os }}-13.1.0
           path: cuda-install
+          key: cuda-${{ runner.os }}-13.1.0
+

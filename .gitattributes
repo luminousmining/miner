@@ -1,0 +1,38 @@
+# Normalize all text files to LF in the repository and on checkout.
+# This keeps Dockerfiles and shell scripts working in Linux containers
+# regardless of the contributor's platform or core.autocrlf setting.
+* text=auto eol=lf
+
+# Windows-native scripts / project files keep CRLF.
+*.ps1            text eol=crlf
+*.psm1           text eol=crlf
+*.psd1           text eol=crlf
+*.bat            text eol=crlf
+*.cmd            text eol=crlf
+*.sln            text eol=crlf
+*.vcxproj        text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.props          text eol=crlf
+*.targets        text eol=crlf
+
+# Binary files: never modify.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.exe  binary
+*.dll  binary
+*.so   binary
+*.dylib binary
+*.a    binary
+*.lib  binary
+*.obj  binary
+*.o    binary
+*.bin  binary
+*.zip  binary
+*.gz   binary
+*.tar  binary
+*.rar  binary
+*.7z   binary

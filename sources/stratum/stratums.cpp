@@ -4,71 +4,76 @@
 #include <stratum/stratums.hpp>
 
 
-stratum::Stratum* stratum::NewStratum(algo::ALGORITHM const algorithm)
+std::shared_ptr<stratum::Stratum> stratum::NewStratum(algo::ALGORITHM const algorithm)
 {
-    stratum::Stratum* stratum{ nullptr };
-    auto const&       config{ common::Config::instance() };
+    std::shared_ptr<stratum::Stratum> stratum{ nullptr };
+    auto const&                       config{ common::Config::instance() };
 
     switch (algorithm)
     {
         case algo::ALGORITHM::SHA256:
         {
-            stratum = NEW(stratum::StratumSha256);
+            stratum = NEW_SHARED(stratum::StratumSha256);
             break;
         }
         case algo::ALGORITHM::ETHASH:
         {
-            stratum = NEW(stratum::StratumEthash);
+            stratum = NEW_SHARED(stratum::StratumEthash);
             break;
         }
         case algo::ALGORITHM::ETCHASH:
         {
-            stratum = NEW(stratum::StratumEtchash);
+            stratum = NEW_SHARED(stratum::StratumEtchash);
             break;
         }
         case algo::ALGORITHM::PROGPOW:
         {
-            stratum = NEW(stratum::StratumProgPOW);
+            stratum = NEW_SHARED(stratum::StratumProgPOW);
             break;
         }
         case algo::ALGORITHM::PROGPOWQUAI:
         {
-            stratum = NEW(stratum::StratumProgpowQuai);
+            stratum = NEW_SHARED(stratum::StratumProgpowQuai);
             break;
         }
         case algo::ALGORITHM::PROGPOWZ:
         {
-            stratum = NEW(stratum::StratumProgpowZ);
+            stratum = NEW_SHARED(stratum::StratumProgpowZ);
             break;
         }
         case algo::ALGORITHM::KAWPOW:
         {
-            stratum = NEW(stratum::StratumKawPOW);
+            stratum = NEW_SHARED(stratum::StratumKawPOW);
             break;
         }
         case algo::ALGORITHM::MEOWPOW:
         {
-            stratum = NEW(stratum::StratumMeowPOW);
+            stratum = NEW_SHARED(stratum::StratumMeowPOW);
             break;
         }
         case algo::ALGORITHM::FIROPOW:
         {
-            stratum = NEW(stratum::StratumFiroPOW);
+            stratum = NEW_SHARED(stratum::StratumFiroPOW);
             break;
         }
         case algo::ALGORITHM::EVRPROGPOW:
         {
-            stratum = NEW(stratum::StratumEvrprogPOW);
+            stratum = NEW_SHARED(stratum::StratumEvrprogPOW);
             break;
         }
         case algo::ALGORITHM::AUTOLYKOS_V2:
         {
-            stratum = NEW(stratum::StratumAutolykosV2);
+            stratum = NEW_SHARED(stratum::StratumAutolykosV2);
             break;
         }
         case algo::ALGORITHM::BLAKE3:
         {
-            stratum = NEW(stratum::StratumBlake3);
+            stratum = NEW_SHARED(stratum::StratumBlake3);
+            break;
+        }
+        case algo::ALGORITHM::KHEAVYHASH:
+        {
+            stratum = NEW_SHARED(stratum::StratumKHeavyHash);
             break;
         }
         case algo::ALGORITHM::UNKNOWN:

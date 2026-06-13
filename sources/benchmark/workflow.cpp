@@ -356,9 +356,35 @@ void benchmark::BenchmarkWorkflow::runAmd()
     currentdeviceType = device::DEVICE_TYPE::AMD;
 
     ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdEthashLightCache())
+    {
+        logErr() << "AMD ethash light cache failed";
+    }
     if (false == runAmdKawpow())
     {
         logErr() << "AMD kawpow failed";
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdBlake3())
+    {
+        logErr() << "AMD blake3 failed";
+    }
+    if (false == runAmdEthash())
+    {
+        logErr() << "AMD ethash failed";
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdProgpow())
+    {
+        logErr() << "AMD progpow failed";
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    if (false == runAmdKHeavyHash())
+    {
+        logErr() << "AMD kheavyhash failed";
     }
 }
 #endif

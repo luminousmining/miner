@@ -84,7 +84,9 @@ void kernel_autolykos_v2_prehash_lm1(
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ((uint8_t*)hashes)[tid * 32 + 31] = 0;
+    // (uint64_t) cast: tid*32 overflows 32-bit for tid >= 2^27 (4 GiB). Same bug as
+    // cuda/dag.cuh -- luminousmining/miner#159. Untested on NVIDIA hardware.
+    ((uint8_t*)hashes)[(uint64_t)tid * 32 + 31] = 0;
 }
 
 

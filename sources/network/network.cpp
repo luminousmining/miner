@@ -1,8 +1,3 @@
-#if defined(_WIN32)
-#pragma comment(lib, "crypt32.lib")
-#endif
-
-
 #include <boost/asio/buffer.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/chrono.hpp>
@@ -14,10 +9,6 @@
 #include <network/network.hpp>
 #include <network/socks5.hpp>
 #include <stratum/stratum_type.hpp>
-
-#if defined(_WIN32)
-#include <wincrypt.h>
-#endif
 
 
 network::NetworkTCPClient::~NetworkTCPClient()
@@ -84,7 +75,6 @@ bool network::NetworkTCPClient::connect()
         }
         else
         {
-            // from_string is no longer a memeber of boost::asio::ip::address in 1.90.
             auto const address{ boost::asio::ip::make_address(host, ec) };
             if (boost_error::success != ec)
             {
@@ -126,6 +116,19 @@ bool network::NetworkTCPClient::connect()
             {
                 return false;
             }
+        }
+
+        // Create the write pump once and reuse it across reconnects so a child
+        // (SmartMining) that aliased it stays valid. transmit() reads the live
+        // socketTCP, so a rebuilt socket is picked up automatically.
+        if (nullptr == pump)
+        {
+            pump = NEW_SHARED(
+                network::WritePump,
+                [this](std::shared_ptr<std::string const> const& payload)
+                {
+                    transmit(payload);
+                });
         }
 
         countRetryConnect = 0;
@@ -230,32 +233,17 @@ bool network::NetworkTCPClient::doSecureConnection()
             boost::bind(&NetworkTCPClient::onVerifySSL, this, std::placeholders::_1, std::placeholders::_2));
 
 #if defined(_WIN32)
-        auto certStore{ CertOpenSystemStore(0, "ROOT") };
-        if (certStore == nullptr)
-        {
-            logErr() << "Certifcat Store \"ROOT\" was not found !";
-            return false;
-        }
-
-        auto*          store{ X509_STORE_new() };
-        PCCERT_CONTEXT certContext{ nullptr };
-        while (nullptr != (certContext = CertEnumCertificatesInStore(certStore, certContext)))
-        {
-            auto* x509{ d2i_X509(
-                nullptr,
-                const_cast<unsigned char const**>(&(certContext->pbCertEncoded)),
-                certContext->cbCertEncoded) };
-            if (nullptr != x509)
-            {
-                X509_STORE_add_cert(store, x509);
-                X509_free(x509);
-            }
-        }
-
-        CertFreeCertificateContext(certContext);
-        CertCloseStore(certStore, 0);
-        SSL_CTX_set_cert_store(context.native_handle(), store);
+        // No static trust store is seeded on Windows. OpenSSL cannot complete a chain whose
+        // intermediate the server omits (it has no AIA fetching), a very common pool
+        // misconfiguration. Instead onVerifySSL() hands the peer chain to the Windows chain
+        // engine (CertGetCertificateChain), which supplies the system roots, AIA-fetches any
+        // missing intermediate, and validates the hostname. verify_peer (set above) is still
+        // required so the callback runs; the empty OpenSSL store just makes `preverified`
+        // always false, which onVerifySSL expects on Windows.
 #elif defined(__linux__)
+        // Fall back to OpenSSL's built-in default trust paths if the explicit
+        // bundle below is absent, so verification still succeeds (fail-closed).
+        context.set_default_verify_paths();
         auto certPath{ common::getEnv("SSL_CERT_FILE") };
         try
         {
@@ -270,6 +258,24 @@ bool network::NetworkTCPClient::doSecureConnection()
                      << " inaccessible file."
                      << "\n"
                      << "It is possible that certificate verification can fail.";
+        }
+#elif defined(__APPLE__)
+        // macOS: OpenSSL (vcpkg/Homebrew) is not wired into the system Keychain,
+        // but ships its own CA bundle and honours SSL_CERT_FILE/SSL_CERT_DIR. Use
+        // its default trust paths, and load an explicit bundle only when the user
+        // points SSL_CERT_FILE at one.
+        context.set_default_verify_paths();
+        if (char const* const certPath{ common::getEnv("SSL_CERT_FILE") }; nullptr != certPath)
+        {
+            try
+            {
+                context.load_verify_file(certPath);
+            }
+            catch (...)
+            {
+                logErr() << "SSL_CERT_FILE is set but the file could not be loaded;"
+                         << " certificate verification may fail.";
+            }
         }
 #endif
     }
@@ -339,36 +345,59 @@ bool network::NetworkTCPClient::handshake()
 
 void network::NetworkTCPClient::send(char const* data, size_t size)
 {
-    UNIQUE_LOCK(txMutex);
-
-    if (nullptr == socketTCP) [[unlikely]]
+    if (nullptr == pump) [[unlikely]]
     {
-        logErr() << "Cannot send packet, socketTCP is nullptr!";
+        logErr() << "Cannot send packet, pump is not initialized!";
         return;
     }
 
-    if (true == secureConnection)
-    {
-        boost::asio::async_write(
-            *socketTCP,
-            boost::asio::buffer(data, size),
-            boost::bind(
-                &NetworkTCPClient::onSend,
-                this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
-    }
-    else
-    {
-        boost::asio::async_write(
-            socketTCP->next_layer(),
-            boost::asio::buffer(data, size),
-            boost::bind(
-                &NetworkTCPClient::onSend,
-                this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
-    }
+    // Hand the frame to the pump, which serializes writes (only one async_write
+    // in flight at a time) and owns the buffer for the duration of the write.
+    auto payload{ NEW_SHARED(std::string const, data, size) };
+    pump->enqueue(std::move(payload));
+}
+
+
+void network::NetworkTCPClient::transmit(std::shared_ptr<std::string const> const& payload)
+{
+    // Run the actual write on the strand. socketTCP is an ssl::stream (not
+    // thread-safe); the reads already run on the strand, so dispatching the write
+    // there too means the stream is only ever touched by one thread at a time.
+    // dispatch() runs inline when already on the strand (the onSend->onComplete
+    // drain path) and posts otherwise (a device thread calling send()). `self`
+    // (shared_from_this) and `payload` are captured so the client and the buffer
+    // outlive the in-flight write.
+    auto self{ shared_from_this() };
+    boost::asio::dispatch(
+        strand,
+        [self, payload]()
+        {
+            if (nullptr == self->socketTCP) [[unlikely]]
+            {
+                logErr() << "Cannot send packet, socketTCP is nullptr!";
+                self->pump->onComplete(false);
+                return;
+            }
+
+            auto handler{ boost::asio::bind_executor(
+                self->strand,
+                [self, payload](boost_error_code const& ec, std::size_t bytes)
+                {
+                    self->onSend(ec, bytes);
+                }) };
+
+            if (true == self->secureConnection)
+            {
+                boost::asio::async_write(*self->socketTCP, boost::asio::buffer(*payload), std::move(handler));
+            }
+            else
+            {
+                boost::asio::async_write(
+                    self->socketTCP->next_layer(),
+                    boost::asio::buffer(*payload),
+                    std::move(handler));
+            }
+        });
 }
 
 

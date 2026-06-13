@@ -38,8 +38,8 @@ namespace resolver
         uint32_t               dagItemParents{ algo::ethash::DAG_ITEM_PARENTS };
         uint32_t               dagCountItemsGrowth{ algo::ethash::DAG_COUNT_ITEMS_GROWTH };
         uint32_t               dagCountItemsInit{ algo::ethash::DAG_COUNT_ITEMS_INIT };
-        uint32_t               countCache{ algo::progpow::v_0_9_3::COUNT_CACHE };
-        uint32_t               countMath{ algo::progpow::v_0_9_3::COUNT_MATH };
+        uint32_t               countCache{ algo::progpow::v_0_9_2::COUNT_CACHE };
+        uint32_t               countMath{ algo::progpow::v_0_9_2::COUNT_MATH };
 
         algo::progpow::ResultShare               resultShare{};
         resolver::amd::progpow::KernelParameters parameters{};
@@ -48,6 +48,7 @@ namespace resolver
 
         virtual bool updateContext(stratum::StratumJobInfo const& jobInfo);
 
+        bool buildLightCache();
         bool buildDAG();
         bool buildSearch();
         bool getResultCache(std::string const& jobId, uint32_t const extraNonceSize);

@@ -1,6 +1,7 @@
 #include <algo/ethash/ethash.hpp>
 #include <algo/hash_utils.hpp>
 #include <common/cast.hpp>
+#include <common/chrono.hpp>
 #include <common/config.hpp>
 #include <common/custom.hpp>
 #include <common/error/opencl_error.hpp>
@@ -29,6 +30,9 @@ resolver::ResolverAmdProgPOW::~ResolverAmdProgPOW()
 bool resolver::ResolverAmdProgPOW::updateContext(stratum::StratumJobInfo const& jobInfo)
 {
     ///////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+
+    ///////////////////////////////////////////////////////////////////////////
     algo::ethash::ContextGenerator::instance().build(
         algorithm,
         context,
@@ -38,8 +42,7 @@ bool resolver::ResolverAmdProgPOW::updateContext(stratum::StratumJobInfo const& 
         dagCountItemsInit,
         lightCacheCountItemsGrowth,
         lightCacheCountItemsInit,
-        true /*config.deviceAlgorithm.ethashBuildLightCacheCPU*/
-    );
+        config.deviceAlgorithm.ethashBuildLightCacheCPU);
 
     if (0ull == context.lightCache.numberItem || 0ull == context.lightCache.size || 0ull == context.dagCache.numberItem
         || 0ull == context.dagCache.size)
@@ -80,12 +83,19 @@ bool resolver::ResolverAmdProgPOW::updateMemory(stratum::StratumJobInfo const& j
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
+    bool const            buildLightCacheOnCPU{ config.deviceAlgorithm.ethashBuildLightCacheCPU };
+
+    ////////////////////////////////////////////////////////////////////////////
     parameters.headerCache.free();
     parameters.resultCache.free();
     parameters.dagCache.free();
     parameters.lightCache.free();
 
     ////////////////////////////////////////////////////////////////////////////
+    parameters.lightCache.setFlags(
+        true == buildLightCacheOnCPU ? CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY
+                                     : CL_MEM_READ_WRITE | CL_MEM_HOST_WRITE_ONLY);
     parameters.lightCache.setSize(context.lightCache.size);
     parameters.dagCache.setSize(context.dagCache.size);
 
@@ -98,10 +108,26 @@ bool resolver::ResolverAmdProgPOW::updateMemory(stratum::StratumJobInfo const& j
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false
-        == parameters.lightCache.write(context.lightCache.hash, context.lightCache.size, clQueue[currentIndexStream]))
+    if (true == buildLightCacheOnCPU)
     {
-        return false;
+        if (false
+            == parameters.lightCache
+                   .write(context.lightCache.hash, context.lightCache.size, clQueue[currentIndexStream]))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (false
+            == parameters.lightCache.write(&context.hashedSeedCache, algo::LEN_HASH_512, clQueue[currentIndexStream]))
+        {
+            return false;
+        }
+        if (false == buildLightCache())
+        {
+            return false;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -147,6 +173,56 @@ bool resolver::ResolverAmdProgPOW::updateConstants(stratum::StratumJobInfo const
 }
 
 
+bool resolver::ResolverAmdProgPOW::buildLightCache()
+{
+    ////////////////////////////////////////////////////////////////////////////
+    // Clear old data
+    kernelGenerator.clear();
+
+    ////////////////////////////////////////////////////////////////////////////
+    // kernel name
+    kernelGenerator.setKernelName("ethash_build_light_cache");
+
+    ////////////////////////////////////////////////////////////////////////////
+    // defines
+    kernelGenerator.addDefine("LIGHT_CACHE_ROUNDS", castU32(algo::ethash::LIGHT_CACHE_ROUNDS));
+
+    ////////////////////////////////////////////////////////////////////////////
+    // ethash files
+    if (false == kernelGenerator.appendFile("kernel/ethash/ethash_light_cache.cl"))
+    {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // build opencl kernel
+    if (false == kernelGenerator.build(clDevice, clContext))
+    {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Set kernel parameters
+    auto& clKernel{ kernelGenerator.clKernel };
+    OPENCL_ER(clKernel.setArg(0u, *(parameters.lightCache.getBuffer())));
+    OPENCL_ER(clKernel.setArg(1u, castU32(context.lightCache.numberItem)));
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Run kernel to build light cache
+    resolverInfo() << "Building light cache on GPU";
+    common::Chrono chrono{};
+    chrono.start();
+    OPENCL_ER(clQueue[currentIndexStream]
+                  ->enqueueNDRangeKernel(clKernel, cl::NullRange, cl::NDRange(1, 1, 1), cl::NDRange(1, 1, 1)));
+    OPENCL_ER(clQueue[currentIndexStream]->finish());
+    chrono.stop();
+    resolverInfo() << "Built light cache on GPU in " << chrono.elapsed(common::CHRONO_UNIT::MS) << "ms";
+
+    ////////////////////////////////////////////////////////////////////////////
+    return true;
+}
+
+
 bool resolver::ResolverAmdProgPOW::buildDAG()
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -186,13 +262,29 @@ bool resolver::ResolverAmdProgPOW::buildDAG()
     OPENCL_ER(clKernel.setArg(4u, castU32(context.lightCache.numberItem)));
 
     ////////////////////////////////////////////////////////////////////////////
-    // Run kernel to build DAG
-    uint32_t const maxGroupSize{ getMaxGroupSize() };
-    uint32_t const threadKernel{ castU32(context.dagCache.numberItem) / maxGroupSize };
+    // Run kernel to build DAG.
+    // The build kernel grid-strides over the DAG (for (i = gid; i < numberItem;
+    // i += stride)), so coverage is complete for any launch of at least one
+    // work-group. We cap the work-group count (the NDRange Y dimension) because
+    // some drivers (AMD on gfx1201/RDNA4) silently dispatch fewer work-groups than
+    // requested when a dimension is very large, which leaves most of a multi-GB
+    // DAG zero. MAX_BUILD_GROUPS is therefore a ceiling, not a tuning constant: it
+    // only has to stay below that silent-clamp threshold while still saturating the
+    // CUs. 32768 groups (~8M work-items) is already orders of magnitude above the
+    // simultaneous occupancy of any current GPU, so it saturates every model; the
+    // build is DRAM-bandwidth bound, so a larger or per-device value would not
+    // change throughput.
+    constexpr uint32_t MAX_BUILD_GROUPS{ 32768u };
+    uint32_t const     maxGroupSize{ getMaxGroupSize() };
+    uint32_t           buildGroups{ (castU32(context.dagCache.numberItem) + maxGroupSize - 1u) / maxGroupSize };
+    if (buildGroups > MAX_BUILD_GROUPS)
+    {
+        buildGroups = MAX_BUILD_GROUPS;
+    }
     OPENCL_ER(clQueue[currentIndexStream]->enqueueNDRangeKernel(
         clKernel,
         cl::NullRange,
-        cl::NDRange(maxGroupSize, threadKernel, 1),
+        cl::NDRange(maxGroupSize, buildGroups, 1),
         cl::NDRange(maxGroupSize, 1, 1)));
     OPENCL_ER(clQueue[currentIndexStream]->finish());
 

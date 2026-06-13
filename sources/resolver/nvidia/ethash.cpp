@@ -54,6 +54,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(stratum::StratumJobInfo const
                       << "context.dagCache.size: " << context.dagCache.size << "\n"
                       << "========================================================================="
                       << "\n";
+        algo::ethash::ContextGenerator::instance().free(algorithm);
         return false;
     }
 
@@ -63,6 +64,7 @@ bool resolver::ResolverNvidiaEthash::updateContext(stratum::StratumJobInfo const
     {
         resolverErr() << "Device have not memory size available."
                       << " Needed " << totalMemoryNeeded << ", memory available " << deviceMemoryAvailable;
+        algo::ethash::ContextGenerator::instance().free(algorithm);
         return false;
     }
 

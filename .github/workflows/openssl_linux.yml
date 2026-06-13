@@ -20,7 +20,7 @@ jobs:
       # ===============================
       - name: Restore OpenSSL cache
         id: openssl-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: openssl-install
           key: openssl-${{ runner.os }}-1.1.1w
@@ -59,10 +59,12 @@ jobs:
           echo "✅ OpenSSL 1.1.1w built successfully"
 
       # ===============================
-      # Upload artifact
+      # Save OpenSSL cache (main branch and workflow_dispatch only)
       # ===============================
-      - name: Upload OpenSSL artifact
-        uses: actions/upload-artifact@v4
+      - name: Save OpenSSL cache
+        if: steps.openssl-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
         with:
-          name: openssl-${{ runner.os }}-1.1.1w
           path: openssl-install
+          key: openssl-${{ runner.os }}-1.1.1w
+

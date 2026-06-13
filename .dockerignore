@@ -1,0 +1,14 @@
+# Keep the Docker build context small and reproducible.
+build/
+dist/
+bin/
+lib/
+.git/
+.github/
+downloads/
+*.tar.gz
+*.zip
+# Docs / images not needed to compile.
+reasearch_and_development/
+setup/install/
+*.png

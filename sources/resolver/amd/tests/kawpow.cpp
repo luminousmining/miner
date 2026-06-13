@@ -4,6 +4,7 @@
 #include <algo/hash.hpp>
 #include <algo/hash_utils.hpp>
 #include <algo/progpow/kawpow.hpp>
+#include <common/config.hpp>
 #include <common/log/log.hpp>
 #include <common/mocker/stratum.hpp>
 #include <resolver/amd/kawpow.hpp>
@@ -19,6 +20,11 @@ struct ResolverKawpowAmdTest : public testing::Test
 
     ResolverKawpowAmdTest()
     {
+        ////////////////////////////////////////////////////////////////////////////
+        common::Config& config{ common::Config::instance() };
+        config.deviceAlgorithm.ethashBuildLightCacheCPU = true;
+
+        ////////////////////////////////////////////////////////////////////////////
         common::setLogLevel(common::TYPELOG::__DEBUG);
     }
 
@@ -58,6 +64,30 @@ struct ResolverKawpowAmdTest : public testing::Test
 
 TEST_F(ResolverKawpowAmdTest, findNonce)
 {
+    initializeDevice(0u);
+    initializeJob(0xce00000017f87f70);
+
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
+    resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmit.empty());
+
+    std::string const nonceStr{ stratum.paramSubmit[1].as_string().c_str() };
+
+    using namespace std::string_literals;
+    EXPECT_EQ("0xce00000017f87f7a"s, nonceStr);
+}
+
+
+TEST_F(ResolverKawpowAmdTest, findNonceWithLightCacheGPU)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    common::Config& config{ common::Config::instance() };
+    config.deviceAlgorithm.ethashBuildLightCacheCPU = false;
+
+    ////////////////////////////////////////////////////////////////////////////
     initializeDevice(0u);
     initializeJob(0xce00000017f87f70);
 

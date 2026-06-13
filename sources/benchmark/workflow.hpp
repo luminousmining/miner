@@ -115,7 +115,12 @@ namespace benchmark
 
 #if defined(AMD_ENABLE)
         void runAmd();
+        bool runAmdEthashLightCache();
         bool runAmdKawpow();
+        bool runAmdBlake3();
+        bool runAmdEthash();
+        bool runAmdProgpow();
+        bool runAmdKHeavyHash();
 #endif
     };
 }
