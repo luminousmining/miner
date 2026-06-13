@@ -27,6 +27,7 @@ add_subdirectory(autolykos)
 add_subdirectory(blake3)
 add_subdirectory(crypto)
 add_subdirectory(ethash)
+add_subdirectory(noisy_gemm)
 add_subdirectory(progpow)
 add_subdirectory(tests)
 

@@ -23,8 +23,7 @@ boost :
 https://archives.boost.io/release/1.91.0/source/boost_1_91_0.zip  
 ```bat
 bootstrap.bat
-b2.exe debug release
-b2.exe install --prefix=C:\\Boost
+b2 --prefix=C:\Boost toolset=msvc-14.3 address-model=64 variant=release,debug link=static threading=multi install -j8
 ```
   
 opencl : 

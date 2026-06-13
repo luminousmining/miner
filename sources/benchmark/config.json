@@ -63,6 +63,17 @@
                     { "name": "lm10", "blocks": 64 },
                     "lm11"
                 ]
+            },
+            "noisy_gemm": {
+                "enabled": true,
+                "loop": 5,
+                "threads": 256,
+                "blocks": 128,
+                "kernels": [
+                    { "name": "p1", "threads": 256, "blocks": 128 },
+                    { "name": "p2", "threads": 128, "blocks":  64 },
+                    { "name": "p3", "threads": 256, "blocks": 128 }
+                ]
             }
         }
     },

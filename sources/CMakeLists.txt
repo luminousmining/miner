@@ -80,6 +80,9 @@ if (BUILD_NVIDIA AND BUILD_EXE_BENCHMARK)
         benchmark/cuda/keccak/keccak_f800_lm7.cu
         benchmark/cuda/keccak/keccak_f800_lm8.cu
         benchmark/cuda/keccak/keccak_f800_lm9.cu
+        benchmark/cuda/noisy_gemm/noisy_gemm_naive_p1.cu
+        benchmark/cuda/noisy_gemm/noisy_gemm_naive_p2.cu
+        benchmark/cuda/noisy_gemm/noisy_gemm_naive_p3.cu
     )
 
     target_compile_definitions(${LIB_BENCH_NVIDIA} PRIVATE __LIB_CUDA CUDA_ENABLE)
@@ -171,6 +174,7 @@ set(SOURCES_ALGO_CRYPTO ${SOURCES_ALGO_CRYPTO} PARENT_SCOPE)
 set(SOURCES_ALGO_CRYPTO_TESTS ${SOURCES_ALGO_CRYPTO_TESTS} PARENT_SCOPE)
 set(SOURCES_ALGO_ETHASH ${SOURCES_ALGO_ETHASH} PARENT_SCOPE)
 set(SOURCES_ALGO_ETHASH_TESTS ${SOURCES_ALGO_ETHASH_TESTS} PARENT_SCOPE)
+set(SOURCES_ALGO_NOISY_GEMM ${SOURCES_ALGO_NOISY_GEMM} PARENT_SCOPE)
 set(SOURCES_ALGO_PROGPOW ${SOURCES_ALGO_PROGPOW} PARENT_SCOPE)
 set(SOURCES_ALGO_TESTS ${SOURCES_ALGO_TESTS} PARENT_SCOPE)
 set(SOURCES_API ${SOURCES_API} PARENT_SCOPE)
