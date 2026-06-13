@@ -590,9 +590,15 @@ bool device::Device::updateJob()
     uint64_t const currentAtomicMemory{ synchronizer.memory.get() };
 
     ////////////////////////////////////////////////////////////////////////////
+    common::Config const& config{ common::Config::instance() };
     if (nextjobInfo.epoch != currentJobInfo.epoch || nextjobInfo.period != currentJobInfo.period)
     {
-        miningStats.reset();
+        // When accumulating, the meter window spans jobs; only a memory rebuild
+        // (handled below) resets it. Otherwise reset on every epoch/period change.
+        if (false == config.occupancy.accumulateHash)
+        {
+            miningStats.reset();
+        }
     }
     currentJobInfo.copy(nextjobInfo);
     synchronizer.job.update(currentAtomicJob);
@@ -636,13 +642,15 @@ bool device::Device::updateJob()
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    updateBatchNonce();
+    // Reset the meter on memory rebuilds always; on plain job/constant updates
+    // only when not accumulating, so the window can span jobs.
+    updateBatchNonce(false == config.occupancy.accumulateHash || true == needUpdateMemory);
 
     return true;
 }
 
 
-void device::Device::updateBatchNonce()
+void device::Device::updateBatchNonce(bool const resetStats)
 {
     ////////////////////////////////////////////////////////////////////////////
     common::Config const& config{ common::Config::instance() };
@@ -656,8 +664,15 @@ void device::Device::updateBatchNonce()
 
     ////////////////////////////////////////////////////////////////////////////
     miningStats.setBatchNonce(resolver->getBlocks() * resolver->getThreads() * internalLoop);
-    miningStats.resetHashrate();
-    miningStats.reset();
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Skipping the reset lets the hash count and elapsed window carry across job
+    // updates, so slow / memory-hard kernels still publish a non-zero hashrate.
+    if (true == resetStats)
+    {
+        miningStats.resetHashrate();
+        miningStats.reset();
+    }
 }
 
 
@@ -690,6 +705,12 @@ void device::Device::loopDoWork()
 
     ////////////////////////////////////////////////////////////////////////////
     computing.store(true, boost::memory_order::seq_cst);
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Open the hashrate window once at start-up. When accumulating, a job that
+    // is not a memory update no longer resets the meter, so without this the
+    // chrono of a non-epoch algorithm (e.g. Xelis) would never be started.
+    miningStats.reset();
 
     ////////////////////////////////////////////////////////////////////////////
     deviceDebug() << "Start working!";

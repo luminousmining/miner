@@ -99,6 +99,7 @@ N/A : No default value is set.
 | `--occupancy` | ✅ | false | System will define the best occupancy for kernel. | `--occupancy=<true\|false>` |
 | `--internal_loop` | ✅ | 1 | Set internal loop for kernel. | `--internal_loop=1` |
 | `--internal_kernel_count` | ✅ | 100 | Set internal loop for kernel. This defines the minimum number of times the kernel must be called to display statistics | `--internal_kernel_count=1` |
+| `--internal_accumulate_hash` | ✅ | true | Accumulate the hash count across job and constant updates instead of resetting between jobs (a memory rebuild always resets). Keeps the dashboard hashrate from reading 0 H/s on slow / memory-hard kernels. | `--internal_accumulate_hash=<true\|false>` |
 | `--cuda_context` | ✅ | auto | Set CUDA context. | `--cuda_context=<auto\|blocking\|yield\|spin>` |
 
 ## Smart Mining

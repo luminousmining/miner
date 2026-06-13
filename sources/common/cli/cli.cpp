@@ -267,6 +267,13 @@ common::Cli::Cli()
             "called to display statistics.\n"
             "Default is value is 100.\n"
             "--internal_kernel_count=100")(
+            "internal_accumulate_hash",
+            value<bool>(),
+            "[OPTIONAL] Accumulate the hash count across job and constant updates instead of resetting it "
+            "between jobs. A memory update (e.g. DAG rebuild) always resets. Keeps the dashboard hashrate from "
+            "reading 0 H/s on slow / memory-hard kernels.\n"
+            "Default value is true.\n"
+            "--internal_accumulate_hash=<true|false>")(
             "cuda_context",
             value<std::string>(),
             "[OPTIONAL] Set CUDA context.\n"

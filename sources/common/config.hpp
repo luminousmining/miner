@@ -54,6 +54,7 @@ namespace common
             std::optional<uint32_t>    internalLoop{};
             std::optional<uint32_t>    kernelMinimunExecuteNeeded{};
             std::optional<std::string> cudaContext{};
+            bool                       accumulateHash{ true };
         };
 
         struct DeviceAlgorithmConfig

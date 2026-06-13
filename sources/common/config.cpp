@@ -409,11 +409,13 @@ bool common::Config::loadCli(int argc, char** argv)
         auto const occupancyBlocks{ cli.getOccupancyBlocks() };
         auto const internalLoop{ cli.getInternalLoop() };
         auto const kernelMinimunExecuteNeeded{ cli.getMinimunKernelExecuted() };
+        auto const accumulateHash{ cli.getAccumulateHash() };
         auto const cudaContext{ cli.getCudaContext() };
         occupancy.isAuto = isAutoOccupancy;
         occupancy.internalLoop = internalLoop;
         occupancy.cudaContext = cudaContext;
         occupancy.kernelMinimunExecuteNeeded = kernelMinimunExecuteNeeded;
+        occupancy.accumulateHash = accumulateHash;
         if (0u != occupancyThreads || 0u != occupancyBlocks)
         {
             if (0u != occupancyThreads)
