@@ -64,6 +64,17 @@ uint32_t common::Cli::getMinimunKernelExecuted() const
 }
 
 
+bool common::Cli::getAccumulateHash() const
+{
+    bool accumulateHash{ true };
+    if (true == contains("internal_accumulate_hash"))
+    {
+        accumulateHash = params["internal_accumulate_hash"].as<bool>();
+    }
+    return accumulateHash;
+}
+
+
 std::string common::Cli::getCudaContext() const
 {
     std::string context{ "auto" };

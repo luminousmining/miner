@@ -76,7 +76,7 @@ namespace device
         bool updateJob();
         void waitJob();
         void loopDoWork();
-        void updateBatchNonce();
+        void updateBatchNonce(bool const resetStats);
         void submit(common::PROFILE const profile);
 
       private:

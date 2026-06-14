@@ -118,6 +118,7 @@ namespace common
         bool        isAutoOccupancy() const;
         uint32_t    getInternalLoop() const;
         uint32_t    getMinimunKernelExecuted() const;
+        bool        getAccumulateHash() const;
         std::string getCudaContext() const;
 
         // Algorithm
