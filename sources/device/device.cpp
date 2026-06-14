@@ -27,6 +27,7 @@
 #include <resolver/nvidia/meowpow.hpp>
 #include <resolver/nvidia/progpow.hpp>
 #include <resolver/nvidia/progpow_quai.hpp>
+#include <resolver/cpu/blake3.hpp>
 
 
 void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
@@ -341,6 +342,14 @@ void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
                     break;
                 }
 #endif
+#if defined(CPU_ENABLE)
+                case device::DEVICE_TYPE::CPU:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverCpuBlake3);
+                    break;
+                }
+#endif
                 case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
@@ -507,12 +516,17 @@ void device::Device::increaseShare(bool const isValid)
 }
 
 
+uint32_t device::Device::getMinimumKernelExecuted() const
+{
+    return common::Config::instance().occupancy.kernelMinimunExecuteNeeded.value_or(100u);
+}
+
+
 double device::Device::getHashrate()
 {
-    uint32_t const  executeCount{ miningStats.getKernelExecutedCount() };
-    common::Config& config{ common::Config::instance() };
+    uint32_t const executeCount{ miningStats.getKernelExecutedCount() };
 
-    if (config.occupancy.kernelMinimunExecuteNeeded <= executeCount)
+    if (getMinimumKernelExecuted() <= executeCount)
     {
         miningStats.stop();
         miningStats.updateHashrate();

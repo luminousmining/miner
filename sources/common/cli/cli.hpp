@@ -121,6 +121,10 @@ namespace common
         bool        getAccumulateHash() const;
         std::string getCudaContext() const;
 
+        // CPU thread manager
+        std::optional<uint32_t>    getCpuThreads() const;
+        std::optional<std::string> getCpuAffinity() const;
+
         // Algorithm
         bool isEthashBuildLightCacheCPU() const;
 

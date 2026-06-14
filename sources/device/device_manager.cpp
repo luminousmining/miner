@@ -32,6 +32,7 @@
 #include <device/device_manager.hpp>
 #include <device/mocker.hpp>
 #include <device/nvidia.hpp>
+#include <device/cpu.hpp>
 #include <stratum/stratums.hpp>
 
 
@@ -86,6 +87,18 @@ bool device::DeviceManager::initialize()
         if (false == initializeNvidia())
         {
             logErr() << "Cannot initialize device Nvidia";
+        }
+        initialized = true;
+    }
+#endif
+
+    ////////////////////////////////////////////////////////////////////////////
+#if defined(CPU_ENABLE)
+    if (true == config.deviceEnable.cpuEnable)
+    {
+        if (false == initializeCpu())
+        {
+            logErr() << "Cannot initialize device CPU";
         }
         initialized = true;
     }
@@ -154,6 +167,12 @@ bool device::DeviceManager::initialize()
 #endif
 #if defined(TOOL_MOCKER)
                     case device::DEVICE_TYPE::MOCKER:
+                    {
+                        break;
+                    }
+#endif
+#if defined(CPU_ENABLE)
+                    case device::DEVICE_TYPE::CPU:
                     {
                         break;
                     }
@@ -298,6 +317,32 @@ bool device::DeviceManager::initializeMocker()
     return true;
 }
 #endif
+
+
+#if defined(CPU_ENABLE)
+bool device::DeviceManager::initializeCpu()
+{
+    ///////////////////////////////////////////////////////////////////////////
+    device::DeviceCpu* device{ NEW(device::DeviceCpu) };
+    if (nullptr == device) [[unlikely]]
+    {
+        logErr() << "Cannot alloc memory to create new CPU Device";
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    device->deviceType = device::DEVICE_TYPE::CPU;
+    device->memoryAvailable = 0ull;
+    device->id = castU32(devices.size());
+
+    ///////////////////////////////////////////////////////////////////////////
+    logInfo() << "CPU[" << devices.size() << "] enabled";
+    devices.push_back(device);
+
+    return true;
+}
+#endif
+
 
 #if defined(CUDA_ENABLE)
 bool device::DeviceManager::initializeNvidia()
