@@ -6,9 +6,9 @@
 #include <resolver/cpu/thread_pool.hpp>
 
 
-// parallelFor must visit every index in [0, count) exactly once, across worker counts and
+// run() must visit every index in [0, count) exactly once, across worker counts and
 // batch sizes including count < workers and count not divisible by workers.
-TEST(CpuThreadPool, parallelForCoversAllIndices)
+TEST(CpuThreadPool, runCoversAllIndices)
 {
     for (uint32_t const workers : { 1u, 2u, 4u, 8u })
     {
@@ -21,8 +21,7 @@ TEST(CpuThreadPool, parallelForCoversAllIndices)
                 s.store(0);
             }
 
-            pool.parallelFor(
-                count,
+            pool.setCallback(
                 [&](uint64_t const lo, uint64_t const hi, uint32_t const)
                 {
                     for (uint64_t i{ lo }; i < hi; ++i)
@@ -30,6 +29,7 @@ TEST(CpuThreadPool, parallelForCoversAllIndices)
                         seen[static_cast<size_t>(i)].fetch_add(1);
                     }
                 });
+            pool.run(count);
 
             for (uint64_t i{ 0ull }; i < count; ++i)
             {
@@ -48,8 +48,7 @@ TEST(CpuThreadPool, runsWithAffinityMask)
     resolver::CpuThreadPool pool{ 2u, 0x3ull }; // request cores 0 and 1
     std::atomic<uint64_t>   sum{ 0ull };
 
-    pool.parallelFor(
-        1000ull,
+    pool.setCallback(
         [&](uint64_t const lo, uint64_t const hi, uint32_t const)
         {
             uint64_t local{ 0ull };
@@ -59,6 +58,7 @@ TEST(CpuThreadPool, runsWithAffinityMask)
             }
             sum.fetch_add(local);
         });
+    pool.run(1000ull);
 
     EXPECT_EQ(499500ull, sum.load()); // sum of 0..999
 }

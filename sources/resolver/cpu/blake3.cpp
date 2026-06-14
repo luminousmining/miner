@@ -17,41 +17,36 @@
 #include <resolver/cpu/cpu_params.hpp>
 
 
-// Default CPU occupancy: DEFAULT_THREADS * DEFAULT_BLOCKS = 262144 nonces scanned per
-// executeSync(). Big enough to amortize the thread-pool dispatch per batch (tiny batches
-// measurably cut multi-core throughput), small enough that ~8 batches still complete
-// between a pool's frequent jobs so the hashrate displays (see
-// DeviceCpu::getMinimumKernelExecuted). Overridden by --threads / --blocks.
-namespace
-{
-    constexpr uint32_t DEFAULT_THREADS{ 512u };
-    constexpr uint32_t DEFAULT_BLOCKS{ 512u };
-}
-
-
 resolver::ResolverCpuBlake3::PoolConfig resolver::ResolverCpuBlake3::resolvePoolConfig()
 {
     common::Config const& config{ common::Config::instance() };
 
     // Parse the affinity mask exactly once: the worker-count resolution needs it (popcount
     // when --cpu_threads is unset) and the pool needs it for pinning.
-    uint64_t const mask{ config.cpu.affinity.has_value() ? resolver::cpu_detail::parseHexMask(*config.cpu.affinity)
-                                                         : 0ull };
+    uint64_t const mask{ config.cpu.affinity.has_value() ? resolver::cpu::parseHexMask(*config.cpu.affinity) : 0ull };
     uint32_t const workers{
-        resolver::cpu_detail::resolveWorkerCount(config.cpu.threads, mask, std::thread::hardware_concurrency())
+        resolver::cpu::resolveWorkerCount(config.cpu.threads, mask, std::thread::hardware_concurrency())
     };
     return PoolConfig{ workers, mask };
 }
 
 
 resolver::ResolverCpuBlake3::ResolverCpuBlake3(PoolConfig const poolConfig)
-    : resolver::ResolverCpu(), pool{ poolConfig.workerCount, poolConfig.affinityMask }
+    : resolver::ResolverCpu(), threadPool{ poolConfig.workerCount, poolConfig.affinityMask }
 {
 }
 
 
 resolver::ResolverCpuBlake3::ResolverCpuBlake3() : ResolverCpuBlake3(resolvePoolConfig())
 {
+    // Default CPU occupancy: DEFAULT_THREADS * DEFAULT_BLOCKS = 262144 nonces scanned per
+    // executeSync(). Big enough to amortize the thread-pool dispatch per batch (tiny batches
+    // measurably cut multi-core throughput), small enough that ~8 batches still complete
+    // between a pool's frequent jobs so the hashrate displays (see
+    // DeviceCpu::getMinimumKernelExecuted). Overridden by --threads / --blocks.
+    constexpr uint32_t DEFAULT_THREADS{ 512u };
+    constexpr uint32_t DEFAULT_BLOCKS{ 512u };
+
     algorithm = algo::ALGORITHM::BLAKE3;
     overrideOccupancy(DEFAULT_THREADS, DEFAULT_BLOCKS);
 }
@@ -89,8 +84,7 @@ bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& job
 
     // Fan the nonce batch across the pinned worker pool. Hits are astronomically rare, so
     // the shared result append is guarded by a mutex with negligible contention.
-    pool.parallelFor(
-        count,
+    threadPool.setCallback(
         [&](uint64_t const lo, uint64_t const hi, uint32_t const /*workerIndex*/)
         {
             for (uint64_t i{ lo }; i < hi; ++i)
@@ -113,6 +107,7 @@ bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& job
                 }
             }
         });
+    threadPool.run(count);
 
     ////////////////////////////////////////////////////////////////////////////
     if (true == local.found)

@@ -5,7 +5,7 @@
 
 TEST(CpuParams, nthSetBit)
 {
-    using namespace resolver::cpu_detail;
+    using namespace resolver::cpu;
 
     EXPECT_EQ(0u, nthSetBit(0b1011ull, 0u));
     EXPECT_EQ(1u, nthSetBit(0b1011ull, 1u));
@@ -17,7 +17,7 @@ TEST(CpuParams, nthSetBit)
 
 TEST(CpuParams, resolveWorkerCount)
 {
-    using namespace resolver::cpu_detail;
+    using namespace resolver::cpu;
 
     EXPECT_EQ(4u, resolveWorkerCount(std::optional<uint32_t>{ 4u }, 0ull, 8u)); // explicit wins
     EXPECT_EQ(3u, resolveWorkerCount(std::nullopt, 0b1011ull, 8u));             // popcount(mask)
@@ -29,7 +29,7 @@ TEST(CpuParams, resolveWorkerCount)
 
 TEST(CpuParams, chunkRangeCoversExactly)
 {
-    using namespace resolver::cpu_detail;
+    using namespace resolver::cpu;
 
     for (uint64_t const total : { 0ull, 1ull, 7ull, 100ull, 262144ull })
     {
@@ -54,7 +54,7 @@ TEST(CpuParams, chunkRangeCoversExactly)
 
 TEST(CpuParams, parseHexMask)
 {
-    using namespace resolver::cpu_detail;
+    using namespace resolver::cpu;
 
     EXPECT_EQ(0xFFull, parseHexMask("0xFF"));
     EXPECT_EQ(0xFFull, parseHexMask("FF"));

@@ -71,3 +71,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 #define castPtrHash512(value) reinterpret_cast<algo::hash512*>(value)
 #endif // !__LIB_CUDA
+
+
+#if defined(_WIN32)
+////////////////////////////////////////////////////////////////////////////////
+// DWORD_PTR is a Windows-only type from <windows.h>; this macro only expands in
+// Win32 translation units that already include it (e.g. cpu_affinity.cpp).
+#define castDWORDPTR(value) static_cast<DWORD_PTR>(value)
+#endif // _WIN32

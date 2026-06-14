@@ -40,7 +40,7 @@ namespace resolver
 
         // The pinned worker pool lives on the only CPU resolver that parallelizes its scan;
         // the serial progpow/kawpow CPU resolvers do not pay for an unused pool.
-        resolver::CpuThreadPool pool;
+        resolver::CpuThreadPool threadPool;
     };
 }
 

@@ -2,6 +2,8 @@
 
 #include <bit>
 
+#include <common/cast.hpp>
+#include <common/custom.hpp>
 #include <resolver/cpu/cpu_affinity.hpp>
 #include <resolver/cpu/cpu_params.hpp>
 #include <resolver/cpu/thread_pool.hpp>
@@ -10,16 +12,16 @@
 resolver::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t const affinityMask)
     : poolSize{ (0u < workerCount) ? workerCount : 1u }, mask{ affinityMask }
 {
-    // poolSize == 1 runs inline in parallelFor; no worker threads are spawned.
+    // poolSize == 1 runs inline in run(); no worker threads are spawned.
     if (1u < poolSize)
     {
         workers.reserve(poolSize);
         for (uint32_t i{ 0u }; i < poolSize; ++i)
         {
             workers.emplace_back(
-                [this, i](std::stop_token st)
+                [this, i]
                 {
-                    workerLoop(i, st);
+                    workerLoop(i);
                 });
         }
     }
@@ -29,55 +31,57 @@ resolver::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t cons
 resolver::CpuThreadPool::~CpuThreadPool()
 {
     {
-        std::lock_guard<std::mutex> const lock{ mutex };
-        for (std::jthread& worker : workers)
-        {
-            worker.request_stop();
-        }
+        UNIQUE_LOCK(mutex);
+        stopRequested = true;
     }
     cvWork.notify_all();
-    // std::jthread destructors join automatically.
+    // boost::thread does not auto-join on destruction: join each worker explicitly.
+    for (boost::thread& worker : workers)
+    {
+        if (true == worker.joinable())
+        {
+            worker.join();
+        }
+    }
 }
 
 
-void resolver::CpuThreadPool::workerLoop(uint32_t const index, std::stop_token stopToken)
+void resolver::CpuThreadPool::workerLoop(uint32_t const index)
 {
     if (0ull != mask)
     {
-        uint32_t const population{ static_cast<uint32_t>(std::popcount(mask)) };
-        resolver::pinThisThreadToCore(resolver::cpu_detail::nthSetBit(mask, index % population));
+        uint32_t const population{ castU32(std::popcount(mask)) };
+        resolver::pinThisThreadToCore(resolver::cpu::nthSetBit(mask, index % population));
     }
 
     uint64_t lastGeneration{ 0ull };
     for (;;)
     {
-        ChunkFn const* fn{ nullptr };
-        uint64_t       jobTotal{ 0ull };
+        uint64_t jobTotal{ 0ull };
         {
-            std::unique_lock<std::mutex> lock{ mutex };
+            UNIQUE_LOCK(mutex);
             cvWork.wait(
                 lock,
                 [&]
                 {
-                    return generation != lastGeneration || stopToken.stop_requested();
+                    return generation != lastGeneration || true == stopRequested;
                 });
-            if (true == stopToken.stop_requested())
+            if (true == stopRequested)
             {
                 return;
             }
             lastGeneration = generation;
-            fn = job;
             jobTotal = total;
         }
 
-        auto const [lo, hi]{ resolver::cpu_detail::chunkRange(jobTotal, poolSize, index) };
-        if (nullptr != fn && hi > lo)
+        auto const [lo, hi]{ resolver::cpu::chunkRange(jobTotal, poolSize, index) };
+        if (nullptr != job && hi > lo)
         {
-            (*fn)(lo, hi, index);
+            job(lo, hi, index);
         }
 
         {
-            std::lock_guard<std::mutex> const lock{ mutex };
+            UNIQUE_LOCK(mutex);
             if (0u == --remaining)
             {
                 cvDone.notify_one();
@@ -87,20 +91,26 @@ void resolver::CpuThreadPool::workerLoop(uint32_t const index, std::stop_token s
 }
 
 
-void resolver::CpuThreadPool::parallelFor(uint64_t const count, ChunkFn const& fn)
+void resolver::CpuThreadPool::setCallback(ChunkFn const& fn)
+{
+    UNIQUE_LOCK(mutex);
+    job = fn;
+}
+
+
+void resolver::CpuThreadPool::run(uint64_t const count)
 {
     // Single-worker (or empty) batches run inline: no dispatch, no contention.
     if (1u >= poolSize || 0ull == count)
     {
-        if (0ull != count)
+        if (0ull != count && nullptr != job)
         {
-            fn(0ull, count, 0u);
+            job(0ull, count, 0u);
         }
         return;
     }
 
-    std::unique_lock<std::mutex> lock{ mutex };
-    job = &fn;
+    UNIQUE_LOCK(mutex);
     total = count;
     remaining = poolSize;
     ++generation;
@@ -111,7 +121,6 @@ void resolver::CpuThreadPool::parallelFor(uint64_t const count, ChunkFn const& f
         {
             return 0u == remaining;
         });
-    job = nullptr;
 }
 
 #endif

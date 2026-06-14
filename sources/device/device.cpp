@@ -518,7 +518,7 @@ void device::Device::increaseShare(bool const isValid)
 
 uint32_t device::Device::getMinimumKernelExecuted() const
 {
-    return common::Config::instance().occupancy.kernelMinimunExecuteNeeded.value_or(100u);
+    return common::Config::instance().occupancy.kernelMinimunExecuteNeeded;
 }
 
 

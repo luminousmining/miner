@@ -13,6 +13,8 @@ void resolver::ResolverCpu::overrideOccupancy(uint32_t const defaultThreads, uin
     // defaults (kept small so each batch is short: the loop reacts quickly to new
     // jobs and the hashrate counter accumulates enough batches between job resets to
     // display).
-    setThreads(std::nullopt != config.occupancy.threads ? *config.occupancy.threads : defaultThreads);
-    setBlocks(std::nullopt != config.occupancy.blocks ? *config.occupancy.blocks : defaultBlocks);
+    uint32_t const threads{ std::nullopt != config.occupancy.threads ? *config.occupancy.threads : defaultThreads };
+    uint32_t const blocks{ std::nullopt != config.occupancy.blocks ? *config.occupancy.blocks : defaultBlocks };
+    setThreads(threads);
+    setBlocks(blocks);
 }
