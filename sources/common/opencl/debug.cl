@@ -1,4 +1,4 @@
-#ifndef COMMON_OPENCL_DEBUG
+#if !defined(COMMON_OPENCL_DEBUG)
 #define COMMON_OPENCL_DEBUG
 
 

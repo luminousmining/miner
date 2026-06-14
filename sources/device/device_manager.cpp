@@ -9,7 +9,7 @@
 #if defined(_WIN32)
 // WIN32_LEAN_AND_MEAN keeps windows.h from pulling in winsock.h (WinSock 1),
 // which would clash with the winsock2.h that Boost.Asio (via stratums.hpp) needs.
-#ifndef WIN32_LEAN_AND_MEAN
+#if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>

@@ -4,6 +4,7 @@
 
 #include "blake3.h"
 #include "blake3_impl.h"
+#include "common/cast.hpp"
 #include "blake3_dispatch.c"
 #include "blake3_portable.c"
 #if BLAKE3_USE_NEON == 1
@@ -50,7 +51,7 @@ INLINE size_t chunk_state_fill_buf(blake3_chunk_state *self,
 
 INLINE uint8_t chunk_state_maybe_start_flag(const blake3_chunk_state *self) {
   if (self->blocks_compressed == 0) {
-    return CHUNK_START;
+    return castU8(Blake3Flags::CHUNK_START);
   } else {
     return 0;
   }
@@ -98,7 +99,7 @@ INLINE void output_root_bytes(const output_t *self, uint64_t seek, uint8_t *out,
   uint8_t wide_buf[64];
   while (out_len > 0) {
     blake3_compress_xof(self->input_cv, self->block, self->block_len,
-                        output_block_counter, self->flags | ROOT, wide_buf);
+                        output_block_counter, self->flags | castU8(Blake3Flags::ROOT), wide_buf);
     size_t available_bytes = 64 - offset_within_block;
     size_t memcpy_len;
     if (out_len > available_bytes) {
@@ -146,14 +147,14 @@ INLINE void chunk_state_update(blake3_chunk_state *self, const uint8_t *input,
 
 INLINE output_t chunk_state_output(const blake3_chunk_state *self) {
   uint8_t block_flags =
-      self->flags | chunk_state_maybe_start_flag(self) | CHUNK_END;
+      self->flags | chunk_state_maybe_start_flag(self) | castU8(Blake3Flags::CHUNK_END);
   return make_output(self->cv, self->buf, self->buf_len, self->chunk_counter,
                      block_flags);
 }
 
 INLINE output_t parent_output(const uint8_t block[BLAKE3_BLOCK_LEN],
                               const uint32_t key[8], uint8_t flags) {
-  return make_output(key, block, BLAKE3_BLOCK_LEN, 0, flags | PARENT);
+  return make_output(key, block, BLAKE3_BLOCK_LEN, 0, flags | castU8(Blake3Flags::PARENT));
 }
 
 // Given some input larger than one chunk, return the number of bytes that
@@ -190,7 +191,7 @@ INLINE size_t compress_chunks_parallel(const uint8_t *input, size_t input_len,
 
   blake3_hash_many(chunks_array, chunks_array_len,
                    BLAKE3_CHUNK_LEN / BLAKE3_BLOCK_LEN, key, chunk_counter,
-                   true, flags, CHUNK_START, CHUNK_END, out);
+                   true, flags, castU8(Blake3Flags::CHUNK_START), castU8(Blake3Flags::CHUNK_END), out);
 
   // Hash the remaining partial chunk, if there is one. Note that the empty
   // chunk (meaning the empty message) is a different codepath.
@@ -233,7 +234,7 @@ INLINE size_t compress_parents_parallel(const uint8_t *child_chaining_values,
 
   blake3_hash_many(parents_array, parents_array_len, 1, key,
                    0, // Parents always use counter 0.
-                   false, flags | PARENT,
+                   false, flags | castU8(Blake3Flags::PARENT),
                    0, // Parents have no start flags.
                    0, // Parents have no end flags.
                    out);
@@ -377,19 +378,19 @@ void blake3_hasher_init_keyed(blake3_hasher *self,
                               const uint8_t key[BLAKE3_KEY_LEN]) {
   uint32_t key_words[8];
   load_key_words(key, key_words);
-  hasher_init_base(self, key_words, KEYED_HASH);
+  hasher_init_base(self, key_words, castU8(Blake3Flags::KEYED_HASH));
 }
 
 void blake3_hasher_init_derive_key_raw(blake3_hasher *self, const void *context,
                                        size_t context_len) {
   blake3_hasher context_hasher;
-  hasher_init_base(&context_hasher, IV, DERIVE_KEY_CONTEXT);
+  hasher_init_base(&context_hasher, IV, castU8(Blake3Flags::DERIVE_KEY_CONTEXT));
   blake3_hasher_update(&context_hasher, context, context_len);
   uint8_t context_key[BLAKE3_KEY_LEN];
   blake3_hasher_finalize(&context_hasher, context_key, BLAKE3_KEY_LEN);
   uint32_t context_key_words[8];
   load_key_words(context_key, context_key_words);
-  hasher_init_base(self, context_key_words, DERIVE_KEY_MATERIAL);
+  hasher_init_base(self, context_key_words, castU8(Blake3Flags::DERIVE_KEY_MATERIAL));
 }
 
 void blake3_hasher_init_derive_key(blake3_hasher *self, const char *context) {

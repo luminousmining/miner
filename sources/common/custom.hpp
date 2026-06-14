@@ -1,15 +1,15 @@
 #pragma once
 
+#if !defined(__LIB_CUDA)
 #include <memory>
-
 #include <boost/thread.hpp>
+#endif
 
 #include <common/error/cuda_error.hpp>
 #include <common/tool/tool_memory_trace.hpp>
 
 
 #define UNIQUE_LOCK(mtxName) boost::unique_lock<boost::mutex> lock{ mtxName };
-
 #define UNIQUE_LOCK_NAME(mtxName, lockName) boost::unique_lock<boost::mutex> lockName{ mtxName };
 
 #define SAFE_DELETE(ptr)                                                                                               \

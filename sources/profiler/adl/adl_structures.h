@@ -26,7 +26,7 @@
 /// All data structures used in AMD Display Library (ADL) public interfaces should be defined in this header file.
 ///
 
-#ifndef ADL_STRUCTURES_H_
+#if !defined(ADL_STRUCTURES_H_)
 #define ADL_STRUCTURES_H_
 
 #include "adl_defines.h"

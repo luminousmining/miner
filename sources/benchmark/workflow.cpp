@@ -338,6 +338,10 @@ void benchmark::BenchmarkWorkflow::runNvidia()
     {
         logErr() << "Nvidia Kawpow failled!";
     }
+    if (false == runNvidiaNoisyGemm())
+    {
+        logErr() << "Nvidia Pearl failled!";
+    }
 }
 #endif
 

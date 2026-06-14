@@ -110,6 +110,7 @@ namespace benchmark
         bool runNvidiaEthashLightCache();
         bool runNvidiaEthash();
         bool runNvidiaKawpow();
+        bool runNvidiaNoisyGemm();
 #endif
 
 #if defined(AMD_ENABLE)

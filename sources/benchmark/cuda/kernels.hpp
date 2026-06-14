@@ -179,4 +179,27 @@ bool kawpow_lm9(PARAMETER_KAWPOW);
 bool kawpow_lm10(PARAMETER_KAWPOW);
 bool kawpow_lm11(PARAMETER_KAWPOW);
 
+
+////////////////////////////////////////////////////////////////////////////////
+#include <algo/noisy_gemm/noisy_gemm.hpp>
+
+#define PARAMETER_PEARL_NAIVE cudaStream_t stream,                             \
+                              int8_t const* dA,                                \
+                              int8_t const* dB,                                \
+                              int32_t* dC,                                     \
+                              uint32_t m,                                      \
+                              uint32_t n,                                      \
+                              uint32_t k,                                      \
+                              uint8_t const* sA,                               \
+                              uint64_t const* threshold,                       \
+                              uint32_t* dWinningCount,                         \
+                              algo::noisy_gemm::WinningTileGpu* dWinning,           \
+                              uint32_t maxWinning,                             \
+                              uint32_t blocks,                                 \
+                              uint32_t threads
+
+bool pearl_naive_p1(PARAMETER_PEARL_NAIVE);
+bool pearl_naive_p2(PARAMETER_PEARL_NAIVE);
+bool pearl_naive_p3(PARAMETER_PEARL_NAIVE);
+
 #endif

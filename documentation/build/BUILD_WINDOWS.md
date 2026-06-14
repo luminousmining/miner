@@ -3,10 +3,6 @@
 This guide builds the miner natively on Windows with Visual Studio and the GPU SDKs
 and libraries installed manually on the host.
 
-> **Just want a binary?** See [Docker — Windows (cross-compile)](BUILD_DOCKER_WINDOWS.md)
-> instead — it cross-compiles `miner.exe` from a Linux container and needs none of the
-> manually installed libraries/compilers below.
-
 ## Libraries
 
 - cuda 13.1

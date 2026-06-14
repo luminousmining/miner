@@ -2,7 +2,14 @@
 # PoW oracle (algo/blake3/blake3_pow.cpp) and the shared crypto BLAKE3 KAT
 # (algo/crypto/opencl/tests); any consumer can link the canonical blake3_ref target.
 # blake3_neon.c is ARM-only and excluded on x86.
-project(blake3_ref C)
+project(blake3_ref CXX)
+
+set_source_files_properties(
+    blake3.c
+    blake3_portable.c
+    blake3_dispatch.c
+    PROPERTIES LANGUAGE CXX
+)
 
 add_library(blake3_ref STATIC
     blake3.c

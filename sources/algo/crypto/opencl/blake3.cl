@@ -4,7 +4,7 @@
 //
 // Verified bit-for-bit against the vendored reference blake3 (see crypto/opencl/tests).
 
-#ifndef LM_BLAKE3_CL
+#if !defined(LM_BLAKE3_CL)
 #define LM_BLAKE3_CL
 
 #define B3_IV0 0x6A09E667u

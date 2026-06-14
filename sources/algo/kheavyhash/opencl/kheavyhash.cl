@@ -259,7 +259,7 @@ __kernel void test_heavy_hash(__global ushort const* matrix,
 
 // Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
 // MAX_RESULT is overridable by the host kernel generator (addDefine).
-#ifndef MAX_RESULT
+#if !defined(MAX_RESULT)
 #define MAX_RESULT 4
 #endif
 

@@ -1,7 +1,7 @@
-#ifndef COMMON_OPENCL_GRID
+#if !defined(COMMON_OPENCL_GRID)
 #define COMMON_OPENCL_GRID
 
-#ifndef OCL_DIM
+#if !defined(OCL_DIM)
     #error "OCL_DIM must be defined to 1, 2 or 3 before including common_opencl_grid.cl"
 #endif
 
