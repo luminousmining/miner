@@ -318,6 +318,7 @@ bool device::DeviceManager::initializeMocker()
 }
 #endif
 
+
 #if defined(CPU_ENABLE)
 bool device::DeviceManager::initializeCpu()
 {
@@ -341,6 +342,7 @@ bool device::DeviceManager::initializeCpu()
     return true;
 }
 #endif
+
 
 #if defined(CUDA_ENABLE)
 bool device::DeviceManager::initializeNvidia()

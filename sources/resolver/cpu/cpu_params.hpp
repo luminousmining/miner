@@ -8,11 +8,14 @@
 #include <string>
 #include <utility>
 
+#include <common/cast.hpp>
+
 
 namespace resolver::cpu_detail
 {
     // 0-based bit position of the k-th set bit of mask, or 64 if fewer than k+1 bits set.
-    inline uint32_t nthSetBit(uint64_t const mask, uint32_t k)
+    inline
+    uint32_t nthSetBit(uint64_t const mask, uint32_t k)
     {
         for (uint32_t bit{ 0u }; bit < 64u; ++bit)
         {
@@ -39,7 +42,7 @@ namespace resolver::cpu_detail
         }
         if (0ull != mask)
         {
-            return static_cast<uint32_t>(std::popcount(mask));
+            return castU32(std::popcount(mask));
         }
         return (0u < hardwareConcurrency) ? hardwareConcurrency : 1u;
     }
@@ -58,7 +61,8 @@ namespace resolver::cpu_detail
     }
 
     // Parse a hex affinity mask ("0xFF" or "FF") to uint64. Empty or invalid input -> 0.
-    inline uint64_t parseHexMask(std::string const& text)
+    inline
+    uint64_t parseHexMask(std::string const& text)
     {
         if (true == text.empty())
         {
@@ -75,15 +79,15 @@ namespace resolver::cpu_detail
             uint64_t digit{ 0ull };
             if (c >= '0' && c <= '9')
             {
-                digit = static_cast<uint64_t>(c - '0');
+                digit = castU64(c - '0');
             }
             else if (c >= 'a' && c <= 'f')
             {
-                digit = static_cast<uint64_t>(c - 'a' + 10);
+                digit = castU64(c - 'a' + 10);
             }
             else if (c >= 'A' && c <= 'F')
             {
-                digit = static_cast<uint64_t>(c - 'A' + 10);
+                digit = castU64(c - 'A' + 10);
             }
             else
             {
