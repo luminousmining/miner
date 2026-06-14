@@ -5,6 +5,9 @@ file(MAKE_DIRECTORY ${OUT_COMMON})
 set(BENCHMARK_OPENCL_FILES
     common/init_array.cl
     common/result.cl
+    autolykos_v2/autolykos_v2_dag.cl
+    autolykos_v2/autolykos_v2_search_lm0.cl
+    autolykos_v2/autolykos_v2_verify_lm0.cl
     ethash/ethash_lm_0.cl
     ethash/ethash_lm_1.cl
     ethash_light_cache/ethash_light_cache_lm0.cl
@@ -37,6 +40,9 @@ add_custom_target(copy_benchmark_opencl ALL
     DEPENDS
     ${OUT_COMMON}/common/init_array.cl
     ${OUT_COMMON}/common/result.cl
+    ${OUT_COMMON}/autolykos_v2/autolykos_v2_dag.cl
+    ${OUT_COMMON}/autolykos_v2/autolykos_v2_search_lm0.cl
+    ${OUT_COMMON}/autolykos_v2/autolykos_v2_verify_lm0.cl
     ${OUT_COMMON}/ethash/ethash_lm_0.cl
     ${OUT_COMMON}/ethash/ethash_lm_1.cl
     ${OUT_COMMON}/ethash_light_cache/ethash_light_cache_lm0.cl

@@ -35,3 +35,10 @@ uint bswap32(uint const x)
 {
     return as_uint(as_uchar4(x).s3210);
 }
+
+
+inline
+ulong bswap64(ulong const x)
+{
+    return as_ulong(as_uchar8(x).s76543210);
+}

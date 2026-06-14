@@ -120,6 +120,7 @@ namespace benchmark
         bool runAmdEthash();
         bool runAmdProgpow();
         bool runAmdKHeavyHash();
+        bool runAmdAutolykos();
 #endif
     };
 }
