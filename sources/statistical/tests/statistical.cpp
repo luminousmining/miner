@@ -1,21 +1,18 @@
-#include "statistical/statistical.hpp"
-
 #include <chrono>
 #include <thread>
 
 #include <gtest/gtest.h>
 
-
-using statistical::Statistical;
+#include <statistical/statistical.hpp>
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // A window that completed real launches publishes a positive hashrate:
 // rate = batchNonce * kernelExecuted / elapsed.
 ////////////////////////////////////////////////////////////////////////////////
-TEST(StatisticalHashrate, WorkedWindowPublishesPositiveHashrate)
+TEST(StatisticalHashrate, workedWindowPublishesPositiveHashrate)
 {
-    Statistical stats{};
+    statistical::Statistical stats{};
     stats.reset();
 
     stats.setBatchNonce(1000000ull);
@@ -35,9 +32,9 @@ TEST(StatisticalHashrate, WorkedWindowPublishesPositiveHashrate)
 // kernel that has not yet reached the publish threshold then reads 0 H/s, and
 // the dashboard hides the device -- the bug --internal_accumulate_hash fixes.
 ////////////////////////////////////////////////////////////////////////////////
-TEST(StatisticalHashrate, ResetHashrateZeroesDisplayedValue)
+TEST(StatisticalHashrate, resetHashrateZeroesDisplayedValue)
 {
-    Statistical stats{};
+    statistical::Statistical stats{};
     stats.reset();
 
     stats.setBatchNonce(1000000ull);
@@ -59,9 +56,9 @@ TEST(StatisticalHashrate, ResetHashrateZeroesDisplayedValue)
 // a non-zero hashrate even when each job window is far shorter than the
 // publish threshold.
 ////////////////////////////////////////////////////////////////////////////////
-TEST(StatisticalHashrate, AccumulateAcrossJobUpdatePreservesHashrate)
+TEST(StatisticalHashrate, accumulateAcrossJobUpdatePreservesHashrate)
 {
-    Statistical stats{};
+    statistical::Statistical stats{};
     stats.reset();
     stats.setBatchNonce(1000000ull);
 
