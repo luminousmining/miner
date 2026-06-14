@@ -173,6 +173,8 @@ ulong IVALS[8] =
     0x510E527FADE682D1, 0x9B05688C2B3E6C1F,
     0x1F83D9ABFB41BD6B, 0x5BE0CD19137E2179
 };
+
+
 __kernel
 void autolykos_v2_search_lm0(
     __global uint const* const restrict header,
@@ -192,7 +194,7 @@ void autolykos_v2_search_lm0(
     uint h3;
 
 
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int ii = 0; ii < 4; ii++)
     {
         tid = (NONCES_PER_ITER / 4) * ii + get_global_id(0);
@@ -254,7 +256,7 @@ void autolykos_v2_search_lm0(
         // read the wrong DAG element (and thus a wrong first-hash element f) for any
         // nonce whose seed index lands in the upper part of a >4 GiB table.
         ulong const dagByteBase = (ulong)h3 * 32;
-        #pragma unroll 8
+        __attribute__((opencl_unroll_hint(8)))
         for (int i = 0; i < 32; ++i)
         {
             ((uchar *)r)[31-i] = ((__global uchar const* const)dag)[dagByteBase + i];
@@ -269,17 +271,17 @@ void autolykos_v2_search_lm0(
         ((ulong *)(aux))[14] = ~((ulong *)(aux))[14];
 
         uchar bT[72];
-        #pragma unroll
+        __attribute__((opencl_unroll_hint))
         for (j = 0; j < 31; ++j)
         {
             bT[j] = ((uchar *)r)[j + 1];
         }
-        #pragma unroll
+        __attribute__((opencl_unroll_hint))
         for (j = 31; j < 63; ++j)
         {
             bT[j] = ((__global uchar const* const)header)[j - 31];
         }
-        #pragma unroll
+        __attribute__((opencl_unroll_hint))
         for (j = 63; j < 71; ++j)
         {
             bT[j] = ((uchar *)&tmp)[j - 63];
@@ -306,7 +308,7 @@ void autolykos_v2_search_lm0(
 
         B2B_MIX(aux, aux + 16);
 
-        #pragma unroll
+        __attribute__((opencl_unroll_hint))
         for (j = 0; j < NUM_SIZE_32; j += 2)
         {
             hsh = IVALS[j >> 1];

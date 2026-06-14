@@ -169,6 +169,8 @@ ulong IVALS[8] =
     0x510E527FADE682D1, 0x9B05688C2B3E6C1F,
     0x1F83D9ABFB41BD6B, 0x5BE0CD19137E2179
 };
+
+
 __kernel
 void autolykos_v2_verify_lm0(
     __global uint const *const restrict  bound,
@@ -207,7 +209,7 @@ void autolykos_v2_verify_lm0(
     //================================================================//
     //  Generate indices
     //================================================================//
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int k = 0; k < 8; k++)
     {
         r[k] = (BHashes[k*THREADS_PER_ITER + tid]);
@@ -217,7 +219,7 @@ void autolykos_v2_verify_lm0(
     ((uchar *)r)[34] = ((uchar *)r)[2];
     ((uchar *)r)[35] = ((uchar *)r)[3];
 
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int k = 0; k < K_LEN; k += 4)
     {
         ind[k] = r[k >> 2] % period;
@@ -288,7 +290,7 @@ void autolykos_v2_verify_lm0(
 
 
     // remaining additions
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int k = 2; k < K_LEN; ++k)
     {
         shared_index[thrdblck_id] = ind[k];
@@ -357,7 +359,7 @@ void autolykos_v2_verify_lm0(
     B2B_MIX(aux, aux + 16);
 
     ulong hsh;
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (j = 0; j < NUM_SIZE_32; j += 2)
     {
         hsh = IVALS[j >> 1];

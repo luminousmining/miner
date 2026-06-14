@@ -51,7 +51,7 @@ uint BLAKE_2B_SIGMA[12][16] =
 
 
 inline
-void blake2b_compress(ulong *h, const ulong *m, ulong t, ulong f)
+void blake2b_compress(ulong* const h, ulong const* const m, ulong const t, ulong const f)
 {
     ulong v[16];
 
@@ -67,7 +67,7 @@ void blake2b_compress(ulong *h, const ulong *m, ulong t, ulong f)
     v[12] ^= t;
     v[14] ^= f;
 
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int rnd = 0; rnd < 12; ++rnd)
     {
         BLAKE2B_RND(v, rnd, m);
@@ -82,11 +82,13 @@ void blake2b_compress(ulong *h, const ulong *m, ulong t, ulong f)
     h[6] ^= v[6] ^ v[6 + 8];
     h[7] ^= v[7] ^ v[7 + 8];
 }
+
+
 __kernel
 void autolykos_v2_build_dag(
-    __global uint* restrict dag,
-    uint const              height,
-    uint const              period)
+    __global uint* const restrict dag,
+    uint const                    height,
+    uint const                    period)
 {
     uint tid = get_global_id(0);
 
@@ -112,7 +114,7 @@ void autolykos_v2_build_dag(
     //====================================================================//
     //  Hash tid
     //====================================================================//
-    ((uint *)b)[0] = as_uint(as_uchar4(tid).s3210);
+    ((uint *)b)[0] = bswap32(tid);
 
     //====================================================================//
     //  Hash height
@@ -123,31 +125,32 @@ void autolykos_v2_build_dag(
     //  Hash constant message
     //====================================================================//
     ulong ctr = 0;
-    for (int x = 1; x < 16; ++x, ++ctr)
+    __attribute__((opencl_unroll_hint))
+    for (int i = 1; i < 16; ++i, ++ctr)
     {
-        ((ulong *)b)[x] = as_ulong(as_uchar8(ctr).s76543210);
+        ((ulong *)b)[i] = bswap64(ctr);
     }
 
-    #pragma unroll 1
-    for (int z = 0; z < 63; ++z)
+    __attribute__((opencl_unroll_hint(1)))
+    for (int i = 0; i < 63; ++i)
     {
         t += 128;
         blake2b_compress((ulong *)h, (ulong *)b, t, 0UL);
 
-        #pragma unroll
+        __attribute__((opencl_unroll_hint))
         for (int x = 0; x < 16; ++x, ++ctr)
         {
-            ((ulong *)b)[x] = as_ulong(as_uchar8(ctr).s76543210);
+            ((ulong *)b)[x] = bswap64(ctr);
         }
     }
 
     t += 128;
     blake2b_compress((ulong *)h, (ulong *)b, t, 0UL);
 
-    ((ulong *)b)[0] = as_ulong(as_uchar8(ctr).s76543210);
+    ((ulong *)b)[0] = bswap64(ctr);
     t += 8;
 
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int i = 1; i < 16; ++i)
     {
         ((ulong *)b)[i] = 0UL;
@@ -158,10 +161,10 @@ void autolykos_v2_build_dag(
     //====================================================================//
     //  Dump result to global memory -- BIG ENDIAN
     //====================================================================//
-    #pragma unroll
+    __attribute__((opencl_unroll_hint))
     for (int i = 0; i < 4; ++i)
     {
-        ((__global ulong *)dag)[(tid + 1) * 4 - i - 1] = as_ulong(as_uchar8(h[i]).s76543210);
+        ((__global ulong *)dag)[(tid + 1) * 4 - i - 1] = bswap64(h[i]);
     }
     // (ulong) cast is required: tid*32 overflows 32-bit for tid >= 2^27 (the 4 GiB
     // byte boundary), which silently retargets this zeroing write to a low element
