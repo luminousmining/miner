@@ -149,12 +149,6 @@
     B2B_G(v, 2, 7,  8, 13, ((ulong *)(m))[11], ((ulong *)(m))[ 7]);            \
     B2B_G(v, 3, 4,  9, 14, ((ulong *)(m))[ 5], ((ulong *)(m))[ 3]);            \
 }
-#define REVERSE_BYTES_INT(input,output)                                          \
-{                                                                              \
-    void * p = &input;                                                         \
-    uchar4 bytesr = ((uchar4 *)p)[0].wzyx;                                     \
-    output = *((uint *)&bytesr);                                               \
-}
 
 
 #define FN_ADD(Val1, Val2, cv, Result,ret)                                     \
@@ -210,8 +204,8 @@ void autolykos_v2_search_lm0(
         FN_ADD(((uint *)&nonce)[1], 0, CV, non[1], CV);
 
         ulong tmp;
-        REVERSE_BYTES_INT(non[1], ((uint *)(&tmp))[0]);
-        REVERSE_BYTES_INT(non[0], ((uint *)(&tmp))[1]);
+        ((uint *)(&tmp))[0] = bswap32(non[1]);
+        ((uint *)(&tmp))[1] = bswap32(non[0]);
 
         //--------------------------hash
         B2B_IV(aux);
@@ -245,8 +239,8 @@ void autolykos_v2_search_lm0(
         hsh = IVALS[3];
         hsh ^= ((ulong *)(aux))[3] ^ ((ulong *)(aux))[11];
 
-        REVERSE_BYTES_INT(((uint*)(&hsh))[1], ((uint *)(&h2))[0]);
-        REVERSE_BYTES_INT(((uint*)(&hsh))[0], ((uint *)(&h2))[1]);
+        ((uint *)(&h2))[0] = bswap32(((uint*)(&hsh))[1]);
+        ((uint *)(&h2))[1] = bswap32(((uint*)(&hsh))[0]);
 
         h3 = h2 % period;
 
@@ -314,9 +308,9 @@ void autolykos_v2_search_lm0(
             hsh = IVALS[j >> 1];
             hsh ^= ((ulong *)(aux))[j >> 1] ^ ((ulong *)(aux))[8 + (j >> 1)];
 
-            REVERSE_BYTES_INT(((uint*)(&hsh))[0], r[j]);
+            r[j] = bswap32(((uint*)(&hsh))[0]);
             BHashes[THREADS_PER_ITER*j + tid] = r[j];
-            REVERSE_BYTES_INT(((uint*)(&hsh))[1], r[j + 1]);
+            r[j + 1] = bswap32(((uint*)(&hsh))[1]);
             BHashes[THREADS_PER_ITER*(j + 1) + tid] = r[j + 1];
         }
     }

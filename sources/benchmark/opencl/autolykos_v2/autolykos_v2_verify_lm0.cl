@@ -145,12 +145,6 @@
     B2B_G(v, 2, 7,  8, 13, ((ulong *)(m))[11], ((ulong *)(m))[ 7]);            \
     B2B_G(v, 3, 4,  9, 14, ((ulong *)(m))[ 5], ((ulong *)(m))[ 3]);            \
 }
-#define REVERSE_BYTES_INT(input,output)                                          \
-{                                                                              \
-    void * p = &input;                                                         \
-    uchar4 bytesr = ((uchar4 *)p)[0].wzyx;                                     \
-    output = *((uint *)&bytesr);                                               \
-}
 
 
 #define FN_ADD(Val1, Val2, cv, Result,ret)                                     \
@@ -364,8 +358,8 @@ void autolykos_v2_verify_lm0(
     {
         hsh = IVALS[j >> 1];
         hsh ^= ((ulong *)(aux))[j >> 1] ^ ((ulong *)(aux))[8 + (j >> 1)];
-        REVERSE_BYTES_INT(((uint*)&hsh)[0], r[7 - j]);
-        REVERSE_BYTES_INT(((uint*)&hsh)[1], r[7 - j - 1]);
+        r[7 - j] = bswap32(((uint*)&hsh)[0]);
+        r[7 - j - 1] = bswap32(((uint*)&hsh)[1]);
 
     }
     //================================================================//
