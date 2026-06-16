@@ -54,6 +54,14 @@ resolver::ResolverCpuBlake3::ResolverCpuBlake3() : ResolverCpuBlake3(resolvePool
 
 resolver::ResolverCpuBlake3::~ResolverCpuBlake3()
 {
+    // Drain any in-flight async batch before the buffers it scans are destroyed. threadPool is
+    // declared before batch[], so it is destroyed last -- without this wait, a worker finishing
+    // an in-flight batch during threadPool's join would read already-freed batch[] memory.
+    if (true == inFlight)
+    {
+        threadPool.wait();
+        inFlight = false;
+    }
 }
 
 
