@@ -1,5 +1,6 @@
 #if defined(CPU_ENABLE)
 
+#include <algorithm>
 #include <bit>
 
 #include <common/cast.hpp>
@@ -58,6 +59,7 @@ void resolver::CpuThreadPool::workerLoop(uint32_t const index)
     for (;;)
     {
         uint64_t jobTotal{ 0ull };
+        uint64_t jobGrain{ 1ull };
         {
             UNIQUE_LOCK(mutex);
             cvWork.wait(
@@ -72,17 +74,33 @@ void resolver::CpuThreadPool::workerLoop(uint32_t const index)
             }
             lastGeneration = generation;
             jobTotal = total;
+            jobGrain = sliceGrain;
         }
 
-        auto const [lo, hi]{ resolver::cpu::chunkRange(jobTotal, poolSize, index) };
-        if (nullptr != job && hi > lo)
+        // Pull grain-sized slices from the shared cursor until [0, jobTotal) is drained. The
+        // fetch_add is an atomic read-modify-write, so it always sees the latest value in the
+        // modification order and no slice is ever handed out twice -- relaxed ordering is
+        // enough here because the slices are independent (each worker only touches its own
+        // [lo, hi) nonces; the lone shared write is the hit append, which the callback guards
+        // with its own mutex).
+        for (;;)
         {
-            job(lo, hi, index);
+            uint64_t const lo{ cursor.fetch_add(jobGrain, std::memory_order_relaxed) };
+            if (lo >= jobTotal)
+            {
+                break;
+            }
+            uint64_t const hi{ std::min<uint64_t>(lo + jobGrain, jobTotal) };
+            if (nullptr != job)
+            {
+                job(lo, hi, index);
+            }
         }
 
         {
             UNIQUE_LOCK(mutex);
-            if (0u == --remaining)
+            --remaining;
+            if (0u == remaining)
             {
                 cvDone.notify_one();
             }
@@ -98,9 +116,11 @@ void resolver::CpuThreadPool::setCallback(ChunkFn const& fn)
 }
 
 
-void resolver::CpuThreadPool::run(uint64_t const count)
+void resolver::CpuThreadPool::runAsync(uint64_t const count, uint64_t const grain)
 {
-    // Single-worker (or empty) batches run inline: no dispatch, no contention.
+    // Single-worker (or empty) batches run inline: no dispatch, no contention. There is no
+    // worker thread to run "in the background", so the inline path is unavoidably synchronous;
+    // a 1-core host gets nothing from double-buffering anyway.
     if (1u >= poolSize || 0ull == count)
     {
         if (0ull != count && nullptr != job)
@@ -112,15 +132,42 @@ void resolver::CpuThreadPool::run(uint64_t const count)
 
     UNIQUE_LOCK(mutex);
     total = count;
+    // Default grain = ceil(count / workers): every worker claims exactly one slice, so the
+    // cursor reproduces the old static equal split. A smaller grain enables work-stealing.
+    sliceGrain = (0ull != grain) ? grain : ((count + poolSize - 1ull) / poolSize);
+    if (0ull == sliceGrain)
+    {
+        sliceGrain = 1ull;
+    }
+    cursor.store(0ull, std::memory_order_relaxed);
     remaining = poolSize;
     ++generation;
     cvWork.notify_all();
+}
+
+
+void resolver::CpuThreadPool::wait()
+{
+    // Inline path (poolSize <= 1) already finished synchronously inside runAsync().
+    if (1u >= poolSize)
+    {
+        return;
+    }
+
+    UNIQUE_LOCK(mutex);
     cvDone.wait(
         lock,
         [&]
         {
             return 0u == remaining;
         });
+}
+
+
+void resolver::CpuThreadPool::run(uint64_t const count, uint64_t const grain)
+{
+    runAsync(count, grain);
+    wait();
 }
 
 #endif

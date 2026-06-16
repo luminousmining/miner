@@ -71,48 +71,49 @@ bool resolver::ResolverCpuBlake3::updateConstants([[maybe_unused]] stratum::Stra
 }
 
 
-bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& jobInfo)
+void resolver::ResolverCpuBlake3::prepareBatch(Batch& batch, stratum::StratumJobInfo const& jobInfo)
 {
-    ////////////////////////////////////////////////////////////////////////////
-    uint64_t const base{ jobInfo.nonce };
-    uint64_t const count{ castU64(getBlocks()) * castU64(getThreads()) };
-    algo::hash3072 header{ jobInfo.headerBlob };
+    // Copy by value: the worker closure for an async batch runs after executeAsync() returns,
+    // so it cannot reference the caller's jobInfo.
+    batch.header = jobInfo.headerBlob;
+    batch.target = jobInfo.targetBlob;
+    batch.base = jobInfo.nonce;
+    batch.result.found = false;
+    batch.result.count = 0u;
+}
 
-    ////////////////////////////////////////////////////////////////////////////
-    algo::blake3::Result local{ false, 0u, { 0ull, 0ull, 0ull, 0ull } };
-    std::mutex           hitMutex{};
 
-    // Fan the nonce batch across the pinned worker pool. Hits are astronomically rare, so
-    // the shared result append is guarded by a mutex with negligible contention.
-    threadPool.setCallback(
-        [&](uint64_t const lo, uint64_t const hi, uint32_t const /*workerIndex*/)
-        {
-            for (uint64_t i{ lo }; i < hi; ++i)
-            {
-                uint64_t const candidate{ base + i };
-
-                algo::hash256 digest{};
-                algo::blake3::hashRef(header, candidate, digest);
-
-                // Winner: digest <= targetBlob, byte-wise from index 0 (matches the kernel).
-                if (std::memcmp(digest.ubytes, jobInfo.targetBlob.ubytes, algo::LEN_HASH_256_WORD_8) <= 0)
-                {
-                    std::scoped_lock<std::mutex> const guard{ hitMutex };
-                    if (local.count < algo::blake3::MAX_RESULT)
-                    {
-                        local.nonces[local.count] = candidate;
-                        ++local.count;
-                        local.found = true;
-                    }
-                }
-            }
-        });
-    threadPool.run(count);
-
-    ////////////////////////////////////////////////////////////////////////////
-    if (true == local.found)
+void resolver::ResolverCpuBlake3::hashChunk(uint64_t const lo, uint64_t const hi, Batch& batch)
+{
+    for (uint64_t i{ lo }; i < hi; ++i)
     {
-        uint32_t const found{ common::max_limit(local.count, algo::blake3::MAX_RESULT) };
+        uint64_t const candidate{ batch.base + i };
+
+        algo::hash256 digest{};
+        algo::blake3::hashRef(batch.header, candidate, digest);
+
+        // Winner: digest <= target, byte-wise from index 0 (matches the kernel).
+        int const comparison{ std::memcmp(digest.ubytes, batch.target.ubytes, algo::LEN_HASH_256_WORD_8) };
+        if (0 >= comparison)
+        {
+            // Hits are astronomically rare, so this lock has negligible contention.
+            std::scoped_lock<std::mutex> const guard{ batch.hitMutex };
+            if (algo::blake3::MAX_RESULT > batch.result.count)
+            {
+                batch.result.nonces[batch.result.count] = candidate;
+                ++batch.result.count;
+                batch.result.found = true;
+            }
+        }
+    }
+}
+
+
+void resolver::ResolverCpuBlake3::harvest(Batch& batch, stratum::StratumJobInfo const& jobInfo)
+{
+    if (true == batch.result.found)
+    {
+        uint32_t const found{ common::max_limit(batch.result.count, algo::blake3::MAX_RESULT) };
 
         resultShare.found = true;
         resultShare.fromGroup = jobInfo.fromGroup;
@@ -123,9 +124,42 @@ bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& job
 
         for (uint32_t i{ 0u }; i < found; ++i)
         {
-            resultShare.nonces[i] = local.nonces[i];
+            resultShare.nonces[i] = batch.result.nonces[i];
         }
+
+        batch.result.found = false;
+        batch.result.count = 0u;
     }
+}
+
+
+bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& jobInfo)
+{
+    ////////////////////////////////////////////////////////////////////////////
+    // Drain any async batch left in flight so the buffer is free to reuse synchronously.
+    if (true == inFlight)
+    {
+        threadPool.wait();
+        inFlight = false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    uint64_t const count{ castU64(getBlocks()) * castU64(getThreads()) };
+    Batch&         current{ batch[currentIndex] };
+
+    prepareBatch(current, jobInfo);
+
+    // Fan the nonce batch across the pinned worker pool and block until it finishes: the
+    // synchronous path is the one tests and debugging rely on.
+    threadPool.setCallback(
+        [this](uint64_t const lo, uint64_t const hi, uint32_t const /*workerIndex*/)
+        {
+            hashChunk(lo, hi, batch[currentIndex]);
+        });
+    threadPool.run(count);
+
+    ////////////////////////////////////////////////////////////////////////////
+    harvest(current, jobInfo);
 
     return true;
 }
@@ -133,8 +167,34 @@ bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& job
 
 bool resolver::ResolverCpuBlake3::executeAsync(stratum::StratumJobInfo const& jobInfo)
 {
-    // CPU work is synchronous: no double-buffering. Async == sync.
-    return executeSync(jobInfo);
+    ////////////////////////////////////////////////////////////////////////////
+    uint64_t const count{ castU64(getBlocks()) * castU64(getThreads()) };
+
+    // CPU mirror of the GPU two-stream double-buffer (see ResolverNvidiaBlake3::executeAsync):
+    // wait for the batch dispatched on the previous call, harvest it, then swap buffers and
+    // launch the next batch into the now-idle one and return immediately. While the device
+    // reads/submits the harvested buffer and syncs with stratum, the workers keep computing.
+    if (true == inFlight)
+    {
+        threadPool.wait();
+        harvest(batch[currentIndex], jobInfo);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    currentIndex ^= 1u;
+    Batch& next{ batch[currentIndex] };
+    prepareBatch(next, jobInfo);
+
+    uint32_t const launchIndex{ currentIndex };
+    threadPool.setCallback(
+        [this, launchIndex](uint64_t const lo, uint64_t const hi, uint32_t const /*workerIndex*/)
+        {
+            hashChunk(lo, hi, batch[launchIndex]);
+        });
+    threadPool.runAsync(count);
+    inFlight = true;
+
+    return true;
 }
 
 

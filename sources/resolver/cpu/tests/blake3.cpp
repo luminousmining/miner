@@ -66,8 +66,41 @@ TEST_F(ResolverBlake3CpuTest, findsNonceThenSubmits)
 
     ASSERT_FALSE(stratum.paramSubmitObject.empty());
     // 8-byte search value (16 hex) zero-padded to the 24-byte (48 hex) submit nonce.
-    EXPECT_EQ("914544566c9a0a4d00000000000000000000000000000000",
-              std::string{ stratum.paramSubmitObject.at("nonce").as_string().c_str() });
+    EXPECT_EQ(
+        "914544566c9a0a4d00000000000000000000000000000000",
+        std::string{ stratum.paramSubmitObject.at("nonce").as_string().c_str() });
+    EXPECT_EQ("job-1", std::string{ stratum.paramSubmitObject.at("jobId").as_string().c_str() });
+}
+
+
+// executeAsync double-buffers: a call harvests the batch launched by the *previous* call.
+// So the first call only launches (nothing to submit yet); the second drains the first batch
+// into resultShare and submit emits the KAT nonce.
+TEST_F(ResolverBlake3CpuTest, executeAsyncDoubleBuffersThenSubmits)
+{
+    initializeJob();
+    for (uint32_t i{ 0u }; i < algo::LEN_HASH_256_WORD_8; ++i)
+    {
+        jobInfo.targetBlob.ubytes[i] = 0xFFu;
+    }
+    jobInfo.nonce = KAT_NONCE;
+
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+
+    // First call only launches a batch: nothing is in flight to harvest, so no share yet.
+    ASSERT_TRUE(resolver.executeAsync(jobInfo));
+    resolver.submit(&stratum);
+    EXPECT_TRUE(stratum.paramSubmitObject.empty());
+
+    // Second call waits on the first batch, harvests it, then submit emits the found nonce.
+    ASSERT_TRUE(resolver.executeAsync(jobInfo));
+    resolver.submit(&stratum);
+
+    ASSERT_FALSE(stratum.paramSubmitObject.empty());
+    EXPECT_EQ(
+        "914544566c9a0a4d00000000000000000000000000000000",
+        std::string{ stratum.paramSubmitObject.at("nonce").as_string().c_str() });
     EXPECT_EQ("job-1", std::string{ stratum.paramSubmitObject.at("jobId").as_string().c_str() });
 }
 
