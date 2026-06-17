@@ -66,7 +66,7 @@ namespace resolver
 
         // The pinned worker pool lives on the only CPU resolver that parallelizes its scan;
         // the serial progpow/kawpow CPU resolvers do not pay for an unused pool.
-        resolver::CpuThreadPool threadPool;
+        resolver::cpu::CpuThreadPool threadPool;
 
         // Double-buffer state: executeAsync() launches into batch[currentIndex] and harvests the
         // other; inFlight tracks whether a previous async batch is still pending its wait().

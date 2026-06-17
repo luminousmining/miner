@@ -3,14 +3,14 @@
 #include <algorithm>
 #include <bit>
 
+#include <algo/bitwise.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 #include <resolver/cpu/cpu_affinity.hpp>
-#include <resolver/cpu/cpu_params.hpp>
 #include <resolver/cpu/thread_pool.hpp>
 
 
-resolver::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t const affinityMask)
+resolver::cpu::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t const affinityMask)
     : poolSize{ (0u < workerCount) ? workerCount : 1u }, mask{ affinityMask }
 {
     // poolSize == 1 runs inline in run(); no worker threads are spawned.
@@ -29,7 +29,7 @@ resolver::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t cons
 }
 
 
-resolver::CpuThreadPool::~CpuThreadPool()
+resolver::cpu::CpuThreadPool::~CpuThreadPool()
 {
     {
         UNIQUE_LOCK(mutex);
@@ -47,12 +47,12 @@ resolver::CpuThreadPool::~CpuThreadPool()
 }
 
 
-void resolver::CpuThreadPool::workerLoop(uint32_t const index)
+void resolver::cpu::CpuThreadPool::workerLoop(uint32_t const index)
 {
     if (0ull != mask)
     {
         uint32_t const population{ castU32(std::popcount(mask)) };
-        resolver::pinThisThreadToCore(resolver::cpu::nthSetBit(mask, index % population));
+        resolver::cpu::pinThisThreadToCore(algo::nthSetBit(mask, index % population));
     }
 
     uint64_t lastGeneration{ 0ull };
@@ -109,14 +109,14 @@ void resolver::CpuThreadPool::workerLoop(uint32_t const index)
 }
 
 
-void resolver::CpuThreadPool::setCallback(ChunkFn const& fn)
+void resolver::cpu::CpuThreadPool::setCallback(ChunkFn const& fn)
 {
     UNIQUE_LOCK(mutex);
     job = fn;
 }
 
 
-void resolver::CpuThreadPool::runAsync(uint64_t const count, uint64_t const grain)
+void resolver::cpu::CpuThreadPool::runAsync(uint64_t const count, uint64_t const grain)
 {
     // Single-worker (or empty) batches run inline: no dispatch, no contention. There is no
     // worker thread to run "in the background", so the inline path is unavoidably synchronous;
@@ -146,7 +146,7 @@ void resolver::CpuThreadPool::runAsync(uint64_t const count, uint64_t const grai
 }
 
 
-void resolver::CpuThreadPool::wait()
+void resolver::cpu::CpuThreadPool::wait()
 {
     // Inline path (poolSize <= 1) already finished synchronously inside runAsync().
     if (1u >= poolSize)
@@ -164,7 +164,7 @@ void resolver::CpuThreadPool::wait()
 }
 
 
-void resolver::CpuThreadPool::run(uint64_t const count, uint64_t const grain)
+void resolver::cpu::CpuThreadPool::run(uint64_t const count, uint64_t const grain)
 {
     runAsync(count, grain);
     wait();

@@ -14,7 +14,7 @@ TEST(CpuThreadPool, runCoversAllIndices)
     {
         for (uint64_t const count : { 0ull, 1ull, 5ull, 1000ull })
         {
-            resolver::CpuThreadPool       pool{ workers, 0ull };
+            resolver::cpu::CpuThreadPool  pool{ workers, 0ull };
             std::vector<std::atomic<int>> seen(static_cast<size_t>(count));
             for (auto& s : seen)
             {
@@ -50,7 +50,7 @@ TEST(CpuThreadPool, smallGrainStillCoversAllIndicesExactlyOnce)
         for (uint64_t const grain : { 1ull, 3ull, 7ull })
         {
             constexpr uint64_t            count{ 1000ull };
-            resolver::CpuThreadPool       pool{ workers, 0ull };
+            resolver::cpu::CpuThreadPool  pool{ workers, 0ull };
             std::vector<std::atomic<int>> seen(static_cast<size_t>(count));
             for (auto& s : seen)
             {
@@ -82,7 +82,7 @@ TEST(CpuThreadPool, smallGrainStillCoversAllIndicesExactlyOnce)
 TEST(CpuThreadPool, runAsyncThenWaitCoversAllIndices)
 {
     constexpr uint64_t            count{ 5000ull };
-    resolver::CpuThreadPool       pool{ 4u, 0ull };
+    resolver::cpu::CpuThreadPool  pool{ 4u, 0ull };
     std::vector<std::atomic<int>> seen(static_cast<size_t>(count));
     for (auto& s : seen)
     {
@@ -112,7 +112,7 @@ TEST(CpuThreadPool, runAsyncThenWaitCoversAllIndices)
 // still compute the correct result (pinning is best-effort and platform-dependent).
 TEST(CpuThreadPool, runsWithAffinityMask)
 {
-    resolver::CpuThreadPool pool{ 2u, 0x3ull }; // request cores 0 and 1
+    resolver::cpu::CpuThreadPool pool{ 2u, 0x3ull }; // request cores 0 and 1
     std::atomic<uint64_t>   sum{ 0ull };
 
     pool.setCallback(

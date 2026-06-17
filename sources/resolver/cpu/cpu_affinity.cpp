@@ -12,23 +12,20 @@
 #endif
 
 
-bool resolver::pinThisThreadToCore([[maybe_unused]] uint32_t const coreIndex)
+bool resolver::cpu::pinThisThreadToCore([[maybe_unused]] uint32_t const coreIndex)
 {
 #if defined(_WIN32)
     DWORD_PTR const mask{ castDWORDPTR(1ull << coreIndex) };
-    return 0 != SetThreadAffinityMask(GetCurrentThread(), mask);
+    bool const      success{ 0 != SetThreadAffinityMask(GetCurrentThread(), mask) };
+    return success;
 #elif defined(__linux__)
     cpu_set_t set;
     CPU_ZERO(&set);
     CPU_SET(coreIndex, &set);
-    return 0 == pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
+    bool const success{ 0 == pthread_setaffinity_np(pthread_self(), sizeof(set), &set) };
+    return success;
 #else
-    static bool warned{ false };
-    if (false == warned)
-    {
-        logWarn() << "CPU affinity pinning is unavailable on this platform; --cpu_affinity ignored.";
-        warned = true;
-    }
+    logWarn() << "CPU affinity pinning is unavailable on this platform; --cpu_affinity ignored.";
     return false;
 #endif
 }

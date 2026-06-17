@@ -29,10 +29,10 @@
 #include <common/error/opencl_error.hpp>
 #include <common/formater_hashrate.hpp>
 #include <device/amd.hpp>
+#include <device/cpu.hpp>
 #include <device/device_manager.hpp>
 #include <device/mocker.hpp>
 #include <device/nvidia.hpp>
-#include <device/cpu.hpp>
 #include <stratum/stratums.hpp>
 
 

@@ -3,11 +3,13 @@
 #include <cstring>
 #include <iomanip>
 #include <mutex>
+#include <optional>
 #include <sstream>
 #include <thread>
 
 #include <boost/json.hpp>
 
+#include <algo/bitwise.hpp>
 #include <algo/blake3/blake3_pow.hpp>
 #include <algo/hash.hpp>
 #include <common/cast.hpp>
@@ -23,7 +25,8 @@ resolver::ResolverCpuBlake3::PoolConfig resolver::ResolverCpuBlake3::resolvePool
 
     // Parse the affinity mask exactly once: the worker-count resolution needs it (popcount
     // when --cpu_threads is unset) and the pool needs it for pinning.
-    uint64_t const mask{ config.cpu.affinity.has_value() ? resolver::cpu::parseHexMask(*config.cpu.affinity) : 0ull };
+    uint64_t const mask{ std::nullopt != config.cpu.affinity ? algo::hexToDecimal<uint64_t>(*config.cpu.affinity)
+                                                             : 0ull };
     uint32_t const workers{
         resolver::cpu::resolveWorkerCount(config.cpu.threads, mask, std::thread::hardware_concurrency())
     };

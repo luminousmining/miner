@@ -1,18 +1,8 @@
+#include <array>
+
 #include <gtest/gtest.h>
 
 #include <resolver/cpu/cpu_params.hpp>
-
-
-TEST(CpuParams, nthSetBit)
-{
-    using namespace resolver::cpu;
-
-    EXPECT_EQ(0u, nthSetBit(0b1011ull, 0u));
-    EXPECT_EQ(1u, nthSetBit(0b1011ull, 1u));
-    EXPECT_EQ(3u, nthSetBit(0b1011ull, 2u));
-    EXPECT_EQ(64u, nthSetBit(0b1011ull, 3u)); // only 3 bits set
-    EXPECT_EQ(64u, nthSetBit(0ull, 0u));
-}
 
 
 TEST(CpuParams, resolveWorkerCount)
@@ -31,15 +21,18 @@ TEST(CpuParams, chunkRangeCoversExactly)
 {
     using namespace resolver::cpu;
 
-    for (uint64_t const total : { 0ull, 1ull, 7ull, 100ull, 262144ull })
+    constexpr std::array<uint64_t, 5> totals{ 0ull, 1ull, 7ull, 100ull, 262144ull };
+    constexpr std::array<uint32_t, 3> workerCounts{ 1u, 3u, 8u };
+
+    for (uint64_t const total : totals)
     {
-        for (uint32_t const n : { 1u, 3u, 8u })
+        for (uint32_t const workerCount : workerCounts)
         {
             uint64_t covered{ 0ull };
             uint64_t prevHi{ 0ull };
-            for (uint32_t i{ 0u }; i < n; ++i)
+            for (uint32_t i{ 0u }; i < workerCount; ++i)
             {
-                auto const [lo, hi]{ chunkRange(total, n, i) };
+                auto const [lo, hi]{ chunkRange(total, workerCount, i) };
                 EXPECT_LE(lo, hi);
                 EXPECT_EQ(prevHi, lo); // contiguous: no gap, no overlap
                 prevHi = hi;
@@ -49,18 +42,4 @@ TEST(CpuParams, chunkRangeCoversExactly)
             EXPECT_EQ(total, covered); // exact coverage
         }
     }
-}
-
-
-TEST(CpuParams, parseHexMask)
-{
-    using namespace resolver::cpu;
-
-    EXPECT_EQ(0xFFull, parseHexMask("0xFF"));
-    EXPECT_EQ(0xFFull, parseHexMask("FF"));
-    EXPECT_EQ(0xABCDull, parseHexMask("0xabcd"));
-    EXPECT_EQ(0ull, parseHexMask(""));
-    EXPECT_EQ(0ull, parseHexMask("xyz"));                                 // invalid -> 0
-    EXPECT_EQ(0xFFFFFFFFFFFFFFFFull, parseHexMask("0xFFFFFFFFFFFFFFFF")); // 16 hex digits: fits
-    EXPECT_EQ(0ull, parseHexMask("0x1FFFFFFFFFFFFFFFF"));                 // 17 sig digits: overflow -> 0
 }
