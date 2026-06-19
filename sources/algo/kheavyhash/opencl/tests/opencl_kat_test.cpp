@@ -46,13 +46,11 @@ static std::vector<uint16_t> flatten(Matrix const& matrix)
 }
 
 
-// Resolve the shipped .cl: env override (fast iteration on the rig) first, then the
-// compile-time in-tree source path (POCL/dev), then the deployed path next to the
-// binary. First that opens wins, so the same unit_test runs in the dev harness and on
-// a real GPU. Returns "" if none open.
-static std::string resolveKernelPath()
+// Resolve a .cl by trying each candidate in order; first that opens wins, so the same
+// unit_test runs in the dev harness (in-tree source) and on a real GPU (deployed next
+// to the binary). Returns "" if none open.
+static std::string firstReadable(std::initializer_list<char const*> candidates)
 {
-    char const* const candidates[3]{ std::getenv("KH_CL_PATH"), KH_CL_PATH, "kernel/kheavyhash/kheavyhash.cl" };
     for (char const* const cand : candidates)
     {
         if (nullptr != cand)
@@ -65,6 +63,20 @@ static std::string resolveKernelPath()
         }
     }
     return "";
+}
+
+
+// The search kernel is split across shared helpers (rol_u64, load/store LE), the
+// per-algo Result struct, and the kheavyhash body — appended in this order so each
+// definition precedes its use, mirroring ResolverAmdKHeavyHash::buildSearch().
+static std::array<std::string, 4> resolveKernelPaths()
+{
+    return {
+        firstReadable({ KH_CL_COMMON_DIR "/rotate_byte.cl", "kernel/common/rotate_byte.cl" }),
+        firstReadable({ KH_CL_COMMON_DIR "/load_store_le.cl", "kernel/common/load_store_le.cl" }),
+        firstReadable({ KH_CL_DIR "/kheavyhash_result.cl", "kernel/kheavyhash/kheavyhash_result.cl" }),
+        firstReadable({ std::getenv("KH_CL_PATH"), KH_CL_PATH, "kernel/kheavyhash/kheavyhash.cl" }),
+    };
 }
 
 
@@ -93,14 +105,17 @@ class OpenClKat : public ::testing::Test
             context = cl::Context(device);
             queue = cl::CommandQueue(context, device);
 
-            std::string const clPath{ resolveKernelPath() };
-            ASSERT_FALSE(clPath.empty()) << "cannot open kernel source (tried env KH_CL_PATH, " << KH_CL_PATH
-                                         << ", kernel/kheavyhash/kheavyhash.cl)";
+            std::array<std::string, 4> const clPaths{ resolveKernelPaths() };
 
             generator.clear();
             generator.setKernelName("search");
             generator.addDefine("MAX_RESULT", algo::kheavyhash::MAX_RESULT);
-            ASSERT_TRUE(generator.appendFile(clPath)) << "cannot append kernel source: " << clPath;
+            for (std::string const& clPath : clPaths)
+            {
+                ASSERT_FALSE(clPath.empty()) << "cannot open a kernel source (tried env KH_CL_PATH, the in-tree "
+                                                "source dirs, and the deployed kernel/ tree)";
+                ASSERT_TRUE(generator.appendFile(clPath)) << "cannot append kernel source: " << clPath;
+            }
             ASSERT_TRUE(generator.build(&device, &context)) << "kernel build failed (see build log above)";
         }
         catch (cl::Error const& clErr)

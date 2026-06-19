@@ -126,7 +126,10 @@ bool resolver::ResolverAmdKHeavyHash::buildSearch()
     kernelGenerator.addDefine("MAX_RESULT", algo::kheavyhash::MAX_RESULT);
 
     ////////////////////////////////////////////////////////////////////////////
-    if (false == kernelGenerator.appendFile("kernel/kheavyhash/kheavyhash.cl"))
+    if (false == kernelGenerator.appendFile("kernel/common/rotate_byte.cl")
+        || false == kernelGenerator.appendFile("kernel/common/load_store_le.cl")
+        || false == kernelGenerator.appendFile("kernel/kheavyhash/kheavyhash_result.cl")
+        || false == kernelGenerator.appendFile("kernel/kheavyhash/kheavyhash.cl"))
     {
         return false;
     }
