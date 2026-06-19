@@ -31,8 +31,11 @@ jobs:
   build-opencl:
     uses: ./.github/workflows/opencl_linux.yml
 
+  build-cuda:
+    uses: ./.github/workflows/cuda_linux.yml
+
   cppcheck:
-    needs: [build-cmake, build-boost, build-openssl, build-opencl]
+    needs: [build-cmake, build-boost, build-openssl, build-opencl, build-cuda]
     runs-on: ubuntu-22.04
 
     env:
@@ -47,7 +50,7 @@ jobs:
       - name: Setup dependencies
         uses: ./.github/actions/miner/setup-deps
         with:
-          cuda: "false"
+          cuda: "true"
 
       # ===============================
       # Install cppcheck
@@ -59,6 +62,10 @@ jobs:
       # Configure Miner ALL (AMD + NVIDIA + CPU)
       # ===============================
       - name: Configure CMake
+        env:
+          CUDA_HOME: /usr/local/cuda-13.1
+          CUDACXX: /usr/local/cuda-13.1/bin/nvcc
+          LD_LIBRARY_PATH: /usr/local/cuda-13.1/lib64:/usr/local/lib
         run: |
           mkdir build
           cd build
