@@ -1,11 +1,12 @@
 #pragma once
 
-#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <vector>
 
 #include <boost/thread.hpp>
+
+#include <common/atomic_counter.hpp>
 
 
 namespace resolver
@@ -46,19 +47,18 @@ namespace resolver
           private:
             void workerLoop(uint32_t index);
 
-            uint32_t                   poolSize{ 1u };
-            uint64_t                   mask{ 0ull };
-            callbackJob                cbJob{};
-            uint64_t                   total{ 0ull };
-            uint64_t                   sliceGrain{ 1ull };
-            std::atomic<uint64_t>      cursor{ 0ull };
-            uint64_t                   generation{ 0ull };
-            uint32_t                   remaining{ 0u };
-            std::atomic<bool>          stopRequested{ false };
-            boost::mutex               mutex{};
-            boost::condition_variable  cvWork{};
-            boost::condition_variable  cvDone{};
-            std::vector<boost::thread> workers{};
+            uint32_t                        poolSize{ 1u };
+            uint64_t                        mask{ 0ull };
+            callbackJob                     cbJob{};
+            uint64_t                        total{ 0ull };
+            uint64_t                        sliceGrain{ 1ull };
+            common::AtomicCounter<uint64_t> cursor{ 0ull };
+            uint64_t                        generation{ 0ull };
+            uint32_t                        remaining{ 0u };
+            boost::mutex                    mutex{};
+            boost::condition_variable       cvWork{};
+            boost::condition_variable       cvDone{};
+            std::vector<boost::thread>      workers{};
         };
     }
 }

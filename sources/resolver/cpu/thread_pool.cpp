@@ -1,9 +1,9 @@
 #if defined(CPU_ENABLE)
 
-#include <algorithm>
 #include <bit>
 
 #include <algo/bitwise.hpp>
+#include <algo/math.hpp>
 #include <common/cast.hpp>
 #include <common/custom.hpp>
 #include <resolver/cpu/cpu_affinity.hpp>
@@ -13,6 +13,10 @@
 resolver::cpu::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t const affinityMask)
     : poolSize{ (0u < workerCount) ? workerCount : 1u }, mask{ affinityMask }
 {
+    // The cursor only hands out independent [lo, hi) slices, so relaxed ordering is enough: the
+    // fetch_add RMW still always sees the latest value in the modification order.
+    cursor.setMemoryOrder(boost::memory_order::relaxed);
+
     // poolSize == 1 runs inline in run(); no worker threads are spawned.
     if (1u < poolSize)
     {
@@ -31,12 +35,12 @@ resolver::cpu::CpuThreadPool::CpuThreadPool(uint32_t const workerCount, uint64_t
 
 resolver::cpu::CpuThreadPool::~CpuThreadPool()
 {
+    // Interrupt each idle worker out of its cvWork.wait() (an interruption point), then join.
+    // boost::thread does not auto-join on destruction, and interruption replaces a stop flag.
+    for (boost::thread& worker : workers)
     {
-        UNIQUE_LOCK(mutex);
-        stopRequested = true;
+        worker.interrupt();
     }
-    cvWork.notify_all();
-    // boost::thread does not auto-join on destruction: join each worker explicitly.
     for (boost::thread& worker : workers)
     {
         if (true == worker.joinable())
@@ -56,51 +60,55 @@ void resolver::cpu::CpuThreadPool::workerLoop(uint32_t const index)
         resolver::cpu::pinThisThreadToCore(core);
     }
 
-    uint64_t lastGeneration{ 0ull };
-    while (false == stopRequested.load(std::memory_order_acquire))
+    // The destructor interrupts each worker; cvWork.wait() is an interruption point, so it throws
+    // boost::thread_interrupted on shutdown, which leaves the loop through the catch below.
+    try
     {
-        uint64_t jobTotal{ 0ull };
-        uint64_t jobGrain{ 1ull };
+        uint64_t lastGeneration{ 0ull };
+        while (false == boost::this_thread::interruption_requested())
         {
-            UNIQUE_LOCK(mutex);
-            auto const hasWork{ [&]()
-                                {
-                                    return generation != lastGeneration || true == stopRequested;
-                                } };
-            cvWork.wait(lock, hasWork);
-            if (true == stopRequested)
+            uint64_t jobTotal{ 0ull };
+            uint64_t jobGrain{ 1ull };
             {
-                break;
+                UNIQUE_LOCK(mutex);
+                auto const hasWork{ [&]()
+                                    {
+                                        return generation != lastGeneration;
+                                    } };
+                cvWork.wait(lock, hasWork);
+                lastGeneration = generation;
+                jobTotal = total;
+                jobGrain = sliceGrain;
             }
-            lastGeneration = generation;
-            jobTotal = total;
-            jobGrain = sliceGrain;
-        }
 
-        // Pull grain-sized slices from the shared cursor until [0, jobTotal) is drained. The
-        // fetch_add is an atomic read-modify-write, so it always sees the latest value in the
-        // modification order and no slice is ever handed out twice -- relaxed ordering is
-        // enough here because the slices are independent (each worker only touches its own
-        // [lo, hi) nonces; the lone shared write is the hit append, which the callback guards
-        // with its own mutex).
-        for (uint64_t lo{ cursor.fetch_add(jobGrain, std::memory_order_relaxed) }; lo < jobTotal;
-             lo = cursor.fetch_add(jobGrain, std::memory_order_relaxed))
-        {
-            uint64_t const hi{ std::min<uint64_t>(lo + jobGrain, jobTotal) };
-            if (nullptr != cbJob)
+            // Pull grain-sized slices from the shared cursor until [0, jobTotal) is drained. The
+            // fetch_add is an atomic read-modify-write, so it always sees the latest value in the
+            // modification order and no slice is ever handed out twice -- relaxed ordering is
+            // enough here because the slices are independent (each worker only touches its own
+            // [lo, hi) nonces; the lone shared write is the hit append, which the callback guards
+            // with its own mutex).
+            for (uint64_t lo{ cursor.add(jobGrain) }; lo < jobTotal; lo = cursor.add(jobGrain))
             {
-                cbJob(lo, hi, index);
+                uint64_t const hi{ algo::min(lo + jobGrain, jobTotal) };
+                if (nullptr != cbJob)
+                {
+                    cbJob(lo, hi, index);
+                }
             }
-        }
 
-        {
-            UNIQUE_LOCK(mutex);
-            --remaining;
-            if (0u == remaining)
             {
-                cvDone.notify_one();
+                UNIQUE_LOCK(mutex);
+                --remaining;
+                if (0u == remaining)
+                {
+                    cvDone.notify_one();
+                }
             }
         }
+    }
+    catch (boost::thread_interrupted const&)
+    {
+        // Interrupted while idle in cvWork.wait() during shutdown: exit cleanly.
     }
 }
 
@@ -135,7 +143,7 @@ void resolver::cpu::CpuThreadPool::runAsync(uint64_t const count, uint64_t const
     {
         sliceGrain = 1ull;
     }
-    cursor.store(0ull, std::memory_order_relaxed);
+    cursor.store(0ull);
     remaining = poolSize;
     ++generation;
     cvWork.notify_all();
