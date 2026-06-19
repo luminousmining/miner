@@ -68,11 +68,11 @@ namespace resolver
         // the serial progpow/kawpow CPU resolvers do not pay for an unused pool.
         resolver::cpu::CpuThreadPool threadPool;
 
-        // Double-buffer state: executeAsync() launches into batch[currentIndex] and harvests the
-        // other; inFlight tracks whether a previous async batch is still pending its wait().
-        Batch    batch[2]{};
-        uint32_t currentIndex{ 0u };
-        bool     inFlight{ false };
+        // Double-buffer state: executeAsync() launches into batch[currentIndexStream] (the base
+        // class double-buffer index, flipped via swapIndexStream()) and harvests the other;
+        // inFlight tracks whether a previous async batch is still pending its wait().
+        Batch batch[2]{};
+        bool  inFlight{ false };
     };
 }
 

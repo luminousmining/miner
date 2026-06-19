@@ -30,7 +30,7 @@ namespace resolver
         class CpuThreadPool
         {
           public:
-            using ChunkFn = std::function<void(uint64_t lo, uint64_t hi, uint32_t workerIndex)>;
+            using callbackJob = std::function<void(uint64_t lo, uint64_t hi, uint32_t workerIndex)>;
 
             CpuThreadPool(uint32_t workerCount, uint64_t affinityMask);
             ~CpuThreadPool();
@@ -38,8 +38,7 @@ namespace resolver
             CpuThreadPool(CpuThreadPool const&) = delete;
             CpuThreadPool& operator=(CpuThreadPool const&) = delete;
 
-            void setCallback(ChunkFn const& fn);
-            // grain == 0 selects the default ceil(count / workers) (one slice per worker).
+            void setCallback(callbackJob const& fn);
             void runAsync(uint64_t count, uint64_t grain = 0ull);
             void wait();
             void run(uint64_t count, uint64_t grain = 0ull);
@@ -47,15 +46,15 @@ namespace resolver
           private:
             void workerLoop(uint32_t index);
 
-            uint32_t                   poolSize;
-            uint64_t                   mask;
-            ChunkFn                    job{};
+            uint32_t                   poolSize{ 1u };
+            uint64_t                   mask{ 0ull };
+            callbackJob                cbJob{};
             uint64_t                   total{ 0ull };
             uint64_t                   sliceGrain{ 1ull };
             std::atomic<uint64_t>      cursor{ 0ull };
             uint64_t                   generation{ 0ull };
             uint32_t                   remaining{ 0u };
-            bool                       stopRequested{ false };
+            std::atomic<bool>          stopRequested{ false };
             boost::mutex               mutex{};
             boost::condition_variable  cvWork{};
             boost::condition_variable  cvDone{};

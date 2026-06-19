@@ -19,6 +19,13 @@
 #include <resolver/cpu/cpu_params.hpp>
 
 
+// Alephium nonce widths in hex characters: the 8-byte big-endian search value occupies the low
+// 16 hex chars; the pool recomputes the full 24-byte (48 hex char) nonce, so the submitted value
+// is the search value zero-extended to the right.
+constexpr uint32_t SEARCH_NONCE_HEX_LENGTH{ 16u };
+constexpr uint32_t FULL_NONCE_HEX_LENGTH{ 48u };
+
+
 resolver::ResolverCpuBlake3::PoolConfig resolver::ResolverCpuBlake3::resolvePoolConfig()
 {
     common::Config const& config{ common::Config::instance() };
@@ -37,6 +44,13 @@ resolver::ResolverCpuBlake3::PoolConfig resolver::ResolverCpuBlake3::resolvePool
 resolver::ResolverCpuBlake3::ResolverCpuBlake3(PoolConfig const poolConfig)
     : resolver::ResolverCpu(), threadPool{ poolConfig.workerCount, poolConfig.affinityMask }
 {
+    // Install the chunk callback once: it scans into whichever buffer currentIndexStream selects,
+    // so executeSync()/executeAsync() only flip the index, never reassign the callback.
+    threadPool.setCallback(
+        [this](uint64_t const lo, uint64_t const hi, [[maybe_unused]] uint32_t const workerIndex)
+        {
+            hashChunk(lo, hi, batch[currentIndexStream]);
+        });
 }
 
 
@@ -156,17 +170,12 @@ bool resolver::ResolverCpuBlake3::executeSync(stratum::StratumJobInfo const& job
 
     ////////////////////////////////////////////////////////////////////////////
     uint64_t const count{ castU64(getBlocks()) * castU64(getThreads()) };
-    Batch&         current{ batch[currentIndex] };
+    Batch&         current{ batch[currentIndexStream] };
 
     prepareBatch(current, jobInfo);
 
     // Fan the nonce batch across the pinned worker pool and block until it finishes: the
     // synchronous path is the one tests and debugging rely on.
-    threadPool.setCallback(
-        [this](uint64_t const lo, uint64_t const hi, uint32_t const /*workerIndex*/)
-        {
-            hashChunk(lo, hi, batch[currentIndex]);
-        });
     threadPool.run(count);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -188,20 +197,14 @@ bool resolver::ResolverCpuBlake3::executeAsync(stratum::StratumJobInfo const& jo
     if (true == inFlight)
     {
         threadPool.wait();
-        harvest(batch[currentIndex], jobInfo);
+        harvest(batch[currentIndexStream], jobInfo);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    currentIndex ^= 1u;
-    Batch& next{ batch[currentIndex] };
+    swapIndexStream();
+    Batch& next{ batch[currentIndexStream] };
     prepareBatch(next, jobInfo);
 
-    uint32_t const launchIndex{ currentIndex };
-    threadPool.setCallback(
-        [this, launchIndex](uint64_t const lo, uint64_t const hi, uint32_t const /*workerIndex*/)
-        {
-            hashChunk(lo, hi, batch[launchIndex]);
-        });
     threadPool.runAsync(count);
     inFlight = true;
 
@@ -217,13 +220,15 @@ void resolver::ResolverCpuBlake3::submit(stratum::Stratum* const stratum)
         {
             for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
-                // Zero-pad to 16 hex (8 bytes): the pool recomputes the 24-byte nonce, so leading zeros matter.
+                // Left-pad the 8-byte search value to its 16 hex chars (leading zeros matter), then
+                // right-extend with zeros to the full 24-byte nonce the pool recomputes.
                 std::stringstream nonceHexa;
-                nonceHexa << std::setw(16) << std::setfill('0') << std::hex << resultShare.nonces[i];
+                nonceHexa << std::setw(SEARCH_NONCE_HEX_LENGTH) << std::setfill('0') << std::hex
+                          << resultShare.nonces[i];
 
                 std::string nonceStr{ nonceHexa.str() };
 
-                while (nonceStr.size() < 48)
+                while (nonceStr.size() < FULL_NONCE_HEX_LENGTH)
                 {
                     nonceStr += "0";
                 }
@@ -255,7 +260,8 @@ void resolver::ResolverCpuBlake3::submit(stratum::StratumSmartMining* const stra
             for (uint32_t i{ 0u }; i < resultShare.count; ++i)
             {
                 std::stringstream nonceHexa;
-                nonceHexa << std::setw(16) << std::setfill('0') << std::hex << resultShare.nonces[i];
+                nonceHexa << std::setw(SEARCH_NONCE_HEX_LENGTH) << std::setfill('0') << std::hex
+                          << resultShare.nonces[i];
 
                 boost::json::object params{};
                 params["jobId"] = resultShare.jobId;

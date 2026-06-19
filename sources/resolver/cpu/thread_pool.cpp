@@ -52,25 +52,25 @@ void resolver::cpu::CpuThreadPool::workerLoop(uint32_t const index)
     if (0ull != mask)
     {
         uint32_t const population{ castU32(std::popcount(mask)) };
-        resolver::cpu::pinThisThreadToCore(algo::nthSetBit(mask, index % population));
+        uint32_t const core{ algo::nthSetBit(mask, index % population) };
+        resolver::cpu::pinThisThreadToCore(core);
     }
 
     uint64_t lastGeneration{ 0ull };
-    for (;;)
+    while (false == stopRequested.load(std::memory_order_acquire))
     {
         uint64_t jobTotal{ 0ull };
         uint64_t jobGrain{ 1ull };
         {
             UNIQUE_LOCK(mutex);
-            cvWork.wait(
-                lock,
-                [&]
-                {
-                    return generation != lastGeneration || true == stopRequested;
-                });
+            auto const hasWork{ [&]()
+                                {
+                                    return generation != lastGeneration || true == stopRequested;
+                                } };
+            cvWork.wait(lock, hasWork);
             if (true == stopRequested)
             {
-                return;
+                break;
             }
             lastGeneration = generation;
             jobTotal = total;
@@ -83,17 +83,13 @@ void resolver::cpu::CpuThreadPool::workerLoop(uint32_t const index)
         // enough here because the slices are independent (each worker only touches its own
         // [lo, hi) nonces; the lone shared write is the hit append, which the callback guards
         // with its own mutex).
-        for (;;)
+        for (uint64_t lo{ cursor.fetch_add(jobGrain, std::memory_order_relaxed) }; lo < jobTotal;
+             lo = cursor.fetch_add(jobGrain, std::memory_order_relaxed))
         {
-            uint64_t const lo{ cursor.fetch_add(jobGrain, std::memory_order_relaxed) };
-            if (lo >= jobTotal)
-            {
-                break;
-            }
             uint64_t const hi{ std::min<uint64_t>(lo + jobGrain, jobTotal) };
-            if (nullptr != job)
+            if (nullptr != cbJob)
             {
-                job(lo, hi, index);
+                cbJob(lo, hi, index);
             }
         }
 
@@ -109,10 +105,10 @@ void resolver::cpu::CpuThreadPool::workerLoop(uint32_t const index)
 }
 
 
-void resolver::cpu::CpuThreadPool::setCallback(ChunkFn const& fn)
+void resolver::cpu::CpuThreadPool::setCallback(callbackJob const& fn)
 {
     UNIQUE_LOCK(mutex);
-    job = fn;
+    cbJob = fn;
 }
 
 
@@ -123,9 +119,9 @@ void resolver::cpu::CpuThreadPool::runAsync(uint64_t const count, uint64_t const
     // a 1-core host gets nothing from double-buffering anyway.
     if (1u >= poolSize || 0ull == count)
     {
-        if (0ull != count && nullptr != job)
+        if (0ull != count && nullptr != cbJob)
         {
-            job(0ull, count, 0u);
+            cbJob(0ull, count, 0u);
         }
         return;
     }
@@ -155,12 +151,11 @@ void resolver::cpu::CpuThreadPool::wait()
     }
 
     UNIQUE_LOCK(mutex);
-    cvDone.wait(
-        lock,
-        [&]
-        {
-            return 0u == remaining;
-        });
+    auto const isRemaining{ [&]()
+                            {
+                                return 0u == remaining;
+                            } };
+    cvDone.wait(lock, isRemaining);
 }
 
 
