@@ -314,6 +314,8 @@ bool common::Config::loadCli(int argc, char** argv)
         deviceEnable.amdEnable = cli.isAmdEnable();
 #endif
         deviceEnable.cpuEnable = cli.isCpuEnable();
+        cpu.threads = cli.getCpuThreads();
+        cpu.affinity = cli.getCpuAffinity();
 
 #if defined(AMD_ENABLE)
         ////////////////////////////////////////////////////////////////////////

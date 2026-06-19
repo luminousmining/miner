@@ -52,7 +52,7 @@ namespace common
             std::optional<uint32_t>    threads{};
             std::optional<uint32_t>    blocks{};
             std::optional<uint32_t>    internalLoop{};
-            std::optional<uint32_t>    kernelMinimunExecuteNeeded{};
+            uint32_t                   kernelMinimunExecuteNeeded{ 100u };
             std::optional<std::string> cudaContext{};
             bool                       accumulateHash{ true };
         };
@@ -60,6 +60,12 @@ namespace common
         struct DeviceAlgorithmConfig
         {
             bool ethashBuildLightCacheCPU{ true };
+        };
+
+        struct CpuConfig
+        {
+            std::optional<uint32_t>    threads{};  // --cpu_threads (pool size); empty = all cores
+            std::optional<std::string> affinity{}; // --cpu_affinity raw hex; parsed at pool construction
         };
 
         struct DeviceEnableSetting
@@ -104,6 +110,7 @@ namespace common
         SmartMiningConfig              smartMining{};
         DeviceEnableSetting            deviceEnable{};
         DeviceAlgorithmConfig          deviceAlgorithm{};
+        CpuConfig                      cpu{};
         std::vector<uint32_t>          deviceDisable{};
         std::map<uint32_t, PoolConfig> deviceSettings{};
         PoolConfig                     amdSetting{};

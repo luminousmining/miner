@@ -151,6 +151,13 @@ void device::DeviceManager::showMiningStats(
             break;
         }
 #endif
+#if defined(CPU_ENABLE)
+        case device::DEVICE_TYPE::CPU:
+        {
+            deviceType = "CPU";
+            break;
+        }
+#endif
         case device::DEVICE_TYPE::UNKNOWN:
         {
             deviceType = "UNKNOWN";
@@ -211,6 +218,13 @@ void device::DeviceManager::showDeviceStats(
             break;
         }
 #endif
+#if defined(CPU_ENABLE)
+        case device::DEVICE_TYPE::CPU:
+        {
+            deviceType = "CPU";
+            break;
+        }
+#endif
         case device::DEVICE_TYPE::UNKNOWN:
         {
             deviceType = "UNKNOWN";
@@ -251,6 +265,13 @@ void device::DeviceManager::showDeviceStats(
 #if defined(TOOL_MOCKER)
         case device::DEVICE_TYPE::MOCKER:
         {
+            break;
+        }
+#endif
+#if defined(CPU_ENABLE)
+        case device::DEVICE_TYPE::CPU:
+        {
+            // No power/clock telemetry for a CPU device.
             break;
         }
 #endif

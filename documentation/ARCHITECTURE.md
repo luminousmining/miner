@@ -1,6 +1,6 @@
 # LuminousMiner — Architecture
 
-> Version 0.12 · C++20 · NVIDIA (CUDA) · AMD (OpenCL) · CPU (OpenMP)
+> Version 0.12 · C++20 · NVIDIA (CUDA) · AMD (OpenCL) · CPU (std::thread pool)
 
 ---
 
@@ -81,7 +81,7 @@ sources/
 ├── resolver/
 │   ├── amd/                   # OpenCL resolvers (one per algorithm)
 │   ├── nvidia/                # CUDA resolvers (one per algorithm)
-│   └── cpu/                   # OpenMP CPU resolver
+│   └── cpu/                   # CPU resolver (std::thread pool)
 ├── statistical/               # Hashrate & share counters
 ├── stratum/                   # Stratum protocol implementations
 └── web/                       # Web UI assets

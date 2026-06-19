@@ -11,11 +11,14 @@ namespace device
 #if defined(AMD_ENABLE)
         AMD,
 #endif
+#if defined(CPU_ENABLE)
+        CPU,
+#endif
 #if defined(TOOL_MOCKER)
         MOCKER,
 #endif
         UNKNOWN
     };
 
-    constexpr uint8_t MAX_DEVICE_TYPE{ 2 };
+    constexpr uint8_t MAX_DEVICE_TYPE{ 3 };
 }

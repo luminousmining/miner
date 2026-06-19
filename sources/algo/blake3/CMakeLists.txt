@@ -5,6 +5,12 @@ if (BUILD_EXE_MINER)
     target_sources(${MINER_EXE} PUBLIC
         ${HEADERS}
     )
+    if (BUILD_CPU)
+        target_sources(${MINER_EXE} PUBLIC
+            ${SOURCES}
+        )
+        target_link_libraries(${MINER_EXE} PUBLIC blake3_ref)
+    endif()
 endif()
 
 if (BUILD_EXE_UNIT_TEST)

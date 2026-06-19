@@ -71,3 +71,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #define castPtrHash512(value) reinterpret_cast<algo::hash512*>(value)
 #endif // !__LIB_CUDA
+
+
+#if defined(_WIN32)
+#define castDWORDPTR(value) static_cast<DWORD_PTR>(value)
+#endif // _WIN32

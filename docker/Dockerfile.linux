@@ -1,34 +1,41 @@
 # syntax=docker/dockerfile:1
 #
-# Build LuminousMiner natively for Linux (ELF) in a container. One image for AMD
-# (OpenCL), NVIDIA (CUDA), BOTH, or CPU-only. Select with
-# --build-arg GPU=amd|nvidia|both|cpu (default both). No GPU needed to build.
+# Build LuminousMiner natively for Linux (ELF) in a container. GPU backend and the
+# CPU resolver are independent axes:
+#   --build-arg GPU=amd|nvidia|both|none   (default both)  -> BUILD_AMD / BUILD_NVIDIA
+#   --build-arg CPU=ON|OFF                  (default OFF)   -> BUILD_CPU
+# Any combination is valid except GPU=none CPU=OFF (nothing to build). No GPU is
+# needed to build.
 #
 #   GPU=amd     -> lean ubuntu:24.04 base
 #   GPU=nvidia  -> nvidia/cuda devel base (nvcc), CUDA only
 #   GPU=both    -> nvidia/cuda devel base, AMD + CUDA in one binary
-#   GPU=cpu     -> lean ubuntu:24.04 base, CPU-only (used for arm64 via TARGETARCH)
+#   GPU=none    -> lean ubuntu:24.04 base, no GPU backend
+#   CPU=ON      -> also compile the CPU resolver into the same binary
+#                  (multicore via an in-process std::thread pool; no OpenMP runtime)
 #
 # Build arch follows buildx TARGETARCH (amd64 default; arm64 for Apple Silicon).
 #
 # Usage:
 #   docker build -f docker/Dockerfile.linux --build-arg GPU=both \
 #       --target artifact -o dist/linux-both .
-#   docker buildx build --platform linux/arm64 --build-arg GPU=cpu \
+#   docker buildx build --platform linux/arm64 --build-arg GPU=none --build-arg CPU=ON \
 #       --target runtime -t lm:linux-arm64 --load .
 
-# GPU must be declared in global scope (before the first FROM) so it can be used
-# in the stage-selector FROM below.
+# GPU and CPU must be declared in global scope (before the first FROM) so they can
+# be used in the stage-selector FROMs below.
 ARG GPU=both
+ARG CPU=OFF
 ARG BASE_AMD=ubuntu:24.04
 ARG BASE_CUDA=nvidia/cuda:13.1.2-devel-ubuntu24.04
 
 FROM ${BASE_CUDA} AS base-both
 FROM ${BASE_CUDA} AS base-nvidia
 FROM ${BASE_AMD}  AS base-amd
-FROM ${BASE_AMD}  AS base-cpu
+FROM ${BASE_AMD}  AS base-none
 FROM base-${GPU} AS build
 ARG GPU
+ARG CPU
 ARG DEBIAN_FRONTEND=noninteractive
 # Pin the vcpkg registry to the same commit as vcpkg.json's builtin-baseline so
 # dependency versions are reproducible. Override at build time for a newer set.
@@ -60,6 +67,11 @@ RUN set -eux; \
         | tar xz -C /opt; \
     ln -sf /opt/cmake-${CMAKE_VERSION}-linux-${CM_ARCH}/bin/* /usr/local/bin/
 
+# Use the system cmake/ninja (installed above) instead of letting vcpkg fetch its
+# own prebuilt tools. vcpkg auto-enables this on arm64; on amd64 it otherwise
+# downloads an x86_64 cmake whose extraction fails under Rosetta emulation. Forcing
+# system binaries keeps the amd64 build working when built on an Apple Silicon host.
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1
 ENV VCPKG_ROOT=/opt/vcpkg
 RUN git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT" \
     && git -C "$VCPKG_ROOT" checkout "$VCPKG_REF" \
@@ -78,17 +90,22 @@ RUN --mount=type=cache,target=/root/.cache/vcpkg \
       amd)    AMD=ON;  NV=OFF; FEAT="opencl;openssl"; PRESET=linux ;; \
       nvidia) AMD=OFF; NV=ON;  FEAT="openssl";        PRESET=linux ;; \
       both)   AMD=ON;  NV=ON;  FEAT="opencl;openssl"; PRESET=linux ;; \
-      cpu)    AMD=OFF; NV=OFF; FEAT="openssl";        PRESET=linux-cpu ;; \
-      *) echo "GPU must be amd|nvidia|both|cpu" >&2; exit 2 ;; \
+      none)   AMD=OFF; NV=OFF; FEAT="openssl";        PRESET=linux-cpu ;; \
+      *) echo "GPU must be amd|nvidia|both|none" >&2; exit 2 ;; \
     esac; \
+    if [ "$AMD" = "OFF" ] && [ "$NV" = "OFF" ] && [ "$CPU" != "ON" ]; then \
+      echo "nothing to build: set CPU=ON and/or GPU=amd|nvidia|both" >&2; exit 2; \
+    fi; \
     cmake --preset $PRESET \
-        -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV \
+        -DBUILD_AMD=$AMD -DBUILD_NVIDIA=$NV -DBUILD_CPU=$CPU \
         -DVCPKG_MANIFEST_FEATURES="$FEAT"; \
     cmake --build --preset $PRESET
 
 # Runnable image (native on the target arch). Used for linux-arm64 `docker run`.
 # CMAKE_RUNTIME_OUTPUT_DIRECTORY is the repo-root bin/ (i.e. /src/bin) for every
-# preset, so the binary + kernels land there regardless of GPU/cpu mode.
+# preset, so the binary + kernels land there regardless of GPU/CPU mode. The CPU
+# resolver parallelizes via an in-process std::thread pool, so there is no OpenMP
+# runtime to stage.
 FROM ubuntu:24.04 AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \

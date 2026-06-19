@@ -15,6 +15,7 @@
 #include <resolver/amd/meowpow.hpp>
 #include <resolver/amd/progpow.hpp>
 #include <resolver/amd/progpow_quai.hpp>
+#include <resolver/cpu/blake3.hpp>
 #include <resolver/mocker.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/blake3.hpp>
@@ -341,6 +342,14 @@ void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
                     break;
                 }
 #endif
+#if defined(CPU_ENABLE)
+                case device::DEVICE_TYPE::CPU:
+                {
+                    SAFE_DELETE(resolver);
+                    resolver = NEW(resolver::ResolverCpuBlake3);
+                    break;
+                }
+#endif
                 case device::DEVICE_TYPE::UNKNOWN:
                 {
                     break;
@@ -507,12 +516,18 @@ void device::Device::increaseShare(bool const isValid)
 }
 
 
+uint32_t device::Device::getMinimumKernelExecuted() const
+{
+    common::Config const& config{ common::Config::instance() };
+    return config.occupancy.kernelMinimunExecuteNeeded;
+}
+
+
 double device::Device::getHashrate()
 {
-    uint32_t const  executeCount{ miningStats.getKernelExecutedCount() };
-    common::Config& config{ common::Config::instance() };
+    uint32_t const executeCount{ miningStats.getKernelExecutedCount() };
 
-    if (config.occupancy.kernelMinimunExecuteNeeded <= executeCount)
+    if (getMinimumKernelExecuted() <= executeCount)
     {
         miningStats.stop();
         miningStats.updateHashrate();

@@ -10,16 +10,23 @@ namespace common
     template<typename T>
     struct AtomicCounter
     {
-        boost::atomic<T> current{};
-        T                last{};
+        boost::atomic<T>    current{};
+        T                   last{};
+        boost::memory_order memoryOrder{ boost::memory_order::seq_cst };
 
         explicit AtomicCounter(T const value) : current(value), last(value)
         {
         }
 
+        // Set once before the counter is shared across threads (memoryOrder itself is not atomic).
+        void setMemoryOrder(boost::memory_order const order)
+        {
+            memoryOrder = order;
+        }
+
         T get() const
         {
-            return current.load(boost::memory_order::seq_cst);
+            return current.load(memoryOrder);
         }
 
         bool isEqual() const
@@ -27,14 +34,19 @@ namespace common
             return last == get();
         }
 
-        void add(T const value)
+        void store(T const value)
         {
-            current.fetch_add(value, boost::memory_order::seq_cst);
+            current.store(value, memoryOrder);
         }
 
-        void sub(T const value)
+        T add(T const value)
         {
-            current.fetch_sub(value, boost::memory_order::seq_cst);
+            return current.fetch_add(value, memoryOrder);
+        }
+
+        T sub(T const value)
+        {
+            return current.fetch_sub(value, memoryOrder);
         }
 
         void update(T const value)
