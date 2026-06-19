@@ -28,8 +28,11 @@ jobs:
   build-openssl:
     uses: ./.github/workflows/openssl_linux.yml
 
+  build-opencl:
+    uses: ./.github/workflows/opencl_linux.yml
+
   cppcheck:
-    needs: [build-cmake, build-boost, build-openssl]
+    needs: [build-cmake, build-boost, build-openssl, build-opencl]
     runs-on: ubuntu-22.04
 
     env:
@@ -39,63 +42,18 @@ jobs:
       - uses: actions/checkout@v4
 
       # ===============================
-      # Download CMake
+      # Restore and install all deps
       # ===============================
-      - name: Download CMake
-        uses: actions/download-artifact@v4
+      - name: Setup dependencies
+        uses: ./.github/actions/miner/setup-deps
         with:
-          name: cmake-linux-3.26.4
-          path: deps/cmake
-
-      - name: Add CMake to PATH
-        run: |
-          chmod +x ${{ github.workspace }}/deps/cmake/bin/cmake
-          echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
+          cuda: "false"
 
       # ===============================
-      # Restore and install Boost
+      # Install cppcheck
       # ===============================
-      - name: Restore Boost from cache
-        uses: actions/cache/restore@v4
-        with:
-          path: boost-install
-          key: boost-${{ runner.os }}-1.91.0
-
-      - name: Install Boost
-        run: |
-          sudo cp -r boost-install/include/* /usr/local/include/
-          sudo cp -r boost-install/lib/* /usr/local/lib/
-          sudo ldconfig
-
-      # ===============================
-      # Restore and install OpenSSL
-      # ===============================
-      - name: Restore OpenSSL from cache
-        uses: actions/cache/restore@v4
-        with:
-          path: openssl-install
-          key: openssl-${{ runner.os }}-1.1.1w
-
-      - name: Install OpenSSL
-        run: |
-          sudo cp -r openssl-install/include/* /usr/local/include/
-          sudo cp -r openssl-install/lib/* /usr/local/lib/
-          sudo ldconfig
-
-      # ===============================
-      # Install system build tools + cppcheck
-      # ===============================
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            libstdc++-12-dev \
-            clang-15 \
-            clang++-15 \
-            git \
-            libgnutls28-dev \
-            cppcheck
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
 
       # ===============================
       # Configure Miner ALL (AMD + NVIDIA + CPU)
