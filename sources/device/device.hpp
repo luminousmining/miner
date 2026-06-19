@@ -72,9 +72,6 @@ namespace device
 
         virtual bool initialize() = 0;
         virtual void cleanUp() = 0;
-        // Batches required before getHashrate() recomputes. Defaults to the global
-        // --internal_kernel_count; CPU devices lower it so the much slower per-batch
-        // rate still reaches the threshold between frequent pool job resets.
         virtual uint32_t getMinimumKernelExecuted() const;
 
         bool updateJob();
@@ -82,6 +79,15 @@ namespace device
         void loopDoWork();
         void updateBatchNonce(bool const resetStats);
         void submit(common::PROFILE const profile);
+#if defined(CUDA_ENABLE)
+        void setResolverNvidia(algo::ALGORITHM algorithm);
+#endif
+#if defined(AMD_ENABLE)
+        void setResolverAmd(algo::ALGORITHM algorithm);
+#endif
+#if defined(CPU_ENABLE)
+        void setResolverCpu(algo::ALGORITHM algorithm);
+#endif
 
       private:
         struct AtomicSynchronizer
