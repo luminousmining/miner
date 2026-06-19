@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <algo/bitwise.hpp>
+#include <common/cast.hpp>
 
 
 TEST(Bitwise, nthSetBit)
@@ -31,11 +32,11 @@ TEST(Bitwise, hexToDecimal)
 // (returns 0), while the widest value that fits is parsed exactly.
 TEST(Bitwise, hexToDecimalWidths)
 {
-    EXPECT_EQ(static_cast<uint8_t>(0xABu), algo::hexToDecimal<uint8_t>("AB"));
-    EXPECT_EQ(static_cast<uint8_t>(0u), algo::hexToDecimal<uint8_t>("1AB")); // 3 nibbles: overflow uint8_t
+    EXPECT_EQ(castU8(0xABu), algo::hexToDecimal<uint8_t>("AB"));
+    EXPECT_EQ(castU8(0u), algo::hexToDecimal<uint8_t>("1AB")); // 3 nibbles: overflow uint8_t
 
-    EXPECT_EQ(static_cast<uint16_t>(0xABCDu), algo::hexToDecimal<uint16_t>("ABCD"));
-    EXPECT_EQ(static_cast<uint16_t>(0u), algo::hexToDecimal<uint16_t>("1ABCD")); // overflow uint16_t
+    EXPECT_EQ(castU16(0xABCDu), algo::hexToDecimal<uint16_t>("ABCD"));
+    EXPECT_EQ(castU16(0u), algo::hexToDecimal<uint16_t>("1ABCD")); // overflow uint16_t
 
     EXPECT_EQ(0xABCD1234u, algo::hexToDecimal<uint32_t>("ABCD1234"));
     EXPECT_EQ(0u, algo::hexToDecimal<uint32_t>("1ABCD1234")); // overflow uint32_t

@@ -1,8 +1,10 @@
+#include <array>
 #include <atomic>
 #include <vector>
 
 #include <gtest/gtest.h>
 
+#include <common/cast.hpp>
 #include <resolver/cpu/thread_pool.hpp>
 
 
@@ -10,12 +12,15 @@
 // batch sizes including count < workers and count not divisible by workers.
 TEST(CpuThreadPool, runCoversAllIndices)
 {
-    for (uint32_t const workers : { 1u, 2u, 4u, 8u })
+    constexpr std::array<uint32_t, 4> workerCounts{ 1u, 2u, 4u, 8u };
+    constexpr std::array<uint64_t, 4> counts{ 0ull, 1ull, 5ull, 1000ull };
+
+    for (uint32_t const workers : workerCounts)
     {
-        for (uint64_t const count : { 0ull, 1ull, 5ull, 1000ull })
+        for (uint64_t const count : counts)
         {
             resolver::cpu::CpuThreadPool  pool{ workers, 0ull };
-            std::vector<std::atomic<int>> seen(static_cast<size_t>(count));
+            std::vector<std::atomic<int>> seen(castSize(count));
             for (auto& s : seen)
             {
                 s.store(0);
@@ -26,15 +31,14 @@ TEST(CpuThreadPool, runCoversAllIndices)
                 {
                     for (uint64_t i{ lo }; i < hi; ++i)
                     {
-                        seen[static_cast<size_t>(i)].fetch_add(1);
+                        seen[castSize(i)].fetch_add(1);
                     }
                 });
             pool.run(count);
 
             for (uint64_t i{ 0ull }; i < count; ++i)
             {
-                EXPECT_EQ(1, seen[static_cast<size_t>(i)].load())
-                    << "count=" << count << " workers=" << workers << " i=" << i;
+                EXPECT_EQ(1, seen[castSize(i)].load()) << "count=" << count << " workers=" << workers << " i=" << i;
             }
         }
     }
@@ -45,13 +49,16 @@ TEST(CpuThreadPool, runCoversAllIndices)
 // [0, count) must still be visited exactly once regardless of how finely it is sliced.
 TEST(CpuThreadPool, smallGrainStillCoversAllIndicesExactlyOnce)
 {
-    for (uint32_t const workers : { 2u, 4u, 8u })
+    constexpr std::array<uint32_t, 3> workerCounts{ 2u, 4u, 8u };
+    constexpr std::array<uint64_t, 3> grains{ 1ull, 3ull, 7ull };
+
+    for (uint32_t const workers : workerCounts)
     {
-        for (uint64_t const grain : { 1ull, 3ull, 7ull })
+        for (uint64_t const grain : grains)
         {
             constexpr uint64_t            count{ 1000ull };
             resolver::cpu::CpuThreadPool  pool{ workers, 0ull };
-            std::vector<std::atomic<int>> seen(static_cast<size_t>(count));
+            std::vector<std::atomic<int>> seen(castSize(count));
             for (auto& s : seen)
             {
                 s.store(0);
@@ -62,15 +69,14 @@ TEST(CpuThreadPool, smallGrainStillCoversAllIndicesExactlyOnce)
                 {
                     for (uint64_t i{ lo }; i < hi; ++i)
                     {
-                        seen[static_cast<size_t>(i)].fetch_add(1);
+                        seen[castSize(i)].fetch_add(1);
                     }
                 });
             pool.run(count, grain);
 
             for (uint64_t i{ 0ull }; i < count; ++i)
             {
-                EXPECT_EQ(1, seen[static_cast<size_t>(i)].load())
-                    << "grain=" << grain << " workers=" << workers << " i=" << i;
+                EXPECT_EQ(1, seen[castSize(i)].load()) << "grain=" << grain << " workers=" << workers << " i=" << i;
             }
         }
     }
@@ -83,7 +89,7 @@ TEST(CpuThreadPool, runAsyncThenWaitCoversAllIndices)
 {
     constexpr uint64_t            count{ 5000ull };
     resolver::cpu::CpuThreadPool  pool{ 4u, 0ull };
-    std::vector<std::atomic<int>> seen(static_cast<size_t>(count));
+    std::vector<std::atomic<int>> seen(castSize(count));
     for (auto& s : seen)
     {
         s.store(0);
@@ -94,7 +100,7 @@ TEST(CpuThreadPool, runAsyncThenWaitCoversAllIndices)
         {
             for (uint64_t i{ lo }; i < hi; ++i)
             {
-                seen[static_cast<size_t>(i)].fetch_add(1);
+                seen[castSize(i)].fetch_add(1);
             }
         });
 
@@ -103,7 +109,7 @@ TEST(CpuThreadPool, runAsyncThenWaitCoversAllIndices)
 
     for (uint64_t i{ 0ull }; i < count; ++i)
     {
-        EXPECT_EQ(1, seen[static_cast<size_t>(i)].load()) << "i=" << i;
+        EXPECT_EQ(1, seen[castSize(i)].load()) << "i=" << i;
     }
 }
 
@@ -113,7 +119,7 @@ TEST(CpuThreadPool, runAsyncThenWaitCoversAllIndices)
 TEST(CpuThreadPool, runsWithAffinityMask)
 {
     resolver::cpu::CpuThreadPool pool{ 2u, 0x3ull }; // request cores 0 and 1
-    std::atomic<uint64_t>   sum{ 0ull };
+    std::atomic<uint64_t>        sum{ 0ull };
 
     pool.setCallback(
         [&](uint64_t const lo, uint64_t const hi, uint32_t const)

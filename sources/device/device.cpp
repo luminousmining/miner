@@ -15,6 +15,7 @@
 #include <resolver/amd/meowpow.hpp>
 #include <resolver/amd/progpow.hpp>
 #include <resolver/amd/progpow_quai.hpp>
+#include <resolver/cpu/blake3.hpp>
 #include <resolver/mocker.hpp>
 #include <resolver/nvidia/autolykos_v2.hpp>
 #include <resolver/nvidia/blake3.hpp>
@@ -27,7 +28,6 @@
 #include <resolver/nvidia/meowpow.hpp>
 #include <resolver/nvidia/progpow.hpp>
 #include <resolver/nvidia/progpow_quai.hpp>
-#include <resolver/cpu/blake3.hpp>
 
 
 void device::Device::setAlgorithm(algo::ALGORITHM newAlgorithm)
@@ -518,8 +518,8 @@ void device::Device::increaseShare(bool const isValid)
 
 uint32_t device::Device::getMinimumKernelExecuted() const
 {
-    uint32_t const executeCount{ common::Config::instance().occupancy.kernelMinimunExecuteNeeded };
-    return executeCount;
+    common::Config const& config{ common::Config::instance() };
+    return config.occupancy.kernelMinimunExecuteNeeded;
 }
 
 
