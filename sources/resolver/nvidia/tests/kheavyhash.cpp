@@ -38,11 +38,9 @@ struct ResolverKHeavyHashNvidiaTest : public testing::Test
         jobInfo.nonce = nonce;
         jobInfo.timestamp = 1234567890ull;
         jobInfo.jobIDStr = "kheavyhash-nvidia-test";
-        jobInfo.headerHash =
-            algo::toHash256("00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff");
+        jobInfo.headerHash = algo::toHash256("00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff");
         // Maximum target: every pow is <= boundary, so any scanned nonce is a hit.
-        jobInfo.boundary =
-            algo::toHash256("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        jobInfo.boundary = algo::toHash256("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     }
 };
 
