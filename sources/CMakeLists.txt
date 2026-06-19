@@ -174,6 +174,12 @@ endif()
 ################################################################################
 if (BUILD_EXE_MINER)
     add_executable(${MINER_EXE})
+    if (TOOL_ANALYZER AND CPPCHECK_EXECUTABLE)
+        set_target_properties(${MINER_EXE} PROPERTIES
+            CXX_CPPCHECK
+                "${CPPCHECK_EXECUTABLE};--enable=all;--inconclusive;--std=c++20;--quiet"
+        )
+    endif()
 endif()
 
 
