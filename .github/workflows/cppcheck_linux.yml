@@ -1,0 +1,125 @@
+name: Linux Cppcheck
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'documentation/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-cmake:
+    uses: ./.github/workflows/cmake_linux.yml
+
+  build-boost:
+    uses: ./.github/workflows/boost_linux.yml
+    with:
+      boost_version: "1.91.0"
+
+  build-openssl:
+    uses: ./.github/workflows/openssl_linux.yml
+
+  cppcheck:
+    needs: [build-cmake, build-boost, build-openssl]
+    runs-on: ubuntu-22.04
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ===============================
+      # Download CMake
+      # ===============================
+      - name: Download CMake
+        uses: actions/download-artifact@v4
+        with:
+          name: cmake-linux-3.26.4
+          path: deps/cmake
+
+      - name: Add CMake to PATH
+        run: |
+          chmod +x ${{ github.workspace }}/deps/cmake/bin/cmake
+          echo "${{ github.workspace }}/deps/cmake/bin" >> $GITHUB_PATH
+
+      # ===============================
+      # Restore and install Boost
+      # ===============================
+      - name: Restore Boost from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: boost-install
+          key: boost-${{ runner.os }}-1.91.0
+
+      - name: Install Boost
+        run: |
+          sudo cp -r boost-install/include/* /usr/local/include/
+          sudo cp -r boost-install/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Restore and install OpenSSL
+      # ===============================
+      - name: Restore OpenSSL from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: openssl-install
+          key: openssl-${{ runner.os }}-1.1.1w
+
+      - name: Install OpenSSL
+        run: |
+          sudo cp -r openssl-install/include/* /usr/local/include/
+          sudo cp -r openssl-install/lib/* /usr/local/lib/
+          sudo ldconfig
+
+      # ===============================
+      # Install system build tools + cppcheck
+      # ===============================
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libstdc++-12-dev \
+            clang-15 \
+            clang++-15 \
+            git \
+            libgnutls28-dev \
+            cppcheck
+
+      # ===============================
+      # Configure Miner ALL (AMD + NVIDIA + CPU)
+      # ===============================
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DNVCC_ARCH_COMPUTE=89 \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
+            -DBUILD_EXE_BENCHMARK=OFF \
+            -DBUILD_EXE_UNIT_TEST=OFF \
+            -DBUILD_EXE_MINER=ON \
+            -DBUILD_NVIDIA=ON \
+            -DBUILD_AMD=ON \
+            -DBUILD_CPU=ON \
+            -DENABLE_LTO=OFF \
+            -DENABLE_NATIVE=OFF
+
+      # ===============================
+      # Run cppcheck via cmake target
+      # ===============================
+      - name: Run cppcheck
+        run: cmake --build build --target cppcheck

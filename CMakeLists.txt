@@ -73,7 +73,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 ### TOOLS                                                                   ####
 ################################################################################
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/tools/format.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/tools/analyzer.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/tools/cppcheck.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/tools/clang_tidy.cmake)
 
 
 ################################################################################

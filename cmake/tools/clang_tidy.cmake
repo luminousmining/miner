@@ -1,9 +1,8 @@
-if (TOOL_ANALYZER)
-    find_program(CPPCHECK_EXECUTABLE cppcheck)
+find_program(CLANG_TIDY_EXECUTABLE
+    NAMES clang-tidy-15 clang-tidy
+)
 
-    find_program(CLANG_TIDY_EXECUTABLE
-        NAMES clang-tidy-15 clang-tidy
-    )
+if (TOOL_ANALYZER)
     if(CLANG_TIDY_EXECUTABLE)
         set(CMAKE_CXX_CLANG_TIDY
             ${CLANG_TIDY_EXECUTABLE}
