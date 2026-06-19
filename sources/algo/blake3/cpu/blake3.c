@@ -190,7 +190,8 @@ INLINE size_t compress_chunks_parallel(const uint8_t *input, size_t input_len,
 
   blake3_hash_many(chunks_array, chunks_array_len,
                    BLAKE3_CHUNK_LEN / BLAKE3_BLOCK_LEN, key, chunk_counter,
-                   true, flags, static_cast<uint8_t>(Blake3Flags::CHUNK_START), static_cast<uint8_t>(Blake3Flags::CHUNK_END), out);
+                   true, flags, static_cast<uint8_t>(Blake3Flags::CHUNK_START),
+                   static_cast<uint8_t>(Blake3Flags::CHUNK_END), out);
 
   // Hash the remaining partial chunk, if there is one. Note that the empty
   // chunk (meaning the empty message) is a different codepath.
