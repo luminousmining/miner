@@ -251,7 +251,7 @@ class SearchKernel : public OpenClKat, public ::testing::WithParamInterface<char
     // Mirrors the kernel's Result struct (algo::kheavyhash::Result layout).
     struct alignas(8) Result
     {
-        uint32_t found{ 0u };
+        bool     found{ false };
         uint32_t count{ 0u };
         uint64_t nonces[algo::kheavyhash::MAX_RESULT]{ 0ull, 0ull, 0ull, 0ull };
     };
