@@ -23,7 +23,7 @@ namespace algo
         // sources/algo/kheavyhash/opencl/kheavyhash.cl (found | count | nonces).
         struct alignas(8) Result
         {
-            bool     found{ false };
+            uint32_t found{ 0u };
             uint32_t count{ 0u };
             uint64_t nonces[algo::kheavyhash::MAX_RESULT]{ 0ull, 0ull, 0ull, 0ull };
         };

@@ -44,10 +44,6 @@ __constant int PI_LANE[24] = { 10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4,
                                15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1 };
 
 
-// rotl64 / loadLe64 / storeLe256 now come from the shared OpenCL helpers
-// (kernel/common/rotate_byte.cl -> rol_u64, kernel/common/load_store_le.cl ->
-// load_le_u64 / store_le_u256), appended ahead of this file by the resolver.
-
 void keccakF1600(ulong* a)
 {
     for (int round = 0; round < 24; ++round)
@@ -234,8 +230,6 @@ __kernel void test_heavy_hash(__global ushort const* matrix,
 
 // Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
 // On a hit (pow <= target, little-endian) it publishes its nonce into result.
-// The Result struct and publishHit() come from kheavyhash_result.cl, appended
-// ahead of this file by the resolver.
 
 
 #define KH_MATRIX_N 64

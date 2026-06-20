@@ -62,3 +62,25 @@ TEST_F(ResolverKHeavyHashNvidiaTest, findNonce)
     // kHeavyHash submits array params (jobId, nonce-hex).
     EXPECT_FALSE(stratum.paramSubmit.empty());
 }
+
+
+TEST_F(ResolverKHeavyHashNvidiaTest, notFindNonce)
+{
+    initializeJob(0ull);
+    resolver.updateJobId(jobInfo.jobIDStr); // align resolver jobId so the share is not flagged stale
+
+    // Minimum target: no pow can be <= 0, so the scan finds no hit.
+    jobInfo.boundary = algo::toHash256("0000000000000000000000000000000000000000000000000000000000000000");
+
+    ASSERT_TRUE(resolver.updateMemory(jobInfo));
+    ASSERT_TRUE(resolver.updateConstants(jobInfo));
+
+    resolver.setBlocks(128);
+    resolver.setThreads(128);
+
+    ASSERT_TRUE(resolver.executeSync(jobInfo));
+    resolver.submit(&stratum);
+
+    // No nonce satisfies the boundary, so nothing is submitted.
+    EXPECT_TRUE(stratum.paramSubmit.empty());
+}

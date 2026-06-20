@@ -248,10 +248,10 @@ TEST_F(OpenClKat, heavyHashMatchesReference)
 class SearchKernel : public OpenClKat, public ::testing::WithParamInterface<char const*>
 {
   protected:
-    // Mirrors the kernel's Result struct (and algo::ethash::Result layout).
+    // Mirrors the kernel's Result struct (algo::kheavyhash::Result layout).
     struct alignas(8) Result
     {
-        uint8_t  found{ 0u };
+        uint32_t found{ 0u };
         uint32_t count{ 0u };
         uint64_t nonces[algo::kheavyhash::MAX_RESULT]{ 0ull, 0ull, 0ull, 0ull };
     };
