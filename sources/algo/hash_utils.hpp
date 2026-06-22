@@ -87,6 +87,19 @@ namespace algo
     }
 
     template<typename T>
+    inline bool isLowerOrEqualLE(T const& value, T const& target)
+    {
+        for (int64_t i{ cast64(sizeof(T)) - 1 }; i >= 0; --i)
+        {
+            if (value.ubytes[i] != target.ubytes[i])
+            {
+                return value.ubytes[i] < target.ubytes[i];
+            }
+        }
+        return true;
+    }
+
+    template<typename T>
     inline void copyHash(T& dst, T const& src)
     {
         uint32_t const length{ sizeof(T) };

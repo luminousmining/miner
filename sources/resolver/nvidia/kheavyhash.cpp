@@ -43,12 +43,12 @@ bool resolver::ResolverNvidiaKHeavyHash::updateConstants(stratum::StratumJobInfo
     ////////////////////////////////////////////////////////////////////////////
     // Host-side matrix generation (xoshiro256++ + full-rank gate) from the pre-pow
     // header -- the CPU reference the kernel is gated bit-identical against.
-    ::kheavyhash::Hash256 seed{};
+    algo::kheavyhash::Hash256 seed{};
     for (uint32_t i{ 0u }; i < 32u; ++i)
     {
         seed[i] = jobInfo.headerHash.ubytes[i];
     }
-    ::kheavyhash::Matrix const matrix{ ::kheavyhash::generateMatrix(seed) };
+    algo::kheavyhash::Matrix const matrix{ algo::kheavyhash::generateMatrix(seed) };
     for (uint32_t r{ 0u }; r < 64u; ++r)
     {
         for (uint32_t c{ 0u }; c < 64u; ++c)

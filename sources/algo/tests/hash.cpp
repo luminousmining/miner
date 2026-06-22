@@ -276,3 +276,32 @@ TEST_F(HashTest, decimalToHashOversizedIsBounded)
 
     EXPECT_EQ('F', cast8(hash.ubytes[sizeof(algo::hash512) - 1u]));
 }
+
+
+TEST_F(HashTest, isLowerOrEqualLE)
+{
+    // Little-endian 256-bit comparison: byte 31 is the most significant.
+    algo::hash256 value{};
+    algo::hash256 target{};
+    for (uint64_t i{ 0ull }; i < algo::LEN_HASH_256; ++i)
+    {
+        value.ubytes[i] = 0x11;
+        target.ubytes[i] = 0x11;
+    }
+
+    // Equal => value <= target.
+    EXPECT_TRUE(algo::isLowerOrEqualLE(value, target));
+
+    // value < target on the most-significant byte.
+    value.ubytes[31] = 0x00;
+    target.ubytes[31] = 0x01;
+    EXPECT_TRUE(algo::isLowerOrEqualLE(value, target));
+
+    // value > target on the most-significant byte.
+    EXPECT_FALSE(algo::isLowerOrEqualLE(target, value));
+
+    // The most-significant byte dominates a larger least-significant byte.
+    value.ubytes[0] = 0xFF;
+    target.ubytes[0] = 0x00;
+    EXPECT_TRUE(algo::isLowerOrEqualLE(value, target));
+}

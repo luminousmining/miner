@@ -57,6 +57,16 @@ namespace algo
             return le::uint64(word);
         }
 
+        // Little-endian store of 4 u64 words into a 32-byte buffer.
+        inline void store256(uint8_t* const data, uint64_t const* const words)
+        {
+            for (uint32_t w{ 0u }; w < 4u; ++w)
+            {
+                uint64_t const word{ le::uint64(words[w]) };
+                __builtin_memcpy(data + w * sizeof(uint64_t), &word, sizeof(uint64_t));
+            }
+        }
+
         inline hash1024 const& uint32(algo::hash1024 const& h)
         {
             return h;

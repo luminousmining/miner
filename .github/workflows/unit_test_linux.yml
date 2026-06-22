@@ -36,17 +36,35 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      # Explicit allowlist of the hermetic (no-GPU) suites compiled in this
+      # NVIDIA/AMD/CPU-OFF build. Excludes the GPU device resolvers
+      # (Resolver*NvidiaTest / Resolver*AmdTest) and the OpenCL/CPU-gated KATs,
+      # which aren't compiled here.
       TEST_FILTER: >-
         AlgoTypeTest.*:
+        AutolykosV2CpuShare.*:
+        Bitwise.*:
+        Blake3Ref.*:
         EthashTest.*:
         FastModTest.*:
-        Fnv.*:
+        Fnv1Test.*:
         HashTest.*:
-        Kiss.*:
+        KHeavyHashHeavyHash.*:
+        KHeavyHashKHeavyHash.*:
+        KHeavyHashMatrix.*:
+        KHeavyHashPowHash.*:
+        Kiss99Test.*:
         MathTest.*:
+        ProgpowKernelOpenCLTest.*:
         RotateByteTest.*:
-        StratumEthashSubmitNonce.*:
-        StratumProgpowSeed.*
+        StatisticalHashrate.*:
+        StratumAutolykosV2NotifyTest.*:
+        StratumBlake3ProtocolTest.*:
+        StratumEthashAuthorizeTest.*:
+        StratumEthashSubmitNonceTest.*:
+        StratumMath.*:
+        StratumProgpowSeed.*:
+        WritePump.*
 
     steps:
       - uses: actions/checkout@v4

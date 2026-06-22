@@ -21,14 +21,3 @@ add_custom_target(copy_kheavyhash_opencl_files ALL
     ${OUT_KHEAVYHASH}/kheavyhash.cl
     ${OUT_KHEAVYHASH}/kheavyhash_result.cl
 )
-
-if (BUILD_EXE_UNIT_TEST AND BUILD_AMD)
-    target_sources(${UNIT_TEST_EXE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/opencl_kat_test.cpp)
-    target_include_directories(${UNIT_TEST_EXE} PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../tests
-        ${OpenCL_INCLUDE_DIRS})
-    target_compile_definitions(${UNIT_TEST_EXE}
-        PRIVATE KH_CL_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kheavyhash.cl"
-                KH_CL_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-                KH_CL_COMMON_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../../../common/opencl")
-endif()

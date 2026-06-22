@@ -105,7 +105,7 @@ void stratum::StratumKHeavyHash::onMiningNotify(boost::json::object const& root)
         {
             prePowWords[i] = common::boostJsonGetNumber<uint64_t>(words.at(i));
         }
-        kheavyhash::Hash256 const prePow{ kheavyhash::prePowFromWords(prePowWords) };
+        algo::kheavyhash::Hash256 const prePow{ algo::kheavyhash::prePowFromWords(prePowWords) };
         for (uint32_t i{ 0u }; i < 32u; ++i)
         {
             jobInfo.headerHash.ubytes[i] = prePow[i];
@@ -170,7 +170,7 @@ void stratum::StratumKHeavyHash::onMiningSetDifficulty(boost::json::object const
     boost::json::array const& params(root.at("params").as_array());
     double const              difficulty{ common::boostJsonGetNumber<double>(params.at(0)) };
 
-    kheavyhash::Hash256 const target{ kheavyhash::difficultyToTargetLe(difficulty) };
+    algo::kheavyhash::Hash256 const target{ algo::kheavyhash::difficultyToTargetLe(difficulty) };
     for (uint32_t i{ 0u }; i < 32u; ++i)
     {
         jobInfo.boundary.ubytes[i] = target[i];
