@@ -46,12 +46,12 @@ bool benchmark::BenchmarkWorkflow::runAmdKHeavyHash()
     ////////////////////////////////////////////////////////////////////////////
     // Host-side matrix generation (xoshiro256++ + full-rank gate) -- the CPU
     // reference the kernel is gated bit-identical against.
-    ::kheavyhash::Hash256 seed{};
+    algo::kheavyhash::Hash256 seed{};
     for (uint32_t i{ 0u }; i < 32u; ++i)
     {
         seed[i] = headerHash.ubytes[i];
     }
-    ::kheavyhash::Matrix const      matrix{ ::kheavyhash::generateMatrix(seed) };
+    algo::kheavyhash::Matrix const  matrix{ algo::kheavyhash::generateMatrix(seed) };
     std::array<uint16_t, 64u * 64u> flatMatrix{};
     for (uint32_t r{ 0u }; r < 64u; ++r)
     {

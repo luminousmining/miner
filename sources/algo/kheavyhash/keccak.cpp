@@ -1,9 +1,9 @@
 #include <algo/kheavyhash/keccak.hpp>
 
 
-namespace kheavyhash
+namespace algo
 {
-    namespace
+    namespace kheavyhash
     {
         constexpr uint64_t ROUND_CONSTANTS[24]{
             0x0000000000000001ull, 0x0000000000008082ull, 0x800000000000808aull, 0x8000000080008000ull,
@@ -21,57 +21,57 @@ namespace kheavyhash
             10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4, 15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1
         };
 
-        inline uint64_t rotl(uint64_t const x, int const k)
+        static uint64_t rotl(uint64_t const x, int const k)
         {
             return (x << k) | (x >> (64 - k));
         }
-    }
 
 
-    void keccakF1600(uint64_t* a)
-    {
-        for (int round{ 0 }; round < 24; ++round)
+        void keccakF1600(uint64_t* a)
         {
-            // Theta
-            uint64_t bc[5];
-            for (int i{ 0 }; i < 5; ++i)
+            for (int round{ 0 }; round < 24; ++round)
             {
-                bc[i] = a[i] ^ a[i + 5] ^ a[i + 10] ^ a[i + 15] ^ a[i + 20];
-            }
-            for (int i{ 0 }; i < 5; ++i)
-            {
-                uint64_t const t{ bc[(i + 4) % 5] ^ rotl(bc[(i + 1) % 5], 1) };
+                // Theta
+                uint64_t bc[5];
+                for (int i{ 0 }; i < 5; ++i)
+                {
+                    bc[i] = a[i] ^ a[i + 5] ^ a[i + 10] ^ a[i + 15] ^ a[i + 20];
+                }
+                for (int i{ 0 }; i < 5; ++i)
+                {
+                    uint64_t const t{ bc[(i + 4) % 5] ^ rotl(bc[(i + 1) % 5], 1) };
+                    for (int j{ 0 }; j < 25; j += 5)
+                    {
+                        a[j + i] ^= t;
+                    }
+                }
+
+                // Rho + Pi
+                uint64_t t{ a[1] };
+                for (int i{ 0 }; i < 24; ++i)
+                {
+                    int const      j{ PI_LANE[i] };
+                    uint64_t const tmp{ a[j] };
+                    a[j] = rotl(t, ROTATIONS[i]);
+                    t = tmp;
+                }
+
+                // Chi
                 for (int j{ 0 }; j < 25; j += 5)
                 {
-                    a[j + i] ^= t;
+                    for (int i{ 0 }; i < 5; ++i)
+                    {
+                        bc[i] = a[j + i];
+                    }
+                    for (int i{ 0 }; i < 5; ++i)
+                    {
+                        a[j + i] ^= (~bc[(i + 1) % 5]) & bc[(i + 2) % 5];
+                    }
                 }
-            }
 
-            // Rho + Pi
-            uint64_t t{ a[1] };
-            for (int i{ 0 }; i < 24; ++i)
-            {
-                int const      j{ PI_LANE[i] };
-                uint64_t const tmp{ a[j] };
-                a[j] = rotl(t, ROTATIONS[i]);
-                t = tmp;
+                // Iota
+                a[0] ^= ROUND_CONSTANTS[round];
             }
-
-            // Chi
-            for (int j{ 0 }; j < 25; j += 5)
-            {
-                for (int i{ 0 }; i < 5; ++i)
-                {
-                    bc[i] = a[j + i];
-                }
-                for (int i{ 0 }; i < 5; ++i)
-                {
-                    a[j + i] ^= (~bc[(i + 1) % 5]) & bc[(i + 2) % 5];
-                }
-            }
-
-            // Iota
-            a[0] ^= ROUND_CONSTANTS[round];
         }
     }
 }

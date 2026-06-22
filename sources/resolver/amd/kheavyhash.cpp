@@ -76,12 +76,12 @@ bool resolver::ResolverAmdKHeavyHash::updateConstants(stratum::StratumJobInfo co
     // Host-side matrix generation from the pre-pow header (xoshiro256++ +
     // full-rank gate). This is the CPU reference that the kernel is gated
     // bit-identical against; it never runs on the GPU.
-    ::kheavyhash::Hash256 seed{};
+    algo::kheavyhash::Hash256 seed{};
     for (uint32_t i{ 0u }; i < 32u; ++i)
     {
         seed[i] = jobInfo.headerHash.ubytes[i];
     }
-    ::kheavyhash::Matrix const matrix{ ::kheavyhash::generateMatrix(seed) };
+    algo::kheavyhash::Matrix const matrix{ algo::kheavyhash::generateMatrix(seed) };
 
     std::array<uint16_t, 64u * 64u> flat{};
     for (uint32_t r{ 0u }; r < 64u; ++r)

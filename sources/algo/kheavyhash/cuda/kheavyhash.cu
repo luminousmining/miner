@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <algo/hash.hpp>
 #include <algo/kheavyhash/result.hpp>
+#include <algo/kheavyhash/types.hpp>
 #include <common/custom.hpp>
 #include <common/error/cuda_error.hpp>
 #include <resolver/nvidia/kheavyhash_kernel_parameter.hpp>

@@ -2,9 +2,9 @@
 #include <algo/kheavyhash/keccak.hpp>
 
 
-namespace kheavyhash
+namespace algo
 {
-    namespace
+    namespace kheavyhash
     {
         // Precomputed cSHAKE256 states (domain + trailing pad baked in), copied
         // verbatim from rusty-kaspa crypto/hashes/src/pow_hashers.rs.
@@ -30,7 +30,7 @@ namespace kheavyhash
             1592359455985097269ull,
         };
 
-        inline uint64_t loadLe64(uint8_t const* p)
+        static uint64_t loadLe64(uint8_t const* p)
         {
             uint64_t v{ 0 };
             for (int b{ 0 }; b < 8; ++b)
@@ -40,7 +40,7 @@ namespace kheavyhash
             return v;
         }
 
-        inline Hash256 storeLe256(uint64_t const* state)
+        static Hash256 storeLe256(uint64_t const* state)
         {
             Hash256 out{};
             for (int w{ 0 }; w < 4; ++w)
@@ -52,40 +52,40 @@ namespace kheavyhash
             }
             return out;
         }
-    }
 
 
-    Hash256 powHash(Hash256 const& prePowHash, uint64_t const timestamp, uint64_t const nonce)
-    {
-        uint64_t state[25];
-        for (int i{ 0 }; i < 25; ++i)
+        Hash256 powHash(Hash256 const& prePowHash, uint64_t const timestamp, uint64_t const nonce)
         {
-            state[i] = POW_INITIAL_STATE[i];
+            uint64_t state[25];
+            for (int i{ 0 }; i < 25; ++i)
+            {
+                state[i] = POW_INITIAL_STATE[i];
+            }
+            // message lanes: pre_pow_hash (4 LE words) | timestamp | zero[32] | nonce
+            for (int w{ 0 }; w < 4; ++w)
+            {
+                state[w] ^= loadLe64(prePowHash.data() + w * 8);
+            }
+            state[4] ^= timestamp;
+            state[9] ^= nonce;
+            keccakF1600(state);
+            return storeLe256(state);
         }
-        // message lanes: pre_pow_hash (4 LE words) | timestamp | zero[32] | nonce
-        for (int w{ 0 }; w < 4; ++w)
-        {
-            state[w] ^= loadLe64(prePowHash.data() + w * 8);
-        }
-        state[4] ^= timestamp;
-        state[9] ^= nonce;
-        keccakF1600(state);
-        return storeLe256(state);
-    }
 
 
-    Hash256 kHeavyHash(Hash256 const& input)
-    {
-        uint64_t state[25];
-        for (int i{ 0 }; i < 25; ++i)
+        Hash256 kHeavyHash(Hash256 const& input)
         {
-            state[i] = HEAVY_INITIAL_STATE[i];
+            uint64_t state[25];
+            for (int i{ 0 }; i < 25; ++i)
+            {
+                state[i] = HEAVY_INITIAL_STATE[i];
+            }
+            for (int w{ 0 }; w < 4; ++w)
+            {
+                state[w] ^= loadLe64(input.data() + w * 8);
+            }
+            keccakF1600(state);
+            return storeLe256(state);
         }
-        for (int w{ 0 }; w < 4; ++w)
-        {
-            state[w] ^= loadLe64(input.data() + w * 8);
-        }
-        keccakF1600(state);
-        return storeLe256(state);
     }
 }

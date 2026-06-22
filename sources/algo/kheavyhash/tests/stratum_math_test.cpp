@@ -1,7 +1,7 @@
-#include "kheavyhash_test_vectors.hpp"
 #include <gtest/gtest.h>
 
 #include <algo/kheavyhash/stratum_math.hpp>
+#include <algo/kheavyhash/tests/kat_vectors.hpp>
 
 
 // 4 little-endian u64 words rebuild the 32-byte pre-pow byte-for-byte.
@@ -15,11 +15,11 @@ TEST(StratumMath, PrePowFromWordsRebuildsBytes)
         0x1f1e1d1c1b1a1918ull,
     };
 
-    kheavyhash::Hash256 const pre{ kheavyhash::prePowFromWords(words) };
+    algo::kheavyhash::Hash256 const pre{ algo::kheavyhash::prePowFromWords(words) };
 
     for (int i{ 0 }; i < 32; ++i)
     {
-        EXPECT_EQ(pre[i], kheavyhash::kat::FP_PRE[i]) << "byte " << i;
+        EXPECT_EQ(pre[i], algo::kheavyhash::kat::FP_PRE[i]) << "byte " << i;
     }
 }
 
@@ -27,7 +27,7 @@ TEST(StratumMath, PrePowFromWordsRebuildsBytes)
 // diff == 1 => target == maxTarget == 2^224 - 1 == 28 bytes of 0xFF (LE).
 TEST(StratumMath, DifficultyOneIsMaxTarget)
 {
-    kheavyhash::Hash256 const target{ kheavyhash::difficultyToTargetLe(1.0) };
+    algo::kheavyhash::Hash256 const target{ algo::kheavyhash::difficultyToTargetLe(1.0) };
 
     for (int i{ 0 }; i < 28; ++i)
     {
@@ -43,7 +43,7 @@ TEST(StratumMath, DifficultyOneIsMaxTarget)
 // diff == 2 => floor((2^224 - 1) / 2) == 2^223 - 1 == 27 x 0xFF then 0x7F (LE).
 TEST(StratumMath, DifficultyTwoHalvesTarget)
 {
-    kheavyhash::Hash256 const target{ kheavyhash::difficultyToTargetLe(2.0) };
+    algo::kheavyhash::Hash256 const target{ algo::kheavyhash::difficultyToTargetLe(2.0) };
 
     for (int i{ 0 }; i < 27; ++i)
     {
@@ -60,8 +60,8 @@ TEST(StratumMath, DifficultyTwoHalvesTarget)
 // Higher difficulty => smaller target (compare as little-endian 256-bit ints).
 TEST(StratumMath, HigherDifficultyShrinksTarget)
 {
-    kheavyhash::Hash256 const t1{ kheavyhash::difficultyToTargetLe(1.0) };
-    kheavyhash::Hash256 const t16{ kheavyhash::difficultyToTargetLe(16.0) };
+    algo::kheavyhash::Hash256 const t1{ algo::kheavyhash::difficultyToTargetLe(1.0) };
+    algo::kheavyhash::Hash256 const t16{ algo::kheavyhash::difficultyToTargetLe(16.0) };
 
     bool t16Smaller{ false };
     for (int i{ 31 }; i >= 0; --i)
