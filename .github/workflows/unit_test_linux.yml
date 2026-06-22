@@ -49,9 +49,10 @@ jobs:
         FastModTest.*:
         Fnv1Test.*:
         HashTest.*:
-        KHeavyHashHashers.*:
+        KHeavyHashHeavyHash.*:
+        KHeavyHashKHeavyHash.*:
         KHeavyHashMatrix.*:
-        KHeavyHashPipeline.*:
+        KHeavyHashPowHash.*:
         Kiss99Test.*:
         MathTest.*:
         ProgpowKernelOpenCLTest.*:
