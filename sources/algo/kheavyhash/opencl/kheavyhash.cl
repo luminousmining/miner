@@ -44,35 +44,6 @@ __constant int PI_LANE[24] = { 10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4,
                                15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1 };
 
 
-inline ulong rotl64(ulong const x, int const k)
-{
-    return (x << k) | (x >> (64 - k));
-}
-
-
-inline ulong loadLe64(uchar const* p)
-{
-    ulong v = 0;
-    for (int b = 0; b < 8; ++b)
-    {
-        v |= ((ulong)p[b]) << (8 * b);
-    }
-    return v;
-}
-
-
-inline void storeLe256(ulong const* state, uchar* out)
-{
-    for (int w = 0; w < 4; ++w)
-    {
-        for (int b = 0; b < 8; ++b)
-        {
-            out[w * 8 + b] = (uchar)((state[w] >> (8 * b)) & 0xFF);
-        }
-    }
-}
-
-
 void keccakF1600(ulong* a)
 {
     for (int round = 0; round < 24; ++round)
@@ -85,7 +56,7 @@ void keccakF1600(ulong* a)
         }
         for (int i = 0; i < 5; ++i)
         {
-            ulong const t = bc[(i + 4) % 5] ^ rotl64(bc[(i + 1) % 5], 1);
+            ulong const t = bc[(i + 4) % 5] ^ rol_u64(bc[(i + 1) % 5], 1);
             for (int j = 0; j < 25; j += 5)
             {
                 a[j + i] ^= t;
@@ -98,7 +69,7 @@ void keccakF1600(ulong* a)
         {
             int const   j = PI_LANE[i];
             ulong const tmp = a[j];
-            a[j] = rotl64(t, ROTATIONS[i]);
+            a[j] = rol_u64(t, ROTATIONS[i]);
             t = tmp;
         }
 
@@ -131,12 +102,12 @@ void powHash(uchar const* prePowHash, ulong const timestamp, ulong const nonce, 
     }
     for (int w = 0; w < 4; ++w)
     {
-        state[w] ^= loadLe64(prePowHash + w * 8);
+        state[w] ^= load_le_u64(prePowHash + w * 8);
     }
     state[4] ^= timestamp;
     state[9] ^= nonce;
     keccakF1600(state);
-    storeLe256(state, out);
+    store_le_u256(state, out);
 }
 
 
@@ -150,10 +121,10 @@ void kHeavyHash(uchar const* input, uchar* out)
     }
     for (int w = 0; w < 4; ++w)
     {
-        state[w] ^= loadLe64(input + w * 8);
+        state[w] ^= load_le_u64(input + w * 8);
     }
     keccakF1600(state);
-    storeLe256(state, out);
+    store_le_u256(state, out);
 }
 
 
@@ -257,20 +228,6 @@ __kernel void test_heavy_hash(__global ushort const* matrix,
 
 
 
-// Result buffer shared with the host (mirrors algo::ethash/blake3 Result).
-// MAX_RESULT is overridable by the host kernel generator (addDefine).
-#ifndef MAX_RESULT
-#define MAX_RESULT 4
-#endif
-
-typedef struct __attribute__((aligned(8)))
-{
-    uchar found;
-    uint  count;
-    ulong nonces[MAX_RESULT];
-} Result;
-
-
 // Real mining kernel: each work-item tries nonce = startNonce + global_id(0).
 // On a hit (pow <= target, little-endian) it publishes its nonce into result.
 
@@ -279,17 +236,6 @@ typedef struct __attribute__((aligned(8)))
 
 
 #define KH_MATRIX_ELEMS (KH_MATRIX_N * KH_MATRIX_N)
-
-
-inline void publishHit(__global Result* result, ulong const nonce)
-{
-    uint const idx = atomic_inc(&result->count);
-    result->found = 1;
-    if (idx < MAX_RESULT)
-    {
-        result->nonces[idx] = nonce;
-    }
-}
 
 
 #define KH_MATRIX_WORDS (KH_MATRIX_ELEMS / 4)
@@ -349,11 +295,11 @@ inline void khTheta(ulong* a)
     ulong const c2 = a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22];
     ulong const c3 = a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23];
     ulong const c4 = a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24];
-    ulong const d0 = c4 ^ rotl64(c1, 1);
-    ulong const d1 = c0 ^ rotl64(c2, 1);
-    ulong const d2 = c1 ^ rotl64(c3, 1);
-    ulong const d3 = c2 ^ rotl64(c4, 1);
-    ulong const d4 = c3 ^ rotl64(c0, 1);
+    ulong const d0 = c4 ^ rol_u64(c1, 1);
+    ulong const d1 = c0 ^ rol_u64(c2, 1);
+    ulong const d2 = c1 ^ rol_u64(c3, 1);
+    ulong const d3 = c2 ^ rol_u64(c4, 1);
+    ulong const d4 = c3 ^ rol_u64(c0, 1);
     a[0] ^= d0;  a[5] ^= d0;  a[10] ^= d0; a[15] ^= d0; a[20] ^= d0;
     a[1] ^= d1;  a[6] ^= d1;  a[11] ^= d1; a[16] ^= d1; a[21] ^= d1;
     a[2] ^= d2;  a[7] ^= d2;  a[12] ^= d2; a[17] ^= d2; a[22] ^= d2;
@@ -366,30 +312,30 @@ inline void khRhoPi(ulong* a)
 {
     ulong t = a[1];
     ulong tmp;
-    tmp = a[10]; a[10] = rotl64(t, 1);  t = tmp;
-    tmp = a[7];  a[7]  = rotl64(t, 3);  t = tmp;
-    tmp = a[11]; a[11] = rotl64(t, 6);  t = tmp;
-    tmp = a[17]; a[17] = rotl64(t, 10); t = tmp;
-    tmp = a[18]; a[18] = rotl64(t, 15); t = tmp;
-    tmp = a[3];  a[3]  = rotl64(t, 21); t = tmp;
-    tmp = a[5];  a[5]  = rotl64(t, 28); t = tmp;
-    tmp = a[16]; a[16] = rotl64(t, 36); t = tmp;
-    tmp = a[8];  a[8]  = rotl64(t, 45); t = tmp;
-    tmp = a[21]; a[21] = rotl64(t, 55); t = tmp;
-    tmp = a[24]; a[24] = rotl64(t, 2);  t = tmp;
-    tmp = a[4];  a[4]  = rotl64(t, 14); t = tmp;
-    tmp = a[15]; a[15] = rotl64(t, 27); t = tmp;
-    tmp = a[23]; a[23] = rotl64(t, 41); t = tmp;
-    tmp = a[19]; a[19] = rotl64(t, 56); t = tmp;
-    tmp = a[13]; a[13] = rotl64(t, 8);  t = tmp;
-    tmp = a[12]; a[12] = rotl64(t, 25); t = tmp;
-    tmp = a[2];  a[2]  = rotl64(t, 43); t = tmp;
-    tmp = a[20]; a[20] = rotl64(t, 62); t = tmp;
-    tmp = a[14]; a[14] = rotl64(t, 18); t = tmp;
-    tmp = a[22]; a[22] = rotl64(t, 39); t = tmp;
-    tmp = a[9];  a[9]  = rotl64(t, 61); t = tmp;
-    tmp = a[6];  a[6]  = rotl64(t, 20); t = tmp;
-    tmp = a[1];  a[1]  = rotl64(t, 44); t = tmp;
+    tmp = a[10]; a[10] = rol_u64(t, 1);  t = tmp;
+    tmp = a[7];  a[7]  = rol_u64(t, 3);  t = tmp;
+    tmp = a[11]; a[11] = rol_u64(t, 6);  t = tmp;
+    tmp = a[17]; a[17] = rol_u64(t, 10); t = tmp;
+    tmp = a[18]; a[18] = rol_u64(t, 15); t = tmp;
+    tmp = a[3];  a[3]  = rol_u64(t, 21); t = tmp;
+    tmp = a[5];  a[5]  = rol_u64(t, 28); t = tmp;
+    tmp = a[16]; a[16] = rol_u64(t, 36); t = tmp;
+    tmp = a[8];  a[8]  = rol_u64(t, 45); t = tmp;
+    tmp = a[21]; a[21] = rol_u64(t, 55); t = tmp;
+    tmp = a[24]; a[24] = rol_u64(t, 2);  t = tmp;
+    tmp = a[4];  a[4]  = rol_u64(t, 14); t = tmp;
+    tmp = a[15]; a[15] = rol_u64(t, 27); t = tmp;
+    tmp = a[23]; a[23] = rol_u64(t, 41); t = tmp;
+    tmp = a[19]; a[19] = rol_u64(t, 56); t = tmp;
+    tmp = a[13]; a[13] = rol_u64(t, 8);  t = tmp;
+    tmp = a[12]; a[12] = rol_u64(t, 25); t = tmp;
+    tmp = a[2];  a[2]  = rol_u64(t, 43); t = tmp;
+    tmp = a[20]; a[20] = rol_u64(t, 62); t = tmp;
+    tmp = a[14]; a[14] = rol_u64(t, 18); t = tmp;
+    tmp = a[22]; a[22] = rol_u64(t, 39); t = tmp;
+    tmp = a[9];  a[9]  = rol_u64(t, 61); t = tmp;
+    tmp = a[6];  a[6]  = rol_u64(t, 20); t = tmp;
+    tmp = a[1];  a[1]  = rol_u64(t, 44); t = tmp;
 }
 
 
@@ -458,7 +404,7 @@ __kernel void search(__global ushort const* matrix,
         }
         for (int w = 0; w < 4; ++w)
         {
-            ms[w] ^= loadLe64(pre + w * 8);
+            ms[w] ^= load_le_u64(pre + w * 8);
         }
         ms[4] ^= timestamp; // nonce (ms[9]) intentionally NOT folded in here
         khTheta(ms);
@@ -483,12 +429,12 @@ __kernel void search(__global ushort const* matrix,
     {
         st[i] = powMid[i];
     }
-    ulong const nr = rotl64(nonce, 1);
+    ulong const nr = rol_u64(nonce, 1);
     st[0] ^= nonce; st[5] ^= nonce; st[10] ^= nonce; st[15] ^= nonce; st[20] ^= nonce; st[9] ^= nonce;
     st[3] ^= nr;    st[8] ^= nr;    st[13] ^= nr;    st[18] ^= nr;    st[23] ^= nr;
     keccakF1600FromTheta1(st);
     uchar h1[32];
-    storeLe256(st, h1);
+    store_le_u256(st, h1);
 
     uchar product[32];
     matmulDot(matU, h1, product);

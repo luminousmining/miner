@@ -4,6 +4,7 @@ file(MAKE_DIRECTORY ${OUT_KHEAVYHASH})
 
 set(KHEAVYHASH_FILES
   kheavyhash.cl
+  kheavyhash_result.cl
 )
 
 foreach(FILE ${KHEAVYHASH_FILES})
@@ -18,6 +19,7 @@ endforeach()
 add_custom_target(copy_kheavyhash_opencl_files ALL
   DEPENDS
     ${OUT_KHEAVYHASH}/kheavyhash.cl
+    ${OUT_KHEAVYHASH}/kheavyhash_result.cl
 )
 
 if (BUILD_EXE_UNIT_TEST AND BUILD_AMD)
@@ -26,5 +28,7 @@ if (BUILD_EXE_UNIT_TEST AND BUILD_AMD)
         ${CMAKE_CURRENT_SOURCE_DIR}/../tests
         ${OpenCL_INCLUDE_DIRS})
     target_compile_definitions(${UNIT_TEST_EXE}
-        PRIVATE KH_CL_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kheavyhash.cl")
+        PRIVATE KH_CL_PATH="${CMAKE_CURRENT_SOURCE_DIR}/kheavyhash.cl"
+                KH_CL_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+                KH_CL_COMMON_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../../../common/opencl")
 endif()
