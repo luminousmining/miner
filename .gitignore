@@ -463,3 +463,6 @@ dist/
 # build-output ignores above (x64/, arm64/). These are tracked source, not build
 # output, so re-include them.
 !.github/actions/**
+
+# AI
+.claude
